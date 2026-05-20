@@ -13,6 +13,7 @@ bind
 *.org
 *.obj
 *.o
+get_sources.bat
 !Main.o
 *.exe
 *.aps
