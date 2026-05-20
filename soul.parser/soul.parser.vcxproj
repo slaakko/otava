@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{b8bd3cc1-3c92-430e-8d5e-310b4269f779}</ProjectGuid>
-    <RootNamespace>util</RootNamespace>
+    <ProjectGuid>{4d5408bd-8434-49a7-a2db-ae8175293998}</ProjectGuid>
+    <RootNamespace>soulparser</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>utild</TargetName>
+    <TargetName>soul.parserd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>util</TargetName>
+    <TargetName>soul.parser</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -119,10 +119,8 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <DisableSpecificWarnings>4146;4996;4267;4244</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..</AdditionalIncludeDirectories>
-      <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BuildStlModules>true</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -142,10 +140,8 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <DisableSpecificWarnings>4146;4996;4267;4244</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..</AdditionalIncludeDirectories>
-      <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BuildStlModules>true</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -160,81 +156,9 @@
     <None Include="get_sources.bat" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="align.cppm" />
-    <ClCompile Include="ansi.cpp" />
-    <ClCompile Include="ansi.cppm" />
-    <ClCompile Include="binary_resource_ptr.cpp" />
-    <ClCompile Include="binary_resource_ptr.cppm" />
-    <ClCompile Include="binary_stream_reader.cpp" />
-    <ClCompile Include="binary_stream_reader.cppm" />
-    <ClCompile Include="binary_stream_writer.cpp" />
-    <ClCompile Include="binary_stream_writer.cppm" />
-    <ClCompile Include="buffered_stream.cpp" />
-    <ClCompile Include="buffered_stream.cppm" />
-    <ClCompile Include="code_formatter.cpp" />
-    <ClCompile Include="code_formatter.cppm" />
-    <ClCompile Include="component.cpp" />
-    <ClCompile Include="component.cppm" />
-    <ClCompile Include="compression.cppm" />
-    <ClCompile Include="deflate_stream.cpp" />
-    <ClCompile Include="deflate_stream.cppm" />
-    <ClCompile Include="fiber.cpp" />
-    <ClCompile Include="fiber.cppm" />
-    <ClCompile Include="file_mapping.cpp" />
-    <ClCompile Include="file_mapping.cppm" />
-    <ClCompile Include="file_stream.cpp" />
-    <ClCompile Include="file_stream.cppm" />
-    <ClCompile Include="file_util.cpp" />
-    <ClCompile Include="file_util.cppm" />
-    <ClCompile Include="init_done.cpp" />
-    <ClCompile Include="init_done.cppm" />
-    <ClCompile Include="intrusive_list.cppm" />
-    <ClCompile Include="json.cpp" />
-    <ClCompile Include="json.cppm" />
-    <ClCompile Include="log.cpp" />
-    <ClCompile Include="log.cppm" />
-    <ClCompile Include="log_file_writer.cpp" />
-    <ClCompile Include="log_file_writer.cppm" />
-    <ClCompile Include="memory_reader.cpp" />
-    <ClCompile Include="memory_reader.cppm" />
-    <ClCompile Include="memory_stream.cpp" />
-    <ClCompile Include="memory_stream.cppm" />
-    <ClCompile Include="memory_writer.cpp" />
-    <ClCompile Include="memory_writer.cppm" />
-    <ClCompile Include="path.cpp" />
-    <ClCompile Include="path.cppm" />
-    <ClCompile Include="process.cpp" />
-    <ClCompile Include="process.cppm" />
-    <ClCompile Include="rand.cpp" />
-    <ClCompile Include="rand.cppm" />
-    <ClCompile Include="sha1.cpp" />
-    <ClCompile Include="sha1.cppm" />
-    <ClCompile Include="socket.cpp" />
-    <ClCompile Include="socket.cppm" />
-    <ClCompile Include="socket_stream.cpp" />
-    <ClCompile Include="socket_stream.cppm" />
-    <ClCompile Include="stream.cpp" />
-    <ClCompile Include="stream.cppm" />
-    <ClCompile Include="synchronized_queue.cppm" />
-    <ClCompile Include="system.cpp" />
-    <ClCompile Include="system.cppm" />
-    <ClCompile Include="text_util.cpp" />
-    <ClCompile Include="text_util.cppm" />
-    <ClCompile Include="time.cpp" />
-    <ClCompile Include="time.cppm" />
-    <ClCompile Include="unicode.conversion.cpp" />
-    <ClCompile Include="unicode.cpp" />
-    <ClCompile Include="unicode.cppm" />
-    <ClCompile Include="unicode.engine.cpp" />
-    <ClCompile Include="util.cppm" />
-    <ClCompile Include="uuid.cpp" />
-    <ClCompile Include="uuid.cppm" />
-    <ClCompile Include="win_error.cpp" />
-    <ClCompile Include="win_error.cppm" />
-    <ClCompile Include="ZLibInterface.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ZLibInterface.h" />
+    <ClCompile Include="match.cppm" />
+    <ClCompile Include="parser.cppm" />
+    <ClCompile Include="value.cppm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

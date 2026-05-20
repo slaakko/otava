@@ -1,0 +1,53 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions otava.expr
+{
+    ws = "[\n\r\t ]";
+    newline = "\r\n|\n|\r";
+    line_comment = "//[^\n\r]*{newline}";
+    block_comment = "/\*([^*]|\*[^/])*\*/";
+    block_comment_start = "/\*";
+    block_comment_end = "\*/";
+    pp_line = "[\t ]*#[^\x0\r\n]*{newline}";
+    separators = "({line_comment}|{block_comment}|{ws})+";
+    hexdigit = "[0-9a-fA-F]";
+    hex4 = "{hexdigit}{hexdigit}{hexdigit}{hexdigit}";
+    hex8 = "{hex4}{hex4}";
+    univcn = "\\u{hex4}|\\U{hex8}";
+    id = "({unicode_id_start}|{univcn})({unicode_id_cont}|{univcn})*";
+    decimal_digit = "[0-9]";
+    digit_sequence = "({decimal_digit}'?)+";
+    hexdigit_sequence = "({hexdigit}'?)+";
+    fractional_constant = "{digit_sequence}?\.{digit_sequence}|{digit_sequence}\.";
+    sign = "\+|-";
+    exponent_part = "[eE]{sign}?{digit_sequence}";
+    binary_exponent_part = "[pP]{sign}?{digit_sequence}";
+    floating_suffix = "[fF]|[lL]";
+    decimal_floating_literal = "({fractional_constant}{exponent_part}?|{digit_sequence}{exponent_part}){floating_suffix}?";
+    hexadecimal_fractional_constant = "{hexdigit_sequence}?\.{hexdigit_sequence}|{hexdigit_sequence}\.";
+    hexadecimal_floating_literal = "(0x|0X){hexadecimal_fractional_constant}{binary_exponent_part}{floating_suffix}?|(0x|0X){hexdigit_sequence}{binary_exponent_part}{floating_suffix}?";
+    floating_literal = "{decimal_floating_literal}|{hexadecimal_floating_literal}";
+    binary_digit = "0|1";
+    hexadecimal_literal = "(0x|0X)({hexdigit}'?)+";
+    octal_digit = "[0-7]";
+    octal_literal = "0'?({octal_digit}'?)*";
+    decimal_literal = "[1-9]'?({decimal_digit}'?)*";
+    integer_suffix = "[uU](ll|LL)?|[uU][lL]|[uU][zZ]|(ll|LL)[uU]?|[lL][uU]?|[zZ][uU]?";
+    binary_literal = "(0b|0B)({binary_digit}'?)+";
+    integer_literal = "{binary_literal}{integer_suffix}?|{hexadecimal_literal}{integer_suffix}?|{octal_literal}{integer_suffix}?|{decimal_literal}{integer_suffix}?";
+    simple_escape = "\\['\"\?\\abfnrtv]";
+    octal_escape = "\\{octal_digit}|\\{octal_digit}{octal_digit}|\\{octal_digit}{octal_digit}{octal_digit}";
+    hex_escape = "\\x{hexdigit}+";
+    escape = "{simple_escape}|{octal_escape}|{hex_escape}";
+    cchar = "[^\r\n\\']|{escape}|{univcn}";
+    encoding_prefix = "u8|u|U|L";
+    character_literal = "{encoding_prefix}?'{cchar}+'";
+    schar = "[^\r\n\\\"]|{escape}|{univcn}";
+    begin_raw_string_literal = "{encoding_prefix}?R\"";
+    string_literal = "{encoding_prefix}?\"{schar}*\";
+    angle_header_name = "<[^\r\n>]+>";
+    quote_header_name = "\"[^\r\n\"]+\"";
+}
