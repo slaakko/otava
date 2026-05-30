@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.processing.instruction;
+module soul.xml.processing_instruction;
 
 import soul.xml.visitor;
 

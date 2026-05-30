@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.file.util;
+export module util.file_util;
 
 import std;
 

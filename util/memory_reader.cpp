@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-module util.memory.reader;
+module util.memory_reader;
 
 namespace util {
 
-MemoryReader::MemoryReader(const std::uint8_t* ptr_, std::int64_t count_) noexcept : ptr(ptr_), pos(ptr), count(count_)
+MemoryReader::MemoryReader(const std::uint8_t* ptr_, std::int32_t count_) noexcept : ptr(ptr_), pos(ptr), count(count_)
 {
 }
 
@@ -19,7 +19,7 @@ bool MemoryReader::ReadBool()
 
 std::uint8_t MemoryReader::ReadByte()
 {
-    if (pos - ptr >= count)
+    if (CurrentOffset() >= count)
     {
         throw std::runtime_error("memory reader: unexpected end of data");
     }

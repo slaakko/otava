@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.text.util;
+export module util.text_util;
 
 import std;
 import util.stream;

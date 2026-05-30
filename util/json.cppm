@@ -6,7 +6,7 @@
 export module util.json;
 
 import std;
-import util.code.formatter;
+import util.code_formatter;
 
 export namespace util {
 

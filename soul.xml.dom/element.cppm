@@ -6,8 +6,8 @@
 export module soul.xml.element;
 
 import std;
-import soul.xml.parent.node;
-import soul.xml.attribute.node;
+import soul.xml.parent_node;
+import soul.xml.attribute_node;
 
 export namespace soul::xml {
 

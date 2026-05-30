@@ -3,10 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.document.fragment;
+export module soul.xml.document_fragment;
 
 import std;
-import soul.xml.parent.node;
+import soul.xml.parent_node;
 
 export namespace soul::xml {
 

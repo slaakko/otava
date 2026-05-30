@@ -6,7 +6,7 @@
 module soul.xml.element;
 
 import soul.xml.visitor;
-import soul.xml.node.operation;
+import soul.xml.node_operation;
 
 namespace soul::xml {
 

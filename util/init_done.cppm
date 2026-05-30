@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.init.done;
+export module util.init_done;
 
 import std;
 

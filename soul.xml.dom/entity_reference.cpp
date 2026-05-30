@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.entity.reference;
+module soul.xml.entity_reference;
 
 import soul.xml.visitor;
 

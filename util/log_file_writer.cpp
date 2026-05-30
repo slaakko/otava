@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.log.file.writer;
+module util.log_file_writer;
 
 import util.time;
 

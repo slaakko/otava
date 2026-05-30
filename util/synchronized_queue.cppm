@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.synchronized.queue;
+export module util.synchronized_queue;
 
 import std;
 

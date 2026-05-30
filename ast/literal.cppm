@@ -49,20 +49,20 @@ class LiteralNode : public Node
 {
 public:
     LiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_) noexcept;
-    LiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_);
+    LiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::string& rep_);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline const std::u32string& Rep() const noexcept { return rep; }
-    std::u32string Str() const override { return rep; }
+    inline const std::string& Rep() const noexcept { return rep; }
+    std::string Str() const override { return rep; }
 private:
-    std::u32string rep;
+    std::string rep;
 };
 
 class IntegerLiteralNode : public LiteralNode
 {
 public:
     IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_, std::uint64_t value_, Suffix suffix_, Base base_, const std::u32string& rep_);
+    IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_, std::uint64_t value_, Suffix suffix_, Base base_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
@@ -81,7 +81,7 @@ class FloatingLiteralNode : public LiteralNode
 {
 public:
     FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_, double value_, Suffix suffix_, Base base_, const std::u32string& rep_);
+    FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_, double value_, Suffix suffix_, Base base_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
@@ -99,7 +99,7 @@ class CharacterLiteralNode : public LiteralNode
 {
 public:
     CharacterLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    CharacterLiteralNode(const soul::ast::Span& span_, int fileIndex_, char32_t value_, EncodingPrefix encodingPrefix_, const std::u32string& rep_, 
+    CharacterLiteralNode(const soul::ast::Span& span_, int fileIndex_, char32_t value_, EncodingPrefix encodingPrefix_, const std::string& rep_, 
         bool hasMultipleCharacters_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -119,17 +119,17 @@ class StringLiteralNode : public LiteralNode
 public:
     StringLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     StringLiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_);
-    StringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& value_, EncodingPrefix encodingPrefix_, const std::u32string& rep_);
-    StringLiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::u32string& value_, EncodingPrefix encodingPrefix_, 
-        const std::u32string& rep_);
+    StringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::string& value_, EncodingPrefix encodingPrefix_, const std::string& rep_);
+    StringLiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::string& value_, EncodingPrefix encodingPrefix_, 
+        const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline const std::u32string& GetValue() const noexcept { return value; }
+    inline const std::string& GetValue() const noexcept { return value; }
     inline EncodingPrefix GetEncodingPrefix() const noexcept { return encodingPrefix; }
 private:
-    std::u32string value;
+    std::string value;
     EncodingPrefix encodingPrefix;
 };
 
@@ -137,22 +137,22 @@ class RawStringLiteralNode : public StringLiteralNode
 {
 public:
     RawStringLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    RawStringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& value_, EncodingPrefix encodingPrefix_,
-        const std::u32string& delimSequence_, const std::u32string& rep_);
+    RawStringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::string& value_, EncodingPrefix encodingPrefix_,
+        const std::string& delimSequence_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline const std::u32string& DelimSequence() const noexcept { return delimSequence; }
+    inline const std::string& DelimSequence() const noexcept { return delimSequence; }
 private:
-    std::u32string delimSequence;
+    std::string delimSequence;
 };
 
 class BooleanLiteralNode : public LiteralNode
 {
 public:
     BooleanLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    BooleanLiteralNode(const soul::ast::Span& span_, int fileIndex_, bool value_, const std::u32string& rep_);
+    BooleanLiteralNode(const soul::ast::Span& span_, int fileIndex_, bool value_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
@@ -166,7 +166,7 @@ class NullPtrLiteralNode : public LiteralNode
 {
 public:
     NullPtrLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    NullPtrLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_);
+    NullPtrLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 };
@@ -194,7 +194,7 @@ private:
     soul::ast::Span stringLitSpan;
 };
 
-std::u32string EncodingPrefixStr(EncodingPrefix encodingPrefix);
+std::string EncodingPrefixStr(EncodingPrefix encodingPrefix);
 EncodingPrefix CommonEncodingPrefix(otava::ast::EncodingPrefix leftEncodingPrefix, otava::ast::EncodingPrefix rightEncodingPrefix) noexcept;
 
 } // namespace otava::ast

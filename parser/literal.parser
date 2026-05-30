@@ -1,0 +1,85 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.literal;
+
+[interface]import otava.symbols.context;
+[implementation]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.parser.token;
+
+parser LiteralParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    Literal(otava::symbols::Context* context) : otava::ast::Node*
+        ::= UserDefinedLiteral(context):udLiteral{ return udLiteral; }
+        |   INTEGER_LITERAL{ return otava::parser::token::ParseIntegerLiteral(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        |   FLOATING_LITERAL{ return otava::parser::token::ParseFloatingLiteral(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        |   CHARACTER_LITERAL{ return otava::parser::token::ParseCharacterLiteral(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        |   BEGIN_RAW_STRING_LITERAL{ lexer.SetPos(pos); return otava::parser::token::ParseRawStringLiteral(lexer.GetSpan(pos), lexer.File(), lexer); }
+        |   STRING_LITERAL{ return otava::parser::token::ParseStringLiteral(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        |   TRUE{ return new otava::ast::BooleanLiteralNode(lexer.GetSpan(pos), lexer.File(), true, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   FALSE{ return new otava::ast::BooleanLiteralNode(lexer.GetSpan(pos), lexer.File(), false, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   NULLPTR{ return new otava::ast::NullPtrLiteralNode(lexer.GetSpan(pos), lexer.File(), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    UserDefinedLiteral(otava::symbols::Context* context, var soul::ast::Span span, var std::int64_t p, var std::unique_ptr<otava::ast::Node> udLiteralNode) : 
+        otava::ast::Node*
+        ::= 
+        (   INTEGER_LITERAL{ span = lexer.GetSpan(pos); p = pos; }
+            UdSuffix:udSuffix
+            { 
+                udLiteralNode.reset(new otava::ast::UserDefinedLiteraNode(span, lexer.File(), 
+                    otava::parser::token::ParseIntegerLiteral(span, lexer.File(), lexer.FileName(), lexer.GetToken(p)), udSuffix)); 
+            }
+        |   FLOATING_LITERAL{ span = lexer.GetSpan(pos); p = pos; }
+            UdSuffix:udSuffix
+            { 
+                udLiteralNode.reset(new otava::ast::UserDefinedLiteraNode(span, lexer.File(), 
+                    otava::parser::token::ParseFloatingLiteral(span, lexer.File(), lexer.FileName(), lexer.GetToken(p)), udSuffix)); 
+            }
+        |   STRING_LITERAL{ span = lexer.GetSpan(pos); p = pos; }
+            UdSuffix:udSuffix
+            { 
+                udLiteralNode.reset(new otava::ast::UserDefinedLiteraNode(span, lexer.File(), 
+                otava::parser::token::ParseStringLiteral(span, lexer.File(), lexer.FileName(), lexer.GetToken(p)), udSuffix)); 
+            }
+        |   CHARACTER_LITERAL{ span = lexer.GetSpan(pos); p = pos; }
+            UdSuffix:udSuffix
+            { 
+                udLiteralNode.reset(new otava::ast::UserDefinedLiteraNode(span, lexer.File(), 
+                    otava::parser::token::ParseCharacterLiteral(span, lexer.File(), lexer.FileName(), lexer.GetToken(p)), udSuffix)); 
+            }
+        )
+        {
+            return udLiteralNode.release();
+        }
+        ;
+
+    UdSuffix : otava::ast::Node*
+        ::= ID{ return otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        ;
+
+    LiteralOperatorId(otava::symbols::Context* context, var soul::ast::Span span, 
+        var soul::ast::Span stringLitPos, var soul::ast::Span idPos, var std::int64_t idp) : otava::ast::Node*
+        ::= 
+        (
+            OPERATOR{ span = lexer.GetSpan(pos); } 
+            STRING_LITERAL{ stringLitPos = lexer.GetSpan(pos); pass = lexer.GetToken(pos).ToString() == U""; } 
+            ID{ idPos = lexer.GetSpan(pos); idp = pos; }
+        )
+        {
+            return new otava::ast::LiteralOperatorIdNode(span, lexer.File(), 
+                otava::parser::token::ParseIdentifier(idPos, lexer.File(), lexer.FileName(), lexer.GetToken(idp)), stringLitPos);
+        }
+        ;
+
+    StringLiteral(otava::symbols::Context* context) : otava::ast::Node*
+        ::= STRING_LITERAL{ return otava::parser::token::ParseStringLiteral(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        ;
+}
+

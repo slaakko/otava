@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.document.fragment;
+module soul.xml.document_fragment;
 
 namespace soul::xml {
 

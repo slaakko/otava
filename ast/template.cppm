@@ -94,7 +94,7 @@ public:
     inline const soul::ast::Span& RAngleSpan() const noexcept { return raSpan; }
     inline const std::vector<bool>& TemplateArgKinds() const noexcept { return templateArgKinds; }
     void SetTemplateArgKinds(const std::vector<bool>& templateArgKinds_);
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> templateName;
     soul::ast::Span laSpan;

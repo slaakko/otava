@@ -1197,9 +1197,9 @@ void ExpressionStatementNode::Read(Reader& reader)
     semicolon.reset(reader.ReadNode());
 }
 
-std::u32string ExpressionStatementNode::Str() const
+std::string ExpressionStatementNode::Str() const
 {
-    std::u32string str = expr->Str();
+    std::string str = expr->Str();
     str.append(1, ';');
     return str;
 }
@@ -1238,9 +1238,9 @@ void DeclarationStatementNode::Read(Reader& reader)
     declaration.reset(reader.ReadNode());
 }
 
-std::u32string DeclarationStatementNode::Str() const
+std::string DeclarationStatementNode::Str() const
 {
-    std::u32string str = declaration->Str();
+    std::string str = declaration->Str();
     return str;
 }
 

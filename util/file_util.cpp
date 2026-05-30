@@ -3,13 +3,13 @@
 // Distributed under the MIT license
 // =================================
 
-module util.file.util;
+module util.file_util;
 
-import util.file.stream;
-import util.buffered.stream;
-import util.binary.stream.reader;
-import util.binary.stream.writer;
-import util.text.util;
+import util.file_stream;
+import util.buffered_stream;
+import util.binary_stream_reader;
+import util.binary_stream_writer;
+import util.text_util;
 
 namespace util {
 

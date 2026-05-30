@@ -6,7 +6,8 @@
 module otava.ast.util;
 
 import util.unicode;
-import util.text.util;
+import util.text_util;
+import util.unicode;
 
 namespace otava::ast {
 
@@ -20,23 +21,24 @@ std::string UniversalCharacterName(char32_t c)
     }
     else
     {
-        s.append("U").append(util::ToHexString(static_cast<std::uint32_t>(c)));
+        s.append("").append(util::ToHexString(static_cast<std::uint32_t>(c)));
     }
     return s;
 }
 
-std::u32string ToUniversalId(const std::u32string& id)
+std::string ToUniversalId(const std::string& id)
 {
-    std::u32string s;
+    std::string s;
+    std::u32string u32s = util::ToUtf32(id);
     for (char32_t c : id)
     {
         if (c >= 32 && c < 127)
         {
-            s.append(1, c);
+            s.append(1, char(c));
         }
         else
         {
-            s.append(util::ToUtf32(UniversalCharacterName(c)));
+            s.append(UniversalCharacterName(c));
         }
     }
     return s;

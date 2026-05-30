@@ -5,7 +5,7 @@
 
 module util.log;
 
-import util.text.util;
+import util.text_util;
 import util.unicode;
 
 namespace util {

@@ -6,7 +6,7 @@
 module otava.ast.xml.generator.visitor;
 
 import otava.ast.node;
-import soul.ast.source.pos;
+import soul.ast.source_pos;
 import util.unicode;
 
 namespace otava::ast {
@@ -39,7 +39,7 @@ void XmlGeneratorVisitor::EndVisit(Node& node)
     }
 }
 
-void XmlGeneratorVisitor::VisitIdentifier(const std::u32string& id, const soul::ast::Span& span)
+void XmlGeneratorVisitor::VisitIdentifier(const std::string& id, const soul::ast::Span& span)
 {
     std::unique_ptr<soul::xml::Element> idElement(soul::xml::MakeElement("identifier"));
     idElement->SetAttribute("value", util::ToUtf8(id));
@@ -63,7 +63,7 @@ void XmlGeneratorVisitor::VisitOperator(const std::string& symbol, const soul::a
     AddElement(opElement.release());
 }
 
-void XmlGeneratorVisitor::VisitToken(const std::u32string& tokenStr, const soul::ast::Span& span)
+void XmlGeneratorVisitor::VisitToken(const std::string& tokenStr, const soul::ast::Span& span)
 {
     std::unique_ptr<soul::xml::Element> tokenElement(soul::xml::MakeElement("token"));
     tokenElement->SetAttribute("value", util::ToUtf8(tokenStr));
@@ -71,7 +71,7 @@ void XmlGeneratorVisitor::VisitToken(const std::u32string& tokenStr, const soul:
     AddElement(tokenElement.release());
 }
 
-void XmlGeneratorVisitor::VisitLiteral(const std::u32string& rep, const soul::ast::Span& span)
+void XmlGeneratorVisitor::VisitLiteral(const std::string& rep, const soul::ast::Span& span)
 {
     std::unique_ptr<soul::xml::Element> literalElement(soul::xml::MakeElement("literal"));
     literalElement->SetAttribute("value", util::ToUtf8(rep));
@@ -79,7 +79,7 @@ void XmlGeneratorVisitor::VisitLiteral(const std::u32string& rep, const soul::as
     AddElement(literalElement.release());
 }
 
-void XmlGeneratorVisitor::VisitHeaderName(const std::u32string& rep, const soul::ast::Span& span)
+void XmlGeneratorVisitor::VisitHeaderName(const std::string& rep, const soul::ast::Span& span)
 {
     std::unique_ptr<soul::xml::Element> headerElement(soul::xml::MakeElement("header"));
     headerElement->SetAttribute("value", util::ToUtf8(rep));

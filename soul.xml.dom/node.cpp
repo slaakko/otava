@@ -7,8 +7,8 @@ module soul.xml.node;
 
 import soul.xml.error;
 import soul.xml.axis;
-import soul.xml.node.operation;
-import soul.xml.parent.node;
+import soul.xml.node_operation;
+import soul.xml.parent_node;
 
 namespace soul::xml {
 

@@ -1,0 +1,347 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.type;
+
+[interface]import otava.symbols.context;
+[implementation]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.symbols.scope_resolver;
+[implementation]import otava.symbols.classes;
+[implementation]import otava.parser.attribute;
+[implementation]import otava.parser.classes;
+[implementation]import otava.parser.concepts;
+[implementation]import otava.parser.declaration;
+[implementation]import otava.parser.enums;
+[implementation]import otava.parser.expression;
+[implementation]import otava.parser.function;
+[implementation]import otava.parser.guard;
+[implementation]import otava.parser.identifier;
+[implementation]import otava.parser.simple.type;
+[implementation]import otava.parser.templates;
+
+parser TypeParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    using AttributeParser.AttributeSpecifierSeq;
+    using ClassParser.ClassSpecifier;
+    using ClassParser.ClassKey;
+    using ConceptParser.TypeConstraint;
+    using DeclarationParser.AbstractDeclarator;
+    using DeclarationParser.CVQualifier;
+    using EnumParser.EnumSpecifier;
+    using EnumParser.ElaboratedEnumSpecifier;
+    using ExpressionParser.Expression;
+    using FunctionParser.DestructorId;
+    using GuardParser.NotDefiningTypeSpecifierGuard;
+    using SimpleTypeParser.SimpleType;
+    using IdentifierParser.Identifier;
+    using IdentifierParser.NestedNameSpecifier;
+    using IdentifierParser.Template;
+    using IdentifierParser.TypeIdentifier;
+    using TemplateParser.SimpleTemplateId;
+
+    TypeSpecifierSeq(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> sequence) : otava::ast::Node*
+        ::= 
+        (
+            TypeSpecifier(context):first{ sequence.reset(new otava::ast::TypeSpecifierSequenceNode(lexer.GetSpan(pos), lexer.File())); sequence->AddNode(first); } 
+            (
+                TypeSpecifier(context):next{ sequence->AddNode(next); }
+            )*
+            (AttributeSpecifierSeq(context):attributes{ sequence->AddNode(attributes); })?
+        )
+        {
+            return sequence.release();
+        }
+        ;
+
+    TypeSpecifierSeqReset(otava::symbols::Context* context) : otava::ast::Node*
+        ::= empty{ context->PushResetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); }
+            TypeSpecifierSeq(context):typeSpecifierSeq{ context->PopFlags(); return typeSpecifierSeq; } / { context->PopFlags(); }
+        ;
+
+
+    DefiningTypeId(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            DefiningTypeSpecifierSeq(context):definingTypeSpecifierSeq{ span = lexer.GetSpan(pos); } 
+            AbstractDeclarator(context):abstractDeclararator?
+        )
+        {
+            return new otava::ast::DefiningTypeIdNode(span, lexer.File(), definingTypeSpecifierSeq, abstractDeclararator);
+        }
+        ;
+
+    DefiningTypeSpecifierSeq(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> node) : otava::ast::Node*
+        ::= 
+        (   
+            DefiningTypeSpecifierReset(context):first{ node.reset(new otava::ast::DefiningTypeSpecifierSequenceNode(lexer.GetSpan(pos), lexer.File())); node->AddNode(first); }
+            (
+                DefiningTypeSpecifierReset(context):next{ node->AddNode(next); }
+            )*
+            (AttributeSpecifierSeq(context):attributes{ node->AddNode(attributes); })?
+        )
+        {
+            return node.release();
+        }
+        ;
+
+
+    DefiningTypeSpecifierReset(otava::symbols::Context* context) : otava::ast::Node*
+        ::= empty{ context->PushResetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); }
+            DefiningTypeSpecifier(context):definingTypeSpecifier{ context->PopFlags(); return definingTypeSpecifier; } / { context->PopFlags(); }
+        ;
+
+    DefiningTypeSpecifier(otava::symbols::Context* context) : otava::ast::Node*
+        ::= 
+        (   ClassSpecifier(context):classSpecifier
+            {
+                context->SetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); 
+                return classSpecifier; 
+            }
+        |   EnumSpecifier(context):enumSpecifier
+            {
+                context->SetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); 
+                return enumSpecifier; 
+            }
+        |   TypeSpecifier(context):typeSpecifier
+            {
+                return typeSpecifier; 
+            }
+        )
+        ;
+
+    TypeSpecifier(otava::symbols::Context* context) : otava::ast::Node*
+        ::= SimpleTypeSpecifier(context):simpleTypeSpecifier
+            {
+                context->SetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); 
+                return simpleTypeSpecifier; 
+            }
+        |   ElaboratedTypeSpecifier(context):elaboratedTypeSpecifier
+            { 
+                context->SetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); 
+                return elaboratedTypeSpecifier; 
+            }
+        |   TypenameSpecifier(context):typenameSpecifier
+            { 
+                context->SetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); 
+                return typenameSpecifier; 
+            }
+        |   CVQualifier:cvQualifier{ return cvQualifier; }
+        ;
+
+    ElaboratedTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span nnsSpan, var soul::ast::Span tmpPos) : 
+        otava::ast::Node*
+        ::= ClassKey:classKey{ span = lexer.GetSpan(pos); }
+            AttributeSpecifierSeq(context):attributes?
+            (
+                NestedNameSpecifier(context):nns{ nnsSpan = lexer.GetSpan(pos); } 
+                (   
+                    Template:tmp{ tmpPos = lexer.GetSpan(pos); }
+                    SimpleTemplateId(context):simpleTemplateId
+                    {
+                        otava::ast::Node* node = new otava::ast::ElaboratedTypeSpecifierNode(span, lexer.File(), classKey, 
+                            new otava::ast::QualifiedIdNode(nnsSpan, lexer.File(), nns, new otava::ast::PrefixNode(tmpPos, lexer.File(), tmp, simpleTemplateId)), attributes);
+                        otava::symbols::ProcessElaboratedClassDeclaration(node, context);
+                        return node;
+                    }
+                |   SimpleTemplateId(context):simpleTemplateId2
+                    {
+                        otava::ast::Node* node = new otava::ast::ElaboratedTypeSpecifierNode(span, lexer.File(), classKey, 
+                            new otava::ast::QualifiedIdNode(nnsSpan, lexer.File(), nns, simpleTemplateId2), attributes);
+                        otava::symbols::ProcessElaboratedClassDeclaration(node, context);
+                        return node;
+                    }
+                |   Identifier(context):identifier
+                    {
+                        otava::ast::Node* node = new otava::ast::ElaboratedTypeSpecifierNode(span, lexer.File(), classKey, 
+                            new otava::ast::QualifiedIdNode(nnsSpan, lexer.File(), nns, identifier), attributes);
+                        otava::symbols::ProcessElaboratedClassDeclaration(node, context);
+                        return node;
+                    }
+                )
+            |   SimpleTemplateId(context):simpleTemplateId3
+                {
+                    otava::ast::Node* node = new otava::ast::ElaboratedTypeSpecifierNode(span, lexer.File(), classKey, simpleTemplateId3, attributes);
+                    otava::symbols::ProcessElaboratedClassDeclaration(node, context);
+                    return node;
+                }
+            |   Identifier(context):identifier2
+                {
+                    otava::ast::Node* node = new otava::ast::ElaboratedTypeSpecifierNode(span, lexer.File(), classKey, identifier2, attributes);
+                    otava::symbols::ProcessElaboratedClassDeclaration(node, context);
+                    return node;
+                }
+            )
+        |   ElaboratedEnumSpecifier(context):elaboratedEnumSpecifier{ return elaboratedEnumSpecifier; }
+        ;
+
+    SimpleTypeSpecifierReset(otava::symbols::Context* context) : otava::ast::Node*
+        ::= empty{ context->PushResetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); }
+            SimpleTypeSpecifier(context):simpleTypeSpecifier{ context->PopFlags(); return simpleTypeSpecifier; } / { context->PopFlags(); }
+        ;
+
+    SimpleTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span tmpPos, 
+        var std::unique_ptr<otava::ast::Node> nns, var bool isConstructorNameNode) : otava::ast::Node*
+        ::= 
+        (   SimpleType:simpleType
+            { 
+                return simpleType; 
+            }
+        |   NotDefiningTypeSpecifierGuard(context):guard
+            (
+                (   NestedNameSpecifier(context):nns1{ nns.reset(nns1); span = lexer.GetSpan(pos); } 
+                    Template:tmp{ tmpPos = lexer.GetSpan(pos); } 
+                    SimpleTemplateId(context):simpleTemplateId
+                    { 
+                        return new otava::ast::QualifiedIdNode(span, lexer.File(), nns.release(), new otava::ast::PrefixNode(tmpPos, lexer.File(), tmp, simpleTemplateId)); 
+                    }
+                |   NestedNameSpecifier(context):nns2
+                    { 
+                        nns.reset(nns2); 
+                        otava::symbols::BeginScope(nns.get(), context); span = lexer.GetSpan(pos); 
+                    }
+                    TypeName(context):typeName
+                    { 
+                        std::unique_ptr<otava::ast::Node> typeNameNode;
+                        typeNameNode.reset(typeName);
+                        isConstructorNameNode = context->IsConstructorNameNode(typeNameNode.get());
+                        otava::symbols::EndScope(context);
+                        if (isConstructorNameNode)
+                        {
+                            pass = false;
+                        }
+                        else
+                        {
+                            return new otava::ast::QualifiedIdNode(span, lexer.File(), nns.release(), typeNameNode.release()); 
+                        }
+                    }
+                    /
+                    {
+                        otava::symbols::EndScope(context);
+                    }
+                |   empty{ if (isConstructorNameNode) pass = false; } 
+                    TypeName(context):typeName2
+                    {
+                        std::unique_ptr<otava::ast::Node> typeNameNode;
+                        typeNameNode.reset(typeName2);
+                        if (context->IsConstructorNameNode(typeNameNode.get()))
+                        {
+                            pass = false;
+                        }
+                        else
+                        {
+                            return typeNameNode.release();
+                        }
+                    }
+                |   DeclTypeSpecifier(context):declTypeSpecifier
+                    { 
+                        return declTypeSpecifier; 
+                    }
+                |   PlaceholderTypeSpecifier(context):placeholderTypeSpecifier
+                    { 
+                        return placeholderTypeSpecifier; 
+                    }
+                )
+            )
+        )
+        ;
+
+    TypeName(otava::symbols::Context* context) : otava::ast::Node*
+        ::= SimpleTemplateId(context):templateId{ return templateId; }
+        |   TypeIdentifier(context):typeIdentifier{ return typeIdentifier;  }        
+        ;
+
+    TypeId(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            empty{ context->PushResetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); }
+            TypeSpecifierSeq(context):typeSpecifiers{ span = lexer.GetSpan(pos); } 
+            AbstractDeclarator(context):abstractDeclarator?
+        )
+        {
+            context->PopFlags();
+            return new otava::ast::TypeIdNode(span, lexer.File(), typeSpecifiers, abstractDeclarator);
+        }
+        /
+        {
+            context->PopFlags();
+        }
+        ;
+
+    TypenameSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::Node> templateNode, 
+        var bool typenameSeen, var std::unique_ptr<otava::ast::Node> leaf) : otava::ast::Node*
+        ::= TYPENAME{ span = lexer.GetSpan(pos); context->PushSetFlag(otava::symbols::ContextFlags::assumeType); typenameSeen = true; } 
+            empty{ context->PushResetFlag(otava::symbols::ContextFlags::assumeType); } 
+            NestedNameSpecifier(context):nns{ context->PopFlags(); } / { context->PopFlags(); }
+            (   (Template:t{ templateNode.reset(t); })?
+                SimpleTemplateId(context):simpleTemplateId
+                {
+                    context->PopFlags();
+                    leaf.reset(simpleTemplateId);
+                    return new otava::ast::TypenameSpecifierNode(span, lexer.File(), nns, leaf.release(), templateNode.release());
+                }
+            |   Identifier(context):identifier
+                {
+                    context->PopFlags();
+                    leaf.reset(identifier);
+                    return new otava::ast::TypenameSpecifierNode(span, lexer.File(), nns, leaf.release(), nullptr);
+                }
+            )
+            |
+            empty
+            {
+                if (typenameSeen)
+                {
+                    context->PopFlags();
+                }
+                pass = false;
+            }
+        ;
+
+    DeclTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : 
+        otava::ast::Node*
+        ::= 
+        (
+            DECLTYPE{ span = lexer.GetSpan(pos); } 
+            LPAREN{ lpSpan = lexer.GetSpan(pos); } 
+            Expression(context):expr 
+            RPAREN{ rpSpan = lexer.GetSpan(pos); }
+        )
+        {
+            return new otava::ast::DeclTypeSpecifierNode(span, lexer.File(), expr, lpSpan, rpSpan);
+        }
+        ;
+
+    PlaceholderTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span dtPos, var soul::ast::Span autoPos, 
+        var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+        ::= 
+        (
+            (TypeConstraint(context):typeConstraint{ span = lexer.GetSpan(pos); })? 
+            (
+                AUTO
+                { 
+                    if (!span.IsValid()) span = lexer.GetSpan(pos);
+                    autoPos = lexer.GetSpan(pos);
+                    return new otava::ast::PlaceholderTypeSpecifierNode(span, lexer.File(), typeConstraint, dtPos, autoPos, lpSpan, rpSpan);
+                } 
+            )
+            |
+            (
+                (
+                    DECLTYPE{ dtPos = lexer.GetSpan(pos); if (!span.IsValid()) span = lexer.GetSpan(pos); } 
+                    LPAREN{ lpSpan = lexer.GetSpan(pos); } 
+                    AUTO{ autoPos = lexer.GetSpan(pos); } 
+                    RPAREN{ rpSpan = lexer.GetSpan(pos); }
+                )
+                {
+                    return new otava::ast::PlaceholderTypeSpecifierNode(span, lexer.File(), typeConstraint, dtPos, autoPos, lpSpan, rpSpan);
+                }
+            )
+        )
+        ;
+}

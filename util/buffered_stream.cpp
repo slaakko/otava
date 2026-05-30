@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.buffered.stream;
+module util.buffered_stream;
 
 import util.stream;
 
@@ -101,6 +101,7 @@ void BufferedStream::Seek(std::int64_t pos, Origin origin)
     Flush();
     bytesAvailable = 0;
     baseStream.Seek(pos, origin);
+    SetPosition(pos);
 }
 
 std::int64_t BufferedStream::Tell()

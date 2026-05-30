@@ -11,7 +11,7 @@ module;
 #pragma comment(lib, "zlibstatd.lib")
 #endif
 
-module util.deflate.stream;
+module util.deflate_stream;
 
 namespace util {
 

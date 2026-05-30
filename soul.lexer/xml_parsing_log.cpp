@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.lexer.xml.parsing.log;
+module soul.lexer.xml_parsing_log;
 
 namespace soul::lexer {
 

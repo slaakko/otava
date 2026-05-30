@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.binary.stream.reader;
+module util.binary_stream_reader;
 
 import util.unicode;
 

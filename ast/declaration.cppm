@@ -34,7 +34,7 @@ public:
     inline void SetInitDeclaratorList(Node* initDeclaratorList_) noexcept { initDeclaratorList.reset(initDeclaratorList_); }
     inline Node* Attributes() const noexcept { return attributes.get(); }
     inline Node* Semicolon() const noexcept { return semicolon.get(); }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> declarationSpecifiers;
     std::unique_ptr<Node> initDeclaratorList;
@@ -183,7 +183,7 @@ public:
     UsingNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"using"; }
+    std::string Str() const override { return "using"; }
 };
 
 class UsingDeclaratorListNode : public ListNode
@@ -293,7 +293,7 @@ public:
     inline Node* DefiningTypeId() const noexcept { return definingTypeId.get(); }
     inline Node* Attributes() const noexcept { return attributes.get(); }
     inline Node* Semicolon() const noexcept { return semicolon.get(); }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> usng;
     std::unique_ptr<Node> identifier;
@@ -335,7 +335,7 @@ public:
     InitDeclaratorNode(const soul::ast::Span& span_, int fileIndex_, Node* declarator_, Node* init_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override;
+    std::string Str() const override;
 };
 
 class TrailingFunctionDeclaratorNode : public CompoundNode
@@ -368,7 +368,7 @@ public:
     inline Node* Declarator() const noexcept { return declarator.get(); }
     inline const soul::ast::Span& LParenSpan() const noexcept { return lpSpan; }
     inline const soul::ast::Span& RParenSpan() const noexcept { return rpSpan; }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> declarator;
     soul::ast::Span lpSpan;
@@ -389,7 +389,7 @@ public:
     DeclSpecifierSequenceNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override;
+    std::string Str() const override;
 };
 
 class FriendNode : public Node
@@ -522,7 +522,7 @@ public:
     PtrDeclaratorNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override;
+    std::string Str() const override;
 };
 
 class PackDeclaratorIdNode : public BinaryNode
@@ -547,7 +547,7 @@ public:
     inline Node* Dimension() const noexcept { return dimension.get(); }
     inline const soul::ast::Span& LBracketSpan() const noexcept { return lbSpan; }
     inline const soul::ast::Span& RBracketSpan() const noexcept { return rbSpan; }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> dimension;
     soul::ast::Span lbSpan;
@@ -564,7 +564,7 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     inline Node* Params() const noexcept { return params.get(); }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> params;
 };

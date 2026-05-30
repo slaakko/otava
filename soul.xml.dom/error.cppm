@@ -6,8 +6,8 @@
 export module soul.xml.error;
 
 import std;
-import soul.lexer.file.map;
-import soul.ast.source.pos;
+import soul.lexer.file_map;
+import soul.ast.source_pos;
 
 export namespace soul::xml {
 

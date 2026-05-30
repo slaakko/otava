@@ -8,10 +8,10 @@ module;
 #include <cerrno>
 #include <string.h>
 
-module util.file.stream;
+module util.file_stream;
 
 import std;
-import util.text.util;
+import util.text_util;
 import util.win_error;
 
 namespace util {

@@ -33,9 +33,9 @@ void SourceCodePrinterVisitor::Move(const soul::ast::Span& span)
     }
 }
 
-void SourceCodePrinterVisitor::Move(const std::u32string& str)
+void SourceCodePrinterVisitor::Move(const std::string& str)
 {
-    for (char32_t c : str)
+    for (char c : str)
     {
         if (c == '\n')
         {
@@ -56,12 +56,6 @@ void SourceCodePrinterVisitor::Move(const std::u32string& str)
 void SourceCodePrinterVisitor::Write(const std::string& str)
 {
     formatter.Write(str);
-    Move(util::ToUtf32(str));
-}
-
-void SourceCodePrinterVisitor::Write(const std::u32string& str)
-{
-    formatter.Write(util::ToUtf8(str));
     Move(str);
 }
 
@@ -70,7 +64,7 @@ void SourceCodePrinterVisitor::BeginVisit(Node& node)
     Move(node.GetSpan());
 }
 
-void SourceCodePrinterVisitor::VisitIdentifier(const std::u32string& id, const soul::ast::Span& span)
+void SourceCodePrinterVisitor::VisitIdentifier(const std::string& id, const soul::ast::Span& span)
 {
     Move(span);
     Write(ToUniversalId(id));
@@ -88,19 +82,19 @@ void SourceCodePrinterVisitor::VisitOperator(const std::string& symbol, const so
     Write(symbol);
 }
 
-void SourceCodePrinterVisitor::VisitToken(const std::u32string& tokenStr, const soul::ast::Span& span)
+void SourceCodePrinterVisitor::VisitToken(const std::string& tokenStr, const soul::ast::Span& span)
 {
     Move(span);
     Write(tokenStr);
 }
 
-void SourceCodePrinterVisitor::VisitLiteral(const std::u32string& rep, const soul::ast::Span& span)
+void SourceCodePrinterVisitor::VisitLiteral(const std::string& rep, const soul::ast::Span& span)
 {
     Move(span);
     Write(rep);
 }
 
-void SourceCodePrinterVisitor::VisitHeaderName(const std::u32string& rep, const soul::ast::Span& span)
+void SourceCodePrinterVisitor::VisitHeaderName(const std::string& rep, const soul::ast::Span& span)
 {
     Move(span);
     Write(rep);

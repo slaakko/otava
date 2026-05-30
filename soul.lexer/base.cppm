@@ -13,9 +13,9 @@ import soul.lexer.classmap;
 import soul.lexer.variables;
 import soul.ast.slg;
 import soul.ast.common;
-import soul.ast.lexer.pos.pair;
+import soul.ast.lexer_pos_pair;
 import soul.ast.span;
-import soul.lexer.parsing.log;
+import soul.lexer.parsing_log;
 
 export namespace soul::lexer {
 

@@ -1,0 +1,3 @@
+project otava.intermediate.parser;
+parser <intermediate.parser>;
+tokens <intermediate.token>;

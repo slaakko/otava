@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module otava.ast.simple.type;
+module otava.ast.simple_type;
 
 import otava.ast.visitor;
 

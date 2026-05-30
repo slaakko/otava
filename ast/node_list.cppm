@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module otava.ast.node.list;
+export module otava.ast.node_list;
 
 import std;
 

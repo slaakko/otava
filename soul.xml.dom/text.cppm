@@ -6,7 +6,7 @@
 export module soul.xml.text;
 
 import std;
-import soul.xml.character.data;
+import soul.xml.character_data;
 import soul.xml.node;
 
 export namespace soul::xml {

@@ -1,0 +1,145 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.identifier;
+
+[interface]import otava.symbols.context;
+[implementation]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.symbols.symbol;
+[implementation]import otava.symbols.symbol_table;
+[implementation]import otava.parser.function;
+[implementation]import otava.parser.guard;
+[implementation]import otava.parser.literal;
+[implementation]import otava.parser.templates;
+[implementation]import otava.parser.punctuation;
+[implementation]import otava.parser.token;
+
+parser IdentifierParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    using FunctionParser.OperatorFunctionId;
+    using FunctionParser.ConversionFunctionId;
+    using FunctionParser.DestructorId;
+    using GuardParser.AssumeTypeGuard;
+    using LiteralParser.LiteralOperatorId;
+    using PunctuationParser.Comma;
+    using TemplateParser.TemplateId;
+    using TemplateParser.SimpleTemplateId;
+
+    Identifier(otava::symbols::Context* context) : otava::ast::Node*
+        ::= ID{ return otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
+        ;
+
+    UnqualifiedId(otava::symbols::Context* context) : otava::ast::Node*
+        ::= TemplateId(context):templateId{ return templateId; }
+        |   Identifier(context):identifier{ return identifier; }
+        |   OperatorFunctionId(context):operatorFnId{ return operatorFnId; }
+        |   ConversionFunctionId(context):conversionFnId{ return conversionFnId; }
+        |   LiteralOperatorId(context):literalOperatorId{ return literalOperatorId; }
+        |   DestructorId(context):destructorId{ return destructorId; }
+        ;
+
+    QualifiedId(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span templatePos) : otava::ast::Node*
+        ::= 
+        (
+            NestedNameSpecifier(context):nns{ span = lexer.GetSpan(pos); } 
+            (
+                Template:tmp{ templatePos = lexer.GetSpan(pos); } 
+                UnqualifiedId(context):unqualifiedId
+                {
+                    return new otava::ast::QualifiedIdNode(span, lexer.File(), nns, new otava::ast::PrefixNode(templatePos, lexer.File(), tmp, unqualifiedId));
+                }
+            |   UnqualifiedId(context):unqualifiedId
+                {
+                    return new otava::ast::QualifiedIdNode(span, lexer.File(), nns, unqualifiedId);
+                }
+            )
+        )
+        ;
+
+    Template : otava::ast::Node*
+        ::= TEMPLATE{ return new otava::ast::TemplateNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    NestedNameSpecifier(otava::symbols::Context* context, var std::unique_ptr<otava::ast::NestedNameSpecifierNode> nnsNode, 
+        var std::unique_ptr<otava::ast::Node> idNode) : otava::ast::Node*
+        ::= 
+        (   empty{ nnsNode.reset(new otava::ast::NestedNameSpecifierNode(lexer.GetSpan(pos), lexer.File())); }
+            (COLON_COLON{ nnsNode->AddNode(new otava::ast::ColonColonNode(lexer.GetSpan(pos), lexer.File())); })?
+            (   (TEMPLATE{ nnsNode->AddNode(new otava::ast::TemplateNode(lexer.GetSpan(pos), lexer.File())); })?
+                SimpleTemplateId(context):simpleTemplateId{ idNode.reset(simpleTemplateId); }
+                COLON_COLON{ nnsNode->AddNode(idNode.release()); nnsNode->AddNode(new otava::ast::ColonColonNode(lexer.GetSpan(pos), lexer.File())); }
+            |   ID{ idNode.reset(otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos))); } 
+                COLON_COLON{ nnsNode->AddNode(idNode.release()); nnsNode->AddNode(new otava::ast::ColonColonNode(lexer.GetSpan(pos), lexer.File())); }
+            )*
+        )
+        {
+            if (nnsNode->Nodes().IsEmpty())
+            {
+                pass = false;
+            }
+            else
+            {
+                nnsNode->SetSpan(nnsNode->Nodes()[0]->GetSpan());
+                return nnsNode.release();
+            }
+        }
+        ;
+
+    IdentifierList(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> identifierListNode) : otava::ast::Node*
+        ::= 
+        (
+            Identifier(context):first{ identifierListNode.reset(new otava::ast::IdentifierListNode(lexer.GetSpan(pos), lexer.File())); identifierListNode->AddNode(first); } 
+            (   Comma:comma{ identifierListNode->AddNode(comma); }
+                Identifier(context):next{ identifierListNode->AddNode(next); }
+            )*
+        )
+        {
+            return identifierListNode.release();
+        }
+        ;
+
+    TypeIdentifier(otava::symbols::Context* context) : otava::ast::Node*
+        ::= AssumeTypeGuard(context):assumeTypeGuard TypeIdentifierUnchecked(context):typeName{ return typeName; }
+        |   TypeIdentifierChecked(context):typeIdentifier{ return typeIdentifier; }
+        ;
+
+    TypeIdentifierUnchecked(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> identifier) : otava::ast::Node*
+        ::= Identifier(context):id
+            { 
+                identifier.reset(id);
+                return identifier.release(); 
+            }
+        ;
+
+    TypeIdentifierChecked(otava::symbols::Context* context) : otava::ast::Node*
+        ::= ID
+            { 
+                std::unique_ptr<otava::ast::IdentifierNode> identifier(otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)));
+                otava::symbols::Symbol* symbol = context->GetSymbolTable()->Lookup(
+                    util::ToUtf8(identifier->Str()), 
+                    otava::symbols::SymbolGroupKind::typeSymbolGroup, 
+                    lexer.GetFullSpan(pos), 
+                    context);
+                if (symbol && (symbol->IsTypeSymbol() || symbol->IsClassGroupSymbol() || symbol->IsAliasGroupSymbol()))
+                {
+                    context->GetSymbolTable()->MapNode(identifier.get(), symbol);
+                    return identifier.release();
+                }
+                else
+                {
+                    pass = false;
+                }
+            }
+        ;
+
+    Unnamed : otava::ast::Node*
+        ::= empty{ return new otava::ast::UnnamedNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+}

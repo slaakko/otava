@@ -92,9 +92,9 @@ void SimpleDeclarationNode::Read(Reader& reader)
     semicolon.reset(reader.ReadNode());
 }
 
-std::u32string SimpleDeclarationNode::Str() const
+std::string SimpleDeclarationNode::Str() const
 {
-    std::u32string str = declarationSpecifiers->Str();
+    std::string str = declarationSpecifiers->Str();
     if (initDeclaratorList->IsInitDeclaratorListNode())
     {
         InitDeclaratorListNode* il = static_cast<InitDeclaratorListNode*>(initDeclaratorList.get());
@@ -669,11 +669,11 @@ void AliasDeclarationNode::Read(Reader& reader)
     semicolon.reset(reader.ReadNode());
 }
 
-std::u32string AliasDeclarationNode::Str() const
+std::string AliasDeclarationNode::Str() const
 {
-    std::u32string str = usng->Str();
+    std::string str = usng->Str();
     str.append(1, ' ').append(identifier->Str());
-    str.append(U" = ").append(definingTypeId->Str()).append(1, ';');
+    str.append(" = ").append(definingTypeId->Str()).append(1, ';');
     return str;
 }
 
@@ -746,16 +746,16 @@ InitDeclaratorNode::InitDeclaratorNode(const soul::ast::Span& span_, int fileInd
 {
 }
 
-std::u32string InitDeclaratorNode::Str() const
+std::string InitDeclaratorNode::Str() const
 {
-    std::u32string str = Left()->Str();
+    std::string str = Left()->Str();
     if (Right()->IsAssignmentInitializerNode())
     {
         str.append(Right()->Str());
     }
     else
     {
-        str.append(U" = ").append(Right()->Str());
+        str.append(" = ").append(Right()->Str());
     }
     return str;
 }
@@ -850,9 +850,9 @@ void ParenthesizedDeclaratorNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string ParenthesizedDeclaratorNode::Str() const
+std::string ParenthesizedDeclaratorNode::Str() const
 {
-    std::u32string str(1, '(');
+    std::string str(1, '(');
     str.append(declarator->Str()).append(1, ')');
     return str;
 }
@@ -894,9 +894,9 @@ void DeclSpecifierSequenceNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string DeclSpecifierSequenceNode::Str() const
+std::string DeclSpecifierSequenceNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     bool first = true;
     for (const auto& n : Nodes())
     {
@@ -1190,9 +1190,9 @@ void PtrDeclaratorNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string PtrDeclaratorNode::Str() const
+std::string PtrDeclaratorNode::Str() const
 {
-    std::u32string s;
+    std::string s;
     int n = Count();
     for (int i = 0; i < n; ++i)
     {
@@ -1272,9 +1272,9 @@ void ArrayDeclaratorNode::Read(Reader& reader)
     rbSpan = reader.ReadSpan();
 }
 
-std::u32string ArrayDeclaratorNode::Str() const
+std::string ArrayDeclaratorNode::Str() const
 {
-    std::u32string str = Child()->Str();
+    std::string str = Child()->Str();
     str.append(1, '[').append(dimension->Str()).append(1, ']');
     return str;
 }
@@ -1313,9 +1313,9 @@ void FunctionDeclaratorNode::Read(Reader& reader)
     params.reset(reader.ReadNode());
 }
 
-std::u32string FunctionDeclaratorNode::Str() const
+std::string FunctionDeclaratorNode::Str() const
 {
-    std::u32string str = Child()->Str();
+    std::string str = Child()->Str();
     str.append(1, '(').append(params->Str()).append(1, ')');
     return str;
 }

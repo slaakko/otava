@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>18.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{3c207e69-ccf1-4c83-b48e-bb7c547a578c}</ProjectGuid>
+    <ProjectGuid>{82790714-8520-4b86-84ab-eb9f16e6fd67}</ProjectGuid>
     <RootNamespace>oc</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -82,15 +82,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -100,15 +96,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -117,17 +109,16 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BuildStlModules>true</BuildStlModules>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -138,47 +129,71 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BuildStlModules>true</BuildStlModules>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ast\ast.vcxproj">
-      <Project>{7bb50fb9-6221-4f92-a117-13cdd0e93147}</Project>
+      <Project>{06a46249-a334-48e9-85e6-73616212b783}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\build\build.vcxproj">
+      <Project>{25f6cd30-d829-4911-afcd-da63eef6e913}</Project>
     </ProjectReference>
     <ProjectReference Include="..\lexer\lexer.vcxproj">
-      <Project>{a9172a05-8185-436b-8481-248323cc6f12}</Project>
+      <Project>{482e3b51-5ad0-49ec-9891-c902c3ba65ff}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\parser\parser.vcxproj">
+      <Project>{99213559-3a97-464f-b1e2-67ff44bf3b0d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\soul.ast\soul.ast.vcxproj">
-      <Project>{d0c4352f-2698-480c-9273-e08403b18f4f}</Project>
+      <Project>{24a953f0-c4c5-4e75-832a-8a1882e68253}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.common\soul.common.vcxproj">
+      <Project>{22ced8ea-de09-4322-8abe-8937ac801486}</Project>
     </ProjectReference>
     <ProjectReference Include="..\soul.lexer\soul.lexer.vcxproj">
-      <Project>{df725122-d3d1-42a0-87a1-59f5401eb196}</Project>
+      <Project>{d0deb5e7-3353-4c22-8b1d-fb1a94486496}</Project>
     </ProjectReference>
     <ProjectReference Include="..\soul.parser\soul.parser.vcxproj">
-      <Project>{4d5408bd-8434-49a7-a2db-ae8175293998}</Project>
+      <Project>{f5c14912-b7cb-4bed-a9a6-ffd8a45a4c8f}</Project>
     </ProjectReference>
     <ProjectReference Include="..\soul.xml.dom\soul.xml.dom.vcxproj">
-      <Project>{28a60b48-4ecb-4f7c-93c1-efb97da99d6b}</Project>
+      <Project>{186c29d5-1906-41e9-94aa-be8b4ea465f2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.xml.dom_parser\soul.xml.dom_parser.vcxproj">
+      <Project>{7a094768-ce01-46a8-b69a-bd7247750680}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.xml.parser\soul.xml.parser.vcxproj">
+      <Project>{b3d08def-d76a-4505-9341-336780136ed3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.xml.processor\soul.xml.processor.vcxproj">
+      <Project>{a1ba9d4f-64d1-4d5e-ae9d-9b122b32150c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.xml.xpath\soul.xml.xpath.vcxproj">
+      <Project>{bc79bd64-6350-489b-92c1-42e6ed505a56}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\symbols\symbols.vcxproj">
+      <Project>{a7deb4ee-e2ca-48f0-bc8b-603afaf0428f}</Project>
     </ProjectReference>
     <ProjectReference Include="..\util\util.vcxproj">
-      <Project>{b8bd3cc1-3c92-430e-8d5e-310b4269f779}</Project>
+      <Project>{0d05902b-f49d-4304-8573-7c45a1b9486a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\build\otava.build.project_lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\otava.lexer.classmap.rc" />
-    <ResourceCompile Include="..\lexer\otava.token.line.lexer.classmap.rc" />
+    <ResourceCompile Include="..\soul.xml.xpath\soul.xml.xpath.lexer.classmap.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

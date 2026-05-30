@@ -1,0 +1,266 @@
+<parserFile>
+ <grammar name="LambdaParser">
+  <rule first="{LBRACKET}" name="LambdaExpression">
+   <action first="{LBRACKET}">
+    <group first="{LBRACKET}">
+     <sequence first="{LBRACKET}">
+      <sequence first="{LBRACKET}">
+       <sequence first="{LBRACKET}">
+        <action first="{LBRACKET}">
+         <nonterminal first="{LBRACKET}" ruleName="LambdaIntroducer"/>
+        </action>
+        <optional first="{#, LANGLE}">
+         <nonterminal first="{LANGLE}" ruleName="LambdaTemplateParams"/>
+        </optional>
+       </sequence>
+       <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LPAREN, LBRACKET, ARROW}" ruleName="LambdaDeclarator"/>
+      </sequence>
+      <nonterminal first="{#, ALIGNAS, LBRACKET, LBRACE}" ruleName="CompoundStatement"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LBRACKET}" name="LambdaIntroducer">
+   <action first="{LBRACKET}">
+    <group first="{LBRACKET}">
+     <sequence first="{LBRACKET}">
+      <sequence first="{LBRACKET}">
+       <action first="{LBRACKET}">
+        <token first="{LBRACKET}" name="LBRACKET"/>
+       </action>
+       <optional first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+        <nonterminal first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" ruleName="LambdaCapture"/>
+       </optional>
+      </sequence>
+      <action first="{RBRACKET}">
+       <token first="{RBRACKET}" name="RBRACKET"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" name="LambdaCapture">
+   <sequence first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+     <group first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+      <choice first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+       <nonterminal first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" ruleName="CaptureList"/>
+       <sequence first="{ASSIGN, AMP}">
+        <action first="{ASSIGN, AMP}">
+         <nonterminal first="{ASSIGN, AMP}" ruleName="CaptureDefault"/>
+        </action>
+        <optional first="{#, COMMA}">
+         <group first="{COMMA}">
+          <sequence first="{COMMA}">
+           <action first="{COMMA}">
+            <nonterminal first="{COMMA}" ruleName="Comma"/>
+           </action>
+           <nonterminal first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" ruleName="CaptureList"/>
+          </sequence>
+         </group>
+        </optional>
+       </sequence>
+      </choice>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{ASSIGN, AMP}" name="CaptureDefault">
+   <choice first="{ASSIGN, AMP}">
+    <action first="{AMP}">
+     <token first="{AMP}" name="AMP"/>
+    </action>
+    <action first="{ASSIGN}">
+     <token first="{ASSIGN}" name="ASSIGN"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" name="CaptureList">
+   <sequence first="{#, THIS, ID, COMMA, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+    <action first="{#, THIS, ID, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+     <nonterminal first="{#, THIS, ID, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" ruleName="Capture"/>
+    </action>
+    <kleene first="{#, COMMA}">
+     <group first="{COMMA}">
+      <sequence first="{COMMA}">
+       <action first="{COMMA}">
+        <nonterminal first="{COMMA}" ruleName="Comma"/>
+       </action>
+       <action first="{#, THIS, ID, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+        <nonterminal first="{#, THIS, ID, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" ruleName="Capture"/>
+       </action>
+      </sequence>
+     </group>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{#, THIS, ID, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}" name="Capture">
+   <choice first="{#, THIS, ID, ASSIGN, AMP, STAR, LPAREN, LBRACE, ELLIPSIS}">
+    <action first="{#, ID, ASSIGN, AMP, LPAREN, LBRACE, ELLIPSIS}">
+     <nonterminal first="{#, ID, ASSIGN, AMP, LPAREN, LBRACE, ELLIPSIS}" ruleName="InitCapture"/>
+    </action>
+    <action first="{#, THIS, ID, AMP, STAR, ELLIPSIS}">
+     <nonterminal first="{#, THIS, ID, AMP, STAR, ELLIPSIS}" ruleName="SimpleCapture"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, ID, ASSIGN, AMP, LPAREN, LBRACE, ELLIPSIS}" name="InitCapture">
+   <action first="{#, ID, ASSIGN, AMP, LPAREN, LBRACE, ELLIPSIS}">
+    <group first="{#, ID, ASSIGN, AMP, LPAREN, LBRACE, ELLIPSIS}">
+     <sequence first="{#, ID, ASSIGN, AMP, LPAREN, LBRACE, ELLIPSIS}">
+      <sequence first="{#, ID, AMP, ELLIPSIS}">
+       <sequence first="{#, AMP, ELLIPSIS}">
+        <optional first="{#, AMP}">
+         <group first="{AMP}">
+          <action first="{AMP}">
+           <token first="{AMP}" name="AMP"/>
+          </action>
+         </group>
+        </optional>
+        <optional first="{#, ELLIPSIS}">
+         <group first="{ELLIPSIS}">
+          <action first="{ELLIPSIS}">
+           <nonterminal first="{ELLIPSIS}" ruleName="Ellipsis"/>
+          </action>
+         </group>
+        </optional>
+       </sequence>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="Identifier"/>
+       </action>
+      </sequence>
+      <nonterminal first="{ASSIGN, LPAREN, LBRACE}" ruleName="Initializer"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, THIS, ID, AMP, STAR, ELLIPSIS}" name="SimpleCapture">
+   <action first="{#, THIS, ID, AMP, STAR, ELLIPSIS}">
+    <group first="{#, THIS, ID, AMP, STAR, ELLIPSIS}">
+     <choice first="{#, THIS, ID, AMP, STAR, ELLIPSIS}">
+      <choice first="{THIS, STAR}">
+       <sequence first="{STAR}">
+        <action first="{STAR}">
+         <token first="{STAR}" name="STAR"/>
+        </action>
+        <action first="{THIS}">
+         <token first="{THIS}" name="THIS"/>
+        </action>
+       </sequence>
+       <action first="{THIS}">
+        <token first="{THIS}" name="THIS"/>
+       </action>
+      </choice>
+      <group first="{#, ID, AMP, ELLIPSIS}">
+       <sequence first="{#, ID, AMP, ELLIPSIS}">
+        <sequence first="{#, ID, AMP}">
+         <optional first="{#, AMP}">
+          <group first="{AMP}">
+           <action first="{AMP}">
+            <token first="{AMP}" name="AMP"/>
+           </action>
+          </group>
+         </optional>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="Identifier"/>
+         </action>
+        </sequence>
+        <optional first="{#, ELLIPSIS}">
+         <nonterminal first="{ELLIPSIS}" ruleName="Ellipsis"/>
+        </optional>
+       </sequence>
+      </group>
+     </choice>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LPAREN, LBRACKET, ARROW}" name="LambdaDeclarator">
+   <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LPAREN, LBRACKET, ARROW}">
+    <group first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LPAREN, LBRACKET, ARROW}">
+     <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LPAREN, LBRACKET, ARROW}">
+      <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LPAREN, LBRACKET, ARROW}">
+       <optional first="{#, LPAREN}">
+        <group first="{LPAREN}">
+         <sequence first="{LPAREN}">
+          <sequence first="{LPAREN}">
+           <action first="{LPAREN}">
+            <token first="{LPAREN}" name="LPAREN"/>
+           </action>
+           <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, ARROW, ELLIPSIS}" ruleName="ParameterDeclarationClause"/>
+          </sequence>
+          <action first="{RPAREN}">
+           <token first="{RPAREN}" name="RPAREN"/>
+          </action>
+         </sequence>
+        </group>
+       </optional>
+       <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET, ARROW}">
+        <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET, ARROW}" ruleName="LambdaSpecifiers"/>
+       </action>
+      </sequence>
+      <optional first="{#, REQUIRES}">
+       <nonterminal first="{REQUIRES}" ruleName="RequiresClause"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET, ARROW}" name="LambdaSpecifiers">
+   <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET, ARROW}">
+    <group first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET, ARROW}">
+     <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET, ARROW}">
+      <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+       <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NOEXCEPT, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+        <optional first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+         <group first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+          <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+           <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" ruleName="DeclSpecifierSeq"/>
+          </action>
+         </group>
+        </optional>
+        <optional first="{#, NOEXCEPT}">
+         <group first="{NOEXCEPT}">
+          <action first="{NOEXCEPT}">
+           <nonterminal first="{NOEXCEPT}" ruleName="NoexceptSpecifier"/>
+          </action>
+         </group>
+        </optional>
+       </sequence>
+       <optional first="{#, ALIGNAS, LBRACKET}">
+        <group first="{ALIGNAS, LBRACKET}">
+         <action first="{ALIGNAS, LBRACKET}">
+          <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+         </action>
+        </group>
+       </optional>
+      </sequence>
+      <optional first="{#, ARROW}">
+       <group first="{ARROW}">
+        <action first="{ARROW}">
+         <nonterminal first="{ARROW}" ruleName="TrailingReturnType"/>
+        </action>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LANGLE}" name="LambdaTemplateParams">
+   <action first="{LANGLE}">
+    <group first="{LANGLE}">
+     <sequence first="{LANGLE}">
+      <action first="{LANGLE}">
+       <nonterminal first="{LANGLE}" ruleName="TemplateParameterList"/>
+      </action>
+      <optional first="{#, REQUIRES}">
+       <nonterminal first="{REQUIRES}" ruleName="RequiresClause"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

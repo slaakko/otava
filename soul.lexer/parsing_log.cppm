@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.lexer.parsing.log;
+export module soul.lexer.parsing_log;
 
 import std;
 

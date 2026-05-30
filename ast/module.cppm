@@ -21,14 +21,14 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     inline Node* Export() const noexcept { return exprt.get(); }
-    inline Node* Module() const noexcept { return modle.get(); }
+    inline Node* Module() const noexcept { return module.get(); }
     inline Node* ModuleName() const noexcept { return moduleName.get(); }
     inline Node* ModulePartition() const noexcept { return modulePartition.get(); }
     inline Node* Attributes() const noexcept { return attributes.get(); }
     inline Node* Semicolon() const noexcept { return semicolon.get(); }
 private:
     std::unique_ptr<Node> exprt;
-    std::unique_ptr<Node> modle;
+    std::unique_ptr<Node> module;
     std::unique_ptr<Node> moduleName;
     std::unique_ptr<Node> modulePartition;
     std::unique_ptr<Node> attributes;
@@ -118,11 +118,11 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline Node* Module() const noexcept { return modle.get(); }
+    inline Node* Module() const noexcept { return module.get(); }
     inline Node* Semicolon() const noexcept { return semicolon.get(); }
     inline Node* Declarations() const noexcept { return declarations.get(); }
 private:
-    std::unique_ptr<Node> modle;
+    std::unique_ptr<Node> module;
     std::unique_ptr<Node> semicolon;
     std::unique_ptr<Node> declarations;
 };
@@ -136,13 +136,13 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline Node* Module() const noexcept { return modle.get(); }
+    inline Node* Module() const noexcept { return module.get(); }
     inline Node* Colon() const noexcept { return colon.get(); }
     inline Node* Private() const noexcept { return privat.get(); }
     inline Node* Semicolon() const noexcept { return semicolon.get(); }
     inline Node* Declarations() const noexcept { return declarations.get(); }
 private:
-    std::unique_ptr<Node> modle;
+    std::unique_ptr<Node> module;
     std::unique_ptr<Node> colon;
     std::unique_ptr<Node> privat;
     std::unique_ptr<Node> semicolon;
@@ -153,28 +153,28 @@ class AngleHeaderName : public Node
 {
 public:
     AngleHeaderName(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    AngleHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_);
+    AngleHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline const std::u32string& Rep() const noexcept { return rep; }
+    inline const std::string& Rep() const noexcept { return rep; }
 private:
-    std::u32string rep;
+    std::string rep;
 };
 
 class QuoteHeaderName : public Node
 {
 public:
     QuoteHeaderName(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    QuoteHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_);
+    QuoteHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::string& rep_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline const std::u32string& Rep() const noexcept { return rep; }
+    inline const std::string& Rep() const noexcept { return rep; }
 private:
-    std::u32string rep;
+    std::string rep;
 };
 
 } // namespace otava::ast

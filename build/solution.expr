@@ -1,0 +1,18 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions otava.build.solution_expr
+{
+    ws = "[\n\r\t ]";
+    newline = "\r\n|\n|\r";
+    line_comment = "//[^\n\r]*{newline}";
+    block_comment_begin = "/\*";
+    block_comment_end = "\*/";
+    block_comment = "{block_comment_begin}([^*]|\*[^/])*{block_comment_end}";
+    comment = "{line_comment}|{block_comment}";
+    separators = "({ws}|{comment})+";
+    id = "{unicode_id_start}{unicode_id_cont}*";
+    filepath = "<[^\n>]*>";
+}

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.memory.stream;
+module util.memory_stream;
 
 namespace util {
 

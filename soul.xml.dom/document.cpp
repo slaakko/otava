@@ -8,7 +8,7 @@ module soul.xml.document;
 import soul.xml.visitor;
 import soul.xml.error;
 import soul.xml.index;
-import soul.lexer.file.map;
+import soul.lexer.file_map;
 import soul.lexer.error;
 
 namespace soul::xml {

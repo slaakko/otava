@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.cdata.section;
+module soul.xml.cdata_section;
 
 import soul.xml.visitor;
 

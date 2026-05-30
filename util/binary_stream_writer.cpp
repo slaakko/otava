@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.binary.stream.writer;
+module util.binary_stream_writer;
 
 import util.unicode;
 

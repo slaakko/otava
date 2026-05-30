@@ -14,8 +14,8 @@ module;
 module util.socket;
 
 import util.unicode;
-import util.memory.writer;
-import util.memory.reader;
+import util.memory_writer;
+import util.memory_reader;
 
 namespace util {
 

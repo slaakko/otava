@@ -1,0 +1,89 @@
+<parserFile>
+ <grammar name="ModuleDependencyParser">
+  <rule first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}" name="ModuleUnit">
+   <action first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+    <group first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+     <choice first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+      <choice first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+       <sequence first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+        <sequence first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+         <optional first="{#, ID}">
+          <group first="{ID}">
+           <action first="{ID}">
+            <nonterminal first="{ID}" ruleName="GlobalModuleFragment"/>
+           </action>
+          </group>
+         </optional>
+         <action first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+          <nonterminal first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}" ruleName="ModuleDeclaration"/>
+         </action>
+        </sequence>
+        <optional first="{#, ID}">
+         <nonterminal first="{ID}" ruleName="DeclarationSeq"/>
+        </optional>
+       </sequence>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="DeclarationSeq"/>
+       </action>
+      </choice>
+      <action first="{#}">
+       <empty first="{#}"/>
+      </action>
+     </choice>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="GlobalModuleFragment">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="ModuleKeyword"/>
+      </action>
+      <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="DeclarationSeq">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="Declaration"/>
+      </action>
+      <kleene first="{#, ID}">
+       <group first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="Declaration"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Declaration">
+   <choice first="{ID}">
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="ImportDeclaration"/>
+    </action>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="ExportImportDeclaration"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="ExportImportDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="ExportKeyword"/>
+      </action>
+      <nonterminal first="{ID}" ruleName="ImportDeclaration"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

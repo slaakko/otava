@@ -406,9 +406,9 @@ void OperatorFunctionIdNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string OperatorFunctionIdNode::Str() const
+std::string OperatorFunctionIdNode::Str() const
 {
-    std::u32string str = Left()->Str();
+    std::string str = Left()->Str();
     str.append(1, ' ').append(Right()->Str());
     return str;
 }
@@ -435,10 +435,10 @@ void ConversionFunctionIdNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string ConversionFunctionIdNode::Str() const
+std::string ConversionFunctionIdNode::Str() const
 {
-    std::u32string str = Left()->Str();
-    str.append(1, ' ').append(Right()->Str()).append(U"()");
+    std::string str = Left()->Str();
+    str.append(1, ' ').append(Right()->Str()).append("()");
     return str;
 }
 
@@ -622,9 +622,9 @@ void ParameterNode::SetInitializer(Node* initializer_) noexcept
     initializer.reset(initializer_);
 }
 
-std::u32string ParameterNode::Str() const
+std::string ParameterNode::Str() const
 {
-    std::u32string str = declSpecifiers->Str();
+    std::string str = declSpecifiers->Str();
     if (declarator)
     {
         str.append(1, ' ').append(declarator->Str());

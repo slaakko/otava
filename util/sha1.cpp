@@ -5,7 +5,7 @@
 
 module util.sha1;
 
-import util.text.util;
+import util.text_util;
 
 namespace util {
 

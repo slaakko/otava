@@ -251,7 +251,7 @@ TokenNode::TokenNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Co
 {
 }
 
-TokenNode::TokenNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& str_) : CompoundNode(NodeKind::tokenNode, span_, fileIndex_), str(str_)
+TokenNode::TokenNode(const soul::ast::Span& span_, int fileIndex_, const std::string& str_) : CompoundNode(NodeKind::tokenNode, span_, fileIndex_), str(str_)
 {
 }
 

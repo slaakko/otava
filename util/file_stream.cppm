@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.file.stream;
+export module util.file_stream;
 
 import std;
 import util.stream;

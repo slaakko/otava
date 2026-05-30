@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.character.data;
+module soul.xml.character_data;
 
 import util;
 

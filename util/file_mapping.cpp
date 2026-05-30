@@ -6,7 +6,7 @@
 module;
 #include <Windows.h>
 
-module util.file.mapping;
+module util.file_mapping;
 
 import util.win_error;
 

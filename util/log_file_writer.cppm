@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.log.file.writer;
+export module util.log_file_writer;
 
 import std;
 

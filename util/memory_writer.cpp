@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.memory.writer;
+module util.memory_writer;
 
 namespace util {
 

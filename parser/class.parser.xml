@@ -1,0 +1,728 @@
+<parserFile>
+ <grammar name="ClassParser">
+  <rule first="{CLASS, STRUCT, UNION}" name="ClassSpecifier">
+   <action first="{CLASS, STRUCT, UNION}">
+    <group first="{CLASS, STRUCT, UNION}">
+     <sequence first="{CLASS, STRUCT, UNION}">
+      <sequence first="{CLASS, STRUCT, UNION}">
+       <sequence first="{CLASS, STRUCT, UNION}">
+        <action first="{CLASS, STRUCT, UNION}">
+         <nonterminal first="{CLASS, STRUCT, UNION}" ruleName="ClassHead"/>
+        </action>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
+       </sequence>
+       <optional first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, PRIVATE, PROTECTED, PUBLIC, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+        <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, PRIVATE, PROTECTED, PUBLIC, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="MemberSpecification"/>
+       </optional>
+      </sequence>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CLASS, STRUCT, UNION}" name="ClassHead">
+   <group first="{CLASS, STRUCT, UNION}">
+    <sequence first="{CLASS, STRUCT, UNION}">
+     <sequence first="{CLASS, STRUCT, UNION}">
+      <action first="{CLASS, STRUCT, UNION}">
+       <nonterminal first="{CLASS, STRUCT, UNION}" ruleName="ClassKey"/>
+      </action>
+      <optional first="{#, ALIGNAS, LBRACKET}">
+       <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+      </optional>
+     </sequence>
+     <group first="{#, TEMPLATE, ID, COLON_COLON, COLON}">
+      <choice first="{#, TEMPLATE, ID, COLON_COLON, COLON}">
+       <action first="{#, TEMPLATE, ID, COLON_COLON, COLON}">
+        <group first="{#, TEMPLATE, ID, COLON_COLON, COLON}">
+         <sequence first="{#, TEMPLATE, ID, COLON_COLON, COLON}">
+          <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+           <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="ClassHeadName"/>
+           <optional first="{#, ID}">
+            <nonterminal first="{ID}" ruleName="ClassVirtSpecifier"/>
+           </optional>
+          </sequence>
+          <optional first="{#, COLON}">
+           <nonterminal first="{COLON}" ruleName="BaseClause"/>
+          </optional>
+         </sequence>
+        </group>
+       </action>
+       <action first="{#, COLON}">
+        <group first="{#, COLON}">
+         <sequence first="{#, COLON}">
+          <nonterminal first="{#}" ruleName="Unnamed"/>
+          <optional first="{#, COLON}">
+           <nonterminal first="{COLON}" ruleName="BaseClause"/>
+          </optional>
+         </sequence>
+        </group>
+       </action>
+      </choice>
+     </group>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{CLASS, STRUCT, UNION}" name="ClassKey">
+   <choice first="{CLASS, STRUCT, UNION}">
+    <choice first="{CLASS, STRUCT}">
+     <action first="{CLASS}">
+      <token first="{CLASS}" name="CLASS"/>
+     </action>
+     <action first="{STRUCT}">
+      <token first="{STRUCT}" name="STRUCT"/>
+     </action>
+    </choice>
+    <action first="{UNION}">
+     <token first="{UNION}" name="UNION"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, TEMPLATE, ID, COLON_COLON}" name="ClassHeadName">
+   <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+    <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+     <action first="{#, TEMPLATE, ID, COLON_COLON}">
+      <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="NestedNameSpecifier"/>
+     </action>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="ClassName"/>
+     </action>
+    </sequence>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="ClassName"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="ClassName">
+   <choice first="{ID}">
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="SimpleTemplateId"/>
+    </action>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="Identifier"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="ClassVirtSpecifier">
+   <action first="{ID}">
+    <nonterminal first="{ID}" ruleName="FinalKeyword"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="VirtSpecifierSeq">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="VirtSpecifier"/>
+      </action>
+      <kleene first="{#, ID}">
+       <group first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="VirtSpecifier"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="VirtSpecifier">
+   <choice first="{ID}">
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="OverrideKeyword"/>
+    </action>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="FinalKeyword"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="OverrideKeyword">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="FinalKeyword">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{COLON}" name="BaseClause">
+   <sequence first="{COLON}">
+    <action first="{COLON}">
+     <token first="{COLON}" name="COLON"/>
+    </action>
+    <action first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET, ELLIPSIS}">
+     <nonterminal first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET, ELLIPSIS}" ruleName="BaseSpecifierList"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET, ELLIPSIS}" name="BaseSpecifierList">
+   <action first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET, ELLIPSIS}">
+    <group first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET, ELLIPSIS}">
+     <sequence first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET, ELLIPSIS}">
+      <sequence first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, COMMA, LBRACKET}">
+       <action first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}">
+        <nonterminal first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}" ruleName="BaseSpecifier"/>
+       </action>
+       <kleene first="{#, COMMA}">
+        <group first="{COMMA}">
+         <sequence first="{COMMA}">
+          <action first="{COMMA}">
+           <nonterminal first="{COMMA}" ruleName="Comma"/>
+          </action>
+          <action first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}">
+           <nonterminal first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}" ruleName="BaseSpecifier"/>
+          </action>
+         </sequence>
+        </group>
+       </kleene>
+      </sequence>
+      <optional first="{#, ELLIPSIS}">
+       <group first="{ELLIPSIS}">
+        <action first="{ELLIPSIS}">
+         <nonterminal first="{ELLIPSIS}" ruleName="Ellipsis"/>
+        </action>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}" name="BaseSpecifier">
+   <action first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}">
+    <group first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}">
+     <sequence first="{#, ALIGNAS, DECLTYPE, PRIVATE, PROTECTED, PUBLIC, TEMPLATE, VIRTUAL, ID, COLON_COLON, LBRACKET}">
+      <sequence first="{#, ALIGNAS, PRIVATE, PROTECTED, PUBLIC, VIRTUAL, LBRACKET}">
+       <optional first="{#, ALIGNAS, LBRACKET}">
+        <group first="{ALIGNAS, LBRACKET}">
+         <action first="{ALIGNAS, LBRACKET}">
+          <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+         </action>
+        </group>
+       </optional>
+       <group first="{#, PRIVATE, PROTECTED, PUBLIC, VIRTUAL}">
+        <choice first="{#, PRIVATE, PROTECTED, PUBLIC, VIRTUAL}">
+         <choice first="{PRIVATE, PROTECTED, PUBLIC, VIRTUAL}">
+          <sequence first="{VIRTUAL}">
+           <action first="{VIRTUAL}">
+            <nonterminal first="{VIRTUAL}" ruleName="VirtualSpecifier"/>
+           </action>
+           <optional first="{#, PRIVATE, PROTECTED, PUBLIC}">
+            <group first="{PRIVATE, PROTECTED, PUBLIC}">
+             <action first="{PRIVATE, PROTECTED, PUBLIC}">
+              <nonterminal first="{PRIVATE, PROTECTED, PUBLIC}" ruleName="AccessSpecifier"/>
+             </action>
+            </group>
+           </optional>
+          </sequence>
+          <sequence first="{PRIVATE, PROTECTED, PUBLIC}">
+           <action first="{PRIVATE, PROTECTED, PUBLIC}">
+            <nonterminal first="{PRIVATE, PROTECTED, PUBLIC}" ruleName="AccessSpecifier"/>
+           </action>
+           <optional first="{#, VIRTUAL}">
+            <group first="{VIRTUAL}">
+             <action first="{VIRTUAL}">
+              <nonterminal first="{VIRTUAL}" ruleName="VirtualSpecifier"/>
+             </action>
+            </group>
+           </optional>
+          </sequence>
+         </choice>
+         <empty first="{#}"/>
+        </choice>
+       </group>
+      </sequence>
+      <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}">
+       <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}" ruleName="ClassOrDeclType"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}" name="ClassOrDeclType">
+   <choice first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}">
+    <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+     <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+      <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+       <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+        <action first="{#, TEMPLATE, ID, COLON_COLON}">
+         <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="NestedNameSpecifier"/>
+        </action>
+        <action first="{TEMPLATE}">
+         <nonterminal first="{TEMPLATE}" ruleName="Template"/>
+        </action>
+       </sequence>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="SimpleTemplateId"/>
+       </action>
+      </sequence>
+      <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+       <action first="{#, TEMPLATE, ID, COLON_COLON}">
+        <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="NestedNameSpecifier"/>
+       </action>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="Identifier"/>
+       </action>
+      </sequence>
+     </choice>
+     <action first="{#, ID}">
+      <nonterminal first="{#, ID}" ruleName="TypeName"/>
+     </action>
+    </choice>
+    <action first="{DECLTYPE}">
+     <nonterminal first="{DECLTYPE}" ruleName="DeclTypeSpecifier"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, PRIVATE, PROTECTED, PUBLIC, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" name="MemberSpecification">
+   <positive first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, PRIVATE, PROTECTED, PUBLIC, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+    <group first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, PRIVATE, PROTECTED, PUBLIC, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+     <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, PRIVATE, PROTECTED, PUBLIC, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+      <sequence first="{PRIVATE, PROTECTED, PUBLIC}">
+       <action first="{PRIVATE, PROTECTED, PUBLIC}">
+        <nonterminal first="{PRIVATE, PROTECTED, PUBLIC}" ruleName="AccessSpecifier"/>
+       </action>
+       <action first="{COLON}">
+        <token first="{COLON}" name="COLON"/>
+       </action>
+      </sequence>
+      <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+       <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="MemberDeclarationReset"/>
+      </action>
+     </choice>
+    </group>
+   </positive>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" name="MemberDeclarationReset">
+   <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+     <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="MemberDeclaration"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" name="MemberDeclaration">
+   <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+    <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+     <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+      <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+       <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+        <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+         <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+          <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+           <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+            <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+             <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+              <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+               <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+                <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+                 <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+                  <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                   <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+                    <optional first="{#, ALIGNAS, LBRACKET}">
+                     <group first="{ALIGNAS, LBRACKET}">
+                      <action first="{ALIGNAS, LBRACKET}">
+                       <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+                      </action>
+                     </group>
+                    </optional>
+                    <optional first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+                     <group first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+                      <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+                       <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" ruleName="MemberDeclSpecifiers"/>
+                      </action>
+                     </group>
+                    </optional>
+                   </sequence>
+                   <optional first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                    <group first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                     <action first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                      <nonterminal first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="MemberDeclaratorList"/>
+                     </action>
+                    </group>
+                   </optional>
+                  </sequence>
+                  <action first="{SEMICOLON}">
+                   <group first="{SEMICOLON}">
+                    <action first="{SEMICOLON}">
+                     <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+                    </action>
+                   </group>
+                  </action>
+                 </sequence>
+                 <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+                  <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                   <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+                    <optional first="{#, ALIGNAS, LBRACKET}">
+                     <group first="{ALIGNAS, LBRACKET}">
+                      <action first="{ALIGNAS, LBRACKET}">
+                       <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+                      </action>
+                     </group>
+                    </optional>
+                    <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+                     <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" ruleName="RetMemberDeclSpecifiers"/>
+                    </action>
+                   </sequence>
+                   <action first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                    <nonterminal first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="MemberDeclaratorList"/>
+                   </action>
+                  </sequence>
+                  <action first="{SEMICOLON}">
+                   <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+                  </action>
+                 </sequence>
+                </choice>
+                <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                 <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="MemberFunctionDefinition"/>
+                </action>
+               </choice>
+               <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+                <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="RetMemberFunctionDefinition"/>
+               </action>
+              </choice>
+              <action first="{USING}">
+               <nonterminal first="{USING}" ruleName="UsingDeclaration"/>
+              </action>
+             </choice>
+             <action first="{USING}">
+              <nonterminal first="{USING}" ruleName="UsingEnumDeclaration"/>
+             </action>
+            </choice>
+            <action first="{STATIC_ASSERT}">
+             <nonterminal first="{STATIC_ASSERT}" ruleName="StaticAssertDeclaration"/>
+            </action>
+           </choice>
+           <action first="{TEMPLATE}">
+            <nonterminal first="{TEMPLATE}" ruleName="MemberTemplateDeclaration"/>
+           </action>
+          </choice>
+          <action first="{TEMPLATE}">
+           <nonterminal first="{TEMPLATE}" ruleName="ExplicitSpecialization"/>
+          </action>
+         </choice>
+         <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, ARROW, SEMICOLON, ELLIPSIS}">
+          <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, ARROW, SEMICOLON, ELLIPSIS}" ruleName="DeductionGuide"/>
+         </action>
+        </choice>
+        <action first="{USING}">
+         <nonterminal first="{USING}" ruleName="AliasDeclaration"/>
+        </action>
+       </choice>
+       <action first="{ENUM}">
+        <nonterminal first="{ENUM}" ruleName="OpaqueEnumDeclaration"/>
+       </action>
+      </choice>
+      <action first="{SEMICOLON}">
+       <nonterminal first="{SEMICOLON}" ruleName="EmptyDeclaration"/>
+      </action>
+     </choice>
+     <action first="{RBRACE}">
+      <nonterminal first="{RBRACE}" ruleName="RBraceNext"/>
+     </action>
+    </choice>
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{RBRACE}" name="RBraceNext">
+   <lookahead first="{RBRACE}">
+    <group first="{RBRACE}">
+     <token first="{RBRACE}" name="RBRACE"/>
+    </group>
+   </lookahead>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" name="MemberDeclSpecifiers">
+   <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+    <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" ruleName="DeclSpecifierSeq"/>
+   </action>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" name="RetMemberDeclSpecifiers">
+   <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}">
+     <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" ruleName="DeclSpecifierSeq"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" name="MemberFunctionDefinition">
+   <choice first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+    <action first="{#, ALIGNAS, CONST, DECLTYPE, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+     <nonterminal first="{#, ALIGNAS, CONST, DECLTYPE, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="NoDeclSpecFunctionDefinition"/>
+    </action>
+    <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+     <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="FunctionDefinition"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" name="RetMemberFunctionDefinition">
+   <sequence first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+     <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="FunctionDefinition"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{TEMPLATE}" name="MemberTemplateDeclaration">
+   <action first="{TEMPLATE}">
+    <nonterminal first="{TEMPLATE}" ruleName="TemplateDeclaration"/>
+   </action>
+  </rule>
+  <rule first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" name="MemberDeclaratorList">
+   <action first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+    <group first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+     <sequence first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+      <action first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+       <nonterminal first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="MemberDeclarator"/>
+      </action>
+      <kleene first="{#, COMMA}">
+       <group first="{COMMA}">
+        <sequence first="{COMMA}">
+         <action first="{COMMA}">
+          <nonterminal first="{COMMA}" ruleName="Comma"/>
+         </action>
+         <action first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+          <nonterminal first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" ruleName="MemberDeclarator"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}" name="MemberDeclarator">
+   <action first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+    <group first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+     <sequence first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+      <sequence first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+       <sequence first="{#, ALIGNAS, CONST, OPERATOR, REQUIRES, TEMPLATE, VOLATILE, ID, COLON_COLON, ASSIGN, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, LBRACE, ARROW, ELLIPSIS}">
+        <action first="{#, ALIGNAS, CONST, OPERATOR, TEMPLATE, VOLATILE, ID, COLON_COLON, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, ARROW, ELLIPSIS}">
+         <nonterminal first="{#, ALIGNAS, CONST, OPERATOR, TEMPLATE, VOLATILE, ID, COLON_COLON, AMP_AMP, AMP, STAR, LPAREN, TILDE, LBRACKET, ARROW, ELLIPSIS}" ruleName="Declarator"/>
+        </action>
+        <group first="{#, REQUIRES, ASSIGN, LBRACE}">
+         <choice first="{#, REQUIRES, ASSIGN, LBRACE}">
+          <choice first="{#, REQUIRES, ASSIGN, LBRACE}">
+           <action first="{REQUIRES}">
+            <nonterminal first="{REQUIRES}" ruleName="RequiresClause"/>
+           </action>
+           <sequence first="{#, ASSIGN, LBRACE}">
+            <action first="{#}">
+             <empty first="{#}"/>
+            </action>
+            <action first="{ASSIGN, LBRACE}">
+             <nonterminal first="{ASSIGN, LBRACE}" ruleName="BraceOrEqualInitializer"/>
+            </action>
+           </sequence>
+          </choice>
+          <action first="{#}">
+           <empty first="{#}"/>
+          </action>
+         </choice>
+        </group>
+       </sequence>
+       <optional first="{#, ID}">
+        <group first="{ID}">
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="VirtSpecifierSeq"/>
+         </action>
+        </group>
+       </optional>
+      </sequence>
+      <optional first="{#, ASSIGN}">
+       <group first="{ASSIGN}">
+        <action first="{ASSIGN}">
+         <nonterminal first="{ASSIGN}" ruleName="PureSpecifier"/>
+        </action>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, COLON, LPAREN, LBRACE, ELLIPSIS}" name="CtorInitializer">
+   <choice first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, COLON, LPAREN, LBRACE, ELLIPSIS}">
+    <choice first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, COLON, LPAREN, LBRACE, ELLIPSIS}">
+     <sequence first="{#, COLON}">
+      <nonterminal first="{#}" ruleName="MemberFunctionGuard"/>
+      <action first="{COLON}">
+       <nonterminal first="{COLON}" ruleName="CtorInitializerGuarded"/>
+      </action>
+     </sequence>
+     <sequence first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+      <action first="{#}">
+       <nonterminal first="{#}" ruleName="SavedCtorInitializerGuard"/>
+      </action>
+      <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+       <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}" ruleName="CtorInitializerSaved"/>
+      </action>
+     </sequence>
+    </choice>
+    <action first="{COLON}">
+     <nonterminal first="{COLON}" ruleName="CtorInitializerUnguarded"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{COLON}" name="CtorInitializerGuarded">
+   <action first="{COLON}">
+    <token first="{COLON}" name="COLON"/>
+   </action>
+  </rule>
+  <rule first="{COLON}" name="CtorInitializerUnguarded">
+   <sequence first="{COLON}">
+    <action first="{COLON}">
+     <token first="{COLON}" name="COLON"/>
+    </action>
+    <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+     <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}" ruleName="MemberInitializerList"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}" name="CtorInitializerSaved">
+   <choice first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+    <sequence first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+     <action first="{#}">
+      <empty first="{#}"/>
+     </action>
+     <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+      <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}" ruleName="MemberInitializerList"/>
+     </action>
+    </sequence>
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}" name="MemberInitializerList">
+   <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+    <group first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+     <sequence first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE, ELLIPSIS}">
+      <sequence first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, COMMA, LPAREN, LBRACE}">
+       <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}">
+        <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}" ruleName="MemberInitializer"/>
+       </action>
+       <kleene first="{#, COMMA}">
+        <group first="{COMMA}">
+         <sequence first="{COMMA}">
+          <action first="{COMMA}">
+           <nonterminal first="{COMMA}" ruleName="Comma"/>
+          </action>
+          <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}">
+           <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}" ruleName="MemberInitializer"/>
+          </action>
+         </sequence>
+        </group>
+       </kleene>
+      </sequence>
+      <optional first="{#, ELLIPSIS}">
+       <group first="{ELLIPSIS}">
+        <action first="{ELLIPSIS}">
+         <nonterminal first="{ELLIPSIS}" ruleName="Ellipsis"/>
+        </action>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}" name="MemberInitializer">
+   <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}">
+    <group first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}">
+     <sequence first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON, LPAREN, LBRACE}">
+      <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}">
+       <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}" ruleName="MemberInitializerId"/>
+      </action>
+      <group first="{LPAREN, LBRACE}">
+       <choice first="{LPAREN, LBRACE}">
+        <sequence first="{LPAREN}">
+         <sequence first="{LPAREN}">
+          <action first="{LPAREN}">
+           <token first="{LPAREN}" name="LPAREN"/>
+          </action>
+          <optional first="{#, ALIGNOF, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CONST_CAST, CO_AWAIT, CO_YIELD, DECLTYPE, DELETE, DOUBLE, DYNAMIC_CAST, FALSE, FLOAT, INT, LONG, NEW, NOEXCEPT, NULLPTR, OPERATOR, REINTERPRET_CAST, REQUIRES, SHORT, SIGNED, SIZEOF, STATIC_CAST, TEMPLATE, THIS, THROW, TRUE, TYPEID, TYPENAME, UNSIGNED, VOID, WCHAR_T, FLOATING_LITERAL, INTEGER_LITERAL, CHARACTER_LITERAL, STRING_LITERAL, BEGIN_RAW_STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, MUL_ASSIGN, DIV_ASSIGN, REM_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, SHIFT_RIGHT_ASSIGN, SHIFT_LEFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN, QUEST, OR_OR, AMP_AMP, OR, XOR, AMP, EQ, NEQ, LEQ, GEQ, SPACE_SHIP, LANGLE, RANGLE, SHIFT_LEFT, SHIFT_RIGHT, PLUS, MINUS, STAR, DIV, MOD, DOT_STAR, ARROW_STAR, LPAREN, RPAREN, PLUS_PLUS, MINUS_MINUS, EXCLAMATION, TILDE, LBRACKET, LBRACE, DOT, ARROW, ELLIPSIS}">
+           <nonterminal first="{#, ALIGNOF, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CONST_CAST, CO_AWAIT, CO_YIELD, DECLTYPE, DELETE, DOUBLE, DYNAMIC_CAST, FALSE, FLOAT, INT, LONG, NEW, NOEXCEPT, NULLPTR, OPERATOR, REINTERPRET_CAST, REQUIRES, SHORT, SIGNED, SIZEOF, STATIC_CAST, TEMPLATE, THIS, THROW, TRUE, TYPEID, TYPENAME, UNSIGNED, VOID, WCHAR_T, FLOATING_LITERAL, INTEGER_LITERAL, CHARACTER_LITERAL, STRING_LITERAL, BEGIN_RAW_STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, MUL_ASSIGN, DIV_ASSIGN, REM_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, SHIFT_RIGHT_ASSIGN, SHIFT_LEFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN, QUEST, OR_OR, AMP_AMP, OR, XOR, AMP, EQ, NEQ, LEQ, GEQ, SPACE_SHIP, LANGLE, RANGLE, SHIFT_LEFT, SHIFT_RIGHT, PLUS, MINUS, STAR, DIV, MOD, DOT_STAR, ARROW_STAR, LPAREN, RPAREN, PLUS_PLUS, MINUS_MINUS, EXCLAMATION, TILDE, LBRACKET, LBRACE, DOT, ARROW, ELLIPSIS}" ruleName="ExpressionList"/>
+          </optional>
+         </sequence>
+         <action first="{RPAREN}">
+          <token first="{RPAREN}" name="RPAREN"/>
+         </action>
+        </sequence>
+        <action first="{LBRACE}">
+         <nonterminal first="{LBRACE}" ruleName="BracedInitList"/>
+        </action>
+       </choice>
+      </group>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}" name="MemberInitializerId">
+   <choice first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}">
+    <action first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}">
+     <nonterminal first="{#, DECLTYPE, TEMPLATE, ID, COLON_COLON}" ruleName="ClassOrDeclType"/>
+    </action>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="Identifier"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ASSIGN}" name="PureSpecifier">
+   <action first="{ASSIGN}">
+    <group first="{ASSIGN}">
+     <sequence first="{ASSIGN}">
+      <action first="{ASSIGN}">
+       <token first="{ASSIGN}" name="ASSIGN"/>
+      </action>
+      <action first="{INTEGER_LITERAL}">
+       <token first="{INTEGER_LITERAL}" name="INTEGER_LITERAL"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{PRIVATE, PROTECTED, PUBLIC}" name="AccessSpecifier">
+   <choice first="{PRIVATE, PROTECTED, PUBLIC}">
+    <choice first="{PROTECTED, PUBLIC}">
+     <action first="{PUBLIC}">
+      <token first="{PUBLIC}" name="PUBLIC"/>
+     </action>
+     <action first="{PROTECTED}">
+      <token first="{PROTECTED}" name="PROTECTED"/>
+     </action>
+    </choice>
+    <action first="{PRIVATE}">
+     <nonterminal first="{PRIVATE}" ruleName="Private"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{PRIVATE}" name="Private">
+   <action first="{PRIVATE}">
+    <token first="{PRIVATE}" name="PRIVATE"/>
+   </action>
+  </rule>
+  <rule first="{VIRTUAL}" name="VirtualSpecifier">
+   <action first="{VIRTUAL}">
+    <token first="{VIRTUAL}" name="VIRTUAL"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

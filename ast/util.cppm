@@ -10,6 +10,6 @@ import std;
 export namespace otava::ast {
 
 std::string UniversalCharacterName(char32_t c);
-std::u32string ToUniversalId(const std::u32string& id);
+std::string ToUniversalId(const std::string& id);
 
 } // namespace otava::ast

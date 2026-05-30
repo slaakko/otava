@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module otava.ast.node.map;
+module otava.ast.node_map;
 
 import otava.ast.error;
 

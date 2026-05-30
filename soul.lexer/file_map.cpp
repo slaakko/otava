@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.lexer.file.map;
+module soul.lexer.file_map;
 
 import util;
 

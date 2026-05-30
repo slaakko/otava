@@ -45,9 +45,9 @@ void BinaryExprNode::Read(Reader& reader)
     op.reset(reader.ReadNode());
 }
 
-std::u32string BinaryExprNode::Str() const
+std::string BinaryExprNode::Str() const
 {
-    std::u32string str = Left()->Str();
+    std::string str = Left()->Str();
     str.append(1, ' ').append(op->Str()).append(1, ' ').append(Right()->Str());
     return str;
 }
@@ -85,9 +85,9 @@ void UnaryExprNode::Read(Reader& reader)
     op.reset(reader.ReadNode());
 }
 
-std::u32string UnaryExprNode::Str() const
+std::string UnaryExprNode::Str() const
 {
-    std::u32string str = op->Str();
+    std::string str = op->Str();
     str.append(Child()->Str());
     return str;
 }
@@ -126,10 +126,10 @@ void ExpressionListNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string ExpressionListNode::Str() const
+std::string ExpressionListNode::Str() const
 {
-    std::u32string str = U"(";
-    str.append(ListNode::Str()).append(U")");
+    std::string str = "(";
+    str.append(ListNode::Str()).append(")");
     return str;
 }
 
@@ -142,9 +142,9 @@ AssignmentInitNode::AssignmentInitNode(const soul::ast::Span& span_, int fileInd
 {
 }
 
-std::u32string AssignmentInitNode::Str() const
+std::string AssignmentInitNode::Str() const
 {
-    std::u32string str = U" = ";
+    std::string str = " = ";
     str.append(Child()->Str());
     return str;
 }
@@ -224,9 +224,9 @@ void ConditionalExprNode::Read(Reader& reader)
     elseExpr.reset(reader.ReadNode());
 }
 
-std::u32string ConditionalExprNode::Str() const
+std::string ConditionalExprNode::Str() const
 {
-    std::u32string str = condition->Str();
+    std::string str = condition->Str();
     str.append(1, ' ').append(quest->Str()).append(1, ' ').append(thenExpr->Str()).
         append(1, ' ').append(colon->Str()).append(1, ' ').append(elseExpr->Str());
     return str;
@@ -782,10 +782,10 @@ void CastExprNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string CastExprNode::Str() const
+std::string CastExprNode::Str() const
 {
-    std::u32string str = U"(";
-    str.append(typeId->Str()).append(U")").append(Child()->Str());
+    std::string str = "(";
+    str.append(typeId->Str()).append(")").append(Child()->Str());
     return str;
 }
 
@@ -941,9 +941,9 @@ void SizeOfTypeExprNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string SizeOfTypeExprNode::Str() const
+std::string SizeOfTypeExprNode::Str() const
 {
-    std::u32string str = U"sizeof(";
+    std::string str = "sizeof(";
     str.append(Child()->Str()).append(1, ')');
     return str;
 }
@@ -1007,9 +1007,9 @@ void SizeOfUnaryExprNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string SizeOfUnaryExprNode::Str() const
+std::string SizeOfUnaryExprNode::Str() const
 {
-    std::u32string str = U"sizeof(";
+    std::string str = "sizeof(";
     str.append(Child()->Str()).append(1, ')');
     return str;
 }
@@ -1106,9 +1106,9 @@ void OpNewCall::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string OpNewCall::Str() const
+std::string OpNewCall::Str() const
 {
-    std::u32string str = U"operator new(";
+    std::string str = "operator new(";
     str.append(Child()->Str()).append(1, ')');
     return str;
 }
@@ -1168,14 +1168,14 @@ void NewExprNode::Read(Reader& reader)
     newSpan = reader.ReadSpan();
 }
 
-std::u32string NewExprNode::Str() const
+std::string NewExprNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     if (colonColonHead)
     {
         str.append(colonColonHead->Str());
     }
-    str.append(U"new ").append(Child()->Str());
+    str.append("new ").append(Child()->Str());
     if (placement)
     {
         str.append(1, '(').append(placement->Str()).append(1, ')');
@@ -1266,9 +1266,9 @@ void ParenNewTypeIdNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string ParenNewTypeIdNode::Str() const
+std::string ParenNewTypeIdNode::Str() const
 {
-    std::u32string str(1, '(');
+    std::string str(1, '(');
     str.append(Child()->Str()).append(1, ')');
     return str;
 }
@@ -1313,9 +1313,9 @@ void NewTypeIdNode::Read(Reader& reader)
     newDeclarator.reset(reader.ReadNode());
 }
 
-std::u32string NewTypeIdNode::Str() const
+std::string NewTypeIdNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     if (typeSpecifierSeq->IsTypeSpecifierSequenceNode())
     {
         TypeSpecifierSequenceNode* typeSpecifiers = static_cast<TypeSpecifierSequenceNode*>(typeSpecifierSeq.get());
@@ -1463,9 +1463,9 @@ void SubscriptExprNode::Read(Reader& reader)
     rbSpan = reader.ReadSpan();
 }
 
-std::u32string SubscriptExprNode::Str() const
+std::string SubscriptExprNode::Str() const
 {
-    std::u32string str = Child()->Str();
+    std::string str = Child()->Str();
     str.append(1, '[').append(index->Str()).append(1, ']');
     return str;
 }
@@ -1518,10 +1518,10 @@ void InvokeExprNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string InvokeExprNode::Str() const
+std::string InvokeExprNode::Str() const
 {
-    std::u32string str = subject->Str();
-    str.append(U"(");
+    std::string str = subject->Str();
+    str.append("(");
     bool first = true;
     for (const auto* item : Items())
     {
@@ -1531,11 +1531,11 @@ std::u32string InvokeExprNode::Str() const
         }
         else
         {
-            str.append(U", ");
+            str.append(", ");
         }
         str.append(item->Str());
     }
-    str.append(U")");
+    str.append(")");
     return str;
 }
 
@@ -1627,9 +1627,9 @@ void MemberExprNode::Read(Reader& reader)
     id.reset(reader.ReadNode());
 }
 
-std::u32string MemberExprNode::Str() const
+std::string MemberExprNode::Str() const
 {
-    std::u32string str = Child()->Str();
+    std::string str = Child()->Str();
     str.append(op->Str()).append(GetId()->Str());
     return str;
 }
@@ -1667,10 +1667,10 @@ void PostfixIncExprNode::Read(Reader& reader)
     opSpan = reader.ReadSpan();
 }
 
-std::u32string PostfixIncExprNode::Str() const
+std::string PostfixIncExprNode::Str() const
 {
-    std::u32string str = Child()->Str();
-    str.append(U"++");
+    std::string str = Child()->Str();
+    str.append("++");
     return str;
 }
 
@@ -1707,10 +1707,10 @@ void PostfixDecExprNode::Read(Reader& reader)
     opSpan = reader.ReadSpan();
 }
 
-std::u32string PostfixDecExprNode::Str() const
+std::string PostfixDecExprNode::Str() const
 {
-    std::u32string str = Child()->Str();
-    str.append(U"--");
+    std::string str = Child()->Str();
+    str.append("--");
     return str;
 }
 
@@ -1749,9 +1749,9 @@ void TypeIdExprNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string TypeIdExprNode::Str() const
+std::string TypeIdExprNode::Str() const
 {
-    std::u32string str = U"typeid";
+    std::string str = "typeid";
     str.append(1, '(').append(Child()->Str()).append(1, ')');
     return str;
 }
@@ -1864,10 +1864,10 @@ void CppCastExprNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string CppCastExprNode::Str() const
+std::string CppCastExprNode::Str() const
 {
-    std::u32string str = op->Str();
-    str.append(1, '<').append(typeId->Str()).append(U">(").append(Child()->Str()).append(1, ')');
+    std::string str = op->Str();
+    str.append(1, '<').append(typeId->Str()).append(">(").append(Child()->Str()).append(1, ')');
     return str;
 }
 
@@ -1923,9 +1923,9 @@ void ParenthesizedExprNode::Read(Reader& reader)
     rpSpan = reader.ReadSpan();
 }
 
-std::u32string ParenthesizedExprNode::Str() const
+std::string ParenthesizedExprNode::Str() const
 {
-    std::u32string str(1, '(');
+    std::string str(1, '(');
     str.append(Child()->Str()).append(1, ')');
     return str;
 }
@@ -2128,9 +2128,9 @@ void ThrowExprNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string ThrowExprNode::Str() const
+std::string ThrowExprNode::Str() const
 {
-    std::u32string str = U"throw ";
+    std::string str = "throw ";
     str.append(Child()->Str());
     return str;
 }

@@ -32,9 +32,9 @@ void TypeSpecifierSequenceNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string TypeSpecifierSequenceNode::Str() const
+std::string TypeSpecifierSequenceNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     bool first = true;
     for (const auto& typeSpecifier : Nodes())
     {
@@ -133,9 +133,9 @@ void TypeIdNode::Read(Reader& reader)
     declarator.reset(reader.ReadNode());
 }
 
-std::u32string TypeIdNode::Str() const
+std::string TypeIdNode::Str() const
 {
-    std::u32string str = typeSpecifiers->Str();
+    std::string str = typeSpecifiers->Str();
     str.append(declarator->Str());
     return str;
 }
@@ -180,9 +180,9 @@ void DefiningTypeIdNode::Read(Reader& reader)
     abstractDeclarator.reset(reader.ReadNode());
 }
 
-std::u32string DefiningTypeIdNode::Str() const
+std::string DefiningTypeIdNode::Str() const
 {
-    std::u32string str = definingTypeSpecifiers->Str();
+    std::string str = definingTypeSpecifiers->Str();
     str.append(abstractDeclarator->Str());
     return str;
 }
@@ -208,9 +208,9 @@ void DefiningTypeSpecifierSequenceNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-std::u32string DefiningTypeSpecifierSequenceNode::Str() const
+std::string DefiningTypeSpecifierSequenceNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     bool first = true;
     for (const auto& typeSpecifier : Nodes())
     {
@@ -292,9 +292,9 @@ void ElaboratedTypeSpecifierNode::Read(Reader& reader)
     attributes.reset(reader.ReadNode());
 }
 
-std::u32string ElaboratedTypeSpecifierNode::Str() const
+std::string ElaboratedTypeSpecifierNode::Str() const
 {
-    std::u32string str = classKey->Str();
+    std::string str = classKey->Str();
     str.append(id->Str());
     return str;
 }

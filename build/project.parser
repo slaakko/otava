@@ -1,0 +1,124 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.build.project_parser;
+
+[interface]import otava.build_project;
+[implementation]import otava.build.project_token;
+[implementation]import otava.build.project_lexer;
+[implementation]import otava.build.token_parser;
+[implementation]import otava.symbols;
+
+parser ProjectParser
+{
+    lexer otava::build::project_lexer::ProjectLexer<char32_t>;
+    main;
+
+    ProjectFile(var std::unique_ptr<otava::build::Project> projectFile) : otava::build::Project*
+        ::= 
+        (
+            ProjectDeclaration:projectDeclaration{ projectFile.reset(projectDeclaration); }
+            (   FilePath(projectFile.get()):filePath
+            |   ParseDefine(projectFile.get()):define
+            |   TargetDeclaration(projectFile.get()):target
+            )*
+        )
+        {
+            return projectFile.release();
+        }
+        ;
+
+    ProjectDeclaration : otava::build::Project*
+        ::= 
+        (
+            PROJECT QualifiedId:projectName SEMICOLON
+        )
+        {
+            return new otava::build::Project(lexer.FileName(), projectName);
+        }
+        ;
+
+    ParseDefine(otava::build::Project* projectFile, var std::string symbol, var std::int64_t value)
+        ::= DEFINE ID{ symbol = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+            (   ASSIGN VALUE{ value = std::stoll(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+            |   empty{ value = 1; }
+            )
+            SEMICOLON
+        {
+            projectFile->AddDefine(symbol, value);
+        }
+        ;
+
+    TargetDeclaration(otava::build::Project* projectFile)
+        ::= (TARGET ASSIGN ParseTarget:target SEMICOLON){ projectFile->SetTarget(target); }
+        ;
+
+    ParseTarget : otava::build::Target
+        ::= PROGRAM{ return otava::build::Target::program; }
+        |   LIBRARY{ return otava::build::Target::library; }
+        ;
+
+    FilePath(otava::build::Project* projectFile)
+        ::= 
+        (   InterfaceFilePath:interfaceFilePath{ projectFile->AddInterfaceFilePath(interfaceFilePath); }
+        |   SourceFilePath:sourceFilePath{ projectFile->AddSourceFilePath(sourceFilePath); }
+        |   ResourceFilePath:resourceFilePath{ projectFile->AddResourceFilePath(resourceFilePath); }
+        |   ReferenceFilePath:referenceFilePath{ projectFile->AddReferenceFilePath(referenceFilePath); }
+        )
+		;
+
+    InterfaceFilePath(var std::string filePath) : std::string
+        ::= 
+        (
+            INTERFACE FILEPATH{ filePath = otava::token_parser::ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); } SEMICOLON
+        )
+        {
+            return filePath;
+        }
+        ;
+
+    SourceFilePath(var std::string filePath) : std::string
+        ::= 
+        (
+            SOURCE FILEPATH{ filePath = otava::token_parser::ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); } SEMICOLON
+        )
+        {
+            return filePath;
+        }
+        ;
+
+    ResourceFilePath(var std::string filePath) : std::string
+        ::= 
+        (
+            RESOURCE FILEPATH{ filePath = otava::token_parser::ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); } SEMICOLON
+        )
+        {
+            return filePath;
+        }
+        ;
+
+    ReferenceFilePath(var std::string filePath) : std::string
+        ::= 
+        (
+            REFERENCE FILEPATH{ filePath = otava::token_parser::ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); } SEMICOLON
+        )
+        {
+            return filePath;
+        }
+        ;
+
+    QualifiedId(var std::string str) : std::string
+		::= 
+        (
+            ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); } 
+            (
+                DOT ID{ str.append(1, '.').append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+            )*
+        )
+        { 
+            return str; 
+        }
+		;
+}

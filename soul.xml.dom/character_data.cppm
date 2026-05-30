@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.character.data;
+export module soul.xml.character_data;
 
 import std;
 import soul.xml.node;

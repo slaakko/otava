@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.intrusive.list;
+export module util.intrusive_list;
 
 import std;
 

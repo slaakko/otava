@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.binary.stream.reader;
+export module util.binary_stream_reader;
 
 import std;
 import util.stream;

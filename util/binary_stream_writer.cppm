@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.binary.stream.writer;
+export module util.binary_stream_writer;
 import std;
 import util.stream;
 import util.uuid;

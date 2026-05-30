@@ -16,7 +16,7 @@ public:
     ConstNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"const"; }
+    std::string Str() const override { return "const"; }
 };
 
 class VolatileNode : public Node
@@ -25,7 +25,7 @@ public:
     VolatileNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"volatile"; }
+    std::string Str() const override { return "volatile"; }
 };
 
 class LvalueRefNode : public Node
@@ -34,7 +34,7 @@ public:
     LvalueRefNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"&"; }
+    std::string Str() const override { return "&"; }
 };
 
 class RvalueRefNode : public Node
@@ -43,7 +43,7 @@ public:
     RvalueRefNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"&&"; }
+    std::string Str() const override { return "&&"; }
 };
 
 class PtrNode : public Node
@@ -52,7 +52,7 @@ public:
     PtrNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"*"; }
+    std::string Str() const override { return "*"; }
 };
 
 class CVQualifierSequenceNode : public SequenceNode

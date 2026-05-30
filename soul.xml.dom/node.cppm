@@ -6,8 +6,8 @@
 export module soul.xml.node;
 
 import std;
-import util.code.formatter;
-import soul.ast.source.pos;
+import util.code_formatter;
+import soul.ast.source_pos;
 import soul.xml.axis;
 
 export namespace soul::xml {

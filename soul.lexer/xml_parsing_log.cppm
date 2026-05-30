@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.lexer.xml.parsing.log;
+export module soul.lexer.xml_parsing_log;
 
 import std;
 import util;
-import soul.lexer.parsing.log;
+import soul.lexer.parsing_log;
 
 export namespace soul::lexer {
 

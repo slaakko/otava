@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.attribute.node;
+module soul.xml.attribute_node;
 
 import util;
 

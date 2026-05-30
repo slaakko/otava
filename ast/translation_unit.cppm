@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module otava.ast.translation.unit;
+export module otava.ast.translation_unit;
 
 import std;
 import otava.ast.node;

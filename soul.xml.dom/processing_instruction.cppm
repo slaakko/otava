@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.processing.instruction;
+export module soul.xml.processing_instruction;
 
 import std;
 import soul.xml.node;

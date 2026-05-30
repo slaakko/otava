@@ -5,7 +5,7 @@
 
 module util.uuid;
 
-import util.text.util;
+import util.text_util;
 import util.rand;
 
 namespace util {

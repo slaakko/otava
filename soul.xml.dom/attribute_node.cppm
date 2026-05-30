@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.attribute.node;
+export module soul.xml.attribute_node;
 
 import std;
 import soul.xml.node;

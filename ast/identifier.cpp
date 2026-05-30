@@ -15,7 +15,7 @@ IdentifierNode::IdentifierNode(const soul::ast::Span& span_, int fileIndex_) noe
 {
 }
 
-IdentifierNode::IdentifierNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& str_) noexcept :
+IdentifierNode::IdentifierNode(const soul::ast::Span& span_, int fileIndex_, const std::string& str_) noexcept :
     CompoundNode(NodeKind::identifierNode, span_, fileIndex_), str(str_)
 {
 }
@@ -142,7 +142,7 @@ ModuleNameNode::ModuleNameNode(const soul::ast::Span& span_, int fileIndex_) noe
 {
 }
 
-ModuleNameNode::ModuleNameNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& str_) : Node(NodeKind::moduleNameNode, span_, fileIndex_), str(str_)
+ModuleNameNode::ModuleNameNode(const soul::ast::Span& span_, int fileIndex_, const std::string& str_) : Node(NodeKind::moduleNameNode, span_, fileIndex_), str(str_)
 {
 }
 

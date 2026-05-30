@@ -7,7 +7,7 @@ export module otava.ast.node;
 
 import std;
 import soul.ast.span;
-import otava.ast.node.list;
+import otava.ast.node_list;
 
 export namespace otava::ast {
 
@@ -102,7 +102,7 @@ public:
     inline NodeKind Kind() const noexcept { return kind; }
     inline std::int64_t Id() const noexcept { return id; }
     inline void SetId(std::int64_t id_) noexcept { id = id_; }
-    virtual std::u32string Str() const { return std::u32string(); }
+    virtual std::string Str() const { return std::string(); }
     virtual NodeType Type() const noexcept { return NodeType::single; }
     virtual int Count() const noexcept { return 0; }
     inline const soul::ast::Span& GetSpan() const noexcept { return span; }
@@ -194,7 +194,7 @@ public:
     NodeType Type() const noexcept override { return NodeType::unary; }
     int Count() const noexcept override { return 1; }
     inline Node* Child() const noexcept  { return child.get(); }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> child;
 };
@@ -211,7 +211,7 @@ public:
     int Count() const noexcept override { return 2; }
     inline Node* Left() const noexcept { return left.get(); }
     inline Node* Right() const noexcept { return right.get(); }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> left;
     std::unique_ptr<Node> right;
@@ -230,7 +230,7 @@ public:
     void Clear() override;
     inline NodeList<Node>& Nodes() noexcept { return nodes; }
     inline const NodeList<Node>& Nodes() const noexcept { return nodes; }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     NodeList<Node> nodes;
 };
@@ -248,7 +248,7 @@ public:
     inline NodeList<Node>& Nodes() noexcept { return nodes; }
     inline const NodeList<Node>& Nodes() const noexcept { return nodes; }
     inline const std::vector<Node*>& Items() const noexcept { return items; }
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     NodeList<Node> nodes;
     std::vector<Node*> items;

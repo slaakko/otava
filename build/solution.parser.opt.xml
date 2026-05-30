@@ -1,0 +1,76 @@
+<parserFile>
+ <grammar name="SolutionParser">
+  <rule first="{SOLUTION}" name="SolutionFile">
+   <action first="{SOLUTION}">
+    <group first="{SOLUTION}">
+     <sequence first="{SOLUTION}">
+      <action first="{SOLUTION}">
+       <nonterminal first="{SOLUTION}" ruleName="SolutionDeclaration"/>
+      </action>
+      <kleene first="{#, PROJECT}">
+       <group first="{PROJECT}">
+        <nonterminal first="{PROJECT}" ruleName="FilePath"/>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SOLUTION}" name="SolutionDeclaration">
+   <action first="{SOLUTION}">
+    <group first="{SOLUTION}">
+     <sequence first="{SOLUTION}">
+      <sequence first="{SOLUTION}">
+       <token first="{SOLUTION}" name="SOLUTION"/>
+       <nonterminal first="{ID}" ruleName="QualifiedId"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{PROJECT}" name="FilePath">
+   <group first="{PROJECT}">
+    <action first="{PROJECT}">
+     <nonterminal first="{PROJECT}" ruleName="ProjectFilePath"/>
+    </action>
+   </group>
+  </rule>
+  <rule first="{PROJECT}" name="ProjectFilePath">
+   <action first="{PROJECT}">
+    <group first="{PROJECT}">
+     <sequence first="{PROJECT}">
+      <sequence first="{PROJECT}">
+       <token first="{PROJECT}" name="PROJECT"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="QualifiedId">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

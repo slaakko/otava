@@ -17,7 +17,7 @@ ModuleDeclarationNode::ModuleDeclarationNode(const soul::ast::Span& span_, int f
 
 ModuleDeclarationNode::ModuleDeclarationNode(const soul::ast::Span& span_, int fileIndex_, Node* exprt_, Node* modle_, Node* moduleName_,
     Node* modulePartition_, Node* attributes_, Node* semicolon_) noexcept :
-    CompoundNode(NodeKind::moduleDeclarationNode, span_, fileIndex_), exprt(exprt_), modle(modle_), moduleName(moduleName_), modulePartition(modulePartition_), 
+    CompoundNode(NodeKind::moduleDeclarationNode, span_, fileIndex_), exprt(exprt_), module(modle_), moduleName(moduleName_), modulePartition(modulePartition_), 
     attributes(attributes_), semicolon(semicolon_)
 {
 }
@@ -39,7 +39,7 @@ Node* ModuleDeclarationNode::Clone() const
     {
         clonedAttributes = attributes->Clone();
     }
-    ModuleDeclarationNode* clone = new ModuleDeclarationNode(GetSpan(), FileIndex(), clonedExport, modle->Clone(), moduleName->Clone(), clonedModulePartition, 
+    ModuleDeclarationNode* clone = new ModuleDeclarationNode(GetSpan(), FileIndex(), clonedExport, module->Clone(), moduleName->Clone(), clonedModulePartition, 
         clonedAttributes, semicolon->Clone());
     clone->SetId(Id());
     return clone;
@@ -54,7 +54,7 @@ void ModuleDeclarationNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(exprt.get());
-    writer.Write(modle.get());
+    writer.Write(module.get());
     writer.Write(moduleName.get());
     writer.Write(modulePartition.get());
     writer.Write(attributes.get());
@@ -65,7 +65,7 @@ void ModuleDeclarationNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     exprt.reset(reader.ReadNode());
-    modle.reset(reader.ReadNode());
+    module.reset(reader.ReadNode());
     moduleName.reset(reader.ReadNode());
     modulePartition.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
@@ -237,7 +237,7 @@ GlobalModuleFragmentNode::GlobalModuleFragmentNode(const soul::ast::Span& span_,
 }
 
 GlobalModuleFragmentNode::GlobalModuleFragmentNode(const soul::ast::Span& span_, int fileIndex_, Node* modle_, Node* semicolon_, Node* declarations_) noexcept :
-    CompoundNode(NodeKind::globalModuleFragmentNode, span_, fileIndex_), modle(modle_), semicolon(semicolon_), declarations(declarations_)
+    CompoundNode(NodeKind::globalModuleFragmentNode, span_, fileIndex_), module(modle_), semicolon(semicolon_), declarations(declarations_)
 {
 }
 
@@ -248,7 +248,7 @@ Node* GlobalModuleFragmentNode::Clone() const
     {
         clonedDeclarations = declarations->Clone();
     }
-    GlobalModuleFragmentNode* clone = new GlobalModuleFragmentNode(GetSpan(), FileIndex(), modle->Clone(), semicolon->Clone(), clonedDeclarations);
+    GlobalModuleFragmentNode* clone = new GlobalModuleFragmentNode(GetSpan(), FileIndex(), module->Clone(), semicolon->Clone(), clonedDeclarations);
     clone->SetId(Id());
     return clone;
 }
@@ -261,7 +261,7 @@ void GlobalModuleFragmentNode::Accept(Visitor& visitor)
 void GlobalModuleFragmentNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(modle.get());
+    writer.Write(module.get());
     writer.Write(semicolon.get());
     writer.Write(declarations.get());
 }
@@ -269,7 +269,7 @@ void GlobalModuleFragmentNode::Write(Writer& writer)
 void GlobalModuleFragmentNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    modle.reset(reader.ReadNode());
+    module.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
     declarations.reset(reader.ReadNode());
 }
@@ -281,7 +281,7 @@ PrivateModuleFragmentNode::PrivateModuleFragmentNode(const soul::ast::Span& span
 
 PrivateModuleFragmentNode::PrivateModuleFragmentNode(const soul::ast::Span& span_, int fileIndex_, Node* modle_, Node* colon_, Node* privat_,
     Node* semicolon_, Node* declarations_) noexcept :
-    CompoundNode(NodeKind::privateModuleFragmentNode, span_, fileIndex_), modle(modle_), colon(colon_), privat(privat_), semicolon(semicolon_), declarations(declarations_)
+    CompoundNode(NodeKind::privateModuleFragmentNode, span_, fileIndex_), module(modle_), colon(colon_), privat(privat_), semicolon(semicolon_), declarations(declarations_)
 {
 }
 
@@ -292,7 +292,7 @@ Node* PrivateModuleFragmentNode::Clone() const
     {
         clonedDeclarations = declarations->Clone();
     }
-    PrivateModuleFragmentNode* clone = new PrivateModuleFragmentNode(GetSpan(), FileIndex(), modle->Clone(), colon->Clone(), privat->Clone(), 
+    PrivateModuleFragmentNode* clone = new PrivateModuleFragmentNode(GetSpan(), FileIndex(), module->Clone(), colon->Clone(), privat->Clone(), 
         semicolon->Clone(), clonedDeclarations);
     clone->SetId(Id());
     return clone;
@@ -306,7 +306,7 @@ void PrivateModuleFragmentNode::Accept(Visitor& visitor)
 void PrivateModuleFragmentNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(modle.get());
+    writer.Write(module.get());
     writer.Write(colon.get());
     writer.Write(privat.get());
     writer.Write(semicolon.get());
@@ -316,7 +316,7 @@ void PrivateModuleFragmentNode::Write(Writer& writer)
 void PrivateModuleFragmentNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    modle.reset(reader.ReadNode());
+    module.reset(reader.ReadNode());
     colon.reset(reader.ReadNode());
     privat.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
@@ -327,7 +327,7 @@ AngleHeaderName::AngleHeaderName(const soul::ast::Span& span_, int fileIndex_) n
 {
 }
 
-AngleHeaderName::AngleHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_) : 
+AngleHeaderName::AngleHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::string& rep_) : 
     Node(NodeKind::angleHeaderNameNode, span_, fileIndex_), rep(rep_)
 {
 }
@@ -360,7 +360,7 @@ QuoteHeaderName::QuoteHeaderName(const soul::ast::Span& span_, int fileIndex_) n
 {
 }
 
-QuoteHeaderName::QuoteHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_) : 
+QuoteHeaderName::QuoteHeaderName(const soul::ast::Span& span_, int fileIndex_, const std::string& rep_) : 
     Node(NodeKind::quoteHeaderNameNode, span_, fileIndex_), rep(rep_)
 {
 }

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.code.formatter;
+export module util.code_formatter;
 
 import std;
 

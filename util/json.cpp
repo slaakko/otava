@@ -6,7 +6,7 @@
 module util.json;
 
 import util.unicode;
-import util.text.util;
+import util.text_util;
 
 namespace util {
 

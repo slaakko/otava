@@ -1,0 +1,119 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.initialization;
+
+[interface]import otava.symbols.context;
+[interface]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.parser.expression;
+[implementation]import otava.parser.identifier;
+[implementation]import otava.parser.punctuation;
+
+parser InitializationParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    using ExpressionParser.Expression;
+    using ExpressionParser.AssignmentExpression;
+    using ExpressionParser.ExpressionList;
+    using IdentifierParser.Identifier;
+    using PunctuationParser.Comma;
+    using PunctuationParser.Ellipsis;
+    using PunctuationParser.LBrace;
+    using PunctuationParser.RBrace;
+
+    Initializer(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> initializer, var std::unique_ptr<otava::ast::ExpressionListNode> exprListNode) : 
+        otava::ast::Node*
+        ::= 
+        (
+            BraceOrEqualInitializer(context):braceOrEqualInit{ initializer.reset(braceOrEqualInit); }
+        |   LPAREN{ exprListNode.reset(new otava::ast::ExpressionListNode(lexer.GetSpan(pos), lexer.File())); exprListNode->SetLParenSpan(lexer.GetSpan(pos)); } 
+            ExpressionList(context, exprListNode.get()):expressionList 
+            RPAREN{ exprListNode->SetRParenSpan(lexer.GetSpan(pos)); initializer.reset(exprListNode.release()); }
+        )
+        {
+            return initializer.release();
+        }
+        ;
+
+    InitializerClause(otava::symbols::Context* context) : otava::ast::Node*
+        ::= BracedInitList(context):bracedInitList{ return bracedInitList; }
+        |   AssignmentExpression(context):assignmentExpr{ return assignmentExpr; }
+        ;
+
+    InitializerList(otava::symbols::Context* context, otava::ast::Node* container)
+        ::= 
+        (
+            InitializerClause(context):first{ container->AddNode(first); } 
+            (
+                Comma:comma{ container->AddNode(comma); } 
+                InitializerClause(context):next{ container->AddNode(next); }
+            )*
+            (Ellipsis:ellipsis{ container->AddNode(ellipsis); })?
+        )
+        ;
+
+    DesignatedInitializerList(otava::symbols::Context* context, otava::ast::Node* container)
+        ::= 
+        (
+            DesignatedInitializerClause(context):first{ container->AddNode(first); }
+            (
+                Comma:comma{ container->AddNode(comma); }
+                DesignatedInitializerClause(context):next{ container->AddNode(next); }
+            )*
+        )
+        ;
+
+    DesignatedInitializerClause(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            Designator(context):designator{ span = lexer.GetSpan(pos); }
+            BraceOrEqualInitializer(context):initializer
+        )
+        {
+            return new otava::ast::DesignatedInitializerNode(span, lexer.File(), designator, initializer);
+        }
+        ;
+
+    Designator(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            DOT{ span = lexer.GetSpan(pos); }
+            Identifier(context):identifier
+        )
+        {
+            return new otava::ast::DesignatorNode(span, lexer.File(), identifier);
+        }
+        ;
+
+    ExprOrBracedInitList(otava::symbols::Context* context) : otava::ast::Node*
+        ::= BracedInitList(context):bracedInitList{ return bracedInitList; }
+        |   Expression(context):expr{ return expr; }
+        ;
+
+    BraceOrEqualInitializer(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= ASSIGN{ span = lexer.GetSpan(pos); } InitializerClause(context):initializer{ return new otava::ast::AssignmentInitNode(span, lexer.File(), initializer); }
+        |   BracedInitList(context):bracedInitList{ return bracedInitList; }
+        ;
+
+    BracedInitList(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> initList) : otava::ast::Node*
+        ::= 
+        (
+            LBrace:lbrace{ initList.reset(new otava::ast::BracedInitListNode(lexer.GetSpan(pos), lexer.File())); initList->AddNode(lbrace); }
+            (   InitializerList(context, initList.get()):initializerList 
+            |   DesignatedInitializerList(context, initList.get()):designatedInitList
+            )
+            (Comma:comma{ initList->AddNode(comma); })?
+            RBrace:rbrace{ initList->AddNode(rbrace); }
+        |   LBrace:lbrace{ initList.reset(new otava::ast::BracedInitListNode(lexer.GetSpan(pos), lexer.File())); initList->AddNode(lbrace); }
+            RBrace:rbrace{ initList->AddNode(rbrace); }
+        )
+        {
+            return initList.release();
+        }
+        ;
+}

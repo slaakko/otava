@@ -1,0 +1,3 @@
+project soul.rex.spg;
+parser <rex.parser>;
+tokens <rex.token>;

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module otava.ast.translation.unit;
+module otava.ast.translation_unit;
 
 import otava.ast.visitor;
 import otava.ast.reader;

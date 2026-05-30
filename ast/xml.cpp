@@ -7,7 +7,7 @@ module otava.ast.xml;
 import otava.ast.xml.generator.visitor;
 import otava.ast.node;
 import soul.xml.dom;
-import util.code.formatter;
+import util.code_formatter;
 
 namespace otava::ast {
 

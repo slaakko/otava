@@ -15,7 +15,7 @@ LiteralNode::LiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileI
 {
 }
 
-LiteralNode::LiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_) : Node(kind_, span_, fileIndex_), rep(rep_)
+LiteralNode::LiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::string& rep_) : Node(kind_, span_, fileIndex_), rep(rep_)
 {
 }
 
@@ -36,7 +36,7 @@ IntegerLiteralNode::IntegerLiteralNode(const soul::ast::Span& span_, int fileInd
 {
 }
 
-IntegerLiteralNode::IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_, std::uint64_t value_, Suffix suffix_, Base base_, const std::u32string& rep_) :
+IntegerLiteralNode::IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_, std::uint64_t value_, Suffix suffix_, Base base_, const std::string& rep_) :
     LiteralNode(NodeKind::integerLiteralNode, span_, fileIndex_, rep_), value(value_), suffix(suffix_), base(base_)
 {
 }
@@ -74,7 +74,7 @@ FloatingLiteralNode::FloatingLiteralNode(const soul::ast::Span& span_, int fileI
 {
 }
 
-FloatingLiteralNode::FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_, double value_, Suffix suffix_, Base base_, const std::u32string& rep_) :
+FloatingLiteralNode::FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_, double value_, Suffix suffix_, Base base_, const std::string& rep_) :
     LiteralNode(NodeKind::floatingLiteralNode, span_, fileIndex_, rep_), value(value_), suffix(suffix_), base(base_)
 {
 }
@@ -113,7 +113,7 @@ CharacterLiteralNode::CharacterLiteralNode(const soul::ast::Span& span_, int fil
 }
 
 CharacterLiteralNode::CharacterLiteralNode(const soul::ast::Span& span_, int fileIndex_, char32_t value_, EncodingPrefix encodingPrefix_,
-    const std::u32string& rep_, bool hasMultipleCharacters_) :
+    const std::string& rep_, bool hasMultipleCharacters_) :
     LiteralNode(NodeKind::characterLiteralNode, span_, fileIndex_, rep_), value(value_), encodingPrefix(encodingPrefix_), hasMultipleCharacters(hasMultipleCharacters_)
 {
 }
@@ -156,14 +156,14 @@ StringLiteralNode::StringLiteralNode(NodeKind kind_, const soul::ast::Span& span
 {
 }
 
-StringLiteralNode::StringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& value_, EncodingPrefix encodingPrefix_, 
-    const std::u32string& rep_) :
+StringLiteralNode::StringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::string& value_, EncodingPrefix encodingPrefix_, 
+    const std::string& rep_) :
     LiteralNode(NodeKind::stringLiteralNode, span_, fileIndex_, rep_), value(value_), encodingPrefix(encodingPrefix_)
 {
 }
 
-StringLiteralNode::StringLiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::u32string& value_, EncodingPrefix encodingPrefix_,
-    const std::u32string& rep_) :
+StringLiteralNode::StringLiteralNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_, const std::string& value_, EncodingPrefix encodingPrefix_,
+    const std::string& rep_) :
     LiteralNode(kind_, span_, fileIndex_, rep_), value(value_), encodingPrefix(encodingPrefix_)
 {
 }
@@ -198,8 +198,8 @@ RawStringLiteralNode::RawStringLiteralNode(const soul::ast::Span& span_, int fil
 {
 }
 
-RawStringLiteralNode::RawStringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& value_, EncodingPrefix encodingPrefix_,
-    const std::u32string& delimSequence_, const std::u32string& rep_) :
+RawStringLiteralNode::RawStringLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::string& value_, EncodingPrefix encodingPrefix_,
+    const std::string& delimSequence_, const std::string& rep_) :
     StringLiteralNode(NodeKind::rawStringLiteralNode, span_, fileIndex_, value_, encodingPrefix_, rep_), delimSequence(delimSequence_)
 {
 }
@@ -232,7 +232,7 @@ BooleanLiteralNode::BooleanLiteralNode(const soul::ast::Span& span_, int fileInd
 {
 }
 
-BooleanLiteralNode::BooleanLiteralNode(const soul::ast::Span& span_, int fileIndex_, bool value_, const std::u32string& rep_) :
+BooleanLiteralNode::BooleanLiteralNode(const soul::ast::Span& span_, int fileIndex_, bool value_, const std::string& rep_) :
     LiteralNode(NodeKind::booleanLiteralNode, span_, fileIndex_, rep_), value(value_)
 {
 }
@@ -265,7 +265,7 @@ NullPtrLiteralNode::NullPtrLiteralNode(const soul::ast::Span& span_, int fileInd
 {
 }
 
-NullPtrLiteralNode::NullPtrLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& rep_) :
+NullPtrLiteralNode::NullPtrLiteralNode(const soul::ast::Span& span_, int fileIndex_, const std::string& rep_) :
     LiteralNode(NodeKind::nullPtrLiteralNode, span_, fileIndex_, rep_)
 {
 }
@@ -338,17 +338,17 @@ void LiteralOperatorIdNode::Read(Reader& reader)
     stringLitSpan = reader.ReadSpan();
 }
 
-std::u32string EncodingPrefixStr(EncodingPrefix encodingPrefix)
+std::string EncodingPrefixStr(EncodingPrefix encodingPrefix)
 {
     switch (encodingPrefix)
     {
-        case EncodingPrefix::none: return std::u32string();
-        case EncodingPrefix::u8: return std::u32string(U"u8");
-        case EncodingPrefix::u: return std::u32string(U"u");
-        case EncodingPrefix::U: return std::u32string(U"U");
-        case EncodingPrefix::L: return std::u32string(U"L");
+        case EncodingPrefix::none: return std::string();
+        case EncodingPrefix::u8: return std::string("u8");
+        case EncodingPrefix::u: return std::string("u");
+        case EncodingPrefix::U: return std::string("");
+        case EncodingPrefix::L: return std::string("L");
     }
-    return std::u32string();
+    return std::string();
 }
 
 EncodingPrefix CommonEncodingPrefix(otava::ast::EncodingPrefix leftEncodingPrefix, otava::ast::EncodingPrefix rightEncodingPrefix) noexcept

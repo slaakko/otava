@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.node.operation;
+export module soul.xml.node_operation;
 
 import std;
 import soul.xml.node;

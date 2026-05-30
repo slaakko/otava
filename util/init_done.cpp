@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module util.init.done;
+module util.init_done;
 
 import util.ansi;
 import util.socket;

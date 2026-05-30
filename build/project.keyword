@@ -1,0 +1,10 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+keywords otava.build.project_keyword
+{
+    ("project", PROJECT), ("interface", INTERFACE), ("source", SOURCE), ("reference", REFERENCE), ("resource", RESOURCE), 
+    ("define", DEFINE), ("target", TARGET), ("program", PROGRAM), ("library", LIBRARY)
+}

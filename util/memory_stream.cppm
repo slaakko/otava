@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.memory.stream;
+export module util.memory_stream;
 
 import std;
 import util.stream;

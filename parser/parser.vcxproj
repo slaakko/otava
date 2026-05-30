@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{99213559-3a97-464f-b1e2-67ff44bf3b0d}</ProjectGuid>
+    <RootNamespace>parser</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>otava.parserd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>otava.parser</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BuildStlModules>true</BuildStlModules>
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BuildStlModules>true</BuildStlModules>
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="attribute.parser" />
+    <None Include="build.bat" />
+    <None Include="class.parser" />
+    <None Include="concept.parser" />
+    <None Include="declaration.parser" />
+    <None Include="enum.parser" />
+    <None Include="expression.parser" />
+    <None Include="function.parser" />
+    <None Include="guard.parser" />
+    <None Include="identifier.parser" />
+    <None Include="initialization.parser" />
+    <None Include="lambda.parser" />
+    <None Include="literal.parser" />
+    <None Include="module.parser" />
+    <None Include="module_dependency.parser" />
+    <None Include="otava.spg" />
+    <None Include="punctuation.parser" />
+    <None Include="simple_type.parser" />
+    <None Include="statement.parser" />
+    <None Include="template.parser" />
+    <None Include="translation_unit.parser" />
+    <None Include="type.parser" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="attribute.parser.cpp" />
+    <ClCompile Include="attribute.parser.cppm" />
+    <ClCompile Include="class.parser.cpp" />
+    <ClCompile Include="class.parser.cppm" />
+    <ClCompile Include="concept.parser.cpp" />
+    <ClCompile Include="concept.parser.cppm" />
+    <ClCompile Include="declaration.parser.cpp" />
+    <ClCompile Include="declaration.parser.cppm" />
+    <ClCompile Include="decl_specifier_seq_parser.cpp" />
+    <ClCompile Include="decl_specifier_seq_parser.cppm" />
+    <ClCompile Include="enum.parser.cpp" />
+    <ClCompile Include="enum.parser.cppm" />
+    <ClCompile Include="expression.parser.cpp" />
+    <ClCompile Include="expression.parser.cppm" />
+    <ClCompile Include="expr_parser.cpp" />
+    <ClCompile Include="expr_parser.cppm" />
+    <ClCompile Include="function.parser.cpp" />
+    <ClCompile Include="function.parser.cppm" />
+    <ClCompile Include="guard.parser.cpp" />
+    <ClCompile Include="guard.parser.cppm" />
+    <ClCompile Include="identifier.parser.cpp" />
+    <ClCompile Include="identifier.parser.cppm" />
+    <ClCompile Include="initialization.parser.cpp" />
+    <ClCompile Include="initialization.parser.cppm" />
+    <ClCompile Include="lambda.parser.cpp" />
+    <ClCompile Include="lambda.parser.cppm" />
+    <ClCompile Include="literal.parser.cpp" />
+    <ClCompile Include="literal.parser.cppm" />
+    <ClCompile Include="module.parser.cpp" />
+    <ClCompile Include="module.parser.cppm" />
+    <ClCompile Include="module_dependency.parser.cpp" />
+    <ClCompile Include="module_dependency.parser.cppm" />
+    <ClCompile Include="otava_rules.cpp" />
+    <ClCompile Include="otava_rules.cppm" />
+    <ClCompile Include="punctuation.parser.cpp" />
+    <ClCompile Include="punctuation.parser.cppm" />
+    <ClCompile Include="recorded_parse.cpp" />
+    <ClCompile Include="recorded_parse.cppm" />
+    <ClCompile Include="simple_type.parser.cpp" />
+    <ClCompile Include="simple_type.parser.cppm" />
+    <ClCompile Include="statement.parser.cpp" />
+    <ClCompile Include="statement.parser.cppm" />
+    <ClCompile Include="stmt_parser.cpp" />
+    <ClCompile Include="stmt_parser.cppm" />
+    <ClCompile Include="template.parser.cpp" />
+    <ClCompile Include="template.parser.cppm" />
+    <ClCompile Include="token_parser.cpp" />
+    <ClCompile Include="token_parser.cppm" />
+    <ClCompile Include="translation_unit.parser.cpp" />
+    <ClCompile Include="translation_unit.parser.cppm" />
+    <ClCompile Include="type.parser.cpp" />
+    <ClCompile Include="type.parser.cppm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ast\ast.vcxproj">
+      <Project>{06a46249-a334-48e9-85e6-73616212b783}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lexer\lexer.vcxproj">
+      <Project>{482e3b51-5ad0-49ec-9891-c902c3ba65ff}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.ast\soul.ast.vcxproj">
+      <Project>{24a953f0-c4c5-4e75-832a-8a1882e68253}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.lexer\soul.lexer.vcxproj">
+      <Project>{d0deb5e7-3353-4c22-8b1d-fb1a94486496}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.parser\soul.parser.vcxproj">
+      <Project>{f5c14912-b7cb-4bed-a9a6-ffd8a45a4c8f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\symbols\symbols.vcxproj">
+      <Project>{a7deb4ee-e2ca-48f0-bc8b-603afaf0428f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\util\util.vcxproj">
+      <Project>{0d05902b-f49d-4304-8573-7c45a1b9486a}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

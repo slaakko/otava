@@ -104,7 +104,7 @@ public:
     OperatorNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"operator"; }
+    std::string Str() const override { return "operator"; }
 };
 
 class NewArrayOpNode : public CompoundNode
@@ -118,7 +118,7 @@ public:
     void Read(Reader& reader) override;
     inline const soul::ast::Span& LBracketSpan() const noexcept { return lbSpan; }
     inline const soul::ast::Span& RBracketSpan() const noexcept { return rbSpan; }
-    std::u32string Str() const override { return U"new[]"; }
+    std::string Str() const override { return "new[]"; }
 private:
     soul::ast::Span lbSpan;
     soul::ast::Span rbSpan;
@@ -130,7 +130,7 @@ public:
     NewOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"new"; }
+    std::string Str() const override { return "new"; }
 };
 
 class DeleteArrayOpNode : public CompoundNode
@@ -144,7 +144,7 @@ public:
     void Read(Reader& reader) override;
     inline const soul::ast::Span& LBracketSpan() const noexcept { return lbSpan; }
     inline const soul::ast::Span& RBracketSpan() const noexcept { return rbSpan; }
-    std::u32string Str() const override { return U"delete[]"; }
+    std::string Str() const override { return "delete[]"; }
 private:
     soul::ast::Span lbSpan;
     soul::ast::Span rbSpan;
@@ -156,7 +156,7 @@ public:
     DeleteOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"delete"; }
+    std::string Str() const override { return "delete"; }
 };
 
 class CoAwaitOpNode : public Node
@@ -165,7 +165,7 @@ public:
     CoAwaitOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"co_await"; }
+    std::string Str() const override { return "co_await"; }
 };
 
 class InvokeOpNode : public Node
@@ -174,7 +174,7 @@ public:
     InvokeOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"()"; }
+    std::string Str() const override { return "()"; }
 };
 
 class SubscriptOpNode : public Node
@@ -183,7 +183,7 @@ public:
     SubscriptOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override { return U"[]"; }
+    std::string Str() const override { return "[]"; }
 };
 
 class OperatorFunctionIdNode : public BinaryNode
@@ -193,7 +193,7 @@ public:
     OperatorFunctionIdNode(const soul::ast::Span& span_, int fileIndex_, Node* operatorKwNode_, Node* op_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override;
+    std::string Str() const override;
 };
 
 class ConversionFunctionIdNode : public BinaryNode
@@ -203,7 +203,7 @@ public:
     ConversionFunctionIdNode(const soul::ast::Span& span_, int fileIndex_, Node* operatorKwNode_, Node* conversionTypeId_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::u32string Str() const override;
+    std::string Str() const override;
 };
 
 class ConversionTypeIdNode : public CompoundNode
@@ -265,7 +265,7 @@ public:
     void SetAssign(Node* assign_) noexcept;
     inline Node* Initializer() const noexcept { return initializer.get(); }
     void SetInitializer(Node* initializer_) noexcept;
-    std::u32string Str() const override;
+    std::string Str() const override;
 private:
     std::unique_ptr<Node> attributes;
     std::unique_ptr<Node> declSpecifiers;

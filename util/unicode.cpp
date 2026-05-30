@@ -5,11 +5,11 @@
 
 module util.unicode;
 
-import util.text.util;
+import util.text_util;
 import util.path;
-import util.memory.stream;
-import util.buffered.stream;
-import util.file.stream;
+import util.memory_stream;
+import util.buffered_stream;
+import util.file_stream;
 
 namespace util {
 
@@ -20,32 +20,32 @@ void SetEx()
     ex = true;
 }
 
-std::string SoulVersionStr()
+std::string OtavaVersionStr()
 {
-    return "5.2.0";
+    return "0.1.0";
 }
 
-std::string SoulRoot()
+std::string OtavaRoot()
 {
-    std::string soulRoot;
+    std::string otavaRoot;
 #pragma warning(suppress : 4996)
-    const char* soulRootEnv = std::getenv("SOUL_ROOT");
-    if (soulRootEnv)
+    const char* otavaRootEnv = std::getenv("OTAVA_ROOT");
+    if (otavaRootEnv)
     {
-        soulRoot = soulRootEnv;
+        otavaRoot = otavaRootEnv;
     }
-    if (soulRoot.empty())
+    if (otavaRoot.empty())
     {
-        throw UnicodeException("please set 'SOUL_ROOT' environment variable to contain /path/to/soul directory.");
+        throw UnicodeException("please set 'OTAVA_ROOT' environment variable to contain /path/to/otava directory.");
     }
-    return soulRoot;
+    return otavaRoot;
 }
 
-std::string SoulUcdFilePath()
+std::string OtavaUcdFilePath()
 {
-    std::filesystem::path p(SoulRoot());
+    std::filesystem::path p(OtavaRoot());
     p /= std::filesystem::path("unicode");
-    p /= std::filesystem::path("soul_ucd.bin");
+    p /= std::filesystem::path("otava_ucd.bin");
     return p.generic_string();
 }
 
@@ -1628,7 +1628,7 @@ CharacterTable::CharacterTable() :
 
 std::string CharacterTable::FilePath() const
 {
-    std::string ucdFilePath = SoulUcdFilePath();
+    std::string ucdFilePath = OtavaUcdFilePath();
     return ucdFilePath;
 }
 

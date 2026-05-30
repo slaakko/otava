@@ -13,7 +13,7 @@ module;
 #include <unistd.h>
 #endif 
 
-module util.code.formatter;
+module util.code_formatter;
 
 import util.ansi;
 import util.unicode;

@@ -22,7 +22,7 @@ public:
     inline util::BinaryStreamReader& GetBinaryStreamReader() noexcept { return *readerPtr; }
     soul::ast::Span ReadSpan();
     NodeKind ReadNodeKind();
-    std::u32string ReadStr();
+    std::string ReadStr();
     bool ReadBool();
     Node* ReadNode();
     void SetNodeMap(NodeMap* nodeMap_) noexcept { nodeMap = nodeMap_; }

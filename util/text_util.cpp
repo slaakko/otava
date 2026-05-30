@@ -10,7 +10,7 @@ module;
 #undef max
 #endif
 
-module util.text.util;
+module util.text_util;
 
 import util.unicode;
 

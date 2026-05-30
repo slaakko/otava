@@ -1,0 +1,10 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+project otava.project_slg;
+tokens <project.token>;
+keywords <project.keyword>;
+expressions <project.expr>;
+lexer <project.lexer>;

@@ -1,0 +1,230 @@
+<parserFile>
+ <grammar name="EnumParser">
+  <rule first="{ID}" name="EnumName">
+   <action first="{ID}">
+    <nonterminal first="{ID}" ruleName="Identifier"/>
+   </action>
+  </rule>
+  <rule first="{ENUM}" name="EnumSpecifier">
+   <action first="{ENUM}">
+    <group first="{ENUM}">
+     <sequence first="{ENUM}">
+      <sequence first="{ENUM}">
+       <sequence first="{ENUM}">
+        <action first="{ENUM}">
+         <nonterminal first="{ENUM}" ruleName="EnumHead"/>
+        </action>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
+       </sequence>
+       <optional first="{#, ID}">
+        <group first="{ID}">
+         <sequence first="{ID}">
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="EnumeratorList"/>
+          </action>
+          <optional first="{#, COMMA}">
+           <group first="{COMMA}">
+            <action first="{COMMA}">
+             <nonterminal first="{COMMA}" ruleName="Comma"/>
+            </action>
+           </group>
+          </optional>
+         </sequence>
+        </group>
+       </optional>
+      </sequence>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ENUM}" name="EnumHead">
+   <action first="{ENUM}">
+    <group first="{ENUM}">
+     <sequence first="{ENUM}">
+      <sequence first="{ENUM}">
+       <sequence first="{ENUM}">
+        <action first="{ENUM}">
+         <nonterminal first="{ENUM}" ruleName="EnumKey"/>
+        </action>
+        <optional first="{#, ALIGNAS, LBRACKET}">
+         <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+        </optional>
+       </sequence>
+       <group first="{#, TEMPLATE, ID, COLON_COLON}">
+        <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+         <action first="{#, TEMPLATE, ID, COLON_COLON}">
+          <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="EnumHeadName"/>
+         </action>
+         <action first="{#}">
+          <nonterminal first="{#}" ruleName="Unnamed"/>
+         </action>
+        </choice>
+       </group>
+      </sequence>
+      <optional first="{#, COLON}">
+       <nonterminal first="{COLON}" ruleName="EnumBase"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ENUM}" name="EnumKey">
+   <choice first="{ENUM}">
+    <choice first="{ENUM}">
+     <sequence first="{ENUM}">
+      <action first="{ENUM}">
+       <token first="{ENUM}" name="ENUM"/>
+      </action>
+      <action first="{CLASS}">
+       <token first="{CLASS}" name="CLASS"/>
+      </action>
+     </sequence>
+     <sequence first="{ENUM}">
+      <action first="{ENUM}">
+       <token first="{ENUM}" name="ENUM"/>
+      </action>
+      <action first="{STRUCT}">
+       <token first="{STRUCT}" name="STRUCT"/>
+      </action>
+     </sequence>
+    </choice>
+    <action first="{ENUM}">
+     <token first="{ENUM}" name="ENUM"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, TEMPLATE, ID, COLON_COLON}" name="EnumHeadName">
+   <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+    <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+     <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="NestedNameSpecifier"/>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="Identifier"/>
+     </action>
+    </sequence>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="Identifier"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{COLON}" name="EnumBase">
+   <action first="{COLON}">
+    <group first="{COLON}">
+     <sequence first="{COLON}">
+      <action first="{COLON}">
+       <token first="{COLON}" name="COLON"/>
+      </action>
+      <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, DECLTYPE, DOUBLE, ENUM, FLOAT, INT, LONG, SHORT, SIGNED, STRUCT, TEMPLATE, TYPENAME, UNION, UNSIGNED, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, LANGLE, LBRACKET}" ruleName="TypeSpecifierSeqReset"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="EnumeratorList">
+   <sequence first="{ID}">
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="EnumeratorDefinition"/>
+    </action>
+    <kleene first="{#, COMMA}">
+     <group first="{COMMA}">
+      <sequence first="{COMMA}">
+       <action first="{COMMA}">
+        <nonterminal first="{COMMA}" ruleName="Comma"/>
+       </action>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="EnumeratorDefinition"/>
+       </action>
+      </sequence>
+     </group>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{ID}" name="EnumeratorDefinition">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="Enumerator"/>
+      </action>
+      <optional first="{#, ASSIGN}">
+       <group first="{ASSIGN}">
+        <sequence first="{ASSIGN}">
+         <action first="{ASSIGN}">
+          <token first="{ASSIGN}" name="ASSIGN"/>
+         </action>
+         <action first="{#, ALIGNOF, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CONST_CAST, CO_AWAIT, CO_YIELD, DECLTYPE, DELETE, DOUBLE, DYNAMIC_CAST, FALSE, FLOAT, INT, LONG, NEW, NOEXCEPT, NULLPTR, OPERATOR, REINTERPRET_CAST, REQUIRES, SHORT, SIGNED, SIZEOF, STATIC_CAST, TEMPLATE, THIS, THROW, TRUE, TYPEID, TYPENAME, UNSIGNED, VOID, WCHAR_T, FLOATING_LITERAL, INTEGER_LITERAL, CHARACTER_LITERAL, STRING_LITERAL, BEGIN_RAW_STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, MUL_ASSIGN, DIV_ASSIGN, REM_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, SHIFT_RIGHT_ASSIGN, SHIFT_LEFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN, QUEST, OR_OR, AMP_AMP, OR, XOR, AMP, EQ, NEQ, LEQ, GEQ, SPACE_SHIP, LANGLE, RANGLE, SHIFT_LEFT, SHIFT_RIGHT, PLUS, MINUS, STAR, DIV, MOD, DOT_STAR, ARROW_STAR, LPAREN, RPAREN, PLUS_PLUS, MINUS_MINUS, EXCLAMATION, TILDE, LBRACKET, LBRACE, DOT, ARROW, ELLIPSIS}">
+          <nonterminal first="{#, ALIGNOF, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CONST_CAST, CO_AWAIT, CO_YIELD, DECLTYPE, DELETE, DOUBLE, DYNAMIC_CAST, FALSE, FLOAT, INT, LONG, NEW, NOEXCEPT, NULLPTR, OPERATOR, REINTERPRET_CAST, REQUIRES, SHORT, SIGNED, SIZEOF, STATIC_CAST, TEMPLATE, THIS, THROW, TRUE, TYPEID, TYPENAME, UNSIGNED, VOID, WCHAR_T, FLOATING_LITERAL, INTEGER_LITERAL, CHARACTER_LITERAL, STRING_LITERAL, BEGIN_RAW_STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, MUL_ASSIGN, DIV_ASSIGN, REM_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, SHIFT_RIGHT_ASSIGN, SHIFT_LEFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN, QUEST, OR_OR, AMP_AMP, OR, XOR, AMP, EQ, NEQ, LEQ, GEQ, SPACE_SHIP, LANGLE, RANGLE, SHIFT_LEFT, SHIFT_RIGHT, PLUS, MINUS, STAR, DIV, MOD, DOT_STAR, ARROW_STAR, LPAREN, RPAREN, PLUS_PLUS, MINUS_MINUS, EXCLAMATION, TILDE, LBRACKET, LBRACE, DOT, ARROW, ELLIPSIS}" ruleName="ConstantExpression"/>
+         </action>
+        </sequence>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Enumerator">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="Identifier"/>
+      </action>
+      <optional first="{#, ALIGNAS, LBRACKET}">
+       <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ENUM}" name="OpaqueEnumDeclaration">
+   <action first="{ENUM}">
+    <group first="{ENUM}">
+     <sequence first="{ENUM}">
+      <sequence first="{ENUM}">
+       <sequence first="{ENUM}">
+        <sequence first="{ENUM}">
+         <action first="{ENUM}">
+          <nonterminal first="{ENUM}" ruleName="EnumKey"/>
+         </action>
+         <optional first="{#, ALIGNAS, LBRACKET}">
+          <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+         </optional>
+        </sequence>
+        <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="EnumHeadName"/>
+       </sequence>
+       <optional first="{#, COLON}">
+        <nonterminal first="{COLON}" ruleName="EnumBase"/>
+       </optional>
+      </sequence>
+      <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ENUM}" name="ElaboratedEnumSpecifier">
+   <sequence first="{ENUM}">
+    <action first="{ENUM}">
+     <token first="{ENUM}" name="ENUM"/>
+    </action>
+    <group first="{#, TEMPLATE, ID, COLON_COLON}">
+     <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+      <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+       <action first="{#, TEMPLATE, ID, COLON_COLON}">
+        <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="NestedNameSpecifier"/>
+       </action>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="Identifier"/>
+       </action>
+      </sequence>
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="Identifier"/>
+      </action>
+     </choice>
+    </group>
+   </sequence>
+  </rule>
+ </grammar>
+</parserFile>

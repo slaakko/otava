@@ -233,9 +233,9 @@ void TemplateIdNode::SetTemplateArgKinds(const std::vector<bool>& templateArgKin
     templateArgKinds = templateArgKinds_;
 }
 
-std::u32string TemplateIdNode::Str() const
+std::string TemplateIdNode::Str() const
 {
-    std::u32string str = templateName->Str();
+    std::string str = templateName->Str();
     str.append(1, '<');
     str.append(ListNode::Str());
     str.append(1, '>');

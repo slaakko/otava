@@ -6,16 +6,16 @@
 export module soul.lexer.cls;
 
 import std;
-import soul.ast.source.pos;
+import soul.ast.source_pos;
 import util.unicode;
 import soul.ast.slg;
-import soul.ast.lexer.pos.pair;
+import soul.ast.lexer_pos_pair;
 import soul.ast.span;
-import soul.lexer.token.parser;
+import soul.lexer.token_parser;
 import soul.lexer.base;
 import soul.lexer.concepts;
 import soul.lexer.error;
-import soul.lexer.parsing.log;
+import soul.lexer.parsing_log;
 import soul.lexer.token;
 
 export namespace soul::lexer {

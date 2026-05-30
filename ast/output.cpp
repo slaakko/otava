@@ -8,7 +8,7 @@ module otava.ast.output;
 import otava.ast.source.code.printer.visitor;
 import otava.ast.xml.generator.visitor;
 import soul.xml.document;
-import util.code.formatter;
+import util.code_formatter;
 
 namespace otava::ast {
 

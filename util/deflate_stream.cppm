@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.deflate.stream;
+export module util.deflate_stream;
 
 import std;
 import util.compression;

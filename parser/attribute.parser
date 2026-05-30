@@ -1,0 +1,179 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.attribute;
+
+[interface]import otava.symbols.context;
+[interface]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.parser.expression;
+[implementation]import otava.parser.identifier;
+[implementation]import otava.parser.punctuation;
+[implementation]import otava.parser.type;
+
+parser AttributeParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    using ExpressionParser.ConstantExpression;
+    using IdentifierParser.Identifier;
+    using PunctuationParser.ColonColon;
+    using PunctuationParser.Comma;
+    using PunctuationParser.LParen;
+    using PunctuationParser.RParen;
+    using PunctuationParser.LBracket;
+    using PunctuationParser.RBracket;
+    using PunctuationParser.LBrace;
+    using PunctuationParser.RBrace;
+    using PunctuationParser.Ellipsis;
+    using TypeParser.TypeId;
+
+    AttributeSpecifierSeq(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> node) : otava::ast::Node*
+        ::= 
+        (
+            AttributeSpecifier(context):first{ node.reset(new otava::ast::AttributeSpecifierSequenceNode(lexer.GetSpan(pos), lexer.File())); node->AddNode(first); }
+            (
+                AttributeSpecifier(context):next{ node->AddNode(next); }
+            )*
+        )
+        {
+            return node.release();
+        }
+        ;
+
+    AttributeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, 
+        var soul::ast::Span lbSpan1, var soul::ast::Span lbSpan2,
+        var soul::ast::Span rbSpan1, var soul::ast::Span rbSpan2,
+        var std::unique_ptr<otava::ast::AttributeSpecifierNode> attributeSpecifierNode) : otava::ast::Node*
+        ::= 
+        (
+            LBRACKET{ lbSpan1 = lexer.GetSpan(pos); span = lbSpan1; }
+            LBRACKET{ lbSpan2 = lexer.GetSpan(pos); span = lbSpan2; attributeSpecifierNode.reset(new otava::ast::AttributeSpecifierNode(span, lexer.File())); } 
+            (AttributeUsingPrefix(context):usingPrefix{ attributeSpecifierNode->SetUsingPrefix(usingPrefix); })? 
+            AttributeList(context, attributeSpecifierNode.get()):attributeList
+            RBRACKET{ rbSpan1 = lexer.GetSpan(pos); } 
+            RBRACKET{ rbSpan2 = lexer.GetSpan(pos); attributeSpecifierNode->SetBracketSpans(lbSpan1, lbSpan2, rbSpan1, rbSpan2); return attributeSpecifierNode.release(); } 
+        |   AlignmentSpecifier(context):alignmentSpecifier{ return alignmentSpecifier; }
+        )
+        ;
+
+    AttributeList(otava::symbols::Context* context, otava::ast::Node* container)
+        ::= 
+        (
+            (   Attribute(context):firstOpt{ container->AddNode(firstOpt); }
+            )? 
+            (   Comma:comma1{ container->AddNode(comma1); } 
+                (   Attribute(context):nextOpt{ container->AddNode(nextOpt); }
+                )?
+            )*
+        |   empty{ container->Clear(); }
+            Attribute(context):first{ container->AddNode(first); } 
+            (   Comma:comma2{ container->AddNode(comma2); } 
+                Attribute(context):next{ container->AddNode(next); } 
+                Ellipsis:ellipsis{ container->AddNode(ellipsis); }
+            )*
+        )
+        ;
+
+    AttributeUsingPrefix(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span colonSpan) : otava::ast::Node*
+        ::= 
+        (
+            USING{ span = lexer.GetSpan(pos); } AttributeNamespace(context):ns COLON{ colonSpan = lexer.GetSpan(pos); }
+        )
+        {
+            return new otava::ast::AttributeUsingPrefixNode(span, lexer.File(), ns, colonSpan);
+        }
+        ;
+
+    AttributeNamespace(otava::symbols::Context* context) : otava::ast::Node*
+        ::= Identifier(context):ns{ return ns; }
+        ;
+
+    Attribute(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            AttributeToken(context):attributeToken{ span = lexer.GetSpan(pos); } AttributeArgumentClause(context):attributeArgs?
+        )
+        {
+            return new otava::ast::AttributeNode(span, lexer.File(), attributeToken, attributeArgs);
+        }
+        ;
+
+    AttributeToken(otava::symbols::Context* context) : otava::ast::Node*
+        ::= AttributeScopedToken(context):scopedToken{ return scopedToken; }
+        |   Identifier(context):identifier{ return identifier; }
+        ;
+
+    AttributeScopedToken(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            AttributeNamespace(context):ns{ span = lexer.GetSpan(pos); } ColonColon:colonColon Identifier(context):identifier
+        )
+        {
+            return new otava::ast::AttributeScopedTokenNode(span, lexer.File(), ns, colonColon, identifier);
+        }
+        ;
+
+    AttributeArgumentClause(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+        ::= 
+        (
+            LPAREN{ lpSpan = lexer.GetSpan(pos); } BalancedTokenSeq(context):balancedTokenSeq? RPAREN{ rpSpan = lexer.GetSpan(pos); } 
+        )
+        {
+            return new otava::ast::AttributeArgumentsNode(span, lexer.File(), balancedTokenSeq, lpSpan, rpSpan);
+        }
+        ;
+
+    BalancedTokenSeq(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> sequence) : otava::ast::Node*
+        ::= 
+        (
+            BalancedToken(context):first{ sequence.reset(new otava::ast::BalancedTokenSequenceNode(lexer.GetSpan(pos), lexer.File())); sequence->AddNode(first); }
+            (
+                BalancedToken(context):next{ sequence->AddNode(next); }
+            )*
+        )
+        {
+            return sequence.release();
+        }
+        ;
+
+    BalancedToken(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> seq) : otava::ast::Node*
+        ::= 
+        (   LParen:lp{ seq.reset(new otava::ast::BalancedTokenSequenceNode(lexer.GetSpan(pos), lexer.File())); seq->AddNode(lp); } 
+            BalancedTokenSeq(context):c1{ seq->AddNode(c1); } 
+            RParen:rp{ seq->AddNode(rp); }
+        |   LBracket:lb{ seq.reset(new otava::ast::BalancedTokenSequenceNode(lexer.GetSpan(pos), lexer.File())); seq->AddNode(lb); } 
+            BalancedTokenSeq(context):c2{ seq->AddNode(c2); } 
+            RBracket:rb{ seq->AddNode(rb); }
+        |   LBrace:lbr{ seq.reset(new otava::ast::BalancedTokenSequenceNode(lexer.GetSpan(pos), lexer.File())); seq->AddNode(lbr); } 
+            BalancedTokenSeq(context):c3{ seq->AddNode(c3); } 
+            RBrace:rbr{ seq->AddNode(rbr); }
+        |   (any - (LPAREN | RPAREN | LBRACKET | RBRACKET | LBRACE | RBRACE))
+            { 
+                seq.reset(new otava::ast::TokenNode(lexer.GetSpan(pos), lexer.File(), util::ToUtf8(lexer.GetToken(pos).ToString()))); 
+            }
+        )
+        {
+            return seq.release();
+        }
+        ;
+
+    AlignmentSpecifier(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> alignment, var soul::ast::Span span, 
+        var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+        ::= 
+        (   ALIGNAS{ span = lexer.GetSpan(pos); } 
+            LPAREN{ lpSpan = lexer.GetSpan(pos); }
+            (   TypeId(context):typeId{ alignment.reset(typeId); } 
+            |   ConstantExpression(context):constantExpr{ alignment.reset(constantExpr); }
+            )
+            Ellipsis:ellipsis?
+            RPAREN{ rpSpan = lexer.GetSpan(pos); }
+        )
+        {
+            return new otava::ast::AlignmentSpecifierNode(span, lexer.File(), alignment.release(), ellipsis, lpSpan, rpSpan);
+        }
+        ;
+}

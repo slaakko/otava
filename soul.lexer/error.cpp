@@ -6,7 +6,7 @@
 module soul.lexer.error;
 
 import util;
-import soul.ast.source.pos;
+import soul.ast.source_pos;
 
 namespace soul::lexer {
 

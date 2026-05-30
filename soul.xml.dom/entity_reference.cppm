@@ -3,10 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.entity.reference;
+export module soul.xml.entity_reference;
 
 import std;
-import soul.xml.character.data;
+import soul.xml.character_data;
 
 export namespace soul::xml {
 

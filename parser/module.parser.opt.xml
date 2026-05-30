@@ -1,0 +1,234 @@
+<parserFile>
+ <grammar name="ModuleParser">
+  <rule first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}" name="ModuleDeclaration">
+   <action first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+    <group first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+     <sequence first="{#, ALIGNAS, ID, COLON, LBRACKET, SEMICOLON}">
+      <sequence first="{#, ALIGNAS, ID, COLON, LBRACKET}">
+       <sequence first="{#, ID, COLON}">
+        <sequence first="{#, ID}">
+         <sequence first="{#, ID}">
+          <optional first="{#, ID}">
+           <group first="{ID}">
+            <action first="{ID}">
+             <nonterminal first="{ID}" ruleName="ExportKeyword"/>
+            </action>
+           </group>
+          </optional>
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="ModuleKeyword"/>
+          </action>
+         </sequence>
+         <nonterminal first="{ID}" ruleName="ModuleName"/>
+        </sequence>
+        <optional first="{#, COLON}">
+         <nonterminal first="{COLON}" ruleName="ModulePartition"/>
+        </optional>
+       </sequence>
+       <optional first="{#, ALIGNAS, LBRACKET}">
+        <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+       </optional>
+      </sequence>
+      <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ModuleName">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ExportDeclaration">
+   <group first="{ID}">
+    <sequence first="{ID}">
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="ExportKeyword"/>
+     </action>
+     <action first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+      <group first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+       <choice first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+        <switch first="{ID, LBRACE}">
+         <case first="{LBRACE}">
+          <action first="{LBRACE}">
+           <group first="{LBRACE}">
+            <sequence first="{LBRACE}">
+             <sequence first="{LBRACE}">
+              <action first="{LBRACE}">
+               <token first="{LBRACE}" name="LBRACE"/>
+              </action>
+              <optional first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+               <nonterminal first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="DeclarationSeq"/>
+              </optional>
+             </sequence>
+             <action first="{RBRACE}">
+              <token first="{RBRACE}" name="RBRACE"/>
+             </action>
+            </sequence>
+           </group>
+          </action>
+         </case>
+         <case first="{ID}">
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="ImportDeclaration"/>
+          </action>
+         </case>
+        </switch>
+        <action first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+         <nonterminal first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="Declaration"/>
+        </action>
+       </choice>
+      </group>
+     </action>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{ID}" name="ImportDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="ImportKeyword"/>
+        </action>
+        <group first="{ID, COLON, ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+         <switch first="{ID, COLON, ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+          <case first="{ID}">
+           <action first="{ID}">
+            <nonterminal first="{ID}" ruleName="ModuleName"/>
+           </action>
+          </case>
+          <case first="{COLON}">
+           <action first="{COLON}">
+            <nonterminal first="{COLON}" ruleName="ModulePartition"/>
+           </action>
+          </case>
+          <case first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+           <action first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+            <nonterminal first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}" ruleName="HeaderName"/>
+           </action>
+          </case>
+         </switch>
+        </group>
+       </sequence>
+       <optional first="{#, ALIGNAS, LBRACKET}">
+        <nonterminal first="{ALIGNAS, LBRACKET}" ruleName="AttributeSpecifierSeq"/>
+       </optional>
+      </sequence>
+      <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{COLON}" name="ModulePartition">
+   <action first="{COLON}">
+    <group first="{COLON}">
+     <sequence first="{COLON}">
+      <action first="{COLON}">
+       <nonterminal first="{COLON}" ruleName="Colon"/>
+      </action>
+      <nonterminal first="{ID}" ruleName="ModuleName"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ExportKeyword">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="Identifier"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ImportKeyword">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="Identifier"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ModuleKeyword">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="Identifier"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="GlobalModuleFragment">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="ModuleKeyword"/>
+       </action>
+       <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+      </sequence>
+      <optional first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+       <nonterminal first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="DeclarationSeq"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="PrivateModuleFragment">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <sequence first="{ID}">
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="ModuleKeyword"/>
+         </action>
+         <nonterminal first="{COLON}" ruleName="Colon"/>
+        </sequence>
+        <nonterminal first="{PRIVATE}" ruleName="Private"/>
+       </sequence>
+       <nonterminal first="{SEMICOLON}" ruleName="Semicolon"/>
+      </sequence>
+      <optional first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}">
+       <nonterminal first="{#, ALIGNAS, ASM, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, NAMESPACE, OPERATOR, REQUIRES, SHORT, SIGNED, STATIC, STATIC_ASSERT, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, USING, VIRTUAL, VOID, VOLATILE, WCHAR_T, STRING_LITERAL, ID, COLON_COLON, COMMA, ASSIGN, COLON, AMP_AMP, AMP, LANGLE, STAR, LPAREN, RPAREN, TILDE, LBRACKET, RBRACKET, LBRACE, RBRACE, ARROW, SEMICOLON, ELLIPSIS}" ruleName="DeclarationSeq"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}" name="HeaderName">
+   <switch first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+    <case first="{ANGLE_HEADER_NAME}">
+     <action first="{ANGLE_HEADER_NAME}">
+      <token first="{ANGLE_HEADER_NAME}" name="ANGLE_HEADER_NAME"/>
+     </action>
+    </case>
+    <case first="{QUOTE_HEADER_NAME}">
+     <action first="{QUOTE_HEADER_NAME}">
+      <token first="{QUOTE_HEADER_NAME}" name="QUOTE_HEADER_NAME"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

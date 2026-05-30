@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.node.operation;
+module soul.xml.node_operation;
 
 namespace soul::xml {
 

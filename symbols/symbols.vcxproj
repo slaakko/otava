@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>18.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{009ba0e8-5879-4ea2-9d84-14623b49222e}</ProjectGuid>
+    <ProjectGuid>{a7deb4ee-e2ca-48f0-bc8b-603afaf0428f}</ProjectGuid>
     <RootNamespace>symbols</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -82,16 +82,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -101,16 +97,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -121,15 +113,13 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -142,24 +132,146 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <Manifest>
-      <EnableSegmentHeap>true</EnableSegmentHeap>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ast\ast.vcxproj">
-      <Project>{7bb50fb9-6221-4f92-a117-13cdd0e93147}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="alias_type_symbol.cpp" />
+    <ClCompile Include="alias_type_symbol.cppm" />
+    <ClCompile Include="array_type_symbol.cpp" />
+    <ClCompile Include="array_type_symbol.cppm" />
+    <ClCompile Include="block.cpp" />
+    <ClCompile Include="block.cppm" />
+    <ClCompile Include="bound_tree.cppm" />
+    <ClCompile Include="classes.cpp" />
+    <ClCompile Include="classes.cppm" />
+    <ClCompile Include="class_group_symbol.cpp" />
+    <ClCompile Include="class_group_symbol.cppm" />
+    <ClCompile Include="class_templates.cpp" />
+    <ClCompile Include="class_templates.cppm" />
+    <ClCompile Include="compound_type_symbol.cpp" />
+    <ClCompile Include="compound_type_symbol.cppm" />
+    <ClCompile Include="concepts.cpp" />
+    <ClCompile Include="concepts.cppm" />
+    <ClCompile Include="container_symbol.cpp" />
+    <ClCompile Include="container_symbol.cppm" />
+    <ClCompile Include="context.cpp" />
+    <ClCompile Include="context.cppm" />
+    <ClCompile Include="conversion_table.cpp" />
+    <ClCompile Include="conversion_table.cppm" />
+    <ClCompile Include="declaration.cpp" />
+    <ClCompile Include="declaration.cppm" />
+    <ClCompile Include="declarator.cpp" />
+    <ClCompile Include="declarator.cppm" />
+    <ClCompile Include="decl_specifier_seq_parser.cpp" />
+    <ClCompile Include="decl_specifier_seq_parser.cppm" />
+    <ClCompile Include="derivations.cppm" />
+    <ClCompile Include="emitter.cpp" />
+    <ClCompile Include="emitter.cppm" />
+    <ClCompile Include="enums.cpp" />
+    <ClCompile Include="enums.cppm" />
+    <ClCompile Include="evaluator.cpp" />
+    <ClCompile Include="evaluator.cppm" />
+    <ClCompile Include="exception.cpp" />
+    <ClCompile Include="exception.cppm" />
+    <ClCompile Include="expression.cpp" />
+    <ClCompile Include="expression.cppm" />
+    <ClCompile Include="expression_binder.cpp" />
+    <ClCompile Include="expression_binder.cppm" />
+    <ClCompile Include="expr_parser.cpp" />
+    <ClCompile Include="expr_parser.cppm" />
+    <ClCompile Include="function_group_symbol.cpp" />
+    <ClCompile Include="function_group_symbol.cppm" />
+    <ClCompile Include="function_kind.cpp" />
+    <ClCompile Include="function_kind.cppm" />
+    <ClCompile Include="function_symbol.cpp" />
+    <ClCompile Include="function_symbol.cppm" />
+    <ClCompile Include="function_templates.cpp" />
+    <ClCompile Include="function_templates.cppm" />
+    <ClCompile Include="function_type_symbol.cpp" />
+    <ClCompile Include="function_type_symbol.cppm" />
+    <ClCompile Include="fundamental_type_conversion.cpp" />
+    <ClCompile Include="fundamental_type_conversion.cppm" />
+    <ClCompile Include="fundamental_type_conversion_init.cpp" />
+    <ClCompile Include="fundamental_type_conversion_init.cppm" />
+    <ClCompile Include="fundamental_type_operation.cpp" />
+    <ClCompile Include="fundamental_type_operation.cppm" />
+    <ClCompile Include="fundamental_type_symbol.cpp" />
+    <ClCompile Include="fundamental_type_symbol.cppm" />
+    <ClCompile Include="id.cppm" />
+    <ClCompile Include="instantiation_queue.cpp" />
+    <ClCompile Include="instantiation_queue.cppm" />
+    <ClCompile Include="ir_value_stack.cppm" />
+    <ClCompile Include="lookup.cppm" />
+    <ClCompile Include="modules.cpp" />
+    <ClCompile Include="modules.cppm" />
+    <ClCompile Include="namespaces.cpp" />
+    <ClCompile Include="namespaces.cppm" />
+    <ClCompile Include="project.cpp" />
+    <ClCompile Include="project.cppm" />
+    <ClCompile Include="reader.cpp" />
+    <ClCompile Include="reader.cppm" />
+    <ClCompile Include="scope.cpp" />
+    <ClCompile Include="scope.cppm" />
+    <ClCompile Include="scope_resolver.cpp" />
+    <ClCompile Include="scope_resolver.cppm" />
+    <ClCompile Include="section.cpp" />
+    <ClCompile Include="section.cppm" />
+    <ClCompile Include="statement_binder.cpp" />
+    <ClCompile Include="statement_binder.cppm" />
+    <ClCompile Include="stmt_parser.cpp" />
+    <ClCompile Include="stmt_parser.cppm" />
+    <ClCompile Include="string_table.cpp" />
+    <ClCompile Include="string_table.cppm" />
     <ClCompile Include="symbol.cpp" />
     <ClCompile Include="symbol.cppm" />
+    <ClCompile Include="symbol_factory.cpp" />
+    <ClCompile Include="symbol_factory.cppm" />
+    <ClCompile Include="symbol_index_map.cpp" />
+    <ClCompile Include="symbol_index_map.cppm" />
+    <ClCompile Include="symbol_table.cpp" />
+    <ClCompile Include="symbol_table.cppm" />
+    <ClCompile Include="templates.cpp" />
+    <ClCompile Include="templates.cppm" />
+    <ClCompile Include="template_param_compare.cppm" />
+    <ClCompile Include="type_compare.cpp" />
+    <ClCompile Include="type_compare.cppm" />
+    <ClCompile Include="type_resolver.cpp" />
+    <ClCompile Include="type_resolver.cppm" />
+    <ClCompile Include="type_symbol.cpp" />
+    <ClCompile Include="type_symbol.cppm" />
+    <ClCompile Include="using_declaration.cpp" />
+    <ClCompile Include="using_declaration.cppm" />
+    <ClCompile Include="using_directive.cpp" />
+    <ClCompile Include="using_directive.cppm" />
+    <ClCompile Include="value.cpp" />
+    <ClCompile Include="value.cppm" />
+    <ClCompile Include="variable_symbol.cpp" />
+    <ClCompile Include="variable_symbol.cppm" />
+    <ClCompile Include="writer.cpp" />
+    <ClCompile Include="writer.cppm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\assembly\assembly.vcxproj">
+      <Project>{616c5054-dc35-4986-96f9-eef416f6cbdc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ast\ast.vcxproj">
+      <Project>{06a46249-a334-48e9-85e6-73616212b783}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\intermediate\intermediate.vcxproj">
+      <Project>{d93bdc82-afff-427a-b863-fc939dfc4f30}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.lexer\soul.lexer.vcxproj">
+      <Project>{d0deb5e7-3353-4c22-8b1d-fb1a94486496}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\util\util.vcxproj">
+      <Project>{0d05902b-f49d-4304-8573-7c45a1b9486a}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

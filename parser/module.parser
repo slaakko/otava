@@ -1,0 +1,178 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.modules;
+
+[interface]import otava.symbols.context;
+[implementation]import soul.ast.span;
+[implementation]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.parser.attribute;
+[implementation]import otava.parser.classes;
+[implementation]import otava.parser.declaration;
+[implementation]import otava.parser.identifier;
+[implementation]import otava.parser.punctuation;
+
+parser ModuleParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    using AttributeParser.AttributeSpecifierSeq;
+    using ClassParser.Private;
+    using DeclarationParser.DeclarationSeq;
+    using DeclarationParser.Declaration;
+    using IdentifierParser.Identifier;
+    using PunctuationParser.Colon;
+    using PunctuationParser.Semicolon;
+
+    ModuleDeclaration(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            (
+                ExportKeyword(context):exportKw{ span = lexer.GetSpan(pos); }
+            )? 
+            ModuleKeyword(context):moduleKw{ if (!span.IsValid()) span = lexer.GetSpan(pos); }
+            ModuleName:moduleName 
+            ModulePartition(context):modulePartition? 
+            AttributeSpecifierSeq(context):attributes? 
+            Semicolon:semicolon
+        )
+        {
+            return new otava::ast::ModuleDeclarationNode(span, lexer.File(), exportKw, moduleKw, moduleName, modulePartition, attributes, semicolon);
+        }
+        ;
+
+    ModuleName(var std::string moduleNameStr, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            ID{ moduleNameStr = util::ToUtf8(lexer.GetToken(pos).ToString()); span = lexer.GetSpan(pos); } 
+            (
+                DOT ID{ moduleNameStr.append(1, '.').append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+            )*
+        )
+        {
+            return new otava::ast::ModuleNameNode(span, lexer.File(), moduleNameStr);
+        }
+        ;
+
+    ExportDeclaration(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> node, var soul::ast::Span span,
+        var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : otava::ast::Node*
+        ::= 
+        (
+            ExportKeyword(context):exprt{ span = lexer.GetSpan(pos); }
+            (
+                (
+                    LBRACE{ lbSpan = lexer.GetSpan(pos); }
+                    DeclarationSeq(context):declarations?
+                    RBRACE{ rbSpan = lexer.GetSpan(pos); }
+                )
+                {
+                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, declarations, lbSpan, rbSpan));
+                }
+            |   ImportDeclaration(context):imprt
+                {
+                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, imprt, soul::ast::Span(), soul::ast::Span()));
+                }
+            |   Declaration(context):declaration
+                {
+                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, declaration, soul::ast::Span(), soul::ast::Span()));
+                }
+            )
+            {
+                return node.release();
+            }
+        )
+        ;
+
+    ImportDeclaration(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::Node> subject) : otava::ast::Node*
+        ::= 
+        (
+            ImportKeyword(context):imprt{ span = lexer.GetSpan(pos); }
+            (   ModuleName:moduleName{ subject.reset(moduleName); }
+            |   ModulePartition(context):modulePartition{ subject.reset(modulePartition); }
+            |   HeaderName(context):headerName{ subject.reset(headerName); }
+            )
+            AttributeSpecifierSeq(context):attributes? 
+            Semicolon:semicolon
+        )
+        {
+            return new otava::ast::ImportDeclarationNode(span, lexer.File(), imprt, subject.release(), attributes, semicolon);
+        }
+        ;
+
+    ModulePartition(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            Colon:colon{ span = lexer.GetSpan(pos); }
+            ModuleName:moduleName
+        )
+        {
+            return new otava::ast::ModulePartitionNode(span, lexer.File(), moduleName);
+        }
+        ;    
+
+    ExportKeyword(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            Identifier(context):identifier{ span = lexer.GetSpan(pos); pass = lexer.GetToken(pos).ToString() == U"export"; }
+        )
+        {
+            return new otava::ast::ExportNode(span, lexer.File());
+        }
+        ;
+
+    ImportKeyword(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            Identifier(context):identifier{ span = lexer.GetSpan(pos); pass = lexer.GetToken(pos).ToString() == U"import"; }
+        )
+        {
+            return new otava::ast::ImportNode(span, lexer.File());
+        }
+        ;
+
+    ModuleKeyword(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            Identifier(context):identifier{ span = lexer.GetSpan(pos); pass = lexer.GetToken(pos).ToString() == U"module"; }
+        )
+        {
+            return new otava::ast::ModuleNode(span, lexer.File());
+        }
+        ;
+
+    GlobalModuleFragment(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            ModuleKeyword(context):moduleKw{ span = lexer.GetSpan(pos); }
+            Semicolon:semicolon 
+            DeclarationSeq(context):declarations?
+        )
+        {
+            return new otava::ast::GlobalModuleFragmentNode(span, lexer.File(), moduleKw, semicolon, declarations);
+        }
+        ;
+
+    PrivateModuleFragment(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::=
+        (
+            ModuleKeyword(context):moduleKw{ span = lexer.GetSpan(pos); }
+            Colon:colon
+            Private:privat
+            Semicolon:semicolon
+            DeclarationSeq(context):declarations?
+        )
+        {
+            return new otava::ast::PrivateModuleFragmentNode(span, lexer.File(), moduleKw, colon, privat, semicolon, declarations);
+        }
+        ;
+
+    HeaderName(otava::symbols::Context* context) : otava::ast::Node*
+        ::= ANGLE_HEADER_NAME{ return new otava::ast::AngleHeaderName(lexer.GetSpan(pos), lexer.File(), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   QUOTE_HEADER_NAME{ return new otava::ast::QuoteHeaderName(lexer.GetSpan(pos), lexer.File(), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+}

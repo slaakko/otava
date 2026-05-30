@@ -121,14 +121,14 @@ class TokenNode : public CompoundNode
 {
 public:
     TokenNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
-    TokenNode(const soul::ast::Span& span_, int fileIndex_, const std::u32string& str_);
+    TokenNode(const soul::ast::Span& span_, int fileIndex_, const std::string& str_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    std::u32string Str() const override { return str; }
+    std::string Str() const override { return str; }
 private:
-    std::u32string str;
+    std::string str;
 };
 
 class AlignmentSpecifierNode : public CompoundNode

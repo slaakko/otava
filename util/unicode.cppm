@@ -6,16 +6,16 @@
 export module util.unicode;
 
 import std;
-import util.binary.stream.writer;
-import util.binary.stream.reader;
+import util.binary_stream_writer;
+import util.binary_stream_reader;
 import util.stream;
-import util.text.util;
+import util.text_util;
 
 export namespace util {
 
-std::string SoulVersionStr();
-std::string SoulRoot();
-std::string SoulUcdFilePath();
+std::string OtavaVersionStr();
+std::string OtavaRoot();
+std::string OtavaUcdFilePath();
 
 void SetEx();
 

@@ -17,14 +17,14 @@ import otava.ast.identifier;
 import otava.ast.lambda;
 import otava.ast.literal;
 import otava.ast.modules;
-import otava.ast.node.list;
+import otava.ast.node_list;
 import otava.ast.punctuation;
 import otava.ast.reader;
 import otava.ast.qualifier;
-import otava.ast.simple.type;
+import otava.ast.simple_type;
 import otava.ast.statement;
 import otava.ast.templates;
-import otava.ast.translation.unit;
+import otava.ast.translation_unit;
 import otava.ast.type;
 import otava.ast.util;
 import otava.ast.visitor;
@@ -446,7 +446,7 @@ void UnaryNode::Read(Reader& reader)
     child.reset(reader.ReadNode());
 }
 
-std::u32string UnaryNode::Str() const
+std::string UnaryNode::Str() const
 {
     return child->Str();
 }
@@ -478,9 +478,9 @@ void BinaryNode::Read(Reader& reader)
     right.reset(reader.ReadNode());
 }
 
-std::u32string BinaryNode::Str() const
+std::string BinaryNode::Str() const
 {
-    std::u32string str = left->Str();
+    std::string str = left->Str();
     str.append(right->Str());
     return str;
 }
@@ -529,9 +529,9 @@ void SequenceNode::Read(Reader& reader)
     }
 }
 
-std::u32string SequenceNode::Str() const
+std::string SequenceNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     for (const auto& node : nodes)
     {
         str.append(node->Str());
@@ -582,9 +582,9 @@ void ListNode::Read(Reader& reader)
     }
 }
 
-std::u32string ListNode::Str() const
+std::string ListNode::Str() const
 {
-    std::u32string str;
+    std::string str;
     for (const auto& node : nodes)
     {
         str.append(node->Str());

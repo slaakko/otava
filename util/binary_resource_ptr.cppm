@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.binary.resource.ptr;
+export module util.binary_resource_ptr;
 
 import std;
 

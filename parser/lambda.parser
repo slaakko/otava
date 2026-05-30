@@ -1,0 +1,169 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.lambda;
+
+[interface]import otava.symbols.context;
+[interface]import otava.ast;
+[implementation]import soul.ast.span;
+[implementation]import soul.ast.lexer_pos_pair;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.parser.attribute;
+[implementation]import otava.parser.concepts;
+[implementation]import otava.parser.declaration;
+[implementation]import otava.parser.function;
+[implementation]import otava.parser.identifier;
+[implementation]import otava.parser.initialization;
+[implementation]import otava.parser.punctuation;
+[implementation]import otava.parser.statement;
+[implementation]import otava.parser.templates;
+
+parser LambdaParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    using AttributeParser.AttributeSpecifierSeq;
+    using ConceptParser.RequiresClause;
+    using DeclarationParser.DeclSpecifierSeq;
+    using DeclarationParser.NoexceptSpecifier;
+    using DeclarationParser.TrailingReturnType;
+    using FunctionParser.ParameterDeclarationClause;
+    using IdentifierParser.Identifier;
+    using InitializationParser.Initializer;
+    using PunctuationParser.Comma;
+    using PunctuationParser.Ellipsis;
+    using StatementParser.CompoundStatement;
+    using TemplateParser.TemplateParameterList;
+    
+    LambdaExpression(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (   LambdaIntroducer(context):introducer{ span = lexer.GetSpan(pos); }
+            LambdaTemplateParams(context):templateParams?
+            LambdaDeclarator(context):declarator
+            CompoundStatement(context):body
+        )
+        {
+            return new otava::ast::LambdaExpressionNode(span, lexer.File(), introducer, templateParams, declarator, body);
+        }
+        ;
+
+    LambdaIntroducer(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : 
+        otava::ast::Node*
+        ::= 
+        (
+            LBRACKET{ span = lexer.GetSpan(pos); lbSpan = span; }
+            LambdaCapture(context):capture?
+            RBRACKET{ rbSpan = lexer.GetSpan(pos); }
+        )
+        {
+            return new otava::ast::LambdaIntroducerNode(span, lexer.File(), capture, lbSpan, rbSpan);
+        }
+        ;
+
+    LambdaCapture(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::Node> node) : otava::ast::Node*
+        ::= empty{ node.reset(new otava::ast::LambdaCaptureNode(lexer.GetSpan(pos), lexer.File())); }
+        (   CaptureList(context, node.get()):captureList
+        |   CaptureDefault:captureDefault{ node->AddNode(captureDefault); } 
+            (
+                Comma:comma{ node->AddNode(comma); } 
+                CaptureList(context, node.get()):captureList2
+            )?
+        )
+        {
+            return node.release();
+        }
+        ;
+
+    CaptureDefault : otava::ast::Node*
+        ::= AMP{ return new otava::ast::DefaultRefCaptureNode(lexer.GetSpan(pos), lexer.File()); }
+        |   ASSIGN{ return new otava::ast::DefaultCopyCaptureNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    CaptureList(otava::symbols::Context* context, otava::ast::Node* container)
+        ::= Capture(context):first{ container->AddNode(first); }
+            (
+                Comma:comma{ container->AddNode(comma); }
+                Capture(context):next{ container->AddNode(next); }
+            )*
+        ;
+
+    Capture(otava::symbols::Context* context) : otava::ast::Node*
+        ::= InitCapture(context):initCapture{ return initCapture; }
+        |   SimpleCapture(context):simpleCapture{ return simpleCapture; }
+        ;
+
+    InitCapture(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::Node> byRefCaptureNode) : otava::ast::Node*
+        ::= 
+        (
+            (AMP{ span = lexer.GetSpan(pos); byRefCaptureNode.reset(new otava::ast::ByRefCaptureNode(span, lexer.File())); })? 
+            (Ellipsis:ellipsis{ if (!span.IsValid()) span = lexer.GetSpan(pos); })? 
+            Identifier(context):identifier{ if (!span.IsValid()) span = lexer.GetSpan(pos); }
+            Initializer(context):initializer
+        )
+        {
+            return new otava::ast::InitCaptureNode(span, lexer.File(), identifier, initializer, byRefCaptureNode.release(), ellipsis);
+        }
+        ;
+
+    SimpleCapture(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span thisPos, 
+        var std::unique_ptr<otava::ast::Node> byRefCaptureNode) : otava::ast::Node*
+        ::= 
+        (   STAR{ span = lexer.GetSpan(pos); }
+            THIS{ thisPos = lexer.GetSpan(pos); return new otava::ast::CurrentObjectCopyCapture(span, lexer.File(), thisPos); }
+        |   THIS{ span = lexer.GetSpan(pos); thisPos = span; return new otava::ast::CurrentObjectByRefCapture(span, lexer.File(), thisPos); }
+        |   
+            (
+                (AMP{ span = lexer.GetSpan(pos); byRefCaptureNode.reset(new otava::ast::ByRefCaptureNode(span, lexer.File())); })? 
+                Identifier(context):identifier{ if (!span.IsValid()) span = lexer.GetSpan(pos); }
+                Ellipsis:ellipsis?
+            )
+        )
+        {
+            return new otava::ast::SimpleCaptureNode(span, lexer.File(), identifier, byRefCaptureNode.release(), ellipsis);
+        }
+        ;
+
+    LambdaDeclarator(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lpSpan, var soul::ast::Span rpSpan,
+        var std::unique_ptr<otava::ast::ParameterListNode> parameterList) : otava::ast::Node*
+        ::=
+        (
+            (
+                LPAREN{ span = lexer.GetSpan(pos); lpSpan = span; parameterList.reset(new otava::ast::ParameterListNode(span, lexer.File())); }
+                ParameterDeclarationClause(context, parameterList.get()):params 
+                RPAREN{ rpSpan = lexer.GetSpan(pos); parameterList->SetLParenSpan(lpSpan); parameterList->SetRParenSpan(rpSpan); }
+            )?
+            LambdaSpecifiers(context):specifiers{ if (!span.IsValid()) span = lexer.GetSpan(pos); }
+            RequiresClause(context):requiresClause?
+        )
+        {
+            return new otava::ast::LambdaDeclaratorNode(span, lexer.File(), parameterList.release(), specifiers, requiresClause);
+        }
+        ;
+
+    LambdaSpecifiers(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            (DeclSpecifierSeq(context):declSpecifiers{ span = lexer.GetSpan(pos); })?
+            (NoexceptSpecifier(context):noexceptSpecifier{ if (!span.IsValid()) span = lexer.GetSpan(pos); })?
+            (AttributeSpecifierSeq(context):attributes{ if (!span.IsValid()) span = lexer.GetSpan(pos); })?
+            (TrailingReturnType(context):trailingReturnType{ if (!span.IsValid()) span = lexer.GetSpan(pos); })?
+        )
+        {
+            return new otava::ast::LambdaSpecifiersNode(span, lexer.File(), declSpecifiers, noexceptSpecifier, attributes, trailingReturnType);
+        }
+        ;
+
+    LambdaTemplateParams(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            TemplateParameterList(context):templateParams{ span = lexer.GetSpan(pos); }
+            RequiresClause(context):requiresClause?
+        )
+        {
+            return new otava::ast::LambdaTemplateParamsNode(span, lexer.File(), templateParams, requiresClause);
+        }
+        ;
+}

@@ -1,0 +1,5 @@
+project otava.intermediate.slg;
+tokens <intermediate.token>;
+keywords <intermediate.keyword>;
+expressions <intermediate.expr>;
+lexer <intermediate.lexer>;

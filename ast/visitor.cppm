@@ -374,12 +374,12 @@ public:
 
     virtual void BeginVisit(Node& node) {}
     virtual void EndVisit(Node& node) {}
-    virtual void VisitIdentifier(const std::u32string& id, const soul::ast::Span& span) {}
+    virtual void VisitIdentifier(const std::string& id, const soul::ast::Span& span) {}
     virtual void VisitKeyword(const std::string& keyword, const soul::ast::Span& span) {}
     virtual void VisitOperator(const std::string& symbol, const soul::ast::Span& span) {}
-    virtual void VisitToken(const std::u32string& tokenStr, const soul::ast::Span& span) {}
-    virtual void VisitLiteral(const std::u32string& rep, const soul::ast::Span& span) {}
-    virtual void VisitHeaderName(const std::u32string& rep, const soul::ast::Span& span) {}
+    virtual void VisitToken(const std::string& tokenStr, const soul::ast::Span& span) {}
+    virtual void VisitLiteral(const std::string& rep, const soul::ast::Span& span) {}
+    virtual void VisitHeaderName(const std::string& rep, const soul::ast::Span& span) {}
 
     //  Attribute:
     virtual void Visit(AttributeSpecifierSequenceNode& node) {}

@@ -38,7 +38,7 @@ void Writer::Write(NodeKind nodeKind)
     writerPtr->WriteULEB128UInt(u);
 }
 
-void Writer::Write(const std::u32string& str)
+void Writer::Write(const std::string& str)
 {
     writerPtr->Write(str);
 }

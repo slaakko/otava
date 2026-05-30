@@ -1,0 +1,102 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.module_dependency;
+
+[interface]import otava.symbols.context;
+[interface]import otava.ast.node;
+[implementation]import otava.ast.translation_unit;
+[implementation]import otava.ast.modules;
+[implementation]import otava.ast.declaration;
+[implementation]import soul.ast.span;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+[implementation]import otava.parser.modules;
+[implementation]import otava.parser.punctuation;
+
+parser ModuleDependencyParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+    main;
+
+    using ModuleParser.ModuleDeclaration;
+    using ModuleParser.ImportDeclaration;
+    using ModuleParser.ExportKeyword;
+    using ModuleParser.ModuleKeyword;
+    using PunctuationParser.Semicolon;
+
+    ModuleUnit(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::Node> moduleDeclarationNode) : otava::ast::Node*
+        ::= 
+        (
+            (
+                GlobalModuleFragment(context):globalModuleFragment{ span = lexer.GetSpan(pos); }
+            )? 
+            ModuleDeclaration(context):moduleDeclaration{ if (!span.IsValid()) span = lexer.GetSpan(pos); moduleDeclarationNode.reset(moduleDeclaration); }
+            DeclarationSeq(context):declarations? 
+        |   DeclarationSeq(context):declarations{ lexer.MoveToEnd(); return new otava::ast::TranslationUnitNode(lexer.GetSpan(pos), lexer.File(), declarations); }
+        |   empty{ lexer.MoveToEnd(); return new otava::ast::TranslationUnitNode(lexer.GetSpan(pos), lexer.File(), nullptr); }
+        )
+        {
+            lexer.MoveToEnd();
+            return new otava::ast::ModuleUnitNode(span, lexer.File(), globalModuleFragment, moduleDeclarationNode.release(), declarations, nullptr);
+        }
+        ;
+
+    GlobalModuleFragment(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            ModuleKeyword(context):moduleKw{ span = lexer.GetSpan(pos); }
+            Semicolon:semicolon 
+        )
+        {
+            return new otava::ast::GlobalModuleFragmentNode(span, lexer.File(), moduleKw, semicolon, nullptr);
+        }
+        ;
+
+    DeclarationSeq(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> sequence, var std::unique_ptr<otava::ast::Node> node) : 
+        otava::ast::Node*
+        ::= 
+        (
+            Declaration(context):first
+            { 
+                sequence.reset(new otava::ast::DeclarationSequenceNode(lexer.GetSpan(pos), lexer.File())); 
+                node.reset(first);
+                if (node)
+                {
+                    sequence->AddNode(node.release());
+                }
+            }
+            (
+                Declaration(context):next
+                { 
+                    node.reset(next);
+                    if (node)
+                    {
+                        sequence->AddNode(node.release()); 
+                    }
+                }
+            )*
+        )
+        {
+            return sequence.release();
+        }
+        ;
+
+    Declaration(otava::symbols::Context* context) : otava::ast::Node*
+        ::= ImportDeclaration(context):moduleImportDeclaration{ return moduleImportDeclaration; }
+        |   ExportImportDeclaration(context):exportImportDeclaration{ return exportImportDeclaration; }
+        ;
+
+    ExportImportDeclaration(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
+        ::= 
+        (
+            ExportKeyword(context):exprt{ span = lexer.GetSpan(pos); }
+            ImportDeclaration(context):imprt
+        )
+        {
+            return new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, imprt, soul::ast::Span(), soul::ast::Span());
+        }
+        ;
+}

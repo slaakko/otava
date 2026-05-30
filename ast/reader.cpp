@@ -5,7 +5,7 @@
 
 module otava.ast.reader;
 
-import otava.ast.node.map;
+import otava.ast.node_map;
 import otava.ast.error;
 
 namespace otava::ast {
@@ -38,9 +38,9 @@ NodeKind Reader::ReadNodeKind()
     return static_cast<NodeKind>(static_cast<std::uint16_t>(kind));
 }
 
-std::u32string Reader::ReadStr()
+std::string Reader::ReadStr()
 {
-    return readerPtr->ReadUtf32String();
+    return readerPtr->ReadUtf8String();
 }
 
 bool Reader::ReadBool()

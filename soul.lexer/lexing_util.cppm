@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.lexer.lexing.util;
+export module soul.lexer.lexing_util;
 
 import std;
 import soul.lexer.token;

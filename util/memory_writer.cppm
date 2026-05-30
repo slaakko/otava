@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module util.memory.writer;
+export module util.memory_writer;
 
 import std;
 import util.time;

@@ -3,15 +3,15 @@
 // Distributed under the MIT license
 // =================================
 
-module soul.xml.parent.node;
+module soul.xml.parent_node;
 
 import soul.xml.document;
-import soul.xml.document.fragment;
+import soul.xml.document_fragment;
 import soul.xml.error;
 import soul.lexer.error;
-import soul.lexer.file.map;
+import soul.lexer.file_map;
 import soul.xml.visitor;
-import soul.xml.node.operation;
+import soul.xml.node_operation;
 
 namespace soul::xml {
 

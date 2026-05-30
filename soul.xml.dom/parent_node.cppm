@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.parent.node;
+export module soul.xml.parent_node;
 
 import std;
 import soul.xml.node;

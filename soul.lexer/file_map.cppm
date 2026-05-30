@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.lexer.file.map;
+export module soul.lexer.file_map;
 
 import soul.lexer.base;
 import soul.lexer.token;

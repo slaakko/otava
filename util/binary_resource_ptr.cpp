@@ -8,7 +8,7 @@ module;
 #include <Windows.h>
 #endif
 
-module util.binary.resource.ptr;
+module util.binary_resource_ptr;
 
 import util.unicode;
 import util.win_error;

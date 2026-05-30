@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.xml.cdata.section;
+export module soul.xml.cdata_section;
 
 import std;
 import soul.xml.text;

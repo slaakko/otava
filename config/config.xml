@@ -1,0 +1,19 @@
+<configurations>
+    <configuration name='debug'>
+        <define symbol='DEBUG'/>
+    </configuration>
+	<configuration name='memdbg' base='debug'>
+		<define symbol='DEBUG_MEMORY'/>
+		<define symbol='NOWARN'/>
+	</configuration>
+	<configuration name='fn' base='debug'>
+		<define symbol='DEBUG_FUNCTIONS'/>
+		<define symbol='NOWARN'/>
+	</configuration>
+    <configuration name='trace' base='debug'>
+        <define symbol='TRACE'/>
+    </configuration>
+    <configuration name='release'>
+        <define symbol='RELEASE'/>
+    </configuration>
+</configurations>

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.lexer.token.parser;
+export module soul.lexer.token_parser;
 
 import std;
 import util.unicode;
