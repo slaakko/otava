@@ -33,8 +33,22 @@ void Writer::Write(Symbol* symbol)
     }
     else
     {
-        std::uint8_t zero = ToUnderlying(zeroSymbolId);
+        std::uint32_t zero = ToUnderlying(zeroSymbolId);
         binaryStreamWriter.Write(zero);
+    }
+}
+
+void Writer::Write(soul::ast::FullSpan& fullSpan)
+{
+    if (fullSpan.IsValid())
+    {
+        binaryStreamWriter.Write(fullSpan.fileIndex);
+        binaryStreamWriter.Write(fullSpan.span.pos);
+        binaryStreamWriter.Write(fullSpan.span.len);
+    }
+    else
+    {
+        binaryStreamWriter.Write(-1);
     }
 }
 

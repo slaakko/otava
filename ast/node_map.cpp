@@ -18,12 +18,25 @@ void NodeMap::AddNode(Node* node)
     nodeMap[node->InternalId()] = node;
 }
 
-Node* NodeMap::GetNode(std::int64_t nodeId) const
+Node* NodeMap::GetNodeNoThrow(std::int64_t nodeId) const
 {
     auto it = nodeMap.find(nodeId);
     if (it != nodeMap.cend())
     {
         return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+Node* NodeMap::GetNode(std::int64_t nodeId) const
+{
+    Node* node = GetNodeNoThrow(nodeId);
+    if (node)
+    {
+        return node;
     }
     else
     {

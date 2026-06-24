@@ -19,12 +19,14 @@ ConceptSymbol::ConceptSymbol(Module* module_, SymbolId id_, const std::string& n
 
 bool IsConceptName(otava::ast::Node* node, Context* context) noexcept
 {
+/*
     std::string name = node->Str();
     Symbol* symbol = context->GetSymbolTable()->Lookup(name, SymbolGroupKind::conceptSymbolGroup, node->GetFullSpan(), context);
     if (symbol)
     {
         return symbol->IsConceptSymbol();
     }
+*/
     return false;
 }
 

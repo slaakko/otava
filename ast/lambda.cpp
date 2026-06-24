@@ -87,16 +87,16 @@ void LambdaIntroducerNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(capture.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void LambdaIntroducerNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     capture.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 LambdaCaptureNode::LambdaCaptureNode(const soul::ast::Span& span_, int fileIndex_) noexcept : ListNode(NodeKind::lambdaCaptureNode, span_, fileIndex_)
@@ -239,13 +239,13 @@ void CurrentObjectCopyCapture::Accept(Visitor& visitor)
 void CurrentObjectCopyCapture::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(thisSpan);
+    //writer.Write(thisSpan);
 }
 
 void CurrentObjectCopyCapture::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    thisSpan = reader.ReadSpan();
+    //thisSpan = reader.ReadSpan();
 }
 
 CurrentObjectByRefCapture::CurrentObjectByRefCapture(const soul::ast::Span& span_, int fileIndex_) noexcept : 
@@ -273,13 +273,13 @@ void CurrentObjectByRefCapture::Accept(Visitor& visitor)
 void CurrentObjectByRefCapture::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(thisSpan);
+    //writer.Write(thisSpan);
 }
 
 void CurrentObjectByRefCapture::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    thisSpan = reader.ReadSpan();
+    //thisSpan = reader.ReadSpan();
 }
 
 InitCaptureNode::InitCaptureNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::initCaptureNode, span_, fileIndex_)

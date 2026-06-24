@@ -1,6 +1,5 @@
 export module std.type.fundamental;
 
-/*
 export {
 
 using int8_t = signed char;
@@ -35,4 +34,4 @@ using ::time_t;
 using ::ptrdiff_t;
 
 } // namespace std
-*/
+

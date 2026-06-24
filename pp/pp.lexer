@@ -1,0 +1,75 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.pp.lexer;
+
+import otava.token;
+import otava.pp.keyword;
+import otava.expr;
+
+lexer PPLexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{id}" { std::int64_t kw = lexer.GetKeywordToken(lexer.CurrentToken().match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
+        "{integer_literal}" { return INTEGER_LITERAL; }
+        "{character_literal}" { return CHARACTER_LITERAL; }
+        "{string_literal}" { return STRING_LITERAL; }
+        "{angle_header_name}" { return ANGLE_HEADER_NAME; }
+        "{quote_header_name}" { return QUOTE_HEADER_NAME; }
+        "::" { return COLON_COLON; }
+        "," { return COMMA; }
+        "=" { return ASSIGN; }
+        "\*=" { return MUL_ASSIGN; }
+        "/=" { return DIV_ASSIGN; }
+        "%=" { return REM_ASSIGN; }
+        "\+=" { return ADD_ASSIGN; }
+        "-=" { return SUB_ASSIGN; }
+        ">>=" { return SHIFT_RIGHT_ASSIGN; }
+        "<<=" { return SHIFT_LEFT_ASSIGN; }
+        "&=" { return AND_ASSIGN; }
+        "^=" { return XOR_ASSIGN; }
+        "\|=" { return OR_ASSIGN; }
+        "\?" { return QUEST; }
+        ":" { return COLON; }
+        "\|\|" { return OR_OR; }
+        "&&" { return AMP_AMP; }
+        "\|" { return OR; }
+        "^" { return XOR; }
+        "&" { return AMP; }
+        "==" { return EQ; }
+        "!=" { return NEQ; }
+        "<=" { return LEQ; }
+        ">=" { return GEQ; }
+        "<=>" { return SPACE_SHIP; }
+        "<" { return LANGLE; }
+        ">" { return RANGLE; }
+        "<<" { return SHIFT_LEFT; }
+        ">>" { return SHIFT_RIGHT; }
+        "\+" { return PLUS; }
+        "-" { return MINUS; }
+        "\*" { return STAR; }
+        "/" { return DIV; }
+        "%" { return MOD; }
+        "\.\*" { return DOT_STAR; }
+        "->\*" { return ARROW_STAR; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "\+\+" { return PLUS_PLUS; }
+        "--" { return MINUS_MINUS; }
+        "!" { return EXCLAMATION; }
+        "~" { return TILDE; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\." { return DOT; }
+        "->" { return ARROW; }
+        ";" { return SEMICOLON; }
+        "\.\.\." { return ELLIPSIS; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "#" { return HASH; }
+    }
+}

@@ -7,6 +7,13 @@ module otava.symbols.type_compare;
 
 import otava.symbols.type_symbol;
 import otava.symbols.classes;
+import otava.symbols.class_group_symbol;
+import otava.symbols.class_templates;
+import otava.symbols.compound_type_symbol;
+import otava.symbols.context;
+import otava.symbols.function_type_symbol;
+import otava.symbols.variable_symbol;
+import otava.symbols.templates;
 
 namespace otava::symbols {
 
@@ -17,21 +24,20 @@ bool TypeIdLess::operator()(TypeSymbol* left, TypeSymbol* right) const noexcept
 
 bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
 {
-/*
     if (left->IsForwardClassDeclarationSymbol())
     {
         ForwardClassDeclarationSymbol* fwdLeft = static_cast<ForwardClassDeclarationSymbol*>(left);
-        if (fwdLeft->GetClassTypeSymbol())
+        if (fwdLeft->GetClassTypeSymbol(context))
         {
-            left = fwdLeft->GetClassTypeSymbol();
+            left = fwdLeft->GetClassTypeSymbol(context);
         }
     }
     if (right->IsForwardClassDeclarationSymbol())
     {
         ForwardClassDeclarationSymbol* fwdRight = static_cast<ForwardClassDeclarationSymbol*>(right);
-        if (fwdRight->GetClassTypeSymbol())
+        if (fwdRight->GetClassTypeSymbol(context))
         {
-            right = fwdRight->GetClassTypeSymbol();
+            right = fwdRight->GetClassTypeSymbol(context);
         }
     }
     if (left == right) return true;
@@ -40,13 +46,13 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
     {
         ClassTemplateSpecializationSymbol* leftSpecialization = static_cast<ClassTemplateSpecializationSymbol*>(left);
         ClassTemplateSpecializationSymbol* rightSpecialization = static_cast<ClassTemplateSpecializationSymbol*>(right);
-        if (!TypesEqual(leftSpecialization->ClassTemplate(), rightSpecialization->ClassTemplate(), context)) return false;
-        if (leftSpecialization->TemplateArguments().size() != rightSpecialization->TemplateArguments().size()) return false;
-        int n = leftSpecialization->TemplateArguments().size();
-        for (int i = 0; i < n; ++i)
+        if (!TypesEqual(leftSpecialization->ClassTemplate(context), rightSpecialization->ClassTemplate(context), context)) return false;
+        if (leftSpecialization->TemplateArguments(context).size() != rightSpecialization->TemplateArguments(context).size()) return false;
+        Cardinality n = Cardinality(leftSpecialization->TemplateArguments(context).size());
+        for (Index i = Index(0); i < Index(n); ++i)
         {
-            Symbol* leftTemplateArg = leftSpecialization->TemplateArguments()[i];
-            Symbol* rightTemplateArg = rightSpecialization->TemplateArguments()[i];
+            Symbol* leftTemplateArg = leftSpecialization->TemplateArguments(context)[ToUnderlying(i)];
+            Symbol* rightTemplateArg = rightSpecialization->TemplateArguments(context)[ToUnderlying(i)];
             if (leftTemplateArg->IsTypeSymbol() && rightTemplateArg->IsTypeSymbol())
             {
                 TypeSymbol* leftTemplateArgType = static_cast<TypeSymbol*>(leftTemplateArg);
@@ -64,13 +70,14 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
     {
         CompoundTypeSymbol* leftCompound = static_cast<CompoundTypeSymbol*>(left);
         CompoundTypeSymbol* rightCompound = static_cast<CompoundTypeSymbol*>(right);
-        if (TypesEqual(leftCompound->BaseType(), rightCompound->BaseType(), context) && leftCompound->GetDerivations() == rightCompound->GetDerivations()) return true;
+        if (TypesEqual(leftCompound->GetBaseType(context), rightCompound->GetBaseType(context), context) && 
+            leftCompound->GetDerivations() == rightCompound->GetDerivations()) return true;
     }
     if (left->IsTemplateParameterSymbol() && right->IsTemplateParameterSymbol())
     {
         TemplateParameterSymbol* leftTemplateParam = static_cast<TemplateParameterSymbol*>(left);
         TemplateParameterSymbol* rightTemplateParam = static_cast<TemplateParameterSymbol*>(right);
-        return leftTemplateParam->Index() == rightTemplateParam->Index();
+        return leftTemplateParam->GetIndex() == rightTemplateParam->GetIndex();
     }
     if (left->IsFunctionType() && right->IsFunctionType())
     {
@@ -84,7 +91,7 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
         {
             ClassGroupTypeSymbol* classGroupType = static_cast<ClassGroupTypeSymbol*>(left);
             ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(right);
-            if (classGroupType->ClassGroup()->Name() == classType->Group()->Name())
+            if (classGroupType->GetClassGroup()->Name() == classType->Group(context)->Name())
             {
                 return true;
             }
@@ -93,13 +100,12 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
         {
             ClassGroupTypeSymbol* classGroupType = static_cast<ClassGroupTypeSymbol*>(right);
             ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(left);
-            if (classGroupType->ClassGroup()->Name() == classType->Group()->Name())
+            if (classGroupType->GetClassGroup()->Name() == classType->Group(context)->Name())
             {
                 return true;
             }
         }
     }
-*/
     return false;
 }
 

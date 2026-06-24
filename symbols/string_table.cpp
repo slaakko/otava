@@ -5,6 +5,7 @@
 
 module otava.symbols.string_table;
 
+import otava.symbols.modules;
 import otava.symbols.writer;
 import util.memory_reader;
 import util.binary_stream_writer;
@@ -12,18 +13,34 @@ import util.utility;
 
 namespace otava::symbols {
 
-StringTable::StringTable() : start(nullptr), nextOffset(StringOffset(0))
+StringTableHeader::StringTableHeader() : start(FileOffset(0)), length(Length(0)), count(Cardinality(0))
 {
 }
 
-void StringTable::SetOffsets(const std::uint8_t* start_, Length length_)
+void StringTableHeader::Write(Writer& writer)
 {
-    start = start_;
-    nextOffset = StringOffset(length_);
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(start));
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(length));
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(count));
 }
 
-StringOffset StringTable::GetOffset(const std::string& s) const
+void StringTableHeader::Read(Reader& reader)
 {
+    start = FileOffset(reader.CurrentReader().ReadInt());
+    length = Length(reader.CurrentReader().ReadInt());
+    count = Cardinality(reader.CurrentReader().ReadInt());
+}
+
+StringTable::StringTable(Module* module_) : module(module_), length(Length(0)), headerRead(false), stringsRead(false)
+{
+}
+
+StringOffset StringTable::GetOffset(const std::string& s) 
+{
+    if (module->IsReadOnly())
+    {
+        ReadStrings();
+    }
     auto it = stringMap.find(s);
     if (it != stringMap.end())
     {
@@ -36,24 +53,24 @@ StringOffset StringTable::AddString(const std::string& s)
 {
     StringOffset offset = GetOffset(s);
     if (offset != notFoundOffset) return offset;
-    offset = nextOffset;
+    offset = StringOffset(length);
     strings.push_back(s);
     stringMap[s] = offset;
-    if (!start)
-    {
-        offsetMap[offset] = s;
-    }
-    nextOffset = offset + s.length() + 1;
+    offsetMap[offset] = s;
+    length = Length(offset + s.length() + 1);
     return offset;
 }
 
-std::string StringTable::GetString(StringOffset offset) const
+std::string StringTable::GetString(StringOffset offset)
 {
-    if (start)
+    if (module->IsReadOnly())
     {
-        const std::uint8_t* pos = util::Advance(start, ToUnderlying(offset));
-        util::MemoryReader reader(pos, std::uint32_t(start + GetLength() - pos));
-        return reader.ReadString();
+        ReadHeader();
+        const std::uint8_t* pos = util::Advance(module->GetFileMapping()->Start(), ToUnderlying(header.start) + ToUnderlying(offset));
+        util::MemoryReader reader(pos, std::int32_t(util::Advance(module->GetFileMapping()->Start(), 
+            ToUnderlying(header.start) + ToUnderlying(header.length)) - pos));
+        std::string str = reader.ReadString();
+        return str;
     }
     else
     {
@@ -66,12 +83,72 @@ std::string StringTable::GetString(StringOffset offset) const
     return std::string();
 }
 
+const char* StringTable::CharPtr(StringOffset offset)
+{
+    if (module->IsReadOnly())
+    {
+        ReadHeader();
+        const std::uint8_t* pos = util::Advance(module->GetFileMapping()->Start(), ToUnderlying(header.start) + ToUnderlying(offset));
+        return reinterpret_cast<const char*>(pos);
+    }
+    else
+    {
+        auto it = offsetMap.find(offset);
+        if (it != offsetMap.end())
+        {
+            return it->second.c_str();
+        }
+    }
+    return "";
+}
+
 void StringTable::Write(Writer& writer)
 {
+    FileOffset start = FileOffset(writer.Position());
+    header.Write(writer);
+    FileOffset contentStart = FileOffset(writer.Position());
     util::BinaryStreamWriter& binaryStreamWriter = writer.GetBinaryStreamWriter();
     for (const auto& s : strings)
     {
         binaryStreamWriter.Write(s);
+    }
+    FileOffset end = FileOffset(writer.Position());
+    Length length = Length(end - contentStart);
+    header.start = contentStart;
+    header.length = length;
+    header.count = Cardinality(strings.size());
+    writer.Seek(ToUnderlying(start));
+    header.Write(writer);
+    writer.Seek(ToUnderlying(end));
+}
+
+void StringTable::ReadHeader()
+{
+    if (headerRead) return;
+    headerRead = true;
+    if (!module->IsReadOnly()) return;
+    Reader reader(module->GetFileMapping());
+    reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetStringTableOffset())), module->GetStringTableLength());
+    Read(reader);
+    reader.PopCurrentReader();
+}
+
+void StringTable::Read(Reader& reader)
+{
+    header.Read(reader);
+}
+
+void StringTable::ReadStrings()
+{
+    if (stringsRead) return;
+    stringsRead = true;
+    Cardinality count = header.count;
+    StringOffset offset = StringOffset(0);
+    for (Index i = Index(0); i < Index(count); ++i)
+    {
+        std::string str = GetString(offset);
+        stringMap[str] = offset;
+        offset += str.length() + 1;
     }
 }
 

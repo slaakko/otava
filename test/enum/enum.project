@@ -1,0 +1,3 @@
+project enum;
+target=program;
+source <main.cpp>;

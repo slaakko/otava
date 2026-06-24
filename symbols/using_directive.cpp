@@ -45,7 +45,7 @@ void UsingDirectiveProcessor::Visit(otava::ast::QualifiedIdNode& node)
 void UsingDirectiveProcessor::Visit(otava::ast::IdentifierNode& node)
 {
     soul::ast::FullSpan fullSpan = node.GetFullSpan();
-    Symbol* symbol = scope->Lookup(node.Str(), SymbolGroupKind::typeSymbolGroup, ScopeLookup::allScopes, fullSpan, context, LookupFlags::none);
+    Symbol* symbol = scope->Lookup(node.Str(), SymbolGroupKind::namespaceSymbolGroup, ScopeLookup::allScopes, fullSpan, context, LookupFlags::none);
     if (symbol)
     {
         if (symbol->IsNamespaceSymbol())

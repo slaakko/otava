@@ -145,6 +145,10 @@
     <ClCompile Include="build.cppm" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="config.cppm" />
+    <ClCompile Include="gen_main_unit.cpp" />
+    <ClCompile Include="gen_main_unit.cppm" />
+    <ClCompile Include="msbuild.cpp" />
+    <ClCompile Include="msbuild.cppm" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="parser.cppm" />
     <ClCompile Include="project.cpp" />
@@ -154,6 +158,8 @@
     <ClCompile Include="project.parser.cpp" />
     <ClCompile Include="project.parser.cppm" />
     <ClCompile Include="project.token.cppm" />
+    <ClCompile Include="project_file.cpp" />
+    <ClCompile Include="project_file.cppm" />
     <ClCompile Include="project_rules.cpp" />
     <ClCompile Include="project_rules.cppm" />
     <ClCompile Include="solution.cpp" />
@@ -171,11 +177,20 @@
     <ProjectReference Include="..\ast\ast.vcxproj">
       <Project>{06a46249-a334-48e9-85e6-73616212b783}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\codegen\codegen.vcxproj">
+      <Project>{213ab57d-28fb-45e6-a5da-74ec7a0ad5d8}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\lexer\lexer.vcxproj">
       <Project>{482e3b51-5ad0-49ec-9891-c902c3ba65ff}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\optimizer\optimizer.vcxproj">
+      <Project>{04c54a1b-abd4-4cf1-a0a7-a33486f06e0d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\parser\parser.vcxproj">
       <Project>{99213559-3a97-464f-b1e2-67ff44bf3b0d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\pp\pp.vcxproj">
+      <Project>{96126ec6-b882-494d-81b1-ba004c4defbf}</Project>
     </ProjectReference>
     <ProjectReference Include="..\soul.ast\soul.ast.vcxproj">
       <Project>{24a953f0-c4c5-4e75-832a-8a1882e68253}</Project>

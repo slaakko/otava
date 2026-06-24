@@ -108,15 +108,15 @@ void TemplateParameterListNode::Accept(Visitor& visitor)
 void TemplateParameterListNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
-    writer.Write(laSpan);
-    writer.Write(raSpan);
+    //writer.Write(laSpan);
+    //writer.Write(raSpan);
 }
 
 void TemplateParameterListNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
-    laSpan = reader.ReadSpan();
-    raSpan = reader.ReadSpan();
+    //laSpan = reader.ReadSpan();
+    //raSpan = reader.ReadSpan();
 }
 
 TypeParameterNode::TypeParameterNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::typeParameterNode, span_, fileIndex_)
@@ -216,16 +216,16 @@ void TemplateIdNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
     writer.Write(templateName.get());
-    writer.Write(laSpan);
-    writer.Write(raSpan);
+    //writer.Write(laSpan);
+    //writer.Write(raSpan);
 }
 
 void TemplateIdNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
     templateName.reset(reader.ReadNode());
-    laSpan = reader.ReadSpan();
-    raSpan = reader.ReadSpan();
+    //laSpan = reader.ReadSpan();
+    //raSpan = reader.ReadSpan();
 }
 
 void TemplateIdNode::SetTemplateArgKinds(const std::vector<bool>& templateArgKinds_)
@@ -296,8 +296,8 @@ void DeductionGuideNode::Write(Writer& writer)
     writer.Write(templateId.get());
     writer.Write(explicitSpecifier.get());
     writer.Write(semicolon.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void DeductionGuideNode::Read(Reader& reader)
@@ -309,8 +309,8 @@ void DeductionGuideNode::Read(Reader& reader)
     templateId.reset(reader.ReadNode());
     explicitSpecifier.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 ExplicitInstantiationNode::ExplicitInstantiationNode(const soul::ast::Span& span_, int fileIndex_) noexcept : 
@@ -402,8 +402,8 @@ void ExplicitSpecializationNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(tmp.get());
     writer.Write(declaration.get());
-    writer.Write(laSpan);
-    writer.Write(raSpan);
+    //writer.Write(laSpan);
+    //writer.Write(raSpan);
 }
 
 void ExplicitSpecializationNode::Read(Reader& reader)
@@ -411,8 +411,8 @@ void ExplicitSpecializationNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     tmp.reset(reader.ReadNode());
     declaration.reset(reader.ReadNode());
-    laSpan = reader.ReadSpan();
-    raSpan = reader.ReadSpan();
+    //laSpan = reader.ReadSpan();
+    //raSpan = reader.ReadSpan();
 }
 
 } // namespace otava::ast

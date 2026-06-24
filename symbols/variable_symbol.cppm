@@ -5,6 +5,7 @@
 
 export module otava.symbols.variable_symbol;
 
+import otava.symbols.ast_node_io;
 import otava.symbols.symbol;
 import otava.symbols.value;
 import otava.ast.node;
@@ -16,6 +17,7 @@ class VariableSymbol : public Symbol
 public:
     VariableSymbol(Module* module_, SymbolId id_);
     VariableSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    inline int Arity() const noexcept { return 0; }
     inline int Level() const noexcept { return level; }
     inline void SetLevel(int level_) noexcept { level = level_; }
     inline bool FoundFromParent() const noexcept { return foundFromParent; }
@@ -24,24 +26,43 @@ public:
     inline void SetNodeId(std::int64_t nodeId_) noexcept { nodeId = nodeId_; }
     inline bool IsTemporary() const noexcept { return temporary; }
     inline void SetTemporary() noexcept { temporary = true; }
-    bool IsLocalVariable() const noexcept;
-    bool IsMemberVariable() const noexcept;
-    bool IsGlobalVariable(Context* context) const noexcept;
+    bool IsLocalVariable(Context* context);
+    bool IsMemberVariable(Context* context);
+    bool IsGlobalVariable(Context* context);
     bool IsStatic() const noexcept;
-    inline Value* GetValue() const noexcept { return value; }
+    inline VariableSymbol* Final() noexcept { if (global) return global; else return this; }
+    inline void SetGlobal(VariableSymbol* global_) noexcept { global = global_; }
+    inline std::int32_t GetIndex() const noexcept { return index; }
+    inline void SetIndex(std::int32_t index_) noexcept { index = index_; }
+    Value* GetValue(Context* context);
     inline void SetValue(Value* value_) noexcept { value = value_; }
-    TypeSymbol* GetDeclaredType() const noexcept;
-    void SetDeclaredType(TypeSymbol* declaredType_) noexcept;
-    TypeSymbol* GetInitializerType() const noexcept;
-    void SetInitializerType(TypeSymbol* initializerType_) noexcept;
-    TypeSymbol* GetType() const noexcept;
-    TypeSymbol* GetReferredType() const noexcept;
+    inline std::int32_t LayoutIndex() const noexcept { return layoutIndex; }
+    inline void SetLayoutIndex(std::int32_t layoutIndex_) noexcept { layoutIndex = layoutIndex_; }
+    std::string IrName(Context* context) const override;
+    TypeSymbol* GetDeclaredType(Context* context);
+    void SetDeclaredType(TypeSymbol* declaredType_, Context* context) noexcept;
+    TypeSymbol* GetInitializerType(Context* context);
+    void SetInitializerType(TypeSymbol* initializerType_, Context* context) noexcept;
+    TypeSymbol* GetType(Context* context);
+    TypeSymbol* GetReferredType(Context* context);
+    void Write(Writer& writer) override;
+    void Read(Reader& reader) override;
 private:
+    TypeSymbol* declaredType;
+    SymbolId declaredTypeId;
+    TypeSymbol* initializerType;
+    SymbolId initializerTypeId;
+    Value* value;
+    SymbolId valueId;
+    std::int32_t index;
     int level;
     bool foundFromParent;
     std::int64_t nodeId;
     bool temporary;
-    Value* value;
+    std::int32_t layoutIndex;
+    VariableSymbol* global;
+    bool contentFetched;
+    void GetContent(Context* context);
 };
 
 enum class ParameterKind : std::uint8_t
@@ -56,12 +77,18 @@ public:
     ParameterSymbol(Module* module_, SymbolId id_, const std::string& name_);
     inline ParameterKind GetParameterKind() const noexcept { return parameterKind; }
     inline void SetParameterKind(ParameterKind parameterKind_) { parameterKind = parameterKind_; }
-    inline otava::ast::Node* DefaultValue() const noexcept { return defaultValue; }
-    inline void SetDefaultValue(otava::ast::Node* defaultValue_) noexcept { defaultValue = defaultValue_; }
-    inline void SetType(TypeSymbol* type_) noexcept { type = type_; }
+    inline otava::ast::Node* DefaultValue() const noexcept { return defaultValue.get(); }
+    void SetDefaultValue(otava::ast::Node* defaultValue_) noexcept;
+    void SetType(TypeSymbol* type_, Context* context) noexcept;
+    TypeSymbol* GetReferredType(Context* context);
+    TypeSymbol* GetType(Context* context);
+    void Write(Writer& writer) override;
+    void Read(Reader& reader) override;
 private:
+    AstNodeHeader astNodeHeader;
     ParameterKind parameterKind;
-    otava::ast::Node* defaultValue;
+    std::unique_ptr<otava::ast::Node> defaultValue;
+    SymbolId typeId;
     TypeSymbol* type;
 };
 

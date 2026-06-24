@@ -39,7 +39,7 @@ constexpr ScopeLookup operator~(ScopeLookup lookup) noexcept
 
 enum class LookupFlags : std::int32_t
 {
-    none = 0, dontResolveSingle = 1 << 0, all = 1 << 1, noFwdDeclarationSymbol = 1 << 2
+    none = 0, dontResolveSingle = 1 << 0, all = 1 << 1, noFwdDeclarationSymbol = 1 << 2, dontImport = 1 << 3
 };
 
 constexpr LookupFlags operator|(LookupFlags left, LookupFlags right) noexcept

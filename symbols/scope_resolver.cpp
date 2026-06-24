@@ -52,11 +52,14 @@ void ScopeResolver::Visit(otava::ast::ColonColonNode& node)
 void ScopeResolver::Visit(otava::ast::IdentifierNode& node)
 {
     first = false;
-    Symbol* symbol = currentScope->Lookup(node.Str(), SymbolGroupKind::typeSymbolGroup, ScopeLookup::allScopes, node.GetFullSpan(), context, LookupFlags::none);
+    Symbol* symbol = currentScope->Lookup(node.Str(), 
+        SymbolGroupKind::templateParamSymbolGroup | SymbolGroupKind::classSymbolGroup | SymbolGroupKind::enumSymbolGroup | SymbolGroupKind::aliasSymbolGroup |
+        SymbolGroupKind::namespaceSymbolGroup, ScopeLookup::allScopes, node.GetFullSpan(), context, LookupFlags::none);
     if (!symbol)
     {
-        symbol = context->GetSymbolTable()->LookupInScopeStack(node.Str(), SymbolGroupKind::typeSymbolGroup, node.GetFullSpan(),
-            context, LookupFlags::none);
+        symbol = context->GetSymbolTable()->LookupInScopeStack(node.Str(), SymbolGroupKind::templateParamSymbolGroup | SymbolGroupKind::classSymbolGroup |
+            SymbolGroupKind::aliasSymbolGroup | SymbolGroupKind::enumSymbolGroup | SymbolGroupKind::namespaceSymbolGroup, node.GetFullSpan(), context, 
+            LookupFlags::none);
     }
     if (symbol)
     {
@@ -79,12 +82,14 @@ void ScopeResolver::Visit(otava::ast::IdentifierNode& node)
         }
         else
         {
-            ThrowException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + currentScope->FullName() + "'", node.GetFullSpan(), context);
+            ThrowException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + 
+                currentScope->FullName(context) + "'", node.GetFullSpan(), context);
         }
     }
     else
     {
-        ThrowException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + currentScope->FullName() + "'", node.GetFullSpan(), context);
+        ThrowException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + currentScope->FullName(context) + "'", 
+            node.GetFullSpan(), context);
     }
 }
 

@@ -151,8 +151,8 @@ void AsmDeclarationNode::Write(Writer& writer)
     writer.Write(asmText.get());
     writer.Write(semicolon.get());
     writer.Write(attributes.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void AsmDeclarationNode::Read(Reader& reader)
@@ -162,8 +162,8 @@ void AsmDeclarationNode::Read(Reader& reader)
     asmText.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 AsmNode::AsmNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::asmNode, span_, fileIndex_)
@@ -216,8 +216,8 @@ void LinkageSpecificationNode::Write(Writer& writer)
     writer.Write(extrn.get());
     writer.Write(linkage.get());
     writer.Write(declarations.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void LinkageSpecificationNode::Read(Reader& reader)
@@ -226,8 +226,8 @@ void LinkageSpecificationNode::Read(Reader& reader)
     extrn.reset(reader.ReadNode());
     linkage.reset(reader.ReadNode());
     declarations.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 NamespaceDefinitionNode::NamespaceDefinitionNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::namespaceDefinitionNode, span_, fileIndex_)
@@ -277,8 +277,8 @@ void NamespaceDefinitionNode::Write(Writer& writer)
     writer.Write(nsBody.get());
     writer.Write(inln.get());
     writer.Write(attributes.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void NamespaceDefinitionNode::Read(Reader& reader)
@@ -289,8 +289,8 @@ void NamespaceDefinitionNode::Read(Reader& reader)
     nsBody.reset(reader.ReadNode());
     inln.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 NamespaceBodyNode::NamespaceBodyNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::namespaceBodyNode, span_, fileIndex_)
@@ -586,8 +586,8 @@ void StaticAssertDeclarationNode::Write(Writer& writer)
     writer.Write(comma.get());
     writer.Write(stringLiteral.get());
     writer.Write(semicolon.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void StaticAssertDeclarationNode::Read(Reader& reader)
@@ -598,8 +598,8 @@ void StaticAssertDeclarationNode::Read(Reader& reader)
     comma.reset(reader.ReadNode());
     stringLiteral.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 StaticAssertNode::StaticAssertNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::staticAssertNode, span_, fileIndex_)
@@ -838,16 +838,16 @@ void ParenthesizedDeclaratorNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(declarator.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ParenthesizedDeclaratorNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     declarator.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string ParenthesizedDeclaratorNode::Str() const
@@ -1116,16 +1116,16 @@ void ConditionalExplicitNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
     writer.Write(cond.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ConditionalExplicitNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
     cond.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 QualifiedPtrNode::QualifiedPtrNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -1260,22 +1260,27 @@ void ArrayDeclaratorNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
     writer.Write(dimension.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void ArrayDeclaratorNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
     dimension.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 std::string ArrayDeclaratorNode::Str() const
 {
     std::string str = Child()->Str();
-    str.append(1, '[').append(dimension->Str()).append(1, ']');
+    str.append(1, '[');
+    if (dimension)
+    {
+        str.append(dimension->Str());
+    }
+    str.append(1, ']');
     return str;
 }
 
@@ -1433,16 +1438,16 @@ void NoexceptSpecifierNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(constantExpr.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void NoexceptSpecifierNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     constantExpr.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 ThrowSpecifierNode::ThrowSpecifierNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::throwSpecifierNode, span_, fileIndex_)
@@ -1469,15 +1474,15 @@ void ThrowSpecifierNode::Accept(Visitor& visitor)
 void ThrowSpecifierNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ThrowSpecifierNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 } // namespace otava::ast

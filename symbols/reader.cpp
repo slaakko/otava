@@ -23,4 +23,17 @@ void Reader::PopCurrentReader()
     readerStack.pop();
 }
 
+soul::ast::FullSpan Reader::ReadFullSpan()
+{
+    int fileIndex = currentReader.ReadInt();
+    if (fileIndex != -1)
+    {
+        int pos = currentReader.ReadInt();
+        int len = currentReader.ReadInt();
+        soul::ast::Span span(pos, len);
+        return soul::ast::FullSpan(fileIndex, span);
+    }
+    return soul::ast::FullSpan();
+}
+
 } // namespace otava::symbols

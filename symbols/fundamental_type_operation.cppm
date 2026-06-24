@@ -10,6 +10,8 @@ import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.function_symbol;
 import otava.symbols.variable_symbol;
+import otava.symbols.writer;
+import otava.symbols.reader;
 import otava.intermediate.data;
 
 export namespace otava::symbols {
@@ -124,17 +126,19 @@ template<class Op>
 class FundamentalTypeUnaryOperation : public FunctionSymbol
 {
 public:
-    FundamentalTypeUnaryOperation(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
+    FundamentalTypeUnaryOperation(Module* module_, SymbolId id_) : 
+        FunctionSymbol(module_, id_)
     {
     }
-    FundamentalTypeUnaryOperation(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) : FunctionSymbol(module_, id_, Op::GroupName())
+    FundamentalTypeUnaryOperation(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) : 
+        FunctionSymbol(module_, id_, Op::GroupName())
     {
         SetFunctionKind(FunctionKind::function);
         SetAccess(Access::public_);
         ParameterSymbol* param = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "param");
-        param->SetType(type);
+        param->SetType(type, context);
         AddSymbol(param, soul::ast::FullSpan(), context);
-        SetReturnType(type, soul::ast::FullSpan(), context);
+        SetReturnType(type, context);
         SetNoExcept();
     }
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -151,20 +155,22 @@ template<class Op>
 class FundamentalTypeBinaryOperation : public FunctionSymbol
 {
 public:
-    FundamentalTypeBinaryOperation(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
+    FundamentalTypeBinaryOperation(Module* module_, SymbolId id_) : 
+        FunctionSymbol(module_, id_)
     {
     }
-    FundamentalTypeBinaryOperation(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) : FunctionSymbol(module_, id_, Op::GroupName())
+    FundamentalTypeBinaryOperation(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) : 
+        FunctionSymbol(module_, id_, Op::GroupName())
     {
         SetFunctionKind(FunctionKind::function);
         SetAccess(Access::public_);
         ParameterSymbol* leftParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
-        leftParam->SetType(type);
+        leftParam->SetType(type, context);
         AddSymbol(leftParam, soul::ast::FullSpan(), context);
         ParameterSymbol* rightParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
-        rightParam->SetType(type);
+        rightParam->SetType(type, context);
         AddSymbol(rightParam, soul::ast::FullSpan(), context);
-        SetReturnType(type, soul::ast::FullSpan(), context);
+        SetReturnType(type, context);
         SetNoExcept();
     }
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -183,21 +189,21 @@ template<typename Op>
 class FundamentalTypeAssignmentOperation : public FunctionSymbol
 {
 public:
-    FundamentalTypeAssignmentOperation(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr)
+    FundamentalTypeAssignmentOperation(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
     {
     }
-    FundamentalTypeAssignmentOperation(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) : 
-        FunctionSymbol(module_, id_, Op::AssignmentOpGroupName()), type(type_)
+    FundamentalTypeAssignmentOperation(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) : 
+        FunctionSymbol(module_, id_, Op::AssignmentOpGroupName())
     {
         SetFunctionKind(FunctionKind::function);
         SetAccess(Access::public_);
         ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-        thisParam->SetType(type);
+        thisParam->SetType(type, context);
         AddSymbol(thisParam, soul::ast::FullSpan(), context);
         ParameterSymbol* thatParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
-        thatParam->SetType(type);
+        thatParam->SetType(type, context);
         AddSymbol(thatParam, soul::ast::FullSpan(), context);
-        SetReturnType(type->AddLValueRef(context), soul::ast::FullSpan(), context);
+        SetReturnType(type->AddLValueRef(context), context);
         SetNoExcept();
     }
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -213,8 +219,6 @@ public:
     }
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
-private:
-    TypeSymbol* type;
 };
 
 template<class Op>
@@ -231,12 +235,12 @@ public:
         SetFunctionKind(FunctionKind::function);
         SetAccess(Access::public_);
         ParameterSymbol* leftParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
-        leftParam->SetType(type);
+        leftParam->SetType(type, context);
         AddSymbol(leftParam, soul::ast::FullSpan(), context);
         ParameterSymbol* rightParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
-        rightParam->SetType(type);
+        rightParam->SetType(type, context);
         AddSymbol(rightParam, soul::ast::FullSpan(), context);
-        SetReturnType(boolType, soul::ast::FullSpan(), context);
+        SetReturnType(boolType, context);
         SetNoExcept();
     }
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -440,41 +444,35 @@ public:
     FundamentalTypeDefaultCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    void Resolve(Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
 private:
     TypeSymbol* type;
+    SymbolId typeId;
 };
 
 class FundamentalTypeCopyCtor : public FunctionSymbol
 {
 public:
     FundamentalTypeCopyCtor(Module* module_, SymbolId id_);
-    FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
-    void Write(Writer& writer) override;
-    void Read(Reader& reader) override;
+    FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
-private:
-    TypeSymbol* type;
 };
 
 class FundamentalTypeMoveCtor : public FunctionSymbol
 {
 public:
     FundamentalTypeMoveCtor(Module* module_, SymbolId id_);
-    FundamentalTypeMoveCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
-    void Write(Writer& writer) override;
-    void Read(Reader& reader) override;
+    FundamentalTypeMoveCtor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
-private:
-    TypeSymbol* type;
 };
 
 class FundamentalTypeCopyAssignment : public FunctionSymbol
@@ -482,41 +480,34 @@ class FundamentalTypeCopyAssignment : public FunctionSymbol
 public:
     FundamentalTypeCopyAssignment(Module* module_, SymbolId id_);
     FundamentalTypeCopyAssignment(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
-    void Write(Writer& writer) override;
-    void Read(Reader& reader) override;
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
-private:
-    TypeSymbol* type;
 };
 
 class FundamentalTypeMoveAssignment : public FunctionSymbol
 {
 public:
     FundamentalTypeMoveAssignment(Module* module_, SymbolId id_);
-    FundamentalTypeMoveAssignment(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
-    void Write(Writer& writer) override;
-    void Read(Reader& reader) override;
+    FundamentalTypeMoveAssignment(Module* module_, SymbolId id_, TypeSymbol* type, Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
-private:
-    TypeSymbol* type;
 };
 
 class TrivialDestructor : public FunctionSymbol
 {
 public:
     TrivialDestructor(Module* module_, SymbolId id_);
-    TrivialDestructor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
+    TrivialDestructor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
 private:
     TypeSymbol* type;
+    SymbolId typeId;
 };
 
 void AddFundamentalTypeOperationsToSymbolTable(Context* context);

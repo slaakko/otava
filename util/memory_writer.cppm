@@ -22,6 +22,8 @@ public:
     void Write(std::int32_t x);
     void Write(std::uint64_t x);
     void Write(std::int64_t x);
+    void Write(double x);
+    void Write(char32_t x);
     void Write(const DateTime& dt);
     void Write(const std::string& str);
 private:

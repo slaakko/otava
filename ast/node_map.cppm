@@ -15,9 +15,10 @@ class NodeMap
 public:
     NodeMap();
     void AddNode(Node* node);
+    Node* GetNodeNoThrow(std::int64_t nodeId) const;
     Node* GetNode(std::int64_t nodeId) const;
 private:
-    std::map<std::int64_t, Node*> nodeMap;
+    std::unordered_map<std::int64_t, Node*> nodeMap;
 };
 
 } // namespace otava::ast

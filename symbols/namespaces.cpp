@@ -14,13 +14,13 @@ import otava.ast.identifier;
 
 namespace otava::symbols {
 
-NamespaceSymbol::NamespaceSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_)
+NamespaceSymbol::NamespaceSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), expanded(false)
 {
     GetScope()->SetKind(ScopeKind::namespaceScope);
 }
 
 NamespaceSymbol::NamespaceSymbol(Module* module_, SymbolId id_, const std::string& name_) :
-    ContainerSymbol(module_, id_, name_)
+    ContainerSymbol(module_, id_, name_), expanded(false)
 {
     GetScope()->SetKind(ScopeKind::namespaceScope);
 }
@@ -32,6 +32,35 @@ bool NamespaceSymbol::IsValidDeclarationScope(ScopeKind scopeKind) const noexcep
     case ScopeKind::namespaceScope: return true;
     }
     return false;
+}
+
+void NamespaceSymbol::Expand(Context* context)
+{
+    if (expanded) return;
+    expanded = true;
+    for (const auto& moduleSymboId : ModuleSymbolIds())
+    {
+        ModuleId moduleId = moduleSymboId.moduleId;
+        Module* module = context->GetModuleMapper()->GetModule(moduleId);
+        if (module)
+        {
+            SymbolId symbolId = moduleSymboId.symbolId;
+            NamespaceSymbol* ns = module->GetSymbolTable()->GetNamespaceSymbol(symbolId, context);
+            if (ns)
+            {
+                GetScope()->Import(ns->GetScope(), context);
+            }
+            else
+            {
+                ThrowException("namespace symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
+            }
+        }
+        else
+        {
+            ThrowException("import module " + std::to_string(ToUnderlying(moduleId)) + " not found from namespace '" + FullName(context) + 
+                "' of module " + GetModule()->Name());
+        }
+    }
 }
 
 class NamespaceCreator : public otava::ast::DefaultVisitor

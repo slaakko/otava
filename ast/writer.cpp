@@ -7,6 +7,7 @@ module otava.ast.writer;
 
 namespace otava::ast {
 
+/*
 Writer::Writer(const std::string& fileName) : 
     fileStream(new util::FileStream(fileName, util::OpenMode::binary | util::OpenMode::write)),
     bufferedStream(new util::BufferedStream(*fileStream)), 
@@ -14,11 +15,13 @@ Writer::Writer(const std::string& fileName) :
     writerPtr(binaryStreamWriter.get())
 {
 }
+*/
 
 Writer::Writer(util::BinaryStreamWriter* writerPtr_) : writerPtr(writerPtr_)
 {
 }
 
+/*
 void Writer::Write(const soul::ast::Span& span)
 {
     if (span.IsValid())
@@ -31,11 +34,11 @@ void Writer::Write(const soul::ast::Span& span)
         writerPtr->WriteULEB128UInt(0);
     }
 }
+*/
 
 void Writer::Write(NodeKind nodeKind)
 {
-    std::uint32_t u = static_cast<std::uint16_t>(nodeKind);
-    writerPtr->WriteULEB128UInt(u);
+    writerPtr->Write(static_cast<std::uint16_t>(nodeKind));
 }
 
 void Writer::Write(const std::string& str)
@@ -57,7 +60,7 @@ void Writer::Write(Node* node)
     else
     {
         Write(node->Kind());
-        Write(node->GetSpan());
+        //Write(node->GetSpan());
         node->Write(*this);
     }
 }

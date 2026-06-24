@@ -42,16 +42,16 @@ void EnumSpecifierNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
     writer.Write(enumHead.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void EnumSpecifierNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
     enumHead.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 EnumHeadNode::EnumHeadNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::enumHeadNode, span_, fileIndex_)
@@ -148,13 +148,13 @@ void EnumClassNode::Accept(Visitor& visitor)
 void EnumClassNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(classSpan);
+    //writer.Write(classSpan);
 }
 
 void EnumClassNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    classSpan = reader.ReadSpan();
+    //classSpan = reader.ReadSpan();
 }
 
 EnumStructNode::EnumStructNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::enumStructNode, span_, fileIndex_)
@@ -181,13 +181,13 @@ void EnumStructNode::Accept(Visitor& visitor)
 void EnumStructNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(structSpan);
+    //writer.Write(structSpan);
 }
 
 void EnumStructNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    structSpan = reader.ReadSpan();
+    //structSpan = reader.ReadSpan();
 }
 
 EnumNode::EnumNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::enumNode, span_, fileIndex_)
@@ -239,7 +239,7 @@ void EnumeratorDefinitionNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(enumerator.get());
     writer.Write(value.get());
-    writer.Write(assignSpan);
+    //writer.Write(assignSpan);
 }
 
 void EnumeratorDefinitionNode::Read(Reader& reader)
@@ -247,7 +247,7 @@ void EnumeratorDefinitionNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     enumerator.reset(reader.ReadNode());
     value.reset(reader.ReadNode());
-    assignSpan = reader.ReadSpan();
+    //assignSpan = reader.ReadSpan();
 }
 
 EnumeratorNode::EnumeratorNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::enumeratorNode, span_, fileIndex_)

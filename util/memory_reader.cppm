@@ -24,6 +24,8 @@ public:
     std::int32_t ReadInt();
     std::uint64_t ReadULong();
     std::int64_t ReadLong();
+    double ReadDouble();
+    char32_t ReadUChar();
     DateTime ReadDateTime();
     std::string ReadString();
     util::uuid ReadUuid();

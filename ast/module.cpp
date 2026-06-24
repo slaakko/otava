@@ -104,8 +104,8 @@ void ExportDeclarationNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(exprt.get());
     writer.Write(subject.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void ExportDeclarationNode::Read(Reader& reader)
@@ -113,8 +113,8 @@ void ExportDeclarationNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     exprt.reset(reader.ReadNode());
     subject.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 ExportNode::ExportNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::exportNode, span_, fileIndex_)

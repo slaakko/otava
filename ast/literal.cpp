@@ -64,9 +64,9 @@ void IntegerLiteralNode::Write(Writer& writer)
 void IntegerLiteralNode::Read(Reader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryStreamReader().ReadULong();
-    suffix = static_cast<Suffix>(reader.GetBinaryStreamReader().ReadByte());
-    base = static_cast<Base>(reader.GetBinaryStreamReader().ReadByte());
+    value = reader.GetMemoryReader().ReadULong();
+    suffix = static_cast<Suffix>(reader.GetMemoryReader().ReadByte());
+    base = static_cast<Base>(reader.GetMemoryReader().ReadByte());
 }
 
 FloatingLiteralNode::FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -102,9 +102,9 @@ void FloatingLiteralNode::Write(Writer& writer)
 void FloatingLiteralNode::Read(Reader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryStreamReader().ReadDouble();
-    suffix = static_cast<Suffix>(reader.GetBinaryStreamReader().ReadByte());
-    base = static_cast<Base>(reader.GetBinaryStreamReader().ReadByte());
+    value = reader.GetMemoryReader().ReadDouble();
+    suffix = static_cast<Suffix>(reader.GetMemoryReader().ReadByte());
+    base = static_cast<Base>(reader.GetMemoryReader().ReadByte());
 }
 
 CharacterLiteralNode::CharacterLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -141,9 +141,9 @@ void CharacterLiteralNode::Write(Writer& writer)
 void CharacterLiteralNode::Read(Reader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryStreamReader().ReadUChar();
-    encodingPrefix = static_cast<EncodingPrefix>(reader.GetBinaryStreamReader().ReadByte());
-    hasMultipleCharacters = reader.GetBinaryStreamReader().ReadBool();
+    value = reader.GetMemoryReader().ReadUChar();
+    encodingPrefix = static_cast<EncodingPrefix>(reader.GetMemoryReader().ReadByte());
+    hasMultipleCharacters = reader.GetMemoryReader().ReadBool();
 }
 
 StringLiteralNode::StringLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -191,7 +191,7 @@ void StringLiteralNode::Read(Reader& reader)
 {
     LiteralNode::Read(reader);
     value = reader.ReadStr();
-    encodingPrefix = static_cast<EncodingPrefix>(reader.GetBinaryStreamReader().ReadByte());
+    encodingPrefix = static_cast<EncodingPrefix>(reader.GetMemoryReader().ReadByte());
 }
 
 RawStringLiteralNode::RawStringLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept : StringLiteralNode(NodeKind::rawStringLiteralNode, span_, fileIndex_)
@@ -329,13 +329,13 @@ void LiteralOperatorIdNode::Accept(Visitor& visitor)
 void LiteralOperatorIdNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(stringLitSpan);
+    //writer.Write(stringLitSpan);
 }
 
 void LiteralOperatorIdNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    stringLitSpan = reader.ReadSpan();
+    //stringLitSpan = reader.ReadSpan();
 }
 
 std::string EncodingPrefixStr(EncodingPrefix encodingPrefix)

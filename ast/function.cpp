@@ -257,16 +257,16 @@ void NewArrayOpNode::Accept(Visitor& visitor)
 void NewArrayOpNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 
 }
 
 void NewArrayOpNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 NewOpNode::NewOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::newOpNode, span_, fileIndex_)
@@ -309,15 +309,15 @@ void DeleteArrayOpNode::Accept(Visitor& visitor)
 void DeleteArrayOpNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void DeleteArrayOpNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 DeleteOpNode::DeleteOpNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::deleteOpNode, span_, fileIndex_)
@@ -665,15 +665,15 @@ void ParameterListNode::Accept(Visitor& visitor)
 void ParameterListNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ParameterListNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 NoexceptNode::NoexceptNode(const soul::ast::Span& span_, int fileIndex_) noexcept : Node(NodeKind::noexceptNode, span_, fileIndex_)

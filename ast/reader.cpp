@@ -10,20 +10,21 @@ import otava.ast.error;
 
 namespace otava::ast {
 
-Reader::Reader(const std::string& fileName) : 
-    fileStream(new util::FileStream(fileName, util::OpenMode::binary | util::OpenMode::read)), 
-    bufferedStream(new util::BufferedStream(*fileStream)), 
-    binaryStreamReader(new util::BinaryStreamReader(*bufferedStream)),
-    readerPtr(binaryStreamReader.get()),
-    nodeMap(nullptr),
-    fileIndex(-1)
+//  Reader::Reader(const std::string& fileName) : 
+    //fileStream(new util::FileStream(fileName, util::OpenMode::binary | util::OpenMode::read)), 
+    //bufferedStream(new util::BufferedStream(*fileStream)), 
+    //binaryStreamReader(new util::BinaryStreamReader(*bufferedStream)),
+    //readerPtr(binaryStreamReader.get()),
+    //nodeMap(nullptr),
+    //fileIndex(-1)
+//{
+//}
+
+Reader::Reader(util::MemoryReader* readerPtr_) : readerPtr(readerPtr_), nodeMap(nullptr), fileIndex(-1)
 {
 }
 
-Reader::Reader(util::BinaryStreamReader* readerPtr_) : readerPtr(readerPtr_), nodeMap(nullptr), fileIndex(-1)
-{
-}
-
+/*
 soul::ast::Span Reader::ReadSpan()
 {
     int len = readerPtr->ReadULEB128UInt();
@@ -31,16 +32,17 @@ soul::ast::Span Reader::ReadSpan()
     int pos = readerPtr->ReadULEB128UInt();
     return soul::ast::Span(pos, len);
 }
+*/
 
 NodeKind Reader::ReadNodeKind()
 {
-    std::uint32_t kind = readerPtr->ReadULEB128UInt();
-    return static_cast<NodeKind>(static_cast<std::uint16_t>(kind));
+    std::uint16_t kind = readerPtr->ReadUShort();
+    return static_cast<NodeKind>(kind);
 }
 
 std::string Reader::ReadStr()
 {
-    return readerPtr->ReadUtf8String();
+    return readerPtr->ReadString();
 }
 
 bool Reader::ReadBool()
@@ -57,8 +59,9 @@ Node* Reader::ReadNode()
     }
     else
     {
-        soul::ast::Span span = ReadSpan();
-        Node* node = CreateNode(kind, span, fileIndex);
+        //soul::ast::Span span = ReadSpan();
+        Node* node = CreateNode(kind, soul::ast::Span(), -1);
+        //Node* node = CreateNode(kind, span, fileIndex);
         node->SetId(-1);
         node->Read(*this);
         if (node->InternalId() == -1)

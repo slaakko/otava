@@ -5,12 +5,15 @@
 
 export module otava.symbols.bound_tree;
 
-import std;
+import otava.intermediate.code;
+import otava.intermediate.data;
 import soul.ast.span;
 import otava.ast.node;
+import std;
 
 export namespace otava::symbols {
 
+class ClassTemplateRepository;
 class NamespaceSymbol;
 class NamespaceTypeSymbol;
 class Emitter;
@@ -59,9 +62,7 @@ class Context;
 class Value;
 class Scope;
 class FunctionDefinitionSymbol;
-
 class BoundTreeVisitor;
-
 class BoundFunctionCallNode;
 class OperationRepository;
 class ArgumentConversionTable;
@@ -185,18 +186,18 @@ public:
     virtual void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context);
     Scope* GetMemberScope(otava::ast::Node* op, const soul::ast::FullSpan& fullSpan, Context* context) const override;
     bool BindToRvalueRef() const noexcept { return GetFlag(BoundExpressionFlags::bindToRvalueRef); }
-    virtual bool HasValue() const noexcept { return false; }
+    virtual bool HasValue(Context* context) const noexcept { return false; }
     virtual void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual BoundExpressionNode* Clone() const = 0;
     inline bool GetFlag(BoundExpressionFlags flag) const noexcept { return (flags & flag) != BoundExpressionFlags::none; }
     inline void SetFlag(BoundExpressionFlags flag) noexcept { flags = flags | flag; }
     bool IsBoundExpressionNode() const noexcept override { return true; }
-    virtual bool IsBoundLocalVariable() const noexcept { return false; }
-    virtual bool IsBoundMemberVariable() const noexcept { return false; }
-    virtual bool IsBoundParentLocalVariable() const noexcept { return false; }
-    virtual bool IsBoundParentMemberVariable() const noexcept { return false; }
-    virtual bool IsLvalueExpression() const noexcept { return false; }
+    virtual bool IsBoundLocalVariable(Context* context) const noexcept { return false; }
+    virtual bool IsBoundMemberVariable(Context* context) const noexcept { return false; }
+    virtual bool IsBoundParentLocalVariable(Context* context) const noexcept { return false; }
+    virtual bool IsBoundParentMemberVariable(Context* context) const noexcept { return false; }
+    virtual bool IsLvalueExpression(Context* context) const noexcept { return false; }
     virtual bool IsNoReturnFunctionCall() const noexcept { return false; }
     void SetDestructTemporariesNode(BoundDestructTemporariesNode* destructTemporariesNode_) noexcept;
     inline BoundDestructTemporariesNode* DestructTemporariesNode() const noexcept { return destructTemporariesNode; }
@@ -210,13 +211,13 @@ private:
 class BoundValueExpressionNode : public BoundExpressionNode
 {
 public:
-    //BoundValueExpressionNode(otava::intermediate::Value* value_, TypeSymbol* type);
-    bool HasValue() const noexcept override { return true; }
+    BoundValueExpressionNode(otava::intermediate::Value* value_, TypeSymbol* type);
+    bool HasValue(Context* context) const noexcept override { return true; }
     void Accept(BoundTreeVisitor& visitor) override;
     BoundExpressionNode* Clone() const override;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
 private:
-    //otava::intermediate::Value* value;
+    otava::intermediate::Value* value;
 };
 
 class BoundFunctionNode;
@@ -230,7 +231,7 @@ public:
     inline OperationRepository* GetOperationRepository() const { return operationRepository.get(); }
     inline ArgumentConversionTable* GetArgumentConversionTable() const { return argumentConversionTable.get(); }
     inline FunctionTemplateRepository* GetFunctionTemplateRepository() const { return functionTemplateRepository.get(); }
-    //inline ClassTemplateRepository* GetClassTemplateRepository() const { return classTemplateRepository.get(); }
+    inline ClassTemplateRepository* GetClassTemplateRepository() const { return classTemplateRepository.get(); }
     inline InlineFunctionRepository* GetInlineFunctionRepository() const { return inlineFunctionRepository.get(); }
     inline BoundFunctionNode* GetCompileUnitInitializationFunction() { return compileUnitInitializationFunction; }
     void AddDynamicInitialization(BoundExpressionNode* dynamicInitialization, BoundExpressionNode* atExitCall, const soul::ast::FullSpan& fullSpan, Context* context);
@@ -240,8 +241,8 @@ public:
     inline const std::vector<std::unique_ptr<BoundNode>>& BoundNodes() const { return boundNodes; }
     inline void SetId(const std::string& id_) { id = id_; }
     inline const std::string& Id() const { return id; }
-    //otava::intermediate::Value* CreateBoundGlobalVariable(VariableSymbol* globalVariableSymbol, Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context,
-        //bool definition);
+    otava::intermediate::Value* CreateBoundGlobalVariable(
+        VariableSymbol* globalVariableSymbol, Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context, bool definition);
     void AddClassToGenerateDestructorList(ClassTypeSymbol* classType);
     inline const std::vector<ClassTypeSymbol*>& GenerateDestructorList() const { return generateDestructorList; }
 private:
@@ -250,7 +251,7 @@ private:
     std::unique_ptr<OperationRepository> operationRepository;
     std::unique_ptr<ArgumentConversionTable> argumentConversionTable;
     std::unique_ptr<FunctionTemplateRepository> functionTemplateRepository;
-    //std::unique_ptr<ClassTemplateRepository> classTemplateRepository;
+    std::unique_ptr<ClassTemplateRepository> classTemplateRepository;
     std::unique_ptr<InlineFunctionRepository> inlineFunctionRepository;
     std::set<ClassTypeSymbol*> boundClasses;
     BoundFunctionNode* compileUnitInitializationFunction;
@@ -615,38 +616,38 @@ class BoundLabeledStatementNode : public BoundStatementNode
 {
 public:
     BoundLabeledStatementNode(const soul::ast::FullSpan& fullSpan_);
-    BoundLabeledStatementNode(const soul::ast::FullSpan& fullSpan_, const std::u32string& label_, BoundStatementNode* stmt_);
+    BoundLabeledStatementNode(const soul::ast::FullSpan& fullSpan_, const std::string& label_, BoundStatementNode* stmt_);
     std::string Name() const override { return "labeled"; }
     void Accept(BoundTreeVisitor& visitor) override;
     BoundStatementNode* Clone() const override;
-    const std::u32string& Label() const noexcept { return label; }
-    void SetLabel(const std::u32string& label_) { label = label_; }
+    const std::string& Label() const noexcept { return label; }
+    void SetLabel(const std::string& label_) { label = label_; }
     inline void SetStatement(BoundStatementNode* stmt_) noexcept { stmt.reset(stmt_); }
     BoundStatementNode* Statement() const noexcept { return stmt.get(); }
-    //otava::intermediate::BasicBlock* GetBB(Emitter& emitter);
+    otava::intermediate::BasicBlock* GetBB(Emitter& emitter);
     bool ContainsLocalVariableWithDestructor() const noexcept override;
 private:
-    std::u32string label;
+    std::string label;
     std::unique_ptr<BoundStatementNode> stmt;
-    //otava::intermediate::BasicBlock* bb;
+    otava::intermediate::BasicBlock* bb;
 };
 
 class BoundGotoStatementNode : public BoundStatementNode
 {
 public:
     BoundGotoStatementNode(const soul::ast::FullSpan& fullSpan_);
-    BoundGotoStatementNode(const soul::ast::FullSpan& fullSpan_, const std::u32string& target_);
+    BoundGotoStatementNode(const soul::ast::FullSpan& fullSpan_, const std::string& target_);
     std::string Name() const override { return "goto"; }
     void Accept(BoundTreeVisitor& visitor) override;
     BoundStatementNode* Clone() const override;
     bool IsTerminator() const noexcept override { return true; }
-    inline const std::u32string& Target() const noexcept { return target; }
-    void SetTarget(const std::u32string& target_) { target = target_; }
+    inline const std::string& Target() const noexcept { return target; }
+    void SetTarget(const std::string& target_) { target = target_; }
     inline void SetLabeledStatement(BoundLabeledStatementNode* labeledStatement_) noexcept { labeledStatement = labeledStatement_; }
     inline BoundLabeledStatementNode* GetLabeledStatement() const noexcept { return labeledStatement; }
-    //otava::intermediate::BasicBlock* GetBB(Emitter& emitter);
+    otava::intermediate::BasicBlock* GetBB(Emitter& emitter);
 private:
-    std::u32string target;
+    std::string target;
     BoundLabeledStatementNode* labeledStatement;
 };
 
@@ -723,9 +724,9 @@ public:
 class BoundLiteralNode : public BoundExpressionNode
 {
 public:
-    BoundLiteralNode(Value* value_, const soul::ast::FullSpan& fullSpan_) noexcept;
+    BoundLiteralNode(Value* value_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     Value* GetValue() const noexcept { return value; }
     void SetValue(Value* value_) noexcept { value = value_; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -737,31 +738,31 @@ private:
 class BoundStringLiteralNode : public BoundExpressionNode
 {
 public:
-    BoundStringLiteralNode(Value* value_, const soul::ast::FullSpan& fullSpan_) noexcept;
+    BoundStringLiteralNode(Value* value_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     inline Value* GetValue() const noexcept { return value; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
 private:
     Value* value;
-    //otava::intermediate::Value* irValue;
+    otava::intermediate::Value* irValue;
 };
 
 class BoundVariableNode : public BoundExpressionNode
 {
 public:
-    BoundVariableNode(VariableSymbol* variable_, const soul::ast::FullSpan& fullSpan_) noexcept;
+    BoundVariableNode(VariableSymbol* variable_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* referredType_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     VariableSymbol* GetVariable() const noexcept { return variable; }
     BoundExpressionNode* ThisPtr() const noexcept { return thisPtr.get(); }
     void SetThisPtr(BoundExpressionNode* thisPtr_) noexcept;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsBoundLocalVariable() const noexcept override;
-    bool IsBoundMemberVariable() const noexcept override;
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool IsBoundLocalVariable(Context* context) const noexcept override;
+    bool IsBoundMemberVariable(Context* context) const noexcept override;
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
 private:
@@ -772,19 +773,19 @@ private:
 class BoundParentVariableNode : public BoundExpressionNode
 {
 public:
-    BoundParentVariableNode(VariableSymbol* variable_, const soul::ast::FullSpan& fullSpan_) noexcept;
+    BoundParentVariableNode(VariableSymbol* variable_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* referredType_) noexcept;
     inline int Level() const noexcept { return level; }
     inline void SetLevel(int level_) noexcept { level = level_; }
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     VariableSymbol* GetVariable() const noexcept { return variable; }
     BoundExpressionNode* ThisPtr() const noexcept { return thisPtr.get(); }
     void SetThisPtr(BoundExpressionNode* thisPtr_) noexcept;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsBoundParentLocalVariable() const noexcept override;
-    bool IsBoundParentMemberVariable() const noexcept override;
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool IsBoundParentLocalVariable(Context* context) const noexcept override;
+    bool IsBoundParentMemberVariable(Context* context) const noexcept override;
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
 private:
@@ -798,11 +799,11 @@ class BoundParameterNode : public BoundExpressionNode
 public:
     BoundParameterNode(ParameterSymbol* parameter_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     inline ParameterSymbol* GetParameter() const noexcept { return parameter; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     BoundExpressionNode* Clone() const override;
 private:
     ParameterSymbol* parameter;
@@ -815,11 +816,11 @@ public:
     inline int Level() const noexcept { return level; }
     inline void SetLevel(int level_) noexcept { level = level_; }
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     inline ParameterSymbol* GetParameter() const noexcept { return parameter; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     BoundExpressionNode* Clone() const override;
 private:
     ParameterSymbol* parameter;
@@ -829,9 +830,9 @@ private:
 class BoundEnumConstant : public BoundExpressionNode
 {
 public:
-    BoundEnumConstant(EnumConstantSymbol* enumConstant_, const soul::ast::FullSpan& fullSpan_) noexcept;
+    BoundEnumConstant(EnumConstantSymbol* enumConstant_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* enumType_);
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     EnumConstantSymbol* EnumConstant() const noexcept { return enumConstant; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
@@ -919,13 +920,13 @@ public:
     BoundFunctionCallNode(FunctionSymbol* functionSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override;
+    bool HasValue(Context* context) const noexcept override;
     inline FunctionSymbol* GetFunctionSymbol() const noexcept { return functionSymbol; }
     void AddArgument(BoundExpressionNode* arg);
     inline const std::vector<std::unique_ptr<BoundExpressionNode>>& Args() const noexcept { return args; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsLvalueExpression() const noexcept override;
+    bool IsLvalueExpression(Context* context) const noexcept override;
     BoundExpressionNode* Clone() const override;
     bool CallsClassConstructor(ClassTypeSymbol*& cls, BoundExpressionNode*& firstArg, FunctionDefinitionSymbol*& destructor) const noexcept;
     bool IsNoReturnFunctionCall() const noexcept override;
@@ -949,7 +950,7 @@ class BoundFunctionPtrCallNode : public BoundExpressionNode
 public:
     BoundFunctionPtrCallNode(const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     void AddArgument(BoundExpressionNode* arg);
     inline const std::vector<std::unique_ptr<BoundExpressionNode>>& Args() const noexcept { return args; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -964,7 +965,7 @@ class BoundInvokeNode : public BoundExpressionNode
 public:
     BoundInvokeNode(const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
-    bool HasValue() const noexcept override;
+    bool HasValue(Context* context) const noexcept override;
     BoundExpressionNode* Clone() const override;
     inline BoundVariableNode* Result() const noexcept { return result.get(); }
     inline void SetResult(BoundVariableNode* result_) noexcept { result.reset(result_); }
@@ -984,8 +985,8 @@ public:
     BoundExpressionSequenceNode(const soul::ast::FullSpan& fullSpan_, BoundExpressionNode* left_, BoundExpressionNode* right_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override;
-    bool IsLvalueExpression() const noexcept override;
+    bool HasValue(Context* context) const noexcept override;
+    bool IsLvalueExpression(Context* context) const noexcept override;
     BoundExpressionNode* Clone() const override;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -1027,7 +1028,7 @@ public:
     void SetTemporary(BoundVariableNode* temporary_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override;
+    bool HasValue(Context* context) const noexcept override;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -1050,7 +1051,7 @@ public:
     void SetTemporary(BoundVariableNode* temporary_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override;
+    bool HasValue(Context* context) const noexcept override;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -1075,7 +1076,7 @@ public:
     void SetTemporary(BoundVariableNode* temporary_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -1089,13 +1090,13 @@ private:
 class BoundConversionNode : public BoundExpressionNode
 {
 public:
-    BoundConversionNode(FunctionSymbol* conversionFunction_, const soul::ast::FullSpan& fullSpan_) noexcept;
-    BoundConversionNode(BoundExpressionNode* subject_, FunctionSymbol* conversionFunction_, const soul::ast::FullSpan& fullSpan_) noexcept;
+    BoundConversionNode(FunctionSymbol* conversionFunction_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
+    BoundConversionNode(BoundExpressionNode* subject_, FunctionSymbol* conversionFunction_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsLvalueExpression() const noexcept override;
+    bool IsLvalueExpression(Context* context) const noexcept override;
     inline BoundExpressionNode* Subject() const noexcept { return subject.get(); }
     inline void SetSubject(BoundExpressionNode* subject_) { subject.reset(subject_); }
     inline FunctionSymbol* ConversionFunction() const noexcept { return conversionFunction; }
@@ -1134,7 +1135,7 @@ public:
     bool MayThrow() const noexcept override;
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     inline BoundExpressionNode* Subject() noexcept { return subject.get(); }
     inline void SetSubject(BoundExpressionNode* subject_) noexcept { subject.reset(subject_); }
     inline OperationFlags Kind() const noexcept { return kind; }
@@ -1211,8 +1212,8 @@ public:
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override { return true; }
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
 private:
@@ -1229,8 +1230,8 @@ public:
     void Store(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override { return true; }
-    bool IsLvalueExpression() const noexcept override { return true; }
+    bool HasValue(Context* context) const noexcept override { return true; }
+    bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     inline BoundExpressionNode* ConstructorCall() const noexcept { return constructorCall.get(); }
     inline void SetConstructorCall(BoundExpressionNode* constructorCall_) noexcept { constructorCall.reset(constructorCall_); }
     inline BoundExpressionNode* Temporary() const noexcept { return temporary.get(); }
@@ -1263,7 +1264,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void Accept(BoundTreeVisitor& visitor) override;
     bool MayThrow() const noexcept override;
-    bool HasValue() const noexcept override { return !hasPlacement; }
+    bool HasValue(Context* context) const noexcept override { return !hasPlacement; }
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
     inline BoundExpressionNode* Allocation() const noexcept { return allocation.get(); }

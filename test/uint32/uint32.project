@@ -1,0 +1,3 @@
+project uint32;
+target=program;
+source <main.cpp>;

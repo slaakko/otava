@@ -19,10 +19,10 @@ ConversionTable::ConversionTable(Module* module_) : module(module_), read(false)
 {
 }
 
-void ConversionTable::AddConversion(FunctionSymbol* conversion)
+void ConversionTable::AddConversion(FunctionSymbol* conversion, Context* context)
 {
-    TypeSymbol* paramType = conversion->ConversionParamType();
-    TypeSymbol* argType = conversion->ConversionArgType();
+    TypeSymbol* paramType = conversion->GetConversionParamType(context);
+    TypeSymbol* argType = conversion->GetConversionArgType(context);
     ConversionTableEntry entry(ToUnderlying(paramType->Id()), ToUnderlying(argType->Id()));
     conversionMap[entry] = ToUnderlying(conversion->Id());
 }

@@ -26,7 +26,8 @@ void File::Write(Writer& writer)
 
 void File::Read(Reader& reader)
 {
-    filePath = reader.GetBinaryStreamReader().ReadUtf8String();
+    //filePath = reader.GetBinaryStreamReader().ReadUtf8String();
+    filePath = reader.ReadStr();
     content.reset(reader.ReadNode());
 }
 

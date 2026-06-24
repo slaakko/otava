@@ -18,12 +18,14 @@ class Context;
 class InstantiationRequest
 {
 public:
-    InstantiationRequest(FunctionSymbol* function_, const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap_);
+    InstantiationRequest(FunctionSymbol* function_, 
+        const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap_);
     inline FunctionSymbol* Function() const noexcept { return function; }
-    inline const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& TemplateParamMap() const noexcept { return templateParameterMap; }
+    inline const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& 
+        TemplateParamMap() const noexcept { return templateParameterMap; }
 private:
     FunctionSymbol* function;
-    std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
+    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
 };
 
 bool operator==(const InstantiationRequest& left, const InstantiationRequest& right) noexcept;
@@ -32,10 +34,11 @@ class InstantiationQueue
 {
 public:
     InstantiationQueue();
-    void EnqueueInstantiationRequest(FunctionSymbol* function, const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap);
+    void EnqueueInstantiationRequest(FunctionSymbol* function, 
+        const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap);
     std::vector<InstantiationRequest>* GetRequests(FunctionSymbol* functionTemplate);
 private:
-    std::map<std::string, std::map<std::u32string, std::vector<InstantiationRequest>>> requestMap;
+    std::map<std::string, std::map<std::string, std::vector<InstantiationRequest>>> requestMap;
 };
 
 void InstantiateEnqueuedRequests(FunctionSymbol* functionTemplate, const soul::ast::FullSpan& fullSpan, Context* context);

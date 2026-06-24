@@ -17,10 +17,11 @@ class NodeMap;
 class Reader
 {
 public:
-    Reader(const std::string& fileName);
-    Reader(util::BinaryStreamReader* readerPtr_);
-    inline util::BinaryStreamReader& GetBinaryStreamReader() noexcept { return *readerPtr; }
-    soul::ast::Span ReadSpan();
+    //Reader(const std::string& fileName);
+    Reader(util::MemoryReader* readerPtr_);
+    //inline util::BinaryStreamReader& GetBinaryStreamReader() noexcept { return *readerPtr; }
+    //soul::ast::Span ReadSpan();
+    inline util::MemoryReader& GetMemoryReader() noexcept { return *readerPtr; }
     NodeKind ReadNodeKind();
     std::string ReadStr();
     bool ReadBool();
@@ -30,10 +31,10 @@ public:
     inline int FileIndex() const noexcept { return fileIndex; }
     inline void SetFileIndex(int fileIndex_) noexcept { fileIndex = fileIndex_; }
 private:
-    std::unique_ptr<util::FileStream> fileStream;
-    std::unique_ptr<util::BufferedStream> bufferedStream;
-    std::unique_ptr<util::BinaryStreamReader> binaryStreamReader;
-    util::BinaryStreamReader* readerPtr;
+    //std::unique_ptr<util::FileStream> fileStream;
+    //std::unique_ptr<util::BufferedStream> bufferedStream;
+    //std::unique_ptr<util::BinaryStreamReader> binaryStreamReader;
+    util::MemoryReader* readerPtr;
     NodeMap* nodeMap;
     int fileIndex;
 };

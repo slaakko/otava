@@ -28,7 +28,13 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), signedCharType, boolType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBooleanConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), unsignedCharType, boolType, context), fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeBooleanConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), char8Type, boolType, context), fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeBooleanConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), char16Type, boolType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBooleanConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), char32Type, boolType, context), fullSpan, context);
@@ -570,6 +576,10 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedShortIntType, unsignedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedShortIntType, char8Type, 
             context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
@@ -629,6 +639,10 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeSignExtension), 1, ConversionKind::implicitConversion, intType, signedCharType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeSignExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, intType, unsignedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, intType, char8Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
@@ -679,6 +693,10 @@ void AddFundamentalTypeConversionsToSymboTable(
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedIntType, signedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeZeroExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedIntType, unsignedCharType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
@@ -740,6 +758,10 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeSignExtension), 1, ConversionKind::implicitConversion, longIntType, signedCharType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeSignExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, longIntType, unsignedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, longIntType, char8Type, context), 
         fullSpan, context);
@@ -794,6 +816,10 @@ void AddFundamentalTypeConversionsToSymboTable(
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedLongIntType, signedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeZeroExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedLongIntType, unsignedCharType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
@@ -855,6 +881,10 @@ void AddFundamentalTypeConversionsToSymboTable(
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeSignExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeSignExtension), 1, ConversionKind::implicitConversion, longLongIntType, signedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeSignExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, longLongIntType, unsignedCharType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
@@ -919,6 +949,10 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedLongLongIntType, unsignedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedLongLongIntType, char8Type, 
             context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
@@ -979,6 +1013,10 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeIntToFloatConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeIntToFloat), 1, ConversionKind::implicitConversion, floatType, unsignedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeIntToFloatConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeIntToFloat), 1, ConversionKind::implicitConversion, floatType, char8Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeIntToFloatConversion(context->GetModule(),
@@ -1030,6 +1068,10 @@ void AddFundamentalTypeConversionsToSymboTable(
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeIntToFloatConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeIntToFloat), 1, ConversionKind::implicitConversion, doubleType, signedCharType, context),
+        fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeIntToFloatConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeIntToFloat), 1, ConversionKind::implicitConversion, doubleType, unsignedCharType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeIntToFloatConversion(context->GetModule(),

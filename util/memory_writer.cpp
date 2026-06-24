@@ -80,6 +80,17 @@ void MemoryWriter::Write(std::int64_t x)
     Write(static_cast<std::uint64_t>(x));
 }
 
+void MemoryWriter::Write(double x)
+{
+    std::uint64_t* u = reinterpret_cast<std::uint64_t*>(&x);
+    Write(*u);
+}
+
+void MemoryWriter::Write(char32_t x)
+{
+    Write(static_cast<std::uint32_t>(x));
+}
+
 void MemoryWriter::Write(const DateTime& dt)
 {
     Date date = dt.GetDate();

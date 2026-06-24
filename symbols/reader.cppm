@@ -6,6 +6,7 @@
 export module otava.symbols.reader;
 
 import std;
+import soul.ast.span;
 import otava.symbols.id;
 import util.file_mapping;
 import util.memory_reader;
@@ -22,6 +23,7 @@ public:
     inline util::MemoryReader& CurrentReader() noexcept{ return currentReader; }
     void PushCurrentReader(const std::uint8_t* start, Length length);
     void PopCurrentReader();
+    soul::ast::FullSpan ReadFullSpan();
 private:
     util::FileMapping* fileMapping;
     util::MemoryReader currentReader;

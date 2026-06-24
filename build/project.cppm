@@ -6,8 +6,10 @@
 export module otava.build_project;
 
 import std;
+import otava.symbols.class_info;
 import otava.symbols.project;
 import otava.symbols.modules;
+import otava.symbols.trace;
 import soul.lexer.file_map;
 
 export namespace otava::build {
@@ -79,13 +81,12 @@ public:
         const std::set<std::string>& configurations, otava::symbols::Context* context);
     inline void SetTarget(Target target_) { target = target_; }
     inline Target GetTarget() const { return target; }
-    //inline info::class_index& Index() { return index; }
-    //inline otava::symbols::FunctionDefinitionSymbolSet* GetFunctionDefinitionSymbolSet() { return &functionDefinitionSymbolSet; }
-    //inline otava::symbols::TraceInfo& GetTraceInfo() { return traceInfo; };
-    //void ReadTraceInfo(const std::string& moduleDir);
-    //void WriteTraceInfo(const std::string& moduleDir);
-    //void ReadClassIndex(const std::string& moduleDir);
-    //void WriteClassIndex(const std::string& moduleDir);
+    inline otava::symbols::class_index& Index() { return index; }
+    inline otava::symbols::TraceInfo& GetTraceInfo() { return traceInfo; };
+    void ReadTraceInfo(const std::string& moduleDir);
+    void WriteTraceInfo(const std::string& moduleDir);
+    void ReadClassIndex(const std::string& moduleDir);
+    void WriteClassIndex(const std::string& moduleDir);
 private:
     soul::lexer::FileMap* fileMap;
     std::string filePath;
@@ -108,9 +109,8 @@ private:
     bool loaded;
     std::vector<std::string> moduleNames;
     std::vector<Define> defines;
-    //info::class_index index;
-    //otava::symbols::FunctionDefinitionSymbolSet functionDefinitionSymbolSet;
-    //otava::symbols::TraceInfo traceInfo;
+    otava::symbols::class_index index;
+    otava::symbols::TraceInfo traceInfo;
 };
 
 } // namespace otava::build

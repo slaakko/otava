@@ -17,22 +17,27 @@ enum class Derivations : std::uint8_t
     pointerMask = 0xF0u
 };
 
+constexpr std::uint8_t ToUnderlying(Derivations derivations) noexcept
+{
+    return std::uint8_t(derivations);
+}
+
 constexpr int pointerShift = 4;
 constexpr int maxPointerCount = 15;
 
 constexpr Derivations operator|(Derivations left, Derivations right) noexcept
 {
-    return Derivations(std::uint8_t(left) | std::uint8_t(right));
+    return Derivations(ToUnderlying(left) | ToUnderlying(right));
 }
 
 constexpr Derivations operator&(Derivations left, Derivations right) noexcept
 {
-    return Derivations(std::uint8_t(left) & std::uint8_t(right));
+    return Derivations(ToUnderlying(left) & ToUnderlying(right));
 }
 
 constexpr Derivations operator~(Derivations derivations) noexcept
 {
-    return Derivations(~std::uint8_t(derivations));
+    return Derivations(~ToUnderlying(derivations));
 }
 
 constexpr bool HasDerivation(Derivations derivations, Derivations derivation) noexcept { return (derivations & derivation) != Derivations::none; }

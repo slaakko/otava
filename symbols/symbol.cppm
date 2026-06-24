@@ -59,19 +59,24 @@ enum class DeclarationFlags : std::int32_t
     cvQualifierFlagMask = constFlag | volatileFlag
 };
 
+constexpr std::int32_t ToUnderlying(DeclarationFlags declarationFlags)
+{
+    return std::int32_t(declarationFlags);
+}
+
 constexpr DeclarationFlags operator|(DeclarationFlags left, DeclarationFlags right) noexcept
 {
-    return DeclarationFlags(std::int32_t(left) | std::int32_t(right));
+    return DeclarationFlags(ToUnderlying(left) | ToUnderlying(right));
 }
 
 constexpr DeclarationFlags operator&(DeclarationFlags left, DeclarationFlags right) noexcept
 {
-    return DeclarationFlags(std::int32_t(left) & std::int32_t(right));
+    return DeclarationFlags(ToUnderlying(left) & ToUnderlying(right));
 }
 
 constexpr DeclarationFlags operator~(DeclarationFlags flags) noexcept
 {
-    return DeclarationFlags(~std::int32_t(flags));
+    return DeclarationFlags(~ToUnderlying(flags));
 }
 
 enum class Access : std::uint8_t
@@ -109,13 +114,14 @@ enum class SymbolKind : std::uint8_t
     arrayTypeBegin, arrayTypeEnd,
     defaultBool, defaultSByte, defaultByte, defaultShort, defaultUShort, defaultInt, defaultUInt, defaultLong, defaultULong, defaultFloat, defaultDouble,
     defaultChar, defaultChar16, defaultChar32,
-    functionGroupTypeSymbol, classGroupTypeSymbol, aliasGroupTypeSymbol, friendSymbol, namespaceTypeSymbol,
+    functionGroupTypeSymbol, classGroupTypeSymbol, aliasGroupTypeSymbol, templateParamGroupSymbol, friendSymbol, namespaceTypeSymbol,
     intrinsicGetRbp,
     max
 };
 
 constexpr std::uint8_t ToUnderlying(SymbolKind kind) noexcept { return std::uint8_t(kind); }
 
+class Emitter;
 class Module;
 class Writer;
 class Reader;
@@ -174,9 +180,12 @@ public:
     Symbol(Module* module_, SymbolId id_, const std::string& name_);
     virtual ~Symbol();
     inline Module* GetModule() const noexcept { return module; }
+    inline void ResetModule() noexcept { module = nullptr; }
     inline SymbolId Id() const noexcept { return id; }
     inline StringOffset NameOffset() const noexcept { return nameOffset; }
     std::string Name() const;
+    virtual std::string SimpleName(Context* context) { return Name(); }
+    void SetName(const std::string& name_);
     virtual std::string FullName(Context* context) const;
     inline SymbolKind Kind() const noexcept { return kind; }
     inline Access GetAccess() const noexcept { return access; }
@@ -189,10 +198,13 @@ public:
     inline bool IsProject() const noexcept { return GetFlag(SymbolFlags::project); }
     inline void SetProject() noexcept { SetFlag(SymbolFlags::project); }
     inline bool IsReadOnly() const noexcept { return GetFlag(SymbolFlags::readOnly); }
+    inline void SetReadOnly() noexcept { SetFlag(SymbolFlags::readOnly); }
+    virtual bool IsExportSymbol(Context* context) const noexcept { return IsProject(); }
     inline void SetDeclarationFlags(DeclarationFlags declarationFlags_) noexcept { declarationFlags = declarationFlags_; }
     inline DeclarationFlags GetDeclarationFlags() const noexcept { return declarationFlags; }
     bool CanInstall() const noexcept;
     bool IsTypeSymbol() const noexcept;
+    virtual bool IsContainerSymbol() const noexcept { return false; }
     inline bool IsNamespaceSymbol() const noexcept { return kind == SymbolKind::namespaceSymbol; }
     inline bool IsGlobalNamespace() const noexcept { return kind == SymbolKind::namespaceSymbol && parent == nullptr; }
     inline bool IsClassTemplateSpecializationSymbol() const noexcept { return kind == SymbolKind::classTemplateSpecializationSymbol; }
@@ -224,10 +236,11 @@ public:
     inline bool IsBlockSymbol() const noexcept { return kind == SymbolKind::blockSymbol; }
     inline bool IsFundamentalTypeSymbol() const noexcept { return kind == SymbolKind::fundamentalTypeSymbol; }
     inline bool IsParameterSymbol() const noexcept { return kind == SymbolKind::parameterSymbol; }
-    bool IsLocalVariableSymbol() const noexcept;
-    bool IsMemberVariableSymbol() const noexcept;
-    bool IsGlobalVariableSymbol() const noexcept;
+    bool IsLocalVariableSymbol(Context* context);
+    bool IsMemberVariableSymbol(Context* context);
+    bool IsGlobalVariableSymbol(Context* context);
     inline bool IsTemplateParameterSymbol() const noexcept { return kind == SymbolKind::templateParameterSymbol; }
+    inline bool IsTemplateParamGroupSymbol() const noexcept { return kind == SymbolKind::templateParamGroupSymbol; }
     inline bool IsBoundTemplateParameterSymbol() const noexcept { return kind == SymbolKind::boundTemplateParameterSymbol; }
     inline bool IsTemplateDeclarationSymbol() const noexcept { return kind == SymbolKind::templateDeclarationSymbol; }
     inline bool IsTypenameConstraintSymbol() const noexcept { return kind == SymbolKind::typenameConstraintSymbol; }
@@ -246,8 +259,8 @@ public:
     virtual bool IsChar8TypeSymbol() const noexcept { return false; }
     virtual bool IsChar16TypeSymbol() const noexcept { return false; }
     virtual bool IsChar32TypeSymbol() const noexcept { return false; }
-    virtual Scope* GetScope() noexcept { return nullptr; }
-    virtual Symbol* GetSingleSymbol(Context* contex) noexcept { return this; }
+    virtual Scope* GetScope() { return nullptr; }
+    virtual Symbol* GetSingleSymbol(Context* context) { return this; }
     virtual bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const;
     virtual void Write(Writer& writer);
     virtual void Read(Reader& reader);
@@ -257,20 +270,30 @@ public:
     virtual ClassTypeSymbol* ParentClassType(Context* context) const noexcept;
     virtual NamespaceSymbol* ParentNamespace(Context* context) const noexcept;
     bool IsExtern() const noexcept;
+    void* IrObject(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context);
     inline void SetFullSpan(const soul::ast::FullSpan& fullSpan_) noexcept { fullSpan = fullSpan_; }
     inline const soul::ast::FullSpan& GetFullSpan() const noexcept { return fullSpan; }
     virtual std::string IrName(Context* context) const;
+    virtual int PtrIndex() const noexcept { return -1; }
+    virtual void Expand(Context* context);
+    void AddModuleSymbolId(const ModuleSymbolId& moduleSymbolId);
+    inline const std::vector<ModuleSymbolId>& ModuleSymbolIds() const noexcept { return moduleSymbolIds; }
+    inline std::int64_t AstNodeId() const noexcept { return astNodeId; }
+    inline void SetAstNodeId(std::int64_t astNodeId_) { astNodeId = astNodeId_; }
 private:
     Module* module;
     SymbolId id;
     SymbolFlags flags;
     StringOffset nameOffset;
+    const char* name;
     SymbolKind kind;
     SymbolId parentId;
     mutable Symbol* parent;
     DeclarationFlags declarationFlags;
     Access access;
     soul::ast::FullSpan fullSpan;
+    std::vector<ModuleSymbolId> moduleSymbolIds;
+    std::int64_t astNodeId;
 };
 
 } // namespace otava::symbols

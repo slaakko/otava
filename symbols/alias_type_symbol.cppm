@@ -13,6 +13,7 @@ export namespace otava::symbols {
 
 class AliasGroupSymbol;
 class Context;
+class TemplateDeclarationSymbol;
 
 class AliasTypeSymbol : public TypeSymbol
 {
@@ -21,9 +22,14 @@ public:
     AliasTypeSymbol(Module* module_, SymbolId id_, const std::string& name_);
     TypeSymbol* ReferredType(Context* context) const;
     inline void SetReferredType(TypeSymbol* referredType_) noexcept { referredType = referredType_; }
+    TypeSymbol* DirectType(Context* context) override;
     inline AliasGroupSymbol* Group() const noexcept { return group; }
     inline void SetGroup(AliasGroupSymbol* group_) noexcept { group = group_; }
+    Cardinality Arity(Context* context) noexcept;
+    TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
     otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    void Write(Writer& writer) override;
+    void Read(Reader& reader) override;
 private:
     SymbolId referredTypeId;
     mutable TypeSymbol* referredType;

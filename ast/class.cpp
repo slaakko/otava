@@ -44,8 +44,8 @@ void ClassSpecifierNode::Write(Writer& writer)
 {
     SequenceNode::Write(writer);
     writer.Write(classHead.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
     writer.GetBinaryStreamWriter().Write(complete);
 }
 
@@ -53,9 +53,9 @@ void ClassSpecifierNode::Read(Reader& reader)
 {
     SequenceNode::Read(reader);
     classHead.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
-    complete = reader.GetBinaryStreamReader().ReadBool();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
+    complete = reader.GetMemoryReader().ReadBool();
 }
 
 ClassHeadNode::ClassHeadNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::classHeadNode, span_, fileIndex_)
@@ -242,13 +242,13 @@ void BeginAccessGroupNode::Accept(Visitor& visitor)
 void BeginAccessGroupNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(colonSpan);
+    //writer.Write(colonSpan);
 }
 
 void BeginAccessGroupNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    colonSpan = reader.ReadSpan();
+    //colonSpan = reader.ReadSpan();
 }
 
 MemberDeclarationNode::MemberDeclarationNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::memberDeclarationNode, span_, fileIndex_)
@@ -624,13 +624,13 @@ void PureSpecifierNode::Accept(Visitor& visitor)
 void PureSpecifierNode::Write(Writer& writer)
 {
     Node::Write(writer);
-    writer.Write(zeroSpan);
+    //writer.Write(zeroSpan);
 }
 
 void PureSpecifierNode::Read(Reader& reader)
 {
     Node::Read(reader);
-    zeroSpan = reader.ReadSpan();
+    //zeroSpan = reader.ReadSpan();
 }
 
 } // namespace otava::ast

@@ -16,7 +16,8 @@ import util.utility;
 
 namespace otava::symbols {
 
-ContainerSymbolHeader::ContainerSymbolHeader() : memberCount(Cardinality(0)), bodyOffset(FileOffset(0)), bodyLength(Length(0))
+ContainerSymbolHeader::ContainerSymbolHeader() : 
+    memberCount(Cardinality(0)), bodyOffset(FileOffset(0)), bodyLength(Length(0)), scopeOffset(FileOffset(0)), scopeLength(Length(0))
 {
 }
 
@@ -26,6 +27,8 @@ void ContainerSymbolHeader::Write(Writer& writer)
     binaryStreamWriter.Write(ToUnderlying(memberCount));
     binaryStreamWriter.Write(ToUnderlying(bodyOffset));
     binaryStreamWriter.Write(ToUnderlying(bodyLength));
+    binaryStreamWriter.Write(ToUnderlying(scopeOffset));
+    binaryStreamWriter.Write(ToUnderlying(scopeLength));
 }
 
 void ContainerSymbolHeader::Read(Reader& reader)
@@ -33,16 +36,25 @@ void ContainerSymbolHeader::Read(Reader& reader)
     memberCount = Cardinality(reader.CurrentReader().ReadUInt());
     bodyOffset = FileOffset(reader.CurrentReader().ReadUInt());
     bodyLength = Length(reader.CurrentReader().ReadUInt());
+    scopeOffset = FileOffset(reader.CurrentReader().ReadUInt());
+    scopeLength = Length(reader.CurrentReader().ReadUInt());
 }
 
-ContainerSymbol::ContainerSymbol(Module* module_, SymbolId id_) : Symbol(module_, id_), scope(module_), bodyRead(false)
+ContainerSymbol::ContainerSymbol(Module* module_, SymbolId id_) : 
+    Symbol(module_, id_), scope(module_), bodyRead(false)
 {
     scope.SetContainerSymbol(this);
 }
 
-ContainerSymbol::ContainerSymbol(Module* module_, SymbolId id_, const std::string& name_) : Symbol(module_, id_, name_), scope(module_), bodyRead(false)
+ContainerSymbol::ContainerSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
+    Symbol(module_, id_, name_), scope(module_), bodyRead(false)
 {
     scope.SetContainerSymbol(this);
+}
+
+Scope* ContainerSymbol::GetScope()
+{
+    return &scope;
 }
 
 void ContainerSymbol::Write(Writer& writer)
@@ -51,19 +63,30 @@ void ContainerSymbol::Write(Writer& writer)
     header.Write(writer);
     Symbol::Write(writer);
     header.bodyOffset = FileOffset(writer.Position());
-    Cardinality count = Cardinality(symbols.size());
-    header.memberCount = count;
     util::BinaryStreamWriter& binaryStreamWriter = writer.GetBinaryStreamWriter();
+    std::vector<Symbol*> exportSymbols;
+    for (const auto& member : symbols)
+    {
+        if (member->IsExportSymbol(writer.GetContext()))
+        {
+            exportSymbols.push_back(member.get());
+        }
+    }
+    Cardinality count = Cardinality(exportSymbols.size());
+    header.memberCount = count;
     binaryStreamWriter.Write(ToUnderlying(count));
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        binaryStreamWriter.Write(ToUnderlying(symbols[ToUnderlying(i)]->Id()));
+        binaryStreamWriter.Write(ToUnderlying(exportSymbols[ToUnderlying(i)]->Id()));
     }
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        writer.Write(symbols[ToUnderlying(i)].get());
+        writer.Write(exportSymbols[ToUnderlying(i)]);
     }
-    header.bodyLength = Length(binaryStreamWriter.Position() - ToUnderlying(header.bodyOffset));
+    header.bodyLength = Length(writer.Position() - ToUnderlying(header.bodyOffset));
+    header.scopeOffset = FileOffset(writer.Position());
+    scope.Write(writer);
+    header.scopeLength = Length(writer.Position() - ToUnderlying(header.scopeOffset));
     FileOffset end = FileOffset(writer.Position());
     writer.Seek(ToUnderlying(start));
     header.Write(writer);
@@ -74,6 +97,7 @@ void ContainerSymbol::Read(Reader& reader)
 {
     header.Read(reader);
     Symbol::Read(reader);
+    reader.CurrentReader().Skip(ToUnderlying(header.bodyLength) + ToUnderlying(header.scopeLength));
 }
 
 void ContainerSymbol::ReadBody()
@@ -122,11 +146,16 @@ void ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
 {
     if (IsReadOnly())
     {
-        ThrowException("cannot add member to container symbol '" + Name() + " because it is read-only", fullSpan, context);
+        ThrowException("cannot add member to container symbol '" + Name() + "' because it is read-only", fullSpan, context);
     }
     else
     {
         symbol->SetParent(this);
+        Scope* childScope = symbol->GetScope();
+        if (childScope)
+        {
+            childScope->AddParentScope(&scope);
+        }
         symbols.push_back(std::unique_ptr<Symbol>(symbol));
         Module* m = GetModule();
         SymbolTable* symbolTable = m->GetSymbolTable();
@@ -137,17 +166,21 @@ void ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
             FundamentalTypeSymbol* fundamentalTypeSymbol = static_cast<FundamentalTypeSymbol*>(symbol);
             symbolTable->MapFundamentalType(fundamentalTypeSymbol);
         }
+        if (symbol->IsClassTypeSymbol())
+        {
+            context->GetSymbolTable()->AddClass(static_cast<ClassTypeSymbol*>(symbol));
+        }
         if (symbol->IsFunctionSymbol())
         {
             FunctionSymbol* function = static_cast<FunctionSymbol*>(symbol);
             if (function->IsConversion())
             {
-                context->GetSymbolTable()->GetConversionTable()->AddConversion(function);
+                context->GetSymbolTable()->GetConversionTable()->AddConversion(function, context);
             }
         }
         if (symbol->CanInstall())
         {
-            scope.Install(symbol);
+            scope.Install(symbol, context);
         }
     }
 }

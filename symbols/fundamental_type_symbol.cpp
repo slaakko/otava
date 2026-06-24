@@ -11,6 +11,9 @@ import otava.symbols.exception;
 import otava.symbols.modules;
 import otava.symbols.reader;
 import otava.symbols.writer;
+import otava.ast.identifier;
+import otava.ast.simple_type;
+import otava.ast.type;
 import util.binary_stream_writer;
 
 namespace otava::symbols {
@@ -292,6 +295,142 @@ TypeSymbol* GetFundamentalType(DeclarationFlags fundamentalTypeFlags, const soul
     {
         ThrowException("invalid combination of fundamental type specifiers", fullSpan, context);
         return nullptr;
+    }
+}
+
+void MakeFundamentaTypeSequence(FundamentalTypeSymbol* fundamentalType, const soul::ast::FullSpan& fullSpan, otava::ast::SequenceNode* sequence)
+{
+    switch (fundamentalType->GetFundamentalTypeKind())
+    {
+    case FundamentalTypeKind::boolType:
+    {
+        sequence->AddNode(new otava::ast::BoolNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::charType:
+    {
+        sequence->AddNode(new otava::ast::CharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::signedCharType:
+    {
+        sequence->AddNode(new otava::ast::SignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::CharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedCharType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::CharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::char8Type:
+    {
+        sequence->AddNode(new otava::ast::Char8Node(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::char16Type:
+    {
+        sequence->AddNode(new otava::ast::Char16Node(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::char32Type:
+    {
+        sequence->AddNode(new otava::ast::Char32Node(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::wcharType:
+    {
+        sequence->AddNode(new otava::ast::WCharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::shortIntType:
+    {
+        sequence->AddNode(new otava::ast::ShortNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedShortIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::ShortNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::intType:
+    {
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::longIntType:
+    {
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedLongIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::longLongIntType:
+    {
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::floatType:
+    {
+        sequence->AddNode(new otava::ast::FloatNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::doubleType:
+    {
+        sequence->AddNode(new otava::ast::DoubleNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::longDoubleType:
+    {
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::DoubleNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::voidType:
+    {
+        sequence->AddNode(new otava::ast::VoidNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::autoType:
+    {
+        sequence->AddNode(new otava::ast::PlaceholderTypeSpecifierNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::nullPtrType:
+    {
+        otava::ast::NestedNameSpecifierNode* nns = new otava::ast::NestedNameSpecifierNode(fullSpan.span, fullSpan.fileIndex);
+        nns->AddNode(new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "std"));
+        nns->AddNode(new otava::ast::ColonColonNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::QualifiedIdNode(fullSpan.span, fullSpan.fileIndex, nns,
+            new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "nullptr_t")));
+        break;
+    }
     }
 }
 

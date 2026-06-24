@@ -56,20 +56,20 @@ void AttributeSpecifierNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
     writer.Write(usingPrefix.get());
-    writer.Write(lbSpan1);
-    writer.Write(lbSpan2);
-    writer.Write(rbSpan1);
-    writer.Write(rbSpan2);
+    //writer.Write(lbSpan1);
+    //writer.Write(lbSpan2);
+    //writer.Write(rbSpan1);
+    //writer.Write(rbSpan2);
 }
 
 void AttributeSpecifierNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
     usingPrefix.reset(reader.ReadNode());
-    lbSpan1 = reader.ReadSpan();
-    lbSpan2 = reader.ReadSpan();
-    rbSpan1 = reader.ReadSpan();
-    rbSpan2 = reader.ReadSpan();
+    //lbSpan1 = reader.ReadSpan();
+    //lbSpan2 = reader.ReadSpan();
+    //rbSpan1 = reader.ReadSpan();
+    //rbSpan2 = reader.ReadSpan();
 }
 
 void AttributeSpecifierNode::SetBracketSpans(const soul::ast::Span& lbSpan1_, const soul::ast::Span& lbSpan2_, 
@@ -106,13 +106,13 @@ void AttributeUsingPrefixNode::Accept(Visitor& visitor)
 void AttributeUsingPrefixNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(colonSpan);
+    //writer.Write(colonSpan);
 }
 
 void AttributeUsingPrefixNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    colonSpan = reader.ReadSpan();
+    //colonSpan = reader.ReadSpan();
 }
 
 AttributeNode::AttributeNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::attributeNode, span_, fileIndex_)
@@ -214,16 +214,16 @@ void AttributeArgumentsNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(balancedTokenSequence.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void AttributeArgumentsNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     balancedTokenSequence.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 BalancedTokenSequenceNode::BalancedTokenSequenceNode(const soul::ast::Span& span_, int fileIndex_) noexcept : 
@@ -312,8 +312,8 @@ void AlignmentSpecifierNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(alignment.get());
     writer.Write(ellipsis.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void AlignmentSpecifierNode::Read(Reader& reader)
@@ -321,8 +321,8 @@ void AlignmentSpecifierNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     alignment.reset(reader.ReadNode());
     ellipsis.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 } // namespace otava::ast

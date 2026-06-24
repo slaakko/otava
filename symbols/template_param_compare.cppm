@@ -16,4 +16,9 @@ struct TemplateParamLess
     bool operator()(TemplateParameterSymbol* left, TemplateParameterSymbol* right) const noexcept;
 };
 
+struct TemplateParamEqual
+{
+    bool operator()(TemplateParameterSymbol* left, TemplateParameterSymbol* right) const noexcept;
+};
+
 } // namespace otava::symbols

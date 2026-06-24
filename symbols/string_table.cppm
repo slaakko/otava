@@ -7,26 +7,45 @@ export module otava.symbols.string_table;
 
 import otava.symbols.id;
 import otava.symbols.writer;
+import otava.symbols.reader;
 import std;
 
 export namespace otava::symbols {
 
+class Module;
+
+struct StringTableHeader
+{
+    StringTableHeader();
+    void Write(Writer& writer);
+    void Read(Reader& reader);
+    FileOffset start;
+    Length length;
+    Cardinality count;
+};
+
 class StringTable
 {
 public:
-    StringTable();
-    void SetOffsets(const std::uint8_t* start_, Length length_);
-    inline std::uint32_t GetLength() const noexcept { return ToUnderlying(nextOffset); }
-    StringOffset GetOffset(const std::string& s) const;
+    StringTable(Module* module_);
+    Length GetLength() const noexcept { return length; }
+    StringOffset GetOffset(const std::string& s);
     StringOffset AddString(const std::string& s);
-    std::string GetString(StringOffset offset) const;
+    std::string GetString(StringOffset offset);
+    const char* CharPtr(StringOffset offset);
     void Write(Writer& writer);
+    void Read(Reader& reader);
 private:
-    const std::uint8_t* start;
-    StringOffset nextOffset;
+    Module* module;
+    Length length;
     std::vector<std::string> strings;
     std::unordered_map<std::string, StringOffset> stringMap;
     std::unordered_map<StringOffset, std::string> offsetMap;
+    StringTableHeader header;
+    bool headerRead;
+    void ReadHeader();
+    bool stringsRead;
+    void ReadStrings();
 };
 
 } // namespace otava::symbols

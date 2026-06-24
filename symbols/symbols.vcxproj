@@ -108,7 +108,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG_FUNCTIONS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -141,17 +141,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="alias_group_symbol.cpp" />
+    <ClCompile Include="alias_group_symbol.cppm" />
     <ClCompile Include="alias_type_symbol.cpp" />
     <ClCompile Include="alias_type_symbol.cppm" />
+    <ClCompile Include="alias_type_templates.cpp" />
+    <ClCompile Include="alias_type_templates.cppm" />
+    <ClCompile Include="argument_conversion_table.cpp" />
+    <ClCompile Include="argument_conversion_table.cppm" />
     <ClCompile Include="array_type_symbol.cpp" />
     <ClCompile Include="array_type_symbol.cppm" />
+    <ClCompile Include="astNodeIO.cpp" />
+    <ClCompile Include="astNodeIO.cppm" />
     <ClCompile Include="block.cpp" />
     <ClCompile Include="block.cppm" />
+    <ClCompile Include="bound_tree.cpp" />
     <ClCompile Include="bound_tree.cppm" />
+    <ClCompile Include="bound_tree_visitor.cpp" />
+    <ClCompile Include="bound_tree_visitor.cppm" />
     <ClCompile Include="classes.cpp" />
     <ClCompile Include="classes.cppm" />
     <ClCompile Include="class_group_symbol.cpp" />
     <ClCompile Include="class_group_symbol.cppm" />
+    <ClCompile Include="class_info.cpp" />
+    <ClCompile Include="class_info.cppm" />
     <ClCompile Include="class_templates.cpp" />
     <ClCompile Include="class_templates.cppm" />
     <ClCompile Include="compound_type_symbol.cpp" />
@@ -170,15 +183,20 @@
     <ClCompile Include="declarator.cppm" />
     <ClCompile Include="decl_specifier_seq_parser.cpp" />
     <ClCompile Include="decl_specifier_seq_parser.cppm" />
+    <ClCompile Include="derivations.cpp" />
     <ClCompile Include="derivations.cppm" />
     <ClCompile Include="emitter.cpp" />
     <ClCompile Include="emitter.cppm" />
     <ClCompile Include="enums.cpp" />
     <ClCompile Include="enums.cppm" />
+    <ClCompile Include="enum_group_symbol.cpp" />
+    <ClCompile Include="enum_group_symbol.cppm" />
     <ClCompile Include="evaluator.cpp" />
     <ClCompile Include="evaluator.cppm" />
     <ClCompile Include="exception.cpp" />
     <ClCompile Include="exception.cppm" />
+    <ClCompile Include="exception_handling.cpp" />
+    <ClCompile Include="exception_handling.cppm" />
     <ClCompile Include="expression.cpp" />
     <ClCompile Include="expression.cppm" />
     <ClCompile Include="expression_binder.cpp" />
@@ -189,6 +207,8 @@
     <ClCompile Include="function_group_symbol.cppm" />
     <ClCompile Include="function_kind.cpp" />
     <ClCompile Include="function_kind.cppm" />
+    <ClCompile Include="function_return_path_checker.cpp" />
+    <ClCompile Include="function_return_path_checker.cppm" />
     <ClCompile Include="function_symbol.cpp" />
     <ClCompile Include="function_symbol.cppm" />
     <ClCompile Include="function_templates.cpp" />
@@ -204,14 +224,24 @@
     <ClCompile Include="fundamental_type_symbol.cpp" />
     <ClCompile Include="fundamental_type_symbol.cppm" />
     <ClCompile Include="id.cppm" />
+    <ClCompile Include="inline_functions.cpp" />
+    <ClCompile Include="inline_functions.cppm" />
     <ClCompile Include="instantiation_queue.cpp" />
     <ClCompile Include="instantiation_queue.cppm" />
+    <ClCompile Include="instantiator.cpp" />
+    <ClCompile Include="instantiator.cppm" />
+    <ClCompile Include="intrinsics.cpp" />
+    <ClCompile Include="intrinsics.cppm" />
     <ClCompile Include="ir_value_stack.cppm" />
     <ClCompile Include="lookup.cppm" />
     <ClCompile Include="modules.cpp" />
     <ClCompile Include="modules.cppm" />
     <ClCompile Include="namespaces.cpp" />
     <ClCompile Include="namespaces.cppm" />
+    <ClCompile Include="operation_repository.cpp" />
+    <ClCompile Include="operation_repository.cppm" />
+    <ClCompile Include="overload_resolution.cpp" />
+    <ClCompile Include="overload_resolution.cppm" />
     <ClCompile Include="project.cpp" />
     <ClCompile Include="project.cppm" />
     <ClCompile Include="reader.cpp" />
@@ -222,6 +252,8 @@
     <ClCompile Include="scope_resolver.cppm" />
     <ClCompile Include="section.cpp" />
     <ClCompile Include="section.cppm" />
+    <ClCompile Include="specialization.cpp" />
+    <ClCompile Include="specialization.cppm" />
     <ClCompile Include="statement_binder.cpp" />
     <ClCompile Include="statement_binder.cppm" />
     <ClCompile Include="stmt_parser.cpp" />
@@ -238,7 +270,12 @@
     <ClCompile Include="symbol_table.cppm" />
     <ClCompile Include="templates.cpp" />
     <ClCompile Include="templates.cppm" />
+    <ClCompile Include="template_param_compare.cpp" />
     <ClCompile Include="template_param_compare.cppm" />
+    <ClCompile Include="template_param_group_symbol.cpp" />
+    <ClCompile Include="template_param_group_symbol.cppm" />
+    <ClCompile Include="trace.cpp" />
+    <ClCompile Include="trace.cppm" />
     <ClCompile Include="type_compare.cpp" />
     <ClCompile Include="type_compare.cppm" />
     <ClCompile Include="type_resolver.cpp" />
@@ -251,6 +288,8 @@
     <ClCompile Include="using_directive.cppm" />
     <ClCompile Include="value.cpp" />
     <ClCompile Include="value.cppm" />
+    <ClCompile Include="variable_group_symbol.cpp" />
+    <ClCompile Include="variable_group_symbol.cppm" />
     <ClCompile Include="variable_symbol.cpp" />
     <ClCompile Include="variable_symbol.cppm" />
     <ClCompile Include="writer.cpp" />
@@ -266,8 +305,14 @@
     <ProjectReference Include="..\intermediate\intermediate.vcxproj">
       <Project>{d93bdc82-afff-427a-b863-fc939dfc4f30}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\optimizer\optimizer.vcxproj">
+      <Project>{04c54a1b-abd4-4cf1-a0a7-a33486f06e0d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\soul.lexer\soul.lexer.vcxproj">
       <Project>{d0deb5e7-3353-4c22-8b1d-fb1a94486496}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul.xml.dom\soul.xml.dom.vcxproj">
+      <Project>{186c29d5-1906-41e9-94aa-be8b4ea465f2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\util\util.vcxproj">
       <Project>{0d05902b-f49d-4304-8573-7c45a1b9486a}</Project>

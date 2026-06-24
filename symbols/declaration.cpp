@@ -32,6 +32,7 @@ import otava.symbols.function_kind;
 import otava.symbols.function_templates;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.instantiation_queue;
+import otava.symbols.overload_resolution;
 import otava.symbols.statement_binder;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
@@ -718,7 +719,7 @@ VariableSymbol* ProcessArrayDeclarator(ArrayDeclarator* arrayDeclarator, TypeSym
         otava::ast::Node* node = arrayDeclarator->Node();
         arrayDeclarator->SetSize(GetSizeFromInitializer(node));
     }
-    ArrayTypeSymbol* arrayTypeSymbol = context->GetSymbolTable()->MakeArrayType(elementType, arrayDeclarator->Size(), arrayDeclarator->Node());
+    ArrayTypeSymbol* arrayTypeSymbol = context->GetSymbolTable()->MakeArrayType(elementType, arrayDeclarator->Size(), context);
     arrayTypeSymbol->Bind(arrayDeclarator->Node()->GetFullSpan(), context);
     VariableSymbol* variable = context->GetSymbolTable()->AddVariable(arrayDeclarator->Name(), arrayDeclarator->Node(), arrayTypeSymbol, nullptr, nullptr, flags, context);
     return variable;
@@ -726,7 +727,6 @@ VariableSymbol* ProcessArrayDeclarator(ArrayDeclarator* arrayDeclarator, TypeSym
 
 void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbol* type, DeclarationFlags flags, otava::ast::Node* functionNode, Context* context)
 {
-/*
     FunctionSymbol* functionSymbol = context->GetSymbolTable()->AddFunction(
         functionDeclarator->Name(),
         functionDeclarator->TemplateArgs(),
@@ -741,7 +741,7 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
     for (const auto& parameterDeclaration : functionDeclarator->ParameterDeclarations())
     {
         soul::ast::FullSpan fullSpan;
-        std::u32string name;
+        std::string name;
         otava::ast::Node* node = nullptr;
         if (parameterDeclaration.declarator)
         {
@@ -755,9 +755,9 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
         {
             parameter->SetDefaultValue(parameterDeclaration.initializer);
         }
-        functionSymbol->AddParameter(parameter, fullSpan, context);
+        functionSymbol->AddSymbol(parameter, fullSpan, context);
     }
-    ClassTypeSymbol* classType = functionSymbol->ParentClassType();
+    ClassTypeSymbol* classType = functionSymbol->ParentClassType(context);
     if (classType)
     {
         std::int32_t functionIndex = 0;
@@ -776,11 +776,11 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
         }
         functionSymbol->SetIndex(functionIndex);
         classType->MapFunction(functionSymbol);
-        context->GetSymbolTable()->MapFunction(functionSymbol);
+        context->GetSymbolTable()->MapSymbol(functionSymbol);
     }
-    if (functionSymbol->IsExplicitSpecializationDeclaration())
+    if (functionSymbol->IsExplicitSpecializationDeclaration(context))
     {
-        std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
+        std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
         InstantiateFunctionTemplate(functionSymbol, templateParameterMap, functionDeclarator->Node()->GetFullSpan(), context);
     }
     AddConvertingConstructorToConversionTable(functionSymbol, functionDeclarator->Node()->GetFullSpan(), context);
@@ -789,7 +789,6 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
         functionSymbol->SetFlag(FunctionSymbolFlags::fixedIrName);
         functionSymbol->IrName(context);
     }
-*/
 }
 
 VariableSymbol* ResolveParentVariable(SimpleDeclarator* simpleDeclarator, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -839,7 +838,6 @@ VariableSymbol* ResolveParentVariable(SimpleDeclarator* simpleDeclarator, const 
 
 void ProcessSimpleDeclaration(otava::ast::Node* node, otava::ast::Node* functionNode, Context* context)
 {
-/*
     if (context->GetFlag(ContextFlags::linkageDeclaration)) return;
     if (context->GetFlag(ContextFlags::dontProcess)) return;
     DeclarationProcessor processor(context);
@@ -864,7 +862,7 @@ void ProcessSimpleDeclaration(otava::ast::Node* node, otava::ast::Node* function
                 else
                 {
                     variable = ProcessSimpleDeclarator(simpleDeclarator, declaration.type, initializerType, declaration.value, declaration.flags, context);
-                    if (variable->IsGlobalVariable())
+                    if (variable->IsGlobalVariable(context))
                     {
                         std::unique_ptr<BoundExpressionNode> variableInitializer(nullptr);
                         if (declaration.initializer)
@@ -893,13 +891,13 @@ void ProcessSimpleDeclaration(otava::ast::Node* node, otava::ast::Node* function
         {
             ArrayDeclarator* arrayDeclarator = static_cast<ArrayDeclarator*>(declarator);
             ArrayTypeSymbol* arrayType = static_cast<ArrayTypeSymbol*>(declaration.type);
-            VariableSymbol* variable = ProcessArrayDeclarator(arrayDeclarator, arrayType->ElementType(), declaration.flags, context);
+            VariableSymbol* variable = ProcessArrayDeclarator(arrayDeclarator, arrayType->ElementType(context), declaration.flags, context);
             if (declaration.value)
             {
                 variable->SetValue(declaration.value);
-                variable->SetDeclaredType(declaration.value->GetType());
+                variable->SetDeclaredType(declaration.value->GetType(context), context);
             }
-            if (variable->IsGlobalVariable())
+            if (variable->IsGlobalVariable(context))
             {
                 context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(
                     new BoundGlobalVariableDefinitionNode(variable, node->GetFullSpan())), context);
@@ -913,7 +911,6 @@ void ProcessSimpleDeclaration(otava::ast::Node* node, otava::ast::Node* function
     {
         context->SetDeclarationList(node, declarationList.release());
     }
-*/
 }
 
 Declaration ProcessParameterDeclaration(otava::ast::Node* node, Context* context)
@@ -1003,7 +1000,6 @@ bool IsTokenSwitchDeclarator(otava::ast::Node* declarator)
 int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast::Node* declarator, otava::ast::Node* functionNode,
     otava::ast::Node* specifierNode, bool& get, Context* context)
 {
-/*
     get = false;
     int scopes = 0;
     if (!context->GetFlag(ContextFlags::instantiateFunctionTemplate |
@@ -1039,7 +1035,7 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
                 {
                     definition->SetInline();
                 }
-                fnDeclarationReturnType = fnDeclaration->ReturnType();
+                fnDeclarationReturnType = fnDeclaration->ReturnType(context);
             }
             if (context->GetFlag(ContextFlags::instantiateFunctionTemplate |
                 ContextFlags::instantiateMemFnOfClassTemplate |
@@ -1073,16 +1069,16 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
                 FunctionSymbol* declaration = definition->Declaration();
                 if (declaration)
                 {
-                    if (parameterIndex >= 0 && parameterIndex < declaration->Parameters().size())
+                    if (parameterIndex >= 0 && parameterIndex < declaration->Parameters(context).size())
                     {
-                        ParameterSymbol* declarationParam = declaration->Parameters()[parameterIndex];
+                        ParameterSymbol* declarationParam = declaration->Parameters(context)[parameterIndex];
                         if (declarationParam->DefaultValue() && !parameter->DefaultValue())
                         {
                             parameter->SetDefaultValue(declarationParam->DefaultValue());
                         }
                     }
                 }
-                definition->AddParameter(parameter, fullSpan, context);
+                definition->AddSymbol(parameter, fullSpan, context);
                 ++parameterIndex;
             }
             definition->AddDefinitionToGroup(context);
@@ -1111,7 +1107,7 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
             }
             ++scopes;
             BoundFunctionNode* boundFunctionNode = new BoundFunctionNode(definition, declarator->GetFullSpan());
-            context->PushBoundFunction(boundFunctionNode);
+            context->PushBoundFunction(boundFunctionNode); 
         }
     }
     else
@@ -1120,27 +1116,25 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
         throw std::runtime_error("otava.symbols.declaration: single declaration expected");
     }
     return scopes;
-*/
-    return 0;
 }
 
 void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
 {
-/*
     if (node->IsFunctionDefinitionNode())
     {
         otava::ast::FunctionDefinitionNode* functionDefinitionNode = static_cast<otava::ast::FunctionDefinitionNode*>(node);
         FunctionDefinitionSymbol* functionDefinitionSymbol = nullptr;
-        Symbol* symbol = context->GetSymbolTable()->CurrentScope()->SymbolScope()->GetSymbol();
+        Symbol* symbol = context->GetSymbolTable()->CurrentScope()->SymbolScope(context)->GetSymbol();
         if (symbol && symbol->IsFunctionDefinitionSymbol())
         {
             functionDefinitionSymbol = static_cast<FunctionDefinitionSymbol*>(symbol);
+            functionDefinitionSymbol->SetAstNodeId(node->Id());
             if (HasNoReturnAttribute(functionDefinitionNode->Attributes()))
             {
                 functionDefinitionSymbol->SetFunctionQualifiers(functionDefinitionSymbol->Qualifiers() | FunctionQualifiers::noreturn);
             }
             context->GetSymbolTable()->MapNode(functionDefinitionNode, functionDefinitionSymbol);
-            ClassTypeSymbol* classType = functionDefinitionSymbol->ParentClassType();
+            ClassTypeSymbol* classType = functionDefinitionSymbol->ParentClassType(context);
             if (classType)
             {
                 if (classType->IsClassTemplateSpecializationSymbol())
@@ -1149,7 +1143,7 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
                     if (classType->IsTemplateParameterInstantiation(context, visited))
                     {
                         ClassTemplateSpecializationSymbol* specialiazation = static_cast<ClassTemplateSpecializationSymbol*>(classType);
-                        classType = specialiazation->ClassTemplate();
+                        classType = specialiazation->ClassTemplate(context);
                     }
                 }
                 std::int32_t functionIndex = 0;
@@ -1174,7 +1168,6 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
                     context->SetMemFunDefSymbolIndex(-1);
                 }
                 classType->SetMemFnDefSymbol(functionDefinitionSymbol);
-                context->GetSymbolTable()->MapFunctionDefinition(functionDefinitionSymbol);
             }
         }
         for (int i = 0; i < scopes; ++i)
@@ -1185,13 +1178,13 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
         {
             functionDefinitionSymbol = BindFunction(functionDefinitionNode, functionDefinitionSymbol, context);
         }
-        if (functionDefinitionSymbol && functionDefinitionSymbol->IsTemplate())
+        if (functionDefinitionSymbol && functionDefinitionSymbol->IsTemplate(context))
         {
             InstantiateEnqueuedRequests(functionDefinitionSymbol, node->GetFullSpan(), context);
         }
-        if (functionDefinitionSymbol && functionDefinitionSymbol->IsExplicitSpecializationDefinitionSymbol())
+        if (functionDefinitionSymbol && functionDefinitionSymbol->IsExplicitSpecializationDefinitionSymbol(context))
         {
-            std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
+            std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
             InstantiateFunctionTemplate(functionDefinitionSymbol, templateParameterMap, node->GetFullSpan(), context);
         }
     }
@@ -1199,11 +1192,10 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
     {
         if (context->GetBoundFunction()->GetFunctionDefinitionSymbol()->IsBound())
         {
-            context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+            context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context); 
         }
         context->PopBoundFunction();
     }
-*/
 }
 
 void ProcessMemberFunctionDefinition(otava::ast::Node* node, Context* context)
@@ -1218,7 +1210,7 @@ void Write(Writer& writer, DeclarationFlags flags)
 
 void Read(Reader& reader, DeclarationFlags& flags)
 {
-    //flags = static_cast<DeclarationFlags>(reader.GetBinaryStreamReader().ReadInt()); TODO
+    flags = static_cast<DeclarationFlags>(reader.CurrentReader().ReadInt()); 
 }
 
 void ThrowDeclarationParsingError(const soul::ast::FullSpan& fullSpan, Context* context)
@@ -1292,9 +1284,9 @@ TypeSymbol* MapType(FunctionSymbol* functionSymbol, TypeSymbol* type, Context* c
         if (parentClassType && parentClassType->IsClassTemplateSpecializationSymbol())
         {
             ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(parentClassType);
-            if (type->GetBaseType()->IsClassTypeSymbol())
+            if (type->GetBaseType(context)->IsClassTypeSymbol())
             {
-                if (TypesEqual(type->GetBaseType(), specialization->ClassTemplate(), context))
+                if (TypesEqual(type->GetBaseType(context), specialization->ClassTemplate(context), context))
                 {
                     type = context->GetSymbolTable()->MakeCompoundType(specialization, type->GetDerivations(), context);
                 }
@@ -1306,14 +1298,14 @@ TypeSymbol* MapType(FunctionSymbol* functionSymbol, TypeSymbol* type, Context* c
 
 void GenerateDynamicInitialization(VariableSymbol* variable, BoundExpressionNode* initializer, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-/*
-    if (!variable->GetType()->IsClassTypeSymbol()) return;
+    if (!variable->GetType(context)->IsClassTypeSymbol()) return;
     if (context->GetFlag(ContextFlags::noDynamicInit)) return;
     bool prevInternallyMapped = context->GetModule()->GetNodeIdFactory()->IsInternallyMapped();
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(true);
-    BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan);
+    TypeSymbol* type = variable->GetReferredType(context);
+    BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan, type);
     std::vector<std::unique_ptr<BoundExpressionNode>> args;
-    args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType()->AddPointer(context))));
+    args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType(context)->AddPointer(context))));
     if (initializer)
     {
         if (initializer->IsBoundExpressionListNode())
@@ -1333,67 +1325,63 @@ void GenerateDynamicInitialization(VariableSymbol* variable, BoundExpressionNode
     Exception ex;
     std::vector<TypeSymbol*> templateArgs;
     std::unique_ptr<BoundFunctionCallNode> constructorCall = ResolveOverload(
-        context->GetSymbolTable()->CurrentScope(), U"@constructor", templateArgs, args, fullSpan, context, ex);
+        context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context, ex);
     if (constructorCall)
     {
         std::unique_ptr<BoundFunctionCallNode> atExitCall = MakeAtExitForVariable(variable, fullSpan, context);
         context->GetBoundCompileUnit()->AddDynamicInitialization(constructorCall.release(), atExitCall.release(), fullSpan, context);
     }
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
-*/
 }
 
 std::unique_ptr<BoundFunctionCallNode> MakeAtExitForVariable(VariableSymbol* variable, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-/*
     std::vector<std::unique_ptr<BoundExpressionNode>> dtorArgs;
-    BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan);
-    dtorArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType()->AddPointer(context))));
+    BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan, variable->GetReferredType(context));
+    dtorArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType(context)->AddPointer(context))));
     Exception ex;
     std::vector<TypeSymbol*> templateArgs;
     std::unique_ptr<BoundFunctionCallNode> destructorCall = ResolveOverload(
-        context->GetSymbolTable()->CurrentScope(), U"@destructor", templateArgs, dtorArgs, fullSpan, context, ex);
+        context->GetSymbolTable()->CurrentScope(), "@destructor", templateArgs, dtorArgs, fullSpan, context, ex);
     std::unique_ptr<BoundFunctionCallNode> atExitCall;
     if (destructorCall && !destructorCall->GetFunctionSymbol()->IsTrivialDestructor())
     {
-        TypeSymbol* voidPtrType = context->GetSymbolTable()->GetFundamentalType(FundamentalTypeKind::voidType)->AddPointer(context);
+        TypeSymbol* voidPtrType = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(
+            FundamentalTypeKind::voidType, context)->AddPointer(context);
         std::vector<std::unique_ptr<BoundExpressionNode>> atExitArgs;
         atExitArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundFunctionValueNode(destructorCall->GetFunctionSymbol(), fullSpan, voidPtrType)));
-        BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan);
+        BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan, variable->GetReferredType(context));
         atExitArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundVariableAsVoidPtrNode(new BoundAddressOfNode(
             boundGlobalVariable, fullSpan, boundGlobalVariable->GetType()->AddPointer(context)), fullSpan, voidPtrType)));
         Exception ex;
-        Scope* stdScope = context->GetSymbolTable()->GetNamespaceScope(U"std", fullSpan, context);
+        Scope* stdScope = context->GetSymbolTable()->GetNamespaceScope("std", fullSpan, context);
         std::vector<TypeSymbol*> templateArgs;
-        atExitCall = ResolveOverload(stdScope, U"at_exit", templateArgs, atExitArgs, fullSpan, context, ex);
+        atExitCall = ResolveOverload(stdScope, "at_exit", templateArgs, atExitArgs, fullSpan, context, ex);
     }
     return atExitCall;
-*/
-    return std::unique_ptr<BoundFunctionCallNode>();
 }
 
 void AddConvertingConstructorToConversionTable(FunctionSymbol* functionSymbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-/*
-    if (!functionSymbol->IsExplicit() && functionSymbol->GetFunctionKind() == FunctionKind::constructor && functionSymbol->MemFunArity(context) == 2)
+    if (!functionSymbol->IsExplicit() && functionSymbol->GetFunctionKind() == FunctionKind::constructor && functionSymbol->MemFnArity(context) == Cardinality(2))
     {
-        TypeSymbol* conversionParamType = functionSymbol->MemFunParameters(context)[0]->GetType()->RemovePointer(context)->DirectType(
+        TypeSymbol* conversionParamType = functionSymbol->MemFnParameters(context)[0]->GetType(context)->RemovePointer(context)->DirectType(
             context)->FinalType(fullSpan, context);
-        TypeSymbol* conversionArgType = functionSymbol->MemFunParameters(context)[1]->GetType()->PlainType(context)->DirectType(context)->FinalType(fullSpan, context);
+        TypeSymbol* conversionArgType = functionSymbol->MemFnParameters(context)[1]->GetType(context)->PlainType(context)->DirectType(
+            context)->FinalType(fullSpan, context);
         if (!TypesEqual(conversionParamType, conversionArgType, context))
         {
-            FunctionSymbol* conversion = context->GetSymbolTable()->GetConversionTable().GetConversion(conversionParamType, conversionArgType, context);
+            FunctionSymbol* conversion = context->GetSymbolTable()->GetConversionTable()->GetConversion(conversionParamType, conversionArgType, context);
             if (!conversion)
             {
                 functionSymbol->SetConversion();
                 functionSymbol->SetConversionParamType(conversionParamType);
                 functionSymbol->SetConversionArgType(conversionArgType);
                 functionSymbol->SetConversionDistance(10);
-                context->GetSymbolTable()->GetConversionTable().AddConversion(functionSymbol);
+                context->GetSymbolTable()->GetConversionTable()->AddConversion(functionSymbol, context);
             }
         }
     }
-*/
 }
 
 } // namespace otava::symbol

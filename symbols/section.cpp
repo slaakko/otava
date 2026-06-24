@@ -43,6 +43,7 @@ SectionKind ToSectionKind(SymbolKind symbolKind)
     case SymbolKind::typenameConstraintSymbol:
     case SymbolKind::explicitInstantiationSymbol:
     case SymbolKind::templateParameterSymbol:
+    case SymbolKind::templateParamGroupSymbol:
     case SymbolKind::varArgTypeSymbol:
     case SymbolKind::classTemplateSpecializationSymbol:
     case SymbolKind::aliasTypeTemplateSpecializationSymbol:
@@ -176,10 +177,8 @@ void SectionHeader::Write(Writer& writer)
 
 void SectionHeader::Read(Reader& reader)
 {
-    reader.PushCurrentReader(reader.Start(), Length(sizeof(*this)));
     entryMapOffset = FileOffset(reader.CurrentReader().ReadUInt());
     entryMapLength = Length(reader.CurrentReader().ReadUInt());
-    reader.PopCurrentReader();
 }
 
 SectionEntry::SectionEntry() : fileOffset(FileOffset(0)), length(Length(0))
@@ -231,12 +230,13 @@ Symbol* Section::GetSymbol(SymbolId symbolId, Context* context)
             reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(entry.fileOffset)), entry.length);
             Symbol* symbol = MakeSymbol(GetModule(), symbolId);
             symbol->Read(reader);
+            symbol->SetReadOnly();
             reader.PopCurrentReader();
             symbolMap[symbol->Id()] = symbol;
             symbols.push_back(std::unique_ptr<Symbol>(symbol));
             return symbol;
         }
-        ModuleId moduleId = GetModule()->GetSymbolTable()->GetModuleIdOfExportedSymbol(symbolId);
+        ModuleId moduleId = GetModule()->GetSymbolTable()->GetModuleIdOfImportedSymbol(symbolId);
         if (moduleId != zeroModuleId && moduleId != GetModule()->Id())
         {
             Module* module = context->GetModuleMapper()->GetModule(moduleId);
@@ -254,21 +254,13 @@ Symbol* Section::GetSymbol(SymbolId symbolId, Context* context)
     return nullptr;
 }
 
-void Section::ReadHeader()
-{
-    if (headerRead) return;
-    headerRead = true;
-    Reader reader(GetModule()->GetFileMapping());
-    header.Read(reader);
-}
-
 void Section::ReadEntries()
 {
     if (entriesRead) return;
-    ReadHeader();
     entriesRead = true;
     Reader reader(GetModule()->GetFileMapping());
-    reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(header.entryMapOffset)), header.entryMapLength);
+    SectionHeader* header = GetModule()->GetSectionHeader(kind);
+    reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(header->entryMapOffset)), header->entryMapLength);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
@@ -283,8 +275,8 @@ void Section::ReadEntries()
 void Section::Write(Writer& writer)
 {
     FileOffset start = FileOffset(writer.Position());
-    header.Write(writer);
-    header.entryMapOffset = FileOffset(writer.Position());
+    SectionHeader* header = GetModule()->GetSectionHeader(kind);
+    header->entryMapOffset = start;
     util::BinaryStreamWriter& binaryStreamWriter = writer.GetBinaryStreamWriter();
     binaryStreamWriter.Write(ToUnderlying(Cardinality(entryMap.size())));
     for (const auto& e : entryMap)
@@ -294,12 +286,8 @@ void Section::Write(Writer& writer)
         binaryStreamWriter.Write(ToUnderlying(symbolId));
         entry.Write(writer);
     }
-    Length entryMapLength = Length(writer.Position() - ToUnderlying(header.entryMapOffset));
-    header.entryMapLength = entryMapLength;
     FileOffset end = FileOffset(writer.Position());
-    writer.Seek(ToUnderlying(start));
-    header.Write(writer);
-    writer.Seek(ToUnderlying(end));
+    header->entryMapLength = Length(end - start);
 }
 
 } // namespace otava::symbols

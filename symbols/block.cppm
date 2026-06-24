@@ -11,6 +11,9 @@ import otava.ast.node;
 
 export namespace otava::symbols {
 
+class BoundExpressionNode;
+class VariableSymbol;
+
 class BlockSymbol : public ContainerSymbol
 {
 public:
@@ -18,8 +21,14 @@ public:
     BlockSymbol(Module* module_, SymbolId id_, const std::string& name_);
     inline int BlockId() const noexcept { return blockId; }
     inline void SetBlockId(int blockId_) noexcept { blockId = blockId_; }
+    void AddDestructorCall(int statementIndex, BoundExpressionNode* destructorCall);
+    bool HasDestructorCalls(int statementIndex) const;
+    std::vector<BoundExpressionNode*> GetDestructorCalls(int statementIndex);
+    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
 private:
     int blockId;
+    std::vector<VariableSymbol*> localVariables;
+    std::map<int, std::vector<BoundExpressionNode*>> destructorCallMap;
 };
 
 class Context;

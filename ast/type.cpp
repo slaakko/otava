@@ -326,16 +326,16 @@ void DeclTypeSpecifierNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(expr.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void DeclTypeSpecifierNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     expr.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 PlaceholderTypeSpecifierNode::PlaceholderTypeSpecifierNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -371,20 +371,20 @@ void PlaceholderTypeSpecifierNode::Write(Writer& writer)
 {
     CompoundNode::Write(writer);
     writer.Write(typeConstraint.get());
-    writer.Write(dtSpan);
-    writer.Write(autoSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(dtSpan);
+    //writer.Write(autoSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void PlaceholderTypeSpecifierNode::Read(Reader& reader)
 {
     CompoundNode::Read(reader);
     typeConstraint.reset(reader.ReadNode());
-    dtSpan = reader.ReadSpan();
-    autoSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //dtSpan = reader.ReadSpan();
+    //autoSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 } // namespace otava::ast

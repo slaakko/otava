@@ -18,7 +18,9 @@ Emitter::Emitter() : context(new otava::intermediate::IntermediateContext()), st
 Emitter::~Emitter()
 {
     delete context;
+    context = nullptr;
     delete stack;
+    stack = nullptr;
 }
 
 void Emitter::Emit()
@@ -77,9 +79,9 @@ otava::intermediate::Type* Emitter::MakeArrayType(std::int64_t size, otava::inte
     return context->GetArrayType(soul::ast::Span(), context->NextTypeId(), size, elementTypeRef);
 }
 
-otava::intermediate::Type* Emitter::GetOrInsertFwdDeclaredStructureType(const util::uuid& id, const std::string& comment)
+otava::intermediate::Type* Emitter::GetOrInsertFwdDeclaredStructureType(SymbolId id, const std::string& comment)
 {
-    otava::intermediate::Type* type = context->GetFwdDeclaredStructureType(id);
+    otava::intermediate::Type* type = context->GetFwdDeclaredStructureType(ToUnderlying(id));
     if (type)
     {
         return type;
@@ -90,9 +92,9 @@ otava::intermediate::Type* Emitter::GetOrInsertFwdDeclaredStructureType(const ut
     }
 }
 
-void Emitter::ResolveForwardReferences(const util::uuid& typeId, otava::intermediate::StructureType* structureType)
+void Emitter::ResolveForwardReferences(SymbolId typeId, otava::intermediate::StructureType* structureType)
 {
-    context->ResolveForwardReferences(typeId, structureType);
+    context->ResolveForwardReferences(ToUnderlying(typeId), structureType);
 }
 
 otava::intermediate::Value* Emitter::EmitBool(bool value)
@@ -153,7 +155,7 @@ otava::intermediate::Value* Emitter::EmitCall(otava::intermediate::Value* functi
     return context->CreateCall(function);
 }
 
-otava::intermediate::Type* Emitter::GetType(const util::uuid& id) const noexcept
+otava::intermediate::Type* Emitter::GetType(SymbolId id) const noexcept
 {
     auto it = typeMap.find(id);
     if (it != typeMap.cend())
@@ -166,7 +168,7 @@ otava::intermediate::Type* Emitter::GetType(const util::uuid& id) const noexcept
     }
 }
 
-void Emitter::SetType(const util::uuid& id, otava::intermediate::Type* type)
+void Emitter::SetType(SymbolId id, otava::intermediate::Type* type)
 {
     typeMap[id] = type;
 }
@@ -189,7 +191,7 @@ void Emitter::SetIrObject(void* symbol, otava::intermediate::Value* irObject)
     irObjectMap[symbol] = irObject;
 }
 
-otava::intermediate::Value* Emitter::GetVTabVariable(const std::u32string& className) const noexcept
+otava::intermediate::Value* Emitter::GetVTabVariable(const std::string& className) const noexcept
 {
     auto it = vtabVariableMap.find(className);
     if (it != vtabVariableMap.cend())
@@ -202,7 +204,7 @@ otava::intermediate::Value* Emitter::GetVTabVariable(const std::u32string& class
     }
 }
 
-void Emitter::SetVTabVariable(const std::u32string& className, otava::intermediate::Value* vtabVariable)
+void Emitter::SetVTabVariable(const std::string& className, otava::intermediate::Value* vtabVariable)
 {
     vtabVariableMap[className] = vtabVariable;
 }

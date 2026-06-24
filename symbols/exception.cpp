@@ -94,6 +94,10 @@ std::string ReferenceInfo(const soul::ast::FullSpan& refSpan, Context* context)
     return std::string();
 }
 
+Exception::Exception() : std::runtime_error(""), warning(false)
+{
+}
+
 Exception::Exception(const std::string& message_) : std::runtime_error(message_), warning(false)
 {
 }

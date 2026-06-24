@@ -76,6 +76,18 @@ std::int64_t MemoryReader::ReadLong()
     return static_cast<std::int64_t>(ReadULong());
 }
 
+double MemoryReader::ReadDouble()
+{
+    std::uint64_t x = ReadULong();
+    return *reinterpret_cast<double*>(&x);
+}
+
+char32_t MemoryReader::ReadUChar()
+{
+    std::uint32_t x = ReadUInt();
+    return static_cast<char32_t>(x);
+}
+
 DateTime MemoryReader::ReadDateTime()
 {
     std::int16_t year = ReadShort();

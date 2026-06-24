@@ -6,6 +6,7 @@
 export module otava.symbols.writer;
 
 import std;
+import soul.ast.span;
 import otava.symbols.id;
 import util.binary_stream_writer;
 import util.file_stream;
@@ -23,6 +24,7 @@ public:
     Writer(const std::string& fileName);
     inline util::BinaryStreamWriter& GetBinaryStreamWriter() { return binaryStreamWriter; }
     void Write(Symbol* symbol);
+    void Write(soul::ast::FullSpan& fullSpan);
     inline Context* GetContext() noexcept { return context; }
     inline void SetContext(Context* context_) noexcept { context = context_; }
     void Seek(std::uint32_t position);

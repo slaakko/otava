@@ -5,9 +5,9 @@
 
 export module otava.symbols.section;
 
-import std;
 import otava.symbols.id;
 import otava.symbols.symbol;
+import std;
 
 export namespace otava::symbols {
 
@@ -22,6 +22,11 @@ enum class SectionKind : std::uint8_t
 };
 
 constexpr std::uint8_t ToUnderlying(SectionKind sectionKind) { return std::uint8_t(sectionKind); }
+
+constexpr std::uint8_t operator-(SectionKind x, SectionKind y)
+{
+    return ToUnderlying(x) - ToUnderlying(y);
+}
 
 SectionKind ToSectionKind(SymbolKind symbolKind);
 SectionKind GetSectionKind(Symbol* symbol);
@@ -58,7 +63,6 @@ public:
 private:
     Module* module;
     SectionKind kind;
-    SectionHeader header;
     std::unordered_map<SymbolId, SectionEntry> entryMap;
     std::unordered_map<SymbolId, Symbol*> symbolMap;
     std::vector<std::unique_ptr<Symbol>> symbols;

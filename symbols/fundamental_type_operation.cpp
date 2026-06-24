@@ -8,6 +8,7 @@ module otava.symbols.fundamental_type_operation;
 import otava.symbols.fundamental_type_conversion_init;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.bound_tree;
+import otava.symbols.exception;
 import otava.symbols.symbol_table;
 import otava.symbols.context;
 import otava.symbols.namespaces;
@@ -490,17 +491,17 @@ FundamentalTypeLessOperation::FundamentalTypeLessOperation(Module* module_, Symb
 {
 }
 
-FundamentalTypeDefaultCtor::FundamentalTypeDefaultCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr)
+FundamentalTypeDefaultCtor::FundamentalTypeDefaultCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr), typeId(zeroSymbolId)
 {
 }
 
 FundamentalTypeDefaultCtor::FundamentalTypeDefaultCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) :
-    FunctionSymbol(module_, id_, "@constructor"), type(type_)
+    FunctionSymbol(module_, id_, "@constructor"), type(type_), typeId(zeroSymbolId)
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-    thisParam->SetType(type->AddPointer(context));
+    thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetNoExcept();
 }
@@ -513,10 +514,20 @@ void FundamentalTypeDefaultCtor::Write(Writer& writer)
 
 void FundamentalTypeDefaultCtor::Read(Reader& reader)
 {
-/*
     FunctionSymbol::Read(reader);
-    reader.GetBinaryStreamReader().ReadUInt(typeId);
-*/
+    typeId = SymbolId(reader.CurrentReader().ReadUInt());
+}
+
+void FundamentalTypeDefaultCtor::Resolve(Context* context)
+{
+    if (IsReadOnly() && typeId != zeroSymbolId)
+    {
+        type = GetModule()->GetSymbolTable()->GetTypeSymbol(typeId, context);
+        if (!type)
+        {
+            ThrowException("type id " + std::to_string(ToUnderlying(typeId)) + " not found from module '" + GetModule()->Name() + "'");
+        }
+    }
 }
 
 void FundamentalTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -524,6 +535,7 @@ void FundamentalTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<Boun
 {
     if ((flags & OperationFlags::defaultInit) != OperationFlags::none)
     {
+        Resolve(context);
         emitter.Stack().Push(type->IrType(emitter, fullSpan, context)->DefaultValue());
         OperationFlags storeFlags = OperationFlags::none;
         if ((flags & OperationFlags::storeDeref) != OperationFlags::none)
@@ -534,36 +546,22 @@ void FundamentalTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<Boun
     }
 }
 
-FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr)
+FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
 {
 }
 
-FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) :
-    FunctionSymbol(module_, id_, "@constructor"), type(type_)
+FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) :
+    FunctionSymbol(module_, id_, "@constructor")
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-    thisParam->SetType(type->AddPointer(context));
+    thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     ParameterSymbol* thatParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
-    thatParam->SetType(type);
+    thatParam->SetType(type, context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
-}
-
-void FundamentalTypeCopyCtor::Write(Writer& writer)
-{
-    FunctionSymbol::Write(writer);
-    writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
-}
-
-void FundamentalTypeCopyCtor::Read(Reader& reader)
-{
-/*
-    FunctionSymbol::Read(reader);
-    reader.GetBinaryStreamReader().ReadUuid(typeId);
-*/
 }
 
 void FundamentalTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -578,36 +576,22 @@ void FundamentalTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundEx
     args[0]->Store(emitter, storeFlags, fullSpan, context);
 }
 
-FundamentalTypeMoveCtor::FundamentalTypeMoveCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr)
+FundamentalTypeMoveCtor::FundamentalTypeMoveCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
 {
 }
 
-FundamentalTypeMoveCtor::FundamentalTypeMoveCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) :
-    FunctionSymbol(module_, id_, "@constructor"), type(type_)
+FundamentalTypeMoveCtor::FundamentalTypeMoveCtor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) :
+    FunctionSymbol(module_, id_, "@constructor")
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-    thisParam->SetType(type->AddPointer(context));
+    thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     ParameterSymbol* thatParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
-    thatParam->SetType(type->AddRValueRef(context));
+    thatParam->SetType(type->AddRValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
-}
-
-void FundamentalTypeMoveCtor::Write(Writer& writer)
-{
-    FunctionSymbol::Write(writer);
-    writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
-}
-
-void FundamentalTypeMoveCtor::Read(Reader& reader)
-{
-/*
-    FunctionSymbol::Read(reader);
-    reader.GetBinaryStreamReader().ReadUuid(typeId);
-*/
 }
 
 void FundamentalTypeMoveCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -625,38 +609,24 @@ void FundamentalTypeMoveCtor::GenerateCode(Emitter& emitter, std::vector<BoundEx
 }
 
 FundamentalTypeCopyAssignment::FundamentalTypeCopyAssignment(Module* module_, SymbolId id_) : 
-    FunctionSymbol(module_, id_), type(nullptr)
+    FunctionSymbol(module_, id_)
 {
 }
 
-FundamentalTypeCopyAssignment::FundamentalTypeCopyAssignment(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context)
-    : FunctionSymbol(module_, id_, "operator="), type(type_)
+FundamentalTypeCopyAssignment::FundamentalTypeCopyAssignment(Module* module_, SymbolId id_, TypeSymbol* type, Context* context)
+    : FunctionSymbol(module_, id_, "operator=")
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
 
     ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-    thisParam->SetType(type->AddPointer(context));
+    thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     ParameterSymbol* thatParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
-    thatParam->SetType(type);
+    thatParam->SetType(type, context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
-    SetReturnType(type->AddLValueRef(context), soul::ast::FullSpan(), context);
+    SetReturnType(type->AddLValueRef(context), context);
     SetNoExcept();
-}
-
-void FundamentalTypeCopyAssignment::Write(Writer& writer)
-{
-    FunctionSymbol::Write(writer);
-    writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
-}
-
-void FundamentalTypeCopyAssignment::Read(Reader& reader)
-{
-/*
-    FunctionSymbol::Read(reader);
-    reader.GetBinaryStreamReader().ReadUuid(typeId);
-*/
 }
 
 void FundamentalTypeCopyAssignment::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -668,37 +638,23 @@ void FundamentalTypeCopyAssignment::GenerateCode(Emitter& emitter, std::vector<B
 }
 
 FundamentalTypeMoveAssignment::FundamentalTypeMoveAssignment(Module* module_, SymbolId id_) : 
-    FunctionSymbol(module_, id_), type(nullptr)
+    FunctionSymbol(module_, id_)
 {
 }
 
-FundamentalTypeMoveAssignment::FundamentalTypeMoveAssignment(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) :
-    FunctionSymbol(module_, id_, "operator="), type(type_)
+FundamentalTypeMoveAssignment::FundamentalTypeMoveAssignment(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) :
+    FunctionSymbol(module_, id_, "operator=")
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-    thisParam->SetType(type->AddPointer(context));
+    thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     ParameterSymbol* thatParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
-    thatParam->SetType(type->AddRValueRef(context));
+    thatParam->SetType(type->AddRValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
-    SetReturnType(type->AddLValueRef(context), soul::ast::FullSpan(), context);
+    SetReturnType(type->AddLValueRef(context), context);
     SetNoExcept();
-}
-
-void FundamentalTypeMoveAssignment::Write(Writer& writer)
-{
-    FunctionSymbol::Write(writer);
-    writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
-}
-
-void FundamentalTypeMoveAssignment::Read(Reader& reader)
-{
-/*
-    FunctionSymbol::Read(reader);
-    reader.GetBinaryStreamReader().ReadUuid(typeId);
-*/
 }
 
 void FundamentalTypeMoveAssignment::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -711,17 +667,17 @@ void FundamentalTypeMoveAssignment::GenerateCode(Emitter& emitter, std::vector<B
     emitter.Stack().Push(context->Ptr());
 }
 
-TrivialDestructor::TrivialDestructor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr)
+TrivialDestructor::TrivialDestructor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
 {
 }
 
-TrivialDestructor::TrivialDestructor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) :
-    FunctionSymbol(module_, id_, "@destructor"), type(type_)
+TrivialDestructor::TrivialDestructor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) :
+    FunctionSymbol(module_, id_, "@destructor")
 {
     SetFunctionKind(FunctionKind::destructor);
     SetAccess(Access::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
-    thisParam->SetType(type->AddPointer(context));
+    thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetFlag(FunctionSymbolFlags::trivialDestructor);
     SetNoExcept();

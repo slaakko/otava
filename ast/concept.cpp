@@ -116,15 +116,15 @@ void RequirementBodyNode::Accept(Visitor& visitor)
 void RequirementBodyNode::Write(Writer& writer)
 {
     SequenceNode::Write(writer);
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void RequirementBodyNode::Read(Reader& reader)
 {
     SequenceNode::Read(reader);
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 void RequirementBodyNode::SetLBraceSpan(const soul::ast::Span& lbSpan_) noexcept
@@ -243,8 +243,8 @@ void CompoundRequirementNode::Write(Writer& writer)
     writer.Write(noexceptNode.get());
     writer.Write(returnTypeRequirement.get());
     writer.Write(semicolon.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void CompoundRequirementNode::Read(Reader& reader)
@@ -254,8 +254,8 @@ void CompoundRequirementNode::Read(Reader& reader)
     noexceptNode.reset(reader.ReadNode());
     returnTypeRequirement.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 ReturnTypeRequirementNode::ReturnTypeRequirementNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -333,8 +333,8 @@ void TypeConstraintNode::Write(Writer& writer)
     ListNode::Write(writer);
     writer.Write(conceptName.get());
     writer.Write(hasTemplateArgumentList);
-    writer.Write(laSpan);
-    writer.Write(raSpan);
+    //writer.Write(laSpan);
+    //writer.Write(raSpan);
 }
 
 void TypeConstraintNode::Read(Reader& reader)
@@ -342,8 +342,8 @@ void TypeConstraintNode::Read(Reader& reader)
     ListNode::Read(reader);
     conceptName.reset(reader.ReadNode());
     hasTemplateArgumentList = reader.ReadBool();
-    laSpan = reader.ReadSpan();
-    raSpan = reader.ReadSpan();
+    //laSpan = reader.ReadSpan();
+    //raSpan = reader.ReadSpan();
 }
 
 void TypeConstraintNode::SetLAngleSpan(const soul::ast::Span& laSpan_) noexcept

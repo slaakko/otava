@@ -1,0 +1,552 @@
+<parserFile>
+ <grammar name="PPParser">
+  <rule first="{HASH}" name="PPLIne">
+   <sequence first="{HASH}">
+    <token first="{HASH}" name="HASH"/>
+    <nonterminal first="{#, *, ELSE, IF, DEFINE, INCLUDE, IFDEF, IFNDEF, ELIF, ENDIF, UNDEF, PRAGMA}" ruleName="PPCommand"/>
+   </sequence>
+  </rule>
+  <rule first="{#, *, ELSE, IF, DEFINE, INCLUDE, IFDEF, IFNDEF, ELIF, ENDIF, UNDEF, PRAGMA}" name="PPCommand">
+   <choice first="{#, *, ELSE, IF, DEFINE, INCLUDE, IFDEF, IFNDEF, ELIF, ENDIF, UNDEF, PRAGMA}">
+    <switch first="{ELSE, IF, DEFINE, INCLUDE, IFDEF, IFNDEF, ELIF, ENDIF, UNDEF, PRAGMA}">
+     <case first="{IF}">
+      <nonterminal first="{IF}" ruleName="IfCommand"/>
+     </case>
+     <case first="{ELIF}">
+      <nonterminal first="{ELIF}" ruleName="ElifCommand"/>
+     </case>
+     <case first="{IFDEF}">
+      <nonterminal first="{IFDEF}" ruleName="IfdefCommand"/>
+     </case>
+     <case first="{IFNDEF}">
+      <nonterminal first="{IFNDEF}" ruleName="IfndefCommand"/>
+     </case>
+     <case first="{ELSE}">
+      <nonterminal first="{ELSE}" ruleName="ElseCommand"/>
+     </case>
+     <case first="{ENDIF}">
+      <nonterminal first="{ENDIF}" ruleName="EndifCommand"/>
+     </case>
+     <case first="{DEFINE}">
+      <nonterminal first="{DEFINE}" ruleName="DefineCommand"/>
+     </case>
+     <case first="{UNDEF}">
+      <nonterminal first="{UNDEF}" ruleName="UndefCommand"/>
+     </case>
+     <case first="{INCLUDE}">
+      <nonterminal first="{INCLUDE}" ruleName="IncludeCommand"/>
+     </case>
+     <case first="{PRAGMA}">
+      <nonterminal first="{PRAGMA}" ruleName="PragmaCommand"/>
+     </case>
+    </switch>
+    <kleene first="{#, *}">
+     <any first="{*}"/>
+    </kleene>
+   </choice>
+  </rule>
+  <rule first="{IF}" name="IfCommand">
+   <sequence first="{IF}">
+    <token first="{IF}" name="IF"/>
+    <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="Expression"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{ELIF}" name="ElifCommand">
+   <sequence first="{ELIF}">
+    <token first="{ELIF}" name="ELIF"/>
+    <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="Expression"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{IFDEF}" name="IfdefCommand">
+   <sequence first="{IFDEF}">
+    <token first="{IFDEF}" name="IFDEF"/>
+    <action first="{ID}">
+     <token first="{ID}" name="ID"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{IFNDEF}" name="IfndefCommand">
+   <sequence first="{IFNDEF}">
+    <token first="{IFNDEF}" name="IFNDEF"/>
+    <action first="{ID}">
+     <token first="{ID}" name="ID"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{ELSE}" name="ElseCommand">
+   <action first="{ELSE}">
+    <token first="{ELSE}" name="ELSE"/>
+   </action>
+  </rule>
+  <rule first="{ENDIF}" name="EndifCommand">
+   <action first="{ENDIF}">
+    <token first="{ENDIF}" name="ENDIF"/>
+   </action>
+  </rule>
+  <rule first="{DEFINE}" name="DefineCommand">
+   <sequence first="{DEFINE}">
+    <sequence first="{DEFINE}">
+     <token first="{DEFINE}" name="DEFINE"/>
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </sequence>
+    <group first="{#, INTEGER_LITERAL}">
+     <choice first="{#, INTEGER_LITERAL}">
+      <action first="{INTEGER_LITERAL}">
+       <token first="{INTEGER_LITERAL}" name="INTEGER_LITERAL"/>
+      </action>
+      <action first="{#}">
+       <empty first="{#}"/>
+      </action>
+     </choice>
+    </group>
+   </sequence>
+  </rule>
+  <rule first="{UNDEF}" name="UndefCommand">
+   <sequence first="{UNDEF}">
+    <token first="{UNDEF}" name="UNDEF"/>
+    <action first="{ID}">
+     <token first="{ID}" name="ID"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{INCLUDE}" name="IncludeCommand">
+   <sequence first="{INCLUDE}">
+    <token first="{INCLUDE}" name="INCLUDE"/>
+    <action first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+     <nonterminal first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}" ruleName="Header"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{PRAGMA}" name="PragmaCommand">
+   <sequence first="{PRAGMA}">
+    <sequence first="{PRAGMA}">
+     <token first="{PRAGMA}" name="PRAGMA"/>
+     <kleene first="{#, *}">
+      <group first="{*}">
+       <difference first="{*}">
+        <any first="{*}"/>
+        <token first="{}" name="RPAREN"/>
+       </difference>
+      </group>
+     </kleene>
+    </sequence>
+    <token first="{RPAREN}" name="RPAREN"/>
+   </sequence>
+  </rule>
+  <rule first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}" name="Header">
+   <switch first="{ANGLE_HEADER_NAME, QUOTE_HEADER_NAME}">
+    <case first="{ANGLE_HEADER_NAME}">
+     <token first="{ANGLE_HEADER_NAME}" name="ANGLE_HEADER_NAME"/>
+    </case>
+    <case first="{QUOTE_HEADER_NAME}">
+     <token first="{QUOTE_HEADER_NAME}" name="QUOTE_HEADER_NAME"/>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="Expression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="LogicalOrExpr"/>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="LogicalOrExpr">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="LogicalAndExpr"/>
+      </action>
+      <kleene first="{#, OR_OR}">
+       <group first="{OR_OR}">
+        <sequence first="{OR_OR}">
+         <token first="{OR_OR}" name="OR_OR"/>
+         <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+          <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="LogicalAndExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="LogicalAndExpr">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="InclusiveOrExpression"/>
+      </action>
+      <kleene first="{#, AMP_AMP}">
+       <group first="{AMP_AMP}">
+        <sequence first="{AMP_AMP}">
+         <token first="{AMP_AMP}" name="AMP_AMP"/>
+         <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+          <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="InclusiveOrExpression"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="InclusiveOrExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ExclusiveOrExpression"/>
+      </action>
+      <kleene first="{#, OR}">
+       <group first="{OR}">
+        <sequence first="{OR}">
+         <token first="{OR}" name="OR"/>
+         <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+          <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ExclusiveOrExpression"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="ExclusiveOrExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="AndExpression"/>
+      </action>
+      <kleene first="{#, XOR}">
+       <group first="{XOR}">
+        <sequence first="{XOR}">
+         <token first="{XOR}" name="XOR"/>
+         <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+          <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="AndExpression"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="AndExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="EqualityExpression"/>
+      </action>
+      <kleene first="{#, AMP}">
+       <group first="{AMP}">
+        <sequence first="{AMP}">
+         <token first="{AMP}" name="AMP"/>
+         <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+          <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="EqualityExpression"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="EqualityExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="RelationalExpression"/>
+      </action>
+      <kleene first="{#, EQ, NEQ}">
+       <group first="{EQ, NEQ}">
+        <switch first="{EQ, NEQ}">
+         <case first="{EQ}">
+          <sequence first="{EQ}">
+           <token first="{EQ}" name="EQ"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="RelationalExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{NEQ}">
+          <sequence first="{NEQ}">
+           <token first="{NEQ}" name="NEQ"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="RelationalExpression"/>
+           </action>
+          </sequence>
+         </case>
+        </switch>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="RelationalExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ShiftExpression"/>
+      </action>
+      <kleene first="{#, LEQ, GEQ, LANGLE, RANGLE}">
+       <group first="{LEQ, GEQ, LANGLE, RANGLE}">
+        <switch first="{LEQ, GEQ, LANGLE, RANGLE}">
+         <case first="{LANGLE}">
+          <sequence first="{LANGLE}">
+           <token first="{LANGLE}" name="LANGLE"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ShiftExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{RANGLE}">
+          <sequence first="{RANGLE}">
+           <token first="{RANGLE}" name="RANGLE"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ShiftExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{LEQ}">
+          <sequence first="{LEQ}">
+           <token first="{LEQ}" name="LEQ"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ShiftExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{GEQ}">
+          <sequence first="{GEQ}">
+           <token first="{GEQ}" name="GEQ"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="ShiftExpression"/>
+           </action>
+          </sequence>
+         </case>
+        </switch>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="ShiftExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="AdditiveExpression"/>
+      </action>
+      <kleene first="{#, SHIFT_LEFT, SHIFT_RIGHT}">
+       <group first="{SHIFT_LEFT, SHIFT_RIGHT}">
+        <switch first="{SHIFT_LEFT, SHIFT_RIGHT}">
+         <case first="{SHIFT_LEFT}">
+          <sequence first="{SHIFT_LEFT}">
+           <token first="{SHIFT_LEFT}" name="SHIFT_LEFT"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="AdditiveExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{SHIFT_RIGHT}">
+          <sequence first="{SHIFT_RIGHT}">
+           <token first="{SHIFT_RIGHT}" name="SHIFT_RIGHT"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="AdditiveExpression"/>
+           </action>
+          </sequence>
+         </case>
+        </switch>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="AdditiveExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="MultiplicativeExpression"/>
+      </action>
+      <kleene first="{#, PLUS, MINUS}">
+       <group first="{PLUS, MINUS}">
+        <switch first="{PLUS, MINUS}">
+         <case first="{PLUS}">
+          <sequence first="{PLUS}">
+           <token first="{PLUS}" name="PLUS"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="MultiplicativeExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{MINUS}">
+          <sequence first="{MINUS}">
+           <token first="{MINUS}" name="MINUS"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="MultiplicativeExpression"/>
+           </action>
+          </sequence>
+         </case>
+        </switch>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="MultiplicativeExpression">
+   <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <sequence first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+      </action>
+      <kleene first="{#, STAR, DIV, MOD}">
+       <group first="{STAR, DIV, MOD}">
+        <switch first="{STAR, DIV, MOD}">
+         <case first="{STAR}">
+          <sequence first="{STAR}">
+           <token first="{STAR}" name="STAR"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{DIV}">
+          <sequence first="{DIV}">
+           <token first="{DIV}" name="DIV"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+           </action>
+          </sequence>
+         </case>
+         <case first="{MOD}">
+          <sequence first="{MOD}">
+           <token first="{MOD}" name="MOD"/>
+           <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+            <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+           </action>
+          </sequence>
+         </case>
+        </switch>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" name="UnaryExpression">
+   <group first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+    <switch first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+     <case first="{PLUS}">
+      <sequence first="{PLUS}">
+       <token first="{PLUS}" name="PLUS"/>
+       <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+        <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+       </action>
+      </sequence>
+     </case>
+     <case first="{MINUS}">
+      <sequence first="{MINUS}">
+       <token first="{MINUS}" name="MINUS"/>
+       <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+        <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+       </action>
+      </sequence>
+     </case>
+     <case first="{EXCLAMATION}">
+      <sequence first="{EXCLAMATION}">
+       <token first="{EXCLAMATION}" name="EXCLAMATION"/>
+       <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+        <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+       </action>
+      </sequence>
+     </case>
+     <case first="{TILDE}">
+      <sequence first="{TILDE}">
+       <token first="{TILDE}" name="TILDE"/>
+       <action first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}">
+        <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="UnaryExpression"/>
+       </action>
+      </sequence>
+     </case>
+     <case first="{INTEGER_LITERAL, ID, LPAREN, DEFINED}">
+      <action first="{INTEGER_LITERAL, ID, LPAREN, DEFINED}">
+       <nonterminal first="{INTEGER_LITERAL, ID, LPAREN, DEFINED}" ruleName="PrimaryExpr"/>
+      </action>
+     </case>
+    </switch>
+   </group>
+  </rule>
+  <rule first="{INTEGER_LITERAL, ID, LPAREN, DEFINED}" name="PrimaryExpr">
+   <switch first="{INTEGER_LITERAL, ID, LPAREN, DEFINED}">
+    <case first="{DEFINED}">
+     <action first="{DEFINED}">
+      <nonterminal first="{DEFINED}" ruleName="DefinedExpr"/>
+     </action>
+    </case>
+    <case first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <token first="{LPAREN}" name="LPAREN"/>
+       <nonterminal first="{INTEGER_LITERAL, ID, PLUS, MINUS, LPAREN, EXCLAMATION, TILDE, DEFINED}" ruleName="Expression"/>
+      </sequence>
+      <action first="{RPAREN}">
+       <token first="{RPAREN}" name="RPAREN"/>
+      </action>
+     </sequence>
+    </case>
+    <case first="{INTEGER_LITERAL}">
+     <action first="{INTEGER_LITERAL}">
+      <token first="{INTEGER_LITERAL}" name="INTEGER_LITERAL"/>
+     </action>
+    </case>
+    <case first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{DEFINED}" name="DefinedExpr">
+   <sequence first="{DEFINED}">
+    <token first="{DEFINED}" name="DEFINED"/>
+    <group first="{ID, LPAREN}">
+     <switch first="{ID, LPAREN}">
+      <case first="{LPAREN}">
+       <sequence first="{LPAREN}">
+        <sequence first="{LPAREN}">
+         <token first="{LPAREN}" name="LPAREN"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+        <action first="{RPAREN}">
+         <token first="{RPAREN}" name="RPAREN"/>
+        </action>
+       </sequence>
+      </case>
+      <case first="{ID}">
+       <action first="{ID}">
+        <token first="{ID}" name="ID"/>
+       </action>
+      </case>
+     </switch>
+    </group>
+   </sequence>
+  </rule>
+ </grammar>
+</parserFile>

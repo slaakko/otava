@@ -7,6 +7,8 @@ module otava.build_project;
 
 import util.path;
 import otava.symbols.exception;
+import util.buffered_stream;
+import util.file_stream;
 
 namespace otava::build {
 
@@ -107,9 +109,10 @@ void Project::SetModule(std::int32_t fileId, std::unique_ptr<otava::symbols::Mod
     fileIdModuleMap[fileId] = module;
     if (module->Kind() == otava::symbols::ModuleKind::interfaceModule)
     {
-        if (std::find(moduleNames.begin(), moduleNames.end(), module->Name()) == moduleNames.end())
+        std::string moduleName = module->Name();
+        if (std::find(moduleNames.begin(), moduleNames.end(), moduleName) == moduleNames.end())
         {
-            moduleNames.push_back(module->Name());
+            moduleNames.push_back(moduleName);
         }
     }
 }
@@ -148,6 +151,55 @@ void Project::AddReferencedProject(Project* referencedProject)
 const std::string& Project::GetModuleSourceFilePath(std::int32_t fileId) const
 {
     return fileMap->GetFilePath(fileId);
+}
+
+void Project::ResolveForwardDeclarationsAndAddDerivedClasses(otava::symbols::ModuleMapper& moduleMapper, const std::string& config, int optLevel,
+    const std::set<std::string>& configurations, otava::symbols::Context* context)
+{
+    otava::symbols::Module projectModule(Name() + ".#project");
+    for (const auto& moduleName : moduleNames)
+    {
+        otava::symbols::Module* module = moduleMapper.GetModule(moduleName, config, optLevel, configurations, context);
+        //projectModule.Import(module, moduleMapper, config, optLevel, configurations, context); TODO
+    }
+    //projectModule.ResolveForwardDeclarations();
+    //projectModule.AddDerivedClasses();
+}
+
+void Project::ReadTraceInfo(const std::string& moduleDir)
+{
+    std::string traceInfoFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "trace.info"));
+    util::FileStream file(traceInfoFilePath, util::OpenMode::read | util::OpenMode::binary);
+    util::BufferedStream bufStream(file);
+    util::BinaryStreamReader reader(bufStream);
+    traceInfo.Read(reader);
+}
+
+void Project::WriteTraceInfo(const std::string& moduleDir)
+{
+    std::string traceInfoFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "trace.info"));
+    util::FileStream file(traceInfoFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::BufferedStream bufStream(file);
+    util::BinaryStreamWriter writer(bufStream);
+    traceInfo.Write(writer);
+}
+
+void Project::ReadClassIndex(const std::string& moduleDir)
+{
+    std::string classIndexFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "class.index"));
+    util::FileStream file(classIndexFilePath, util::OpenMode::read | util::OpenMode::binary);
+    util::BufferedStream bufStream(file);
+    util::BinaryStreamReader reader(bufStream);
+    index.read(reader); 
+}
+
+void Project::WriteClassIndex(const std::string& moduleDir)
+{
+    std::string classIndexFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "class.index"));
+    util::FileStream file(classIndexFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::BufferedStream bufStream(file);
+    util::BinaryStreamWriter writer(bufStream);
+    index.write(writer); 
 }
 
 void Project::LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std::string& config, int optLevel, const std::set<std::string>& configurations,
@@ -201,11 +253,6 @@ void Project::LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std:
             if (importedModule)
             {
                 m->AddDependsOnModule(importedModule);
-            }
-            else
-            {
-                otava::symbols::SetExceptionThrown();
-                throw std::runtime_error("imported module '" + importedModuleName + "' not found");
             }
         }
 #ifdef DEBUG_SYMBOL_IO

@@ -18,6 +18,7 @@ class Context;
 class Exception : public std::runtime_error
 {
 public:
+    Exception();
     Exception(const std::string& message_);
     Exception(const std::string& message_, const soul::ast::FullSpan& fullSpan, Context* context);
     Exception(const std::string& message_, const soul::ast::FullSpan& fullSpan, const soul::ast::FullSpan& refSpan, Context* context);

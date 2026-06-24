@@ -46,7 +46,7 @@ class ConversionTable
 {
 public:    
     ConversionTable(Module* module_);
-    void AddConversion(FunctionSymbol* conversion);
+    void AddConversion(FunctionSymbol* conversion, Context* context);
     FunctionSymbol* GetConversion(TypeSymbol* paramType, TypeSymbol* argType, Context* context);
     void Write(Writer& writer);
     void Read(Reader& reader);

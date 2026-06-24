@@ -6,6 +6,7 @@
 export module otava.symbols.emitter;
 
 import otava.symbols.ir_value_stack;
+import otava.symbols.id;
 import otava.intermediate.context;
 import otava.intermediate.code;
 import otava.intermediate.data;
@@ -43,16 +44,16 @@ public:
     otava::intermediate::Type* MakeStructureType(const std::vector<otava::intermediate::Type*>& elementTypes, const std::string& comment);
     otava::intermediate::Type* MakeFunctionType(otava::intermediate::Type* returnType, const std::vector<otava::intermediate::Type*>& paramTypes);
     otava::intermediate::Type* MakeArrayType(std::int64_t size, otava::intermediate::Type* elementType);
-    inline otava::intermediate::Type* MakeFwdDeclaredStructureType(const util::uuid& id, const std::string& comment)
+    inline otava::intermediate::Type* MakeFwdDeclaredStructureType(SymbolId id, const std::string& comment)
     {
-        return context->MakeFwdDeclaredStructureType(id, context->NextTypeId(), comment);
+        return context->MakeFwdDeclaredStructureType(ToUnderlying(id), context->NextTypeId(), comment);
     }
     inline void AddFwdDependentType(otava::intermediate::FwdDeclaredStructureType* fwdDeclaredType, otava::intermediate::Type* type)
     {
         context->AddFwdDependentType(fwdDeclaredType, type);
     }
-    otava::intermediate::Type* GetOrInsertFwdDeclaredStructureType(const util::uuid& id, const std::string& comment);
-    void ResolveForwardReferences(const util::uuid& typeId, otava::intermediate::StructureType* structureType);
+    otava::intermediate::Type* GetOrInsertFwdDeclaredStructureType(SymbolId id, const std::string& comment);
+    void ResolveForwardReferences(SymbolId typeId, otava::intermediate::StructureType* structureType);
     inline otava::intermediate::Type* GetVoidType() noexcept { return context->GetVoidType(); }
     inline otava::intermediate::Type* GetBoolType() noexcept { return context->GetBoolType(); }
     inline otava::intermediate::Type* GetSByteType() noexcept { return context->GetSByteType(); }
@@ -187,12 +188,12 @@ public:
         return context->CreateGetRbp();
     }
     inline void EmitNop() { context->CreateNop(); }
-    otava::intermediate::Type* GetType(const util::uuid& id) const noexcept;
-    void SetType(const util::uuid& id, otava::intermediate::Type* type);
+    otava::intermediate::Type* GetType(SymbolId id) const noexcept;
+    void SetType(SymbolId id, otava::intermediate::Type* type);
     otava::intermediate::Value* GetIrObject(void* symbol) const noexcept;
     void SetIrObject(void* symbol, otava::intermediate::Value* irObject);
-    otava::intermediate::Value* GetVTabVariable(const std::u32string& className) const noexcept;
-    void SetVTabVariable(const std::u32string& className, otava::intermediate::Value* vtabVariable);
+    otava::intermediate::Value* GetVTabVariable(const std::string& className) const noexcept;
+    void SetVTabVariable(const std::string& className, otava::intermediate::Value* vtabVariable);
     IrValueStack& Stack() noexcept { return *stack; }
     otava::intermediate::Value* EmitClassPtrConversion(otava::intermediate::Value* classPtr, otava::intermediate::Value* delta, otava::intermediate::Type* destType,
         bool checkNull);
@@ -206,9 +207,9 @@ public:
 private:
     otava::intermediate::IntermediateContext* context;
     IrValueStack* stack;
-    std::map<util::uuid, otava::intermediate::Type*> typeMap;
+    std::unordered_map<SymbolId, otava::intermediate::Type*> typeMap;
     std::map<void*, otava::intermediate::Value*> irObjectMap;
-    std::map<std::u32string, otava::intermediate::Value*> vtabVariableMap;
+    std::map<std::string, otava::intermediate::Value*> vtabVariableMap;
     otava::intermediate::Value* retValue;
     std::map<util::uuid, otava::intermediate::StructureType*> forwardDeclarationMap;
     int line;

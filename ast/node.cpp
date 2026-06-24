@@ -413,13 +413,13 @@ void Node::Clear()
 void Node::Write(Writer& writer)
 {
     writer.GetBinaryStreamWriter().Write(id);
-    writer.Write(span);
+    //writer.Write(span);
 }
 
 void Node::Read(Reader& reader)
 {
-    id = reader.GetBinaryStreamReader().ReadLong();
-    span = reader.ReadSpan();
+    id = reader.GetMemoryReader().ReadLong();
+    //span = reader.ReadSpan();
 }
 
 CompoundNode::CompoundNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_) noexcept : Node(kind_, span_, fileIndex_)
@@ -521,7 +521,7 @@ void SequenceNode::Write(Writer& writer)
 void SequenceNode::Read(Reader& reader)
 {
     Node::Read(reader);
-    std::uint32_t n = reader.GetBinaryStreamReader().ReadULEB128UInt();
+    std::uint32_t n = reader.GetMemoryReader().ReadULEB128UInt();
     for (std::uint32_t i = 0; i < n; ++i)
     {
         Node* node = reader.ReadNode();
@@ -574,7 +574,7 @@ void ListNode::Write(Writer& writer)
 void ListNode::Read(Reader& reader)
 {
     Node::Read(reader);
-    std::uint32_t n = reader.GetBinaryStreamReader().ReadULEB128UInt();
+    std::uint32_t n = reader.GetMemoryReader().ReadULEB128UInt();
     for (std::uint32_t i = 0; i < n; ++i)
     {
         Node* node = reader.ReadNode();

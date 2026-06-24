@@ -44,7 +44,7 @@ void LabeledStatementNode::Write(Writer& writer)
     writer.Write(label.get());
     writer.Write(stmt.get());
     writer.Write(attributes.get());
-    writer.Write(colonSpan);
+    //writer.Write(colonSpan);
 }
 
 void LabeledStatementNode::Read(Reader& reader)
@@ -53,7 +53,7 @@ void LabeledStatementNode::Read(Reader& reader)
     label.reset(reader.ReadNode());
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    colonSpan = reader.ReadSpan();
+    //colonSpan = reader.ReadSpan();
 }
 
 CaseStatementNode::CaseStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::caseStatmentNode, span_, fileIndex_)
@@ -89,8 +89,8 @@ void CaseStatementNode::Write(Writer& writer)
     writer.Write(caseExpr.get());
     writer.Write(stmt.get());
     writer.Write(attributes.get());
-    writer.Write(caseSpan);
-    writer.Write(colonSpan);
+    //writer.Write(caseSpan);
+    //writer.Write(colonSpan);
 }
 
 void CaseStatementNode::Read(Reader& reader)
@@ -99,8 +99,8 @@ void CaseStatementNode::Read(Reader& reader)
     caseExpr.reset(reader.ReadNode());
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    caseSpan = reader.ReadSpan();
-    colonSpan = reader.ReadSpan();
+    //caseSpan = reader.ReadSpan();
+    //colonSpan = reader.ReadSpan();
 }
 
 DefaultStatementNode::DefaultStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::defaultStatementNode, span_, fileIndex_)
@@ -135,8 +135,8 @@ void DefaultStatementNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(stmt.get());
     writer.Write(attributes.get());
-    writer.Write(defaultSpan);
-    writer.Write(colonSpan);
+    //writer.Write(defaultSpan);
+    //writer.Write(colonSpan);
 }
 
 void DefaultStatementNode::Read(Reader& reader)
@@ -144,8 +144,8 @@ void DefaultStatementNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    defaultSpan = reader.ReadSpan();
-    colonSpan = reader.ReadSpan();
+    //defaultSpan = reader.ReadSpan();
+    //colonSpan = reader.ReadSpan();
 }
 
 CompoundStatementNode::CompoundStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -195,8 +195,8 @@ void CompoundStatementNode::Write(Writer& writer)
 {
     SequenceNode::Write(writer);
     writer.Write(attributes.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
     writer.GetBinaryStreamWriter().Write(blockId);
 }
 
@@ -204,9 +204,9 @@ void CompoundStatementNode::Read(Reader& reader)
 {
     SequenceNode::Read(reader);
     attributes.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
-    blockId = reader.GetBinaryStreamReader().ReadInt();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
+    blockId = reader.GetMemoryReader().ReadInt();
 }
 
 void CompoundStatementNode::SetLexerPosPair(const soul::ast::lexer::pos::pair::LexerPosPair& lexerPosPair_) noexcept
@@ -293,11 +293,11 @@ void IfStatementNode::Write(Writer& writer)
     writer.Write(thenStmt.get());
     writer.Write(elseStmt.get());
     writer.Write(attributes.get());
-    writer.Write(ifSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
-    writer.Write(constExprSpan);
-    writer.Write(elseSpan);
+    //writer.Write(ifSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
+    //writer.Write(constExprSpan);
+    //writer.Write(elseSpan);
     writer.GetBinaryStreamWriter().Write(blockId);
 }
 
@@ -308,12 +308,12 @@ void IfStatementNode::Read(Reader& reader)
     thenStmt.reset(reader.ReadNode());
     elseStmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    ifSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
-    constExprSpan = reader.ReadSpan();
-    elseSpan = reader.ReadSpan();
-    blockId = reader.GetBinaryStreamReader().ReadInt();
+    //ifSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
+    //constExprSpan = reader.ReadSpan();
+    //elseSpan = reader.ReadSpan();
+    blockId = reader.GetMemoryReader().ReadInt();
 }
 
 SwitchStatementNode::SwitchStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::switchStatemeNode, span_, fileIndex_), blockId(-1)
@@ -352,9 +352,9 @@ void SwitchStatementNode::Write(Writer& writer)
     writer.Write(cond.get());
     writer.Write(stmt.get());
     writer.Write(attributes.get());
-    writer.Write(switchSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(switchSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
     writer.GetBinaryStreamWriter().Write(blockId);
 }
 
@@ -364,10 +364,10 @@ void SwitchStatementNode::Read(Reader& reader)
     cond.reset(reader.ReadNode());
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    switchSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
-    blockId = reader.GetBinaryStreamReader().ReadInt();
+    //switchSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
+    blockId = reader.GetMemoryReader().ReadInt();
 }
 
 WhileStatementNode::WhileStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::whileStatementNode, span_, fileIndex_), blockId(-1)
@@ -405,9 +405,9 @@ void WhileStatementNode::Write(Writer& writer)
     writer.Write(cond.get());
     writer.Write(stmt.get());
     writer.Write(attributes.get());
-    writer.Write(whileSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(whileSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
     writer.GetBinaryStreamWriter().Write(blockId);
 }
 
@@ -417,10 +417,10 @@ void WhileStatementNode::Read(Reader& reader)
     cond.reset(reader.ReadNode());
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    whileSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
-    blockId = reader.GetBinaryStreamReader().ReadInt();
+    //whileSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
+    blockId = reader.GetMemoryReader().ReadInt();
 }
 
 DoStatementNode::DoStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::doStatementNode, span_, fileIndex_)
@@ -459,10 +459,10 @@ void DoStatementNode::Write(Writer& writer)
     writer.Write(expr.get());
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(doSpan);
-    writer.Write(whileSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(doSpan);
+    //writer.Write(whileSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void DoStatementNode::Read(Reader& reader)
@@ -472,10 +472,10 @@ void DoStatementNode::Read(Reader& reader)
     expr.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    doSpan = reader.ReadSpan();
-    whileSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //doSpan = reader.ReadSpan();
+    //whileSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 RangeForStatementNode::RangeForStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : 
@@ -529,10 +529,10 @@ void RangeForStatementNode::Write(Writer& writer)
     writer.Write(initializer.get());
     writer.Write(stmt.get());
     writer.Write(attributes.get());
-    writer.Write(forSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
-    writer.Write(colonSpan);
+    //writer.Write(forSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
+    //writer.Write(colonSpan);
     writer.GetBinaryStreamWriter().Write(blockId);
     writer.GetBinaryStreamWriter().Write(rangeForId);
 }
@@ -545,12 +545,12 @@ void RangeForStatementNode::Read(Reader& reader)
     initializer.reset(reader.ReadNode());
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    forSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
-    colonSpan = reader.ReadSpan();
-    blockId = reader.GetBinaryStreamReader().ReadInt();
-    reader.GetBinaryStreamReader().ReadUuid(rangeForId);
+    //forSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
+    //colonSpan = reader.ReadSpan();
+    blockId = reader.GetMemoryReader().ReadInt();
+    rangeForId = reader.GetMemoryReader().ReadUuid();
 }
 
 ForRangeDeclarationNode::ForRangeDeclarationNode(const soul::ast::Span& span_, int fileIndex_) noexcept :
@@ -645,8 +645,8 @@ void StructuredBindingNode::Write(Writer& writer)
     writer.Write(initializer.get());
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void StructuredBindingNode::Read(Reader& reader)
@@ -658,8 +658,8 @@ void StructuredBindingNode::Read(Reader& reader)
     initializer.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 ForStatementNode::ForStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::forStatementNode, span_, fileIndex_), blockId(-1)
@@ -716,9 +716,9 @@ void ForStatementNode::Write(Writer& writer)
     writer.Write(stmt.get());
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(forSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(forSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
     writer.GetBinaryStreamWriter().Write(blockId);
 }
 
@@ -731,10 +731,10 @@ void ForStatementNode::Read(Reader& reader)
     stmt.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    forSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
-    blockId = reader.GetBinaryStreamReader().ReadInt();
+    //forSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
+    blockId = reader.GetMemoryReader().ReadInt();
 }
 
 BreakStatementNode::BreakStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::breakStatementNode, span_, fileIndex_)
@@ -768,7 +768,7 @@ void BreakStatementNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(breakSpan);
+    //writer.Write(breakSpan);
 }
 
 void BreakStatementNode::Read(Reader& reader)
@@ -776,7 +776,7 @@ void BreakStatementNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    breakSpan = reader.ReadSpan();
+    //breakSpan = reader.ReadSpan();
 }
 
 ContinueStatementNode::ContinueStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::continueStatementNode, span_, fileIndex_)
@@ -811,7 +811,7 @@ void ContinueStatementNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(continueSpan);
+    //writer.Write(continueSpan);
 }
 
 void ContinueStatementNode::Read(Reader& reader)
@@ -819,7 +819,7 @@ void ContinueStatementNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    continueSpan = reader.ReadSpan();
+    //continueSpan = reader.ReadSpan();
 }
 
 ReturnStatementNode::ReturnStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::returnStatementNode, span_, fileIndex_)
@@ -865,7 +865,7 @@ void ReturnStatementNode::Write(Writer& writer)
     writer.Write(returnValue.get());
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(returnSpan);
+    //writer.Write(returnSpan);
 }
 
 void ReturnStatementNode::Read(Reader& reader)
@@ -874,7 +874,7 @@ void ReturnStatementNode::Read(Reader& reader)
     returnValue.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    returnSpan = reader.ReadSpan();
+    //returnSpan = reader.ReadSpan();
 }
 
 CoReturnStatementNode::CoReturnStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::coReturnStatementNode, span_, fileIndex_)
@@ -915,7 +915,7 @@ void CoReturnStatementNode::Write(Writer& writer)
     writer.Write(returnValue.get());
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(coReturnSpan);
+    //writer.Write(coReturnSpan);
 }
 
 void CoReturnStatementNode::Read(Reader& reader)
@@ -924,7 +924,7 @@ void CoReturnStatementNode::Read(Reader& reader)
     returnValue.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    coReturnSpan = reader.ReadSpan();
+    //coReturnSpan = reader.ReadSpan();
 }
 
 GotoStatementNode::GotoStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::gotoStatementNode, span_, fileIndex_)
@@ -965,7 +965,7 @@ void GotoStatementNode::Write(Writer& writer)
     writer.Write(target.get());
     writer.Write(attributes.get());
     writer.Write(semicolon.get());
-    writer.Write(gotoSpan);
+    //writer.Write(gotoSpan);
 }
 
 void GotoStatementNode::Read(Reader& reader)
@@ -974,7 +974,7 @@ void GotoStatementNode::Read(Reader& reader)
     target.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
     semicolon.reset(reader.ReadNode());
-    gotoSpan = reader.ReadSpan();
+    //gotoSpan = reader.ReadSpan();
 }
 
 TryStatementNode::TryStatementNode(const soul::ast::Span& span_, int fileIndex_) noexcept : CompoundNode(NodeKind::tryStatementNode, span_, fileIndex_)
@@ -1010,7 +1010,7 @@ void TryStatementNode::Write(Writer& writer)
     writer.Write(tryBlock.get());
     writer.Write(handlers.get());
     writer.Write(attributes.get());
-    writer.Write(trySpan);
+    //writer.Write(trySpan);
 }
 
 void TryStatementNode::Read(Reader& reader)
@@ -1019,7 +1019,7 @@ void TryStatementNode::Read(Reader& reader)
     tryBlock.reset(reader.ReadNode());
     handlers.reset(reader.ReadNode());
     attributes.reset(reader.ReadNode());
-    trySpan = reader.ReadSpan();
+    //trySpan = reader.ReadSpan();
 }
 
 HandlerSequenceNode::HandlerSequenceNode(const soul::ast::Span& span_, int fileIndex_) noexcept : SequenceNode(NodeKind::handlerSequenceNode, span_, fileIndex_)
@@ -1069,8 +1069,8 @@ void HandlerNode::Write(Writer& writer)
     CompoundNode::Write(writer);
     writer.Write(exception.get());
     writer.Write(catchBlock.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void HandlerNode::Read(Reader& reader)
@@ -1078,8 +1078,8 @@ void HandlerNode::Read(Reader& reader)
     CompoundNode::Read(reader);
     exception.reset(reader.ReadNode());
     catchBlock.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 ExceptionDeclarationNode::ExceptionDeclarationNode(const soul::ast::Span& span_, int fileIndex_) noexcept : 

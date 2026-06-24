@@ -115,15 +115,15 @@ void ExpressionListNode::Accept(Visitor& visitor)
 void ExpressionListNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ExpressionListNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string ExpressionListNode::Str() const
@@ -770,16 +770,16 @@ void CastExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
     writer.Write(typeId.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void CastExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
     typeId.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string CastExprNode::Str() const
@@ -930,15 +930,15 @@ void SizeOfTypeExprNode::Accept(Visitor& visitor)
 void SizeOfTypeExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void SizeOfTypeExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string SizeOfTypeExprNode::Str() const
@@ -973,17 +973,17 @@ void SizeOfPackExprNode::Accept(Visitor& visitor)
 void SizeOfPackExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(ellipsisSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(ellipsisSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void SizeOfPackExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    ellipsisSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //ellipsisSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 SizeOfUnaryExprNode::SizeOfUnaryExprNode(const soul::ast::Span& span_, int fileIndex_) noexcept : UnaryNode(NodeKind::sizeOfUnaryExprNode, span_, fileIndex_, nullptr)
@@ -1038,15 +1038,15 @@ void AlignOfExprNode::Accept(Visitor& visitor)
 void AlignOfExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void AlignOfExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 NoexceptExprNode::NoexceptExprNode(const soul::ast::Span& span_, int fileIndex_) noexcept : 
@@ -1074,15 +1074,15 @@ void NoexceptExprNode::Accept(Visitor& visitor)
 void NoexceptExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void NoexceptExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 OpNewCall::OpNewCall(const soul::ast::Span& span_, int fileIndex_) noexcept : UnaryNode(NodeKind::opNewCall, span_, fileIndex_, nullptr)
@@ -1156,7 +1156,7 @@ void NewExprNode::Write(Writer& writer)
     writer.Write(colonColonHead.get());
     writer.Write(placement.get());
     writer.Write(initializer.get());
-    writer.Write(newSpan);
+    //writer.Write(newSpan);
 }
 
 void NewExprNode::Read(Reader& reader)
@@ -1165,7 +1165,7 @@ void NewExprNode::Read(Reader& reader)
     colonColonHead.reset(reader.ReadNode());
     placement.reset(reader.ReadNode());
     initializer.reset(reader.ReadNode());
-    newSpan = reader.ReadSpan();
+    //newSpan = reader.ReadSpan();
 }
 
 std::string NewExprNode::Str() const
@@ -1219,15 +1219,15 @@ void NewPlacementNode::Accept(Visitor& visitor)
 void NewPlacementNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void NewPlacementNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 ParenNewTypeIdNode::ParenNewTypeIdNode(const soul::ast::Span& span_, int fileIndex_) noexcept : UnaryNode(NodeKind::parenNewTypeIdNode, span_, fileIndex_, nullptr)
@@ -1255,15 +1255,15 @@ void ParenNewTypeIdNode::Accept(Visitor& visitor)
 void ParenNewTypeIdNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ParenNewTypeIdNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string ParenNewTypeIdNode::Str() const
@@ -1371,18 +1371,18 @@ void ArrayDeletePtrNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
     writer.Write(colonColonHead.get());
-    writer.Write(deleteSpan);
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(deleteSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void ArrayDeletePtrNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
     colonColonHead.reset(reader.ReadNode());
-    deleteSpan = reader.ReadSpan();
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //deleteSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 DeletePtrNode::DeletePtrNode(const soul::ast::Span& span_, int fileIndex_) noexcept : UnaryNode(NodeKind::deletePtrNode, span_, fileIndex_, nullptr)
@@ -1415,14 +1415,14 @@ void DeletePtrNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
     writer.Write(colonColonHead.get());
-    writer.Write(deleteSpan);
+    //writer.Write(deleteSpan);
 }
 
 void DeletePtrNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
     colonColonHead.reset(reader.ReadNode());
-    deleteSpan = reader.ReadSpan();
+    //deleteSpan = reader.ReadSpan();
 }
 
 SubscriptExprNode::SubscriptExprNode(const soul::ast::Span& span_, int fileIndex_) noexcept : UnaryNode(NodeKind::subscriptExprNode, span_, fileIndex_, nullptr)
@@ -1451,16 +1451,16 @@ void SubscriptExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
     writer.Write(index.get());
-    writer.Write(lbSpan);
-    writer.Write(rbSpan);
+    //writer.Write(lbSpan);
+    //writer.Write(rbSpan);
 }
 
 void SubscriptExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
     index.reset(reader.ReadNode());
-    lbSpan = reader.ReadSpan();
-    rbSpan = reader.ReadSpan();
+    //lbSpan = reader.ReadSpan();
+    //rbSpan = reader.ReadSpan();
 }
 
 std::string SubscriptExprNode::Str() const
@@ -1506,16 +1506,16 @@ void InvokeExprNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
     writer.Write(subject.get());
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void InvokeExprNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
     subject.reset(reader.ReadNode());
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string InvokeExprNode::Str() const
@@ -1658,13 +1658,13 @@ void PostfixIncExprNode::Accept(Visitor& visitor)
 void PostfixIncExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(opSpan);
+    //writer.Write(opSpan);
 }
 
 void PostfixIncExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    opSpan = reader.ReadSpan();
+    //opSpan = reader.ReadSpan();
 }
 
 std::string PostfixIncExprNode::Str() const
@@ -1698,13 +1698,13 @@ void PostfixDecExprNode::Accept(Visitor& visitor)
 void PostfixDecExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(opSpan);
+    //writer.Write(opSpan);
 }
 
 void PostfixDecExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    opSpan = reader.ReadSpan();
+    //opSpan = reader.ReadSpan();
 }
 
 std::string PostfixDecExprNode::Str() const
@@ -1738,15 +1738,15 @@ void TypeIdExprNode::Accept(Visitor& visitor)
 void TypeIdExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void TypeIdExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string TypeIdExprNode::Str() const
@@ -1847,10 +1847,10 @@ void CppCastExprNode::Write(Writer& writer)
     UnaryNode::Write(writer);
     writer.Write(typeId.get());
     writer.Write(op.get());
-    writer.Write(laSpan);
-    writer.Write(raSpan);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(laSpan);
+    //writer.Write(raSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void CppCastExprNode::Read(Reader& reader)
@@ -1858,10 +1858,10 @@ void CppCastExprNode::Read(Reader& reader)
     UnaryNode::Read(reader);
     typeId.reset(reader.ReadNode());
     op.reset(reader.ReadNode());
-    laSpan = reader.ReadSpan();
-    raSpan = reader.ReadSpan();
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //laSpan = reader.ReadSpan();
+    //raSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string CppCastExprNode::Str() const
@@ -1912,15 +1912,15 @@ void ParenthesizedExprNode::Accept(Visitor& visitor)
 void ParenthesizedExprNode::Write(Writer& writer)
 {
     UnaryNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void ParenthesizedExprNode::Read(Reader& reader)
 {
     UnaryNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 std::string ParenthesizedExprNode::Str() const
@@ -1955,15 +1955,15 @@ void FoldExprNode::Accept(Visitor& visitor)
 void FoldExprNode::Write(Writer& writer)
 {
     SequenceNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void FoldExprNode::Read(Reader& reader)
 {
     SequenceNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 NewDeclaratorNode::NewDeclaratorNode(const soul::ast::Span& span_, int fileIndex_) noexcept : SequenceNode(NodeKind::newDeclaratorNode, span_, fileIndex_)
@@ -2029,15 +2029,15 @@ void NewInitializerNode::Accept(Visitor& visitor)
 void NewInitializerNode::Write(Writer& writer)
 {
     ListNode::Write(writer);
-    writer.Write(lpSpan);
-    writer.Write(rpSpan);
+    //writer.Write(lpSpan);
+    //writer.Write(rpSpan);
 }
 
 void NewInitializerNode::Read(Reader& reader)
 {
     ListNode::Read(reader);
-    lpSpan = reader.ReadSpan();
-    rpSpan = reader.ReadSpan();
+    //lpSpan = reader.ReadSpan();
+    //rpSpan = reader.ReadSpan();
 }
 
 BracedInitListNode::BracedInitListNode(const soul::ast::Span& span_, int fileIndex_) noexcept : ListNode(NodeKind::bracedInitListNode, span_, fileIndex_)

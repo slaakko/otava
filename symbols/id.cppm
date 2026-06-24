@@ -20,6 +20,12 @@ constexpr StringOffset operator+(StringOffset offset, std::uint32_t operand) noe
 
 constexpr StringOffset notFoundOffset = StringOffset(0xFFFFFFFF);
 
+constexpr StringOffset& operator+=(StringOffset& x, std::uint32_t y) noexcept
+{
+    x = x + y;
+    return x;
+}
+
 enum class SymbolId : std::uint32_t {};
 
 constexpr SymbolId zeroSymbolId = SymbolId(0);
@@ -64,6 +70,17 @@ constexpr Cardinality operator+(Cardinality x, Cardinality y) noexcept
     return Cardinality(ToUnderlying(x) + ToUnderlying(y));
 }
 
+constexpr Cardinality operator-(Cardinality x, Cardinality y) noexcept
+{
+    return Cardinality(ToUnderlying(x) - ToUnderlying(y));
+}
+
+constexpr Cardinality& operator+=(Cardinality& x, Cardinality y) noexcept
+{
+    x = x + y;
+    return x;
+}
+
 constexpr Cardinality& operator++(Cardinality& c) noexcept
 {
     c = c + Cardinality(1);
@@ -77,9 +94,22 @@ constexpr Cardinality operator++(Cardinality& c, int) noexcept
     return result;
 }
 
-enum class Index : std::uint32_t {};
+constexpr Cardinality& operator--(Cardinality& c) noexcept
+{
+    c = c - Cardinality(1);
+    return c;
+}
 
-constexpr std::uint32_t ToUnderlying(Index index) noexcept { return std::uint32_t(index); }
+constexpr Cardinality operator--(Cardinality& c, int) noexcept
+{
+    Cardinality result(c);
+    c = c - Cardinality(1);
+    return result;
+}
+
+enum class Index : std::int32_t {};
+
+constexpr std::int32_t ToUnderlying(Index index) noexcept { return std::int32_t(index); }
 
 constexpr Index operator+(Index x, Index y) noexcept
 {
@@ -101,6 +131,19 @@ constexpr Index operator++(Index& x, int) noexcept
 {
     Index result(x);
     x = x + Index(1);
+    return result;
+}
+
+constexpr Index& operator--(Index& x) noexcept
+{
+    x = x - Index(1);
+    return x;
+}
+
+constexpr Index operator--(Index& x, int) noexcept
+{
+    Index result(x);
+    x = x - Index(1);
     return result;
 }
 
@@ -132,5 +175,13 @@ constexpr ModuleId operator++(ModuleId & x, int) noexcept
     x = x + ModuleId(1);
     return result;
 }
+
+struct ModuleSymbolId
+{
+    inline ModuleSymbolId() noexcept : moduleId(zeroModuleId), symbolId(zeroSymbolId) {}
+    inline ModuleSymbolId(ModuleId moduleId_, SymbolId symbolId_) noexcept : moduleId(moduleId_), symbolId(symbolId_) {}
+    ModuleId moduleId;
+    SymbolId symbolId;
+};
 
 } // namespace otava::symbols

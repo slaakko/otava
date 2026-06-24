@@ -7,6 +7,7 @@ export module otava.symbols.fundamental_type_conversion;
 
 import otava.symbols.context;
 import otava.symbols.emitter;
+import otava.symbols.exception;
 import otava.symbols.function_symbol;
 import otava.symbols.variable_symbol;
 import otava.symbols.writer;
@@ -75,30 +76,66 @@ template<class Op>
 struct FundamentalTypeConversion : public FunctionSymbol
 {
     FundamentalTypeConversion(Module* module_, SymbolId id_) :
-        FunctionSymbol(module_, id_, "@conversion"), distance(0), conversionKind(ConversionKind::implicitConversion), paramType(nullptr), argType(nullptr)
+        FunctionSymbol(module_, id_, "@conversion"), distance(0), conversionKind(ConversionKind::implicitConversion), paramType(nullptr), argType(nullptr),
+        resolved(false), paramTypeId(zeroSymbolId), argTypeId(zeroSymbolId)
     {
     }
     FundamentalTypeConversion(Module* module_, SymbolId id_, std::int32_t distance_, ConversionKind conversionKind_, TypeSymbol* paramType_, 
         TypeSymbol* argType_, Context* context) :
-        FunctionSymbol(module_, id_, "@conversion"), distance(distance_), conversionKind(conversionKind_), paramType(paramType_), argType(argType_)
+        FunctionSymbol(module_, id_, "@conversion"), distance(distance_), conversionKind(conversionKind_), paramType(paramType_), argType(argType_),
+        resolved(false), paramTypeId(zeroSymbolId), argTypeId(zeroSymbolId)
     {
         SetConversion();
         SetAccess(Access::public_);
         SetConversionParamType(paramType_);
         SetConversionArgType(argType_);
         ParameterSymbol* arg = new ParameterSymbol(module_, context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
-        arg->SetType(argType);
+        arg->SetType(argType, context);
         AddSymbol(arg, soul::ast::FullSpan(), context);
-        SetReturnType(paramType_, soul::ast::FullSpan(), context);
+        SetReturnType(paramType_, context);
         SetNoExcept();
     }
     TypeSymbol* ConversionParamType() const noexcept override
     {
         return paramType;
     }
+    TypeSymbol* GetConversionParamType(Context* context) const override
+    {
+        TypeSymbol* conversionParamType = ConversionParamType();
+        if (conversionParamType)
+        {
+            return conversionParamType;
+        }
+        if (IsReadOnly() && paramTypeId != zeroSymbolId)
+        {
+            conversionParamType = GetModule()->GetSymbolTable()->GetTypeSymbol(paramTypeId, context);
+            if (!conversionParamType)
+            {
+                ThrowException("conversion parameter type id " + std::to_string(ToUnderlying(paramTypeId)) + " not found from module '" + GetModule()->Name() + "'");
+            }
+        }
+        return conversionParamType;
+    }
     TypeSymbol* ConversionArgType() const noexcept override
     {
         return argType;
+    }
+    TypeSymbol* GetConversionArgType(Context* context) const override
+    {
+        TypeSymbol* conversionArgType = ConversionArgType();
+        if (conversionArgType)
+        {
+            return conversionArgType;
+        }
+        if (IsReadOnly() && argTypeId != zeroSymbolId)
+        {
+            conversionArgType = GetModule()->GetSymbolTable()->GetTypeSymbol(argTypeId, context);
+            if (!conversionArgType)
+            {
+                ThrowException("conversion argument type id " + std::to_string(ToUnderlying(argTypeId)) + " not found from module '" + GetModule()->Name() + "'");
+            }
+        }
+        return conversionArgType;
     }
     ConversionKind GetConversionKind() const noexcept override
     {
@@ -118,17 +155,31 @@ struct FundamentalTypeConversion : public FunctionSymbol
     }
     void Read(Reader& reader) override
     {
-/*
         FunctionSymbol::Read(reader);
-        distance = reader.GetMemoryReader().ReadInt();
-        conversionKind = static_cast<ConversionKind>(reader.GetMemoryReader().ReadByte());
-        paramTypeId = reader.ReadTypeSymbolId();
-        argTypeId = reader.ReadTypeSymbolId();
-*/
+        distance = reader.CurrentReader().ReadInt();
+        conversionKind = static_cast<ConversionKind>(reader.CurrentReader().ReadByte());
+        paramTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+        argTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    }
+    void Resolve(Context* context)
+    {
+        if (resolved) return;
+        resolved = true;
+        paramType = GetModule()->GetSymbolTable()->GetTypeSymbol(paramTypeId, context);
+        if (!paramType)
+        {
+            ThrowException("FundamentalTypeConversion::Resolve: parameter type " + std::to_string(ToUnderlying(paramTypeId)) + " not resolved");
+        }
+        argType = GetModule()->GetSymbolTable()->GetTypeSymbol(argTypeId, context);
+        if (!argType)
+        {
+            ThrowException("FundamentalTypeConversion::Resolve: argument type " + std::to_string(ToUnderlying(argTypeId)) + " not resolved");
+        }
     }
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override
     {
+        Resolve(context);
         context->SetArgType(argType);
         context->SetParamType(paramType);
         otava::intermediate::Value* value = emitter.Stack().Pop();
@@ -137,7 +188,10 @@ struct FundamentalTypeConversion : public FunctionSymbol
     std::int32_t distance;
     ConversionKind conversionKind;
     TypeSymbol* paramType;
+    SymbolId paramTypeId;
     TypeSymbol* argType;
+    SymbolId argTypeId;
+    bool resolved;
 };
 
 class FundamentalTypeSignExtendConversion : public FundamentalTypeConversion<FundamentalTypeSignExtension>
@@ -209,16 +263,22 @@ public:
     FundamentalTypeBooleanConversion(Module* module_, SymbolId id_);
     FundamentalTypeBooleanConversion(Module* module_, SymbolId id_, TypeSymbol* type_, TypeSymbol* boolType, Context* context);
     TypeSymbol* ConversionParamType() const noexcept override;
+    TypeSymbol* GetConversionParamType(Context* context) const override;
     TypeSymbol* ConversionArgType() const noexcept override;
+    TypeSymbol* GetConversionArgType(Context* context) const override;
     ConversionKind GetConversionKind() const noexcept override;
     std::int32_t ConversionDistance() const noexcept override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    void Resolve(Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
 private:
     TypeSymbol* paramType;
+    SymbolId paramTypeId;
     TypeSymbol* argType;
+    SymbolId argTypeId;
+    bool resolved;
 };
 
 } // namespace otava::symbols

@@ -5,6 +5,7 @@
 
 module otava.symbols.symbol;
 
+import otava.symbols.emitter;
 import otava.symbols.modules;
 import otava.symbols.writer;
 import otava.symbols.reader;
@@ -72,6 +73,7 @@ std::string SymbolKindStr(SymbolKind kind)
     case SymbolKind::typenameConstraintSymbol: return "typenameConstraint";
     case SymbolKind::explicitInstantiationSymbol: return "explicitInstantiation";
     case SymbolKind::templateParameterSymbol: return "templateParameter";
+    case SymbolKind::templateParamGroupSymbol: return "templateParamGroup";
     case SymbolKind::varArgTypeSymbol: return "varArgType";
     case SymbolKind::variableSymbol: return "variable";
     case SymbolKind::parameterSymbol: return "parameter";
@@ -165,19 +167,24 @@ std::string SymbolKindStr(SymbolKind kind)
 }
 
 Symbol::Symbol(Module* module_, SymbolId id_) : 
-    module(module_), id(id_), flags(SymbolFlags::readOnly), nameOffset(StringOffset(0)), 
-    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none)
+    module(module_), id(id_), flags(SymbolFlags::readOnly), nameOffset(StringOffset(0)), name(""),
+    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1)
 {
 }
 
 Symbol::Symbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    module(module_), id(id_), flags(SymbolFlags::project), nameOffset(module->GetStringTable()->AddString(name_)), 
-    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none)
+    module(module_), id(id_), flags(SymbolFlags::project), nameOffset(module->GetStringTable()->AddString(name_)), name(module->GetStringTable()->CharPtr(nameOffset)),
+    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1)
 {
 }
 
 Symbol::~Symbol()
 {
+}
+
+void* Symbol::IrObject(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
+{
+    return emitter.GetIrObject(this);
 }
 
 bool Symbol::IsExtern() const noexcept
@@ -188,6 +195,11 @@ bool Symbol::IsExtern() const noexcept
 std::string Symbol::Name() const
 {
     return GetModule()->GetStringTable()->GetString(nameOffset);
+}
+
+void Symbol::SetName(const std::string& name_)
+{
+    nameOffset = GetModule()->GetStringTable()->AddString(name_);
 }
 
 std::string Symbol::FullName(Context* context) const
@@ -212,6 +224,10 @@ std::string Symbol::FullName(Context* context) const
 
 Symbol* Symbol::Parent(Context* context) const
 {
+    if (parent)
+    {
+        return parent;
+    }
     if (IsReadOnly())
     {
         if (parentId != zeroSymbolId)
@@ -224,7 +240,8 @@ Symbol* Symbol::Parent(Context* context) const
 
 void Symbol::SetParent(Symbol* parent_)
 {
-    if (IsReadOnly())
+    bool isExplicitlyInstantiatedFunctionDefinitionSymbol = IsExplicitlyInstantiatedFunctionDefinitionSymbol();
+    if (IsReadOnly() && !isExplicitlyInstantiatedFunctionDefinitionSymbol)
     {
         ThrowException("symbol: cannot set parent because symbol is read-only");
     }
@@ -283,6 +300,36 @@ NamespaceSymbol* Symbol::ParentNamespace(Context* context) const noexcept
     return nullptr;
 }
 
+bool Symbol::IsLocalVariableSymbol(Context* context) 
+{
+    if (IsVariableSymbol())
+    {
+        VariableSymbol* symbol = static_cast<VariableSymbol*>(this);
+        return symbol->IsLocalVariable(context);
+    }
+    return false;
+}
+
+bool Symbol::IsMemberVariableSymbol(Context* context) 
+{
+    if (IsVariableSymbol())
+    {
+        VariableSymbol* symbol = static_cast<VariableSymbol*>(this);
+        return symbol->IsMemberVariable(context);
+    }
+    return false;
+}
+
+bool Symbol::IsGlobalVariableSymbol(Context* context) 
+{
+    if (IsVariableSymbol())
+    {
+        VariableSymbol* symbol = static_cast<VariableSymbol*>(this);
+        return symbol->IsGlobalVariable(context);
+    }
+    return false;
+}
+
 bool Symbol::IsTypeSymbol() const noexcept
 {
     switch (kind)
@@ -302,6 +349,7 @@ bool Symbol::IsTypeSymbol() const noexcept
     case SymbolKind::fundamentalTypeSymbol:
     case SymbolKind::nullPtrTypeSymbol:
     case SymbolKind::templateParameterSymbol:
+    case SymbolKind::templateParamGroupSymbol:
     case SymbolKind::boundTemplateParameterSymbol:
     case SymbolKind::varArgTypeSymbol:
     case SymbolKind::namespaceTypeSymbol:
@@ -405,28 +453,51 @@ SymbolGroupKind Symbol::GetSymbolGroupKind() const noexcept
 {
     switch (kind)
     {
-    case SymbolKind::aliasGroupSymbol:
-    case SymbolKind::classGroupSymbol:
-    case SymbolKind::enumGroupSymbol:
     case SymbolKind::namespaceSymbol:
+    {
+        return SymbolGroupKind::namespaceSymbolGroup;
+    }
+    case SymbolKind::aliasGroupSymbol:
+    {
+        return SymbolGroupKind::aliasSymbolGroup;
+    }
+    case SymbolKind::classGroupSymbol:
+    {
+        return SymbolGroupKind::classSymbolGroup;
+    }
+    case SymbolKind::enumGroupSymbol:
+    {
+        return SymbolGroupKind::enumSymbolGroup;
+    }
+    case SymbolKind::templateParameterSymbol:
+    case SymbolKind::templateParamGroupSymbol:
+    case SymbolKind::boundTemplateParameterSymbol:
+    {
+        return SymbolGroupKind::templateParamSymbolGroup;
+    }
     case SymbolKind::aliasTypeSymbol:
+    {
+        return SymbolGroupKind::aliasSymbolGroup;
+    }
     case SymbolKind::classTypeSymbol:
-    case SymbolKind::functionTypeSymbol:
-    case SymbolKind::forwardClassDeclarationSymbol:
-    case SymbolKind::compoundTypeSymbol:
+    {
+        return SymbolGroupKind::classSymbolGroup;
+    }
+    //case SymbolKind::functionTypeSymbol:
+    //case SymbolKind::forwardClassDeclarationSymbol:
+    //case SymbolKind::compoundTypeSymbol:
     case SymbolKind::enumTypeSymbol:
     case SymbolKind::forwardEnumDeclarationSymbol:
-    case SymbolKind::fundamentalTypeSymbol:
-    case SymbolKind::templateParameterSymbol:
-    case SymbolKind::boundTemplateParameterSymbol:
-    case SymbolKind::nestedTypeSymbol:
     {
-        return SymbolGroupKind::typeSymbolGroup;
+        return SymbolGroupKind::enumSymbolGroup;
     }
-    case SymbolKind::conceptGroupSymbol:
-    {
-        return SymbolGroupKind::conceptSymbolGroup;
-    }
+    //case SymbolKind::fundamentalTypeSymbol:
+    //case SymbolKind::templateParameterSymbol:
+    //case SymbolKind::boundTemplateParameterSymbol:
+    //case SymbolKind::nestedTypeSymbol:
+    //{
+        //return SymbolGroupKind::typeSymbolGroup;
+    //}
     case SymbolKind::functionGroupSymbol:
     case SymbolKind::functionSymbol:
     case SymbolKind::functionDefinitionSymbol:
@@ -463,16 +534,9 @@ SymbolGroupKind Symbol::GetSymbolGroupKind() const noexcept
     case SymbolKind::variableGroupSymbol:
     case SymbolKind::variableSymbol:
     case SymbolKind::parameterSymbol:
-    {
-        return SymbolGroupKind::variableSymbolGroup;
-    }
     case SymbolKind::enumConstantSymbol:
     {
-        return SymbolGroupKind::enumConstantSymbolGroup;
-    }
-    case SymbolKind::templateDeclarationSymbol:
-    {
-        return SymbolGroupKind::blockSymbolGroup;
+        return SymbolGroupKind::variableSymbolGroup;
     }
     }
     return SymbolGroupKind::none;
@@ -485,7 +549,10 @@ bool Symbol::CanInstall() const noexcept
     case SymbolKind::aliasTypeSymbol:
     case SymbolKind::blockSymbol:
     case SymbolKind::classTypeSymbol:
+    case SymbolKind::classTemplateSpecializationSymbol:
     case SymbolKind::conceptSymbol:
+    case SymbolKind::compoundTypeSymbol:
+    case SymbolKind::enumTypeSymbol:
     case SymbolKind::functionSymbol:
     case SymbolKind::functionDefinitionSymbol:
     case SymbolKind::fundamentalTypeUnaryPlus:
@@ -547,12 +614,12 @@ bool Symbol::CanInstall() const noexcept
     case SymbolKind::friendSymbol:
     case SymbolKind::variableSymbol:
     case SymbolKind::intrinsicGetRbp:
+    case SymbolKind::templateParameterSymbol:
     {
         return false;
     }
     case SymbolKind::parameterSymbol:
     case SymbolKind::functionTypeSymbol:
-    case SymbolKind::templateParameterSymbol:
     case SymbolKind::boundTemplateParameterSymbol:
     {
         return !Name().empty();
@@ -574,19 +641,38 @@ void Symbol::Write(Writer& writer)
     {
         binaryStreamWriter.Write(ToUnderlying(zeroSymbolId));
     }
+    binaryStreamWriter.Write(astNodeId);
+    writer.Write(fullSpan);
+    binaryStreamWriter.Write(ToUnderlying(declarationFlags));
 }
 
 void Symbol::Read(Reader& reader)
 {
     nameOffset = StringOffset(reader.CurrentReader().ReadUInt());
+    name = GetModule()->GetStringTable()->CharPtr(nameOffset);
     flags = SymbolFlags(reader.CurrentReader().ReadByte());
-    nameOffset = StringOffset(reader.CurrentReader().ReadUInt());
     parentId = SymbolId(reader.CurrentReader().ReadUInt());
+    astNodeId = reader.CurrentReader().ReadLong();
+    fullSpan = reader.ReadFullSpan();
+    declarationFlags = DeclarationFlags(reader.CurrentReader().ReadInt());
 }
 
 std::string Symbol::IrName(Context* context) const
 {
     return Name();
+}
+
+void Symbol::Expand(Context* context)
+{
+}
+
+void Symbol::AddModuleSymbolId(const ModuleSymbolId& moduleSymbolId)
+{
+    if (moduleSymbolId.moduleId == ModuleId(1))
+    {
+        int x = 0;
+    }
+    moduleSymbolIds.push_back(moduleSymbolId);
 }
 
 } // namespace otava::symbols
