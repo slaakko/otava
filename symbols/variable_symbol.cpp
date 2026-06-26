@@ -29,10 +29,6 @@ VariableSymbol::VariableSymbol(Module* module_, SymbolId id_, const std::string&
     declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), contentFetched(false), valueId(zeroSymbolId),
     index(-1)
 {
-    if (Name() == "SEEK_SET")
-    {
-        int x = 0;
-    }
 }
 
 bool VariableSymbol::IsLocalVariable(Context* context)
@@ -185,6 +181,8 @@ void VariableSymbol::Write(Writer& writer)
     {
         writer.GetBinaryStreamWriter().Write(ToUnderlying(zeroSymbolId));
     }
+    writer.GetBinaryStreamWriter().Write(index);
+    writer.GetBinaryStreamWriter().Write(layoutIndex);
 }
 
 void VariableSymbol::Read(Reader& reader)
@@ -193,6 +191,8 @@ void VariableSymbol::Read(Reader& reader)
     declaredTypeId = SymbolId(reader.CurrentReader().ReadUInt());
     initializerTypeId = SymbolId(reader.CurrentReader().ReadUInt());
     valueId = SymbolId(reader.CurrentReader().ReadUInt());
+    index = reader.CurrentReader().ReadInt();
+    layoutIndex = reader.CurrentReader().ReadInt();
 }
 
 void VariableSymbol::GetContent(Context* context)

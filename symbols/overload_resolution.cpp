@@ -1279,8 +1279,8 @@ std::vector<Scope*> GetArgumentScopes(BoundExpressionNode* arg, Context* context
             Scope* third = classTemplate->GetScope()->GetNamespaceScope(context);
             scopes.push_back(third);
             Module* classTemplateModule = classTemplate->GetModule();
-            std::vector<Module*> importedModules = classTemplateModule->ImportedModules(context);
-            for (Module* importedModule : importedModules)
+            std::vector<Module*> importExportModules = classTemplateModule->ImportExportModules(context);
+            for (Module* importedModule : importExportModules)
             {
                 std::vector<NamespaceSymbol*> namespaces;
                 const std::vector<SymbolId>& namespaceIds = importedModule->NamespaceIds();
@@ -1366,7 +1366,7 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
             scopeLookups.push_back(std::make_pair(scope, ScopeLookup::allScopes));
             AddArgumentScopes(scopeLookups, args, context);
         }
-        for (Module* importedModule : context->GetModule()->ImportedModules(context))
+        for (Module* importedModule : context->GetModule()->ImportExportModules(context))
         {
             std::vector<NamespaceSymbol*> namespaces;
             const std::vector<SymbolId>& namespaceIds = importedModule->NamespaceIds();

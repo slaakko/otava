@@ -526,10 +526,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     for (std::int32_t file : project->SourceFiles())
     {
         std::string filePath = fileMap->GetFilePath(file);
-        if (filePath == "D:/work/otava/std/std.filesystem.cpp")
-        {
-            int x = 0;
-        }
         std::cout << "> " << filePath << "\n";
         files.push_back(std::make_pair(file, filePath));
         soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t> lexer = otava::lexer::MakeLexer(

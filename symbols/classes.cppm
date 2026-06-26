@@ -134,7 +134,7 @@ public:
     void MakeVTab(Context* context, const soul::ast::FullSpan& fullSpan);
     void InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear);
     const std::vector<FunctionSymbol*>& VTab() const noexcept { return vtab; }
-    std::vector<ClassTypeSymbol*> VPtrHolderClasses() const;
+    std::vector<ClassTypeSymbol*> VPtrHolderClasses(Context* context) const;
     otava::intermediate::Value* GetVTabVariable(Emitter& emitter, Context* context);
     inline std::int32_t VPtrIndex() const noexcept { return vptrIndex; }
     inline void SetVPtrIndex(std::int32_t vptrIndex_) noexcept { vptrIndex = vptrIndex_; }

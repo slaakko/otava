@@ -243,6 +243,7 @@ std::string ClassTemplateSpecializationSymbol::IrName(Context* context) const
 {
     std::string fullIrName = ClassTemplate(context)->IrName(context);
     std::string shaMaterial;
+    shaMaterial.append(std::to_string(ToUnderlying(Id())));
     for (Symbol* templateArg : TemplateArguments(context))
     {
         shaMaterial.append(1, '.').append(templateArg->IrName(context));
@@ -491,6 +492,7 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     Cardinality arity = templateDeclaration->Arity();
     ClassTemplateSpecializationSymbol* specialization = context->GetSymbolTable()->MakeClassTemplateSpecialization(
         classTemplate, templateArgs, fullSpan, context, createNew);
+    std::string fname = specialization->FullName(context);
     specialization->IrName(context);
     Cardinality m = Cardinality(templateArgs.size());
     bool wasInstantiated = specialization->Instantiated();

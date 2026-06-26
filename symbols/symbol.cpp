@@ -668,10 +668,6 @@ void Symbol::Expand(Context* context)
 
 void Symbol::AddModuleSymbolId(const ModuleSymbolId& moduleSymbolId)
 {
-    if (moduleSymbolId.moduleId == ModuleId(1))
-    {
-        int x = 0;
-    }
     moduleSymbolIds.push_back(moduleSymbolId);
 }
 

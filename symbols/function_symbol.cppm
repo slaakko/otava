@@ -68,6 +68,7 @@ public:
     inline void SetContainsStatics() noexcept { SetFlag(FunctionSymbolFlags::containsStatics); }
     inline bool SkipInvokeChecking() const noexcept { return GetFlag(FunctionSymbolFlags::skipInvokeChecking); }
     inline void SetSkipInvokeChecking() noexcept { SetFlag(FunctionSymbolFlags::skipInvokeChecking); }
+    inline bool ContainsLocalVariableWithDestructor() const noexcept { return GetFlag(FunctionSymbolFlags::containsLocalVariableWithDestructor); }
     inline bool Skip() const noexcept { return GetFlag(FunctionSymbolFlags::skip); }
     inline void SetSkip() noexcept { SetFlag(FunctionSymbolFlags::skip); }
     virtual bool IsConst() const noexcept;

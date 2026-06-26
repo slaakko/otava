@@ -833,10 +833,6 @@ std::string FunctionSymbol::IrName(Context* context) const
     {
         return FixedIrName();
     }
-    if (FullName(context) == "std::logic_error::what() const")
-    {
-        int x = 0;
-    }
     if (linkage == Linkage::cpp_linkage)
     {
         std::string irName;
@@ -1035,7 +1031,7 @@ void FunctionSymbol::GenerateVirtualFunctionCall(Emitter& emitter, std::vector<B
         ThrowException("class type expected", fullSpan, context);
     }
     classType->MakeVTab(context, fullSpan);
-    std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses();
+    std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses(context);
     if (vptrHolderClasses.empty())
     {
         ThrowException("no vptr holder classes for the class '" + classType->FullName(context) + "'", fullSpan, context);

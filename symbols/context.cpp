@@ -366,6 +366,18 @@ void Context::PopParentBlockId()
     parentBlockIdStack.pop();
 }
 
+void Context::PushParentStatementIndex(int parentStatementIndex_)
+{
+    parentStatementIndexStack.push(parentStatementIndex);
+    parentStatementIndex = parentStatementIndex_;
+}
+
+void Context::PopParentStatementIndex()
+{
+    parentStatementIndex = parentStatementIndexStack.top();
+    parentStatementIndexStack.pop();
+}
+
 void Context::PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>* templateParamMap)
 {
     templateParameterMapStack.push(templateParameterMap);

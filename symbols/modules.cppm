@@ -140,6 +140,7 @@ public:
     inline Cardinality ImportedModuleNameCount() const noexcept { return Cardinality(header.importedModuleNames.size()); }
     std::string GetImportedModuleName(Index index);
     std::vector<Module*> ImportedModules(Context* context);
+    std::vector<Module*> ImportExportModules(Context* context);
     void AddDependsOnModule(Module* dependsOnModule);
     inline const std::vector<Module*>& DependsOnModules() const noexcept { return dependsOnModules; }
     void Write(const std::string& root, const std::string& config, int optLevel, Context* context, const std::set<std::string>& configurations);

@@ -12,7 +12,7 @@ using HandlerFn = void(*)(void*);
 using InvokeFn = void(*)(void*);
 using CleanUpFn = void(*)(void*);
 
-export extern "C" void ort_throw(void* ex, std::uint32_t ext);
+export extern "C" void ort_throw(void* ex, std::uint32_t ext_);
 export extern "C" void ort_rethrow();
 export extern "C" void ort_try(TryFn tryFn, HandlerFn handlerFn, void* parentFrame);
 export extern "C" void ort_invoke(InvokeFn invokeFn, CleanUpFn cleanupFn, void* parentFrame);

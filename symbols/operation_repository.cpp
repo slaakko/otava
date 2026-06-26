@@ -1064,7 +1064,7 @@ void ClassDefaultCtorOperation::GenerateImplementation(ClassDefaultCtor* classDe
     }
     if (classType->IsPolymorphic(context))
     {
-        std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses();
+        std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses(context);
         if (vptrHolderClasses.empty())
         {
             ThrowException("no vptr holder classes for the class '" + classType->FullName(context) + "'", fullSpan, context);
@@ -1284,7 +1284,7 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
     }
     if (classType->IsPolymorphic(context))
     {
-        std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses();
+        std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses(context);
         if (vptrHolderClasses.empty())
         {
             ThrowException("no vptr holder classes for the class '" + classType->FullName(context) + "'", fullSpan, context);
@@ -1496,7 +1496,7 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
     }
     if (classType->IsPolymorphic(context))
     {
-        std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses();
+        std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses(context);
         if (vptrHolderClasses.empty())
         {
             ThrowException("no vptr holder classes for the class '" + classType->FullName(context) + "'", fullSpan, context);

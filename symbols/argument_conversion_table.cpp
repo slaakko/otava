@@ -1132,7 +1132,7 @@ void AdjustDeletePtrConversionFn::GenerateCode(Emitter& emitter, std::vector<Bou
     {
         ThrowException("class type expected", fullSpan, context);
     }
-    std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses();
+    std::vector<ClassTypeSymbol*> vptrHolderClasses = classType->VPtrHolderClasses(context);
     if (vptrHolderClasses.empty())
     {
         ThrowException("no vptr holder classes for the class '" + classType->FullName(context) + "'", fullSpan, context);

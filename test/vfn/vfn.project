@@ -1,0 +1,3 @@
+project vfn;
+target=program;
+source <main.cpp>;

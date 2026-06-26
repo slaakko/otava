@@ -353,7 +353,7 @@ void StatementBinder::GenerateSetVPtrStatements(const soul::ast::FullSpan& fullS
         currentClass->MakeObjectLayout(fullSpan, context);
     }
     BoundExpressionNode* thisPtr = context->GetThisPtr(fullSpan);
-    std::vector<ClassTypeSymbol*> vptrHolderClasses = currentClass->VPtrHolderClasses();
+    std::vector<ClassTypeSymbol*> vptrHolderClasses = currentClass->VPtrHolderClasses(context);
     if (vptrHolderClasses.empty())
     {
         ThrowException("no vptr holder classes for the class '" + currentClass->FullName(context) + "'", fullSpan, context);
@@ -1716,7 +1716,7 @@ void StatementBinder::Visit(otava::ast::ExceptionDeclarationNode& node)
         TypeSymbol* baseType = type->GetBaseType(context);
         SymbolId ext = baseType->Id();
         std::string beginCatchStr;
-        beginCatchStr.append("ort_begin_catch(").append(std::to_string(ToUnderlying(ext)).append("u"));
+        beginCatchStr.append("ort_begin_catch(").append(std::to_string(ToUnderlying(ext))).append(")");
         std::unique_ptr<otava::ast::Node> beginCatchNode;
         try
         {
@@ -2372,6 +2372,10 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
 #ifdef DEBUG_FUNCTIONS
     std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif
+    if (functionDefinitionSymbol->FullName(context)== "std::runtime_error::runtime_error(const char*)")
+    {
+        int x = 0;
+    }
     functionDefinitionSymbol->SetBound();
     if (context->GetFlag(ContextFlags::debugMemory))
     {
@@ -2396,15 +2400,12 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
     {
         CheckFunctionReturnPaths(functionDefinitionNode, context);
     }
-/*
     bool skipInvokeChecking = functionDefinitionSymbol->SkipInvokeChecking();
     bool containsStatics = functionDefinitionSymbol->ContainsStatics();
-    if (!functionDefinitionSymbol->IsNoExcept() && !skipInvokeChecking && !containsStatics && !gendoc &&
-        functionDefinitionSymbol->ContainsLocalVariableWithDestructor())
+    if (!functionDefinitionSymbol->IsNoExcept() && !skipInvokeChecking && !containsStatics && functionDefinitionSymbol->ContainsLocalVariableWithDestructor())
     {
         MakeInvokesAndCleanups(context->GetBoundFunction(), context);
     }
-*/
 #ifdef DEBUG_FUNCTIONS
     std::cout << "<" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif

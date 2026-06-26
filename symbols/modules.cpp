@@ -290,6 +290,28 @@ std::vector<Module*> Module::ImportedModules(Context* context)
     return importedModules;
 }
 
+std::vector<Module*> Module::ImportExportModules(Context* context)
+{
+    std::vector<Module*> importExportModules;
+    std::vector<Module*> importedModules = ImportedModules(context);
+    for (Module* importedModule : importedModules)
+    {
+        if (std::find(importExportModules.begin(), importExportModules.end(), importedModule) == importExportModules.end())
+        {
+            importExportModules.push_back(importedModule);
+        }
+        const std::vector<Module*>& allExportedModules = importedModule->AllExportedModules(context);
+        for (Module* exportedModule : allExportedModules)
+        {
+            if (std::find(importExportModules.begin(), importExportModules.end(), exportedModule) == importExportModules.end())
+            {
+                importExportModules.push_back(exportedModule);
+            }
+        }
+    }
+    return importExportModules;
+}
+
 void Module::AddImportedModuleName(const std::string& importModuleName)
 {
     header.importedModuleNames.push_back(stringTable.AddString(importModuleName));

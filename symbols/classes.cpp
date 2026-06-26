@@ -289,7 +289,7 @@ void ClassTypeSymbol::MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Cont
         baseClass->MakeObjectLayout(fullSpan, context);
         objectLayout.push_back(baseClass);
     }
-    if (baseClasses.empty())
+    if (BaseClasses(context).empty())
     {
         if (IsPolymorphic(context))
         {
@@ -687,7 +687,7 @@ std::string ClassTypeSymbol::VTabName(Context* context) const
     return GetModule()->GetStringTable()->GetString(vtabNameOffset);
 }
 
-std::vector<ClassTypeSymbol*> ClassTypeSymbol::VPtrHolderClasses() const
+std::vector<ClassTypeSymbol*> ClassTypeSymbol::VPtrHolderClasses(Context* context) const
 {
     std::vector<ClassTypeSymbol*> vptrHolderClasses;
     if (vptrIndex != -1)
@@ -696,9 +696,9 @@ std::vector<ClassTypeSymbol*> ClassTypeSymbol::VPtrHolderClasses() const
     }
     else
     {
-        for (ClassTypeSymbol* baseClass : baseClasses)
+        for (ClassTypeSymbol* baseClass : BaseClasses(context))
         {
-            std::vector<ClassTypeSymbol*> vptrHolderBaseClasses = baseClass->VPtrHolderClasses();
+            std::vector<ClassTypeSymbol*> vptrHolderBaseClasses = baseClass->VPtrHolderClasses(context);
             for (ClassTypeSymbol* vptrHolderClass : vptrHolderBaseClasses)
             {
                 if (std::find(vptrHolderClasses.begin(), vptrHolderClasses.end(), vptrHolderClass) == vptrHolderClasses.end())
@@ -1837,7 +1837,7 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
         {
             destructor->SetVirtual();
         }
-        std::vector<ClassTypeSymbol*> vptrHolderClasses = classTypeSymbol->VPtrHolderClasses();
+        std::vector<ClassTypeSymbol*> vptrHolderClasses = classTypeSymbol->VPtrHolderClasses(context);
         if (vptrHolderClasses.empty())
         {
             ThrowException("no vptr holder classes for the class '" + classTypeSymbol->FullName(context) + "'", fullSpan, context);

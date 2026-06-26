@@ -22,11 +22,12 @@ std::uint32_t bad_alloc_ext = 0;
 int currentContext = 0;
 int stackTrace = -1;
 
-void ort_throw(void* ex, std::uint32_t ext)
+void ort_throw(void* ex, std::uint32_t ext_)
 {
     if (currentContext > 0)
     {
         exception = ex;
+        ext = ext_;
         if (ext != bad_alloc_ext)
         {
             //stackTrace = ort_generate_stack_trace();

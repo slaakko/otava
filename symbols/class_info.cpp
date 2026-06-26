@@ -27,7 +27,7 @@ void class_info::add_base(const class_id& id)
 
 void class_info::read(util::BinaryStreamReader& reader)
 {
-    std::uint32_t id = reader.ReadUInt();
+    id = class_id(reader.ReadUInt());
     key = static_cast<class_key>(reader.ReadByte());
     name = reader.ReadUtf8String();
     size = reader.ReadLong();

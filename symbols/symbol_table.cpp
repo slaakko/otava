@@ -992,7 +992,7 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
             return aliasTypeTemplateSpecialization;
         }
     }
-    for (Module* importedModule : GetModule()->ImportedModules(context))
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
         aliasTypeTemplateSpecialization = importedModule->GetSymbolTable()->GetAliasTypeTemplateSpecialization(aliasTypeTemplate, templateArguments, context);
         if (aliasTypeTemplateSpecialization)
@@ -1071,12 +1071,15 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
             }
         }
     }
-    for (Module* importedModule : GetModule()->ImportedModules(context))
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
         classTemplateSpecialization = importedModule->GetSymbolTable()->GetClassTemplateSpecialization(classTemplate, templateArguments, context);
         if (classTemplateSpecialization)
         {
-            return classTemplateSpecialization;
+            if (!classTemplateSpecialization->IsReadOnly() || !createNew)
+            {
+                return classTemplateSpecialization;
+            }
         }
     }
     SpecializationKey key;
@@ -1118,7 +1121,7 @@ ExplicitInstantiationSymbol* SymbolTable::GetExplicitInstantiation(const Special
     }
     if (level > 0)
     {
-        for (Module* importedModule : GetModule()->ImportedModules(context))
+        for (Module* importedModule : GetModule()->ImportExportModules(context))
         {
             ExplicitInstantiationSymbol* explicitInstantiationSymbol = importedModule->GetSymbolTable()->GetExplicitInstantiation(key, context, level - 1);
             if (explicitInstantiationSymbol)
@@ -1189,7 +1192,7 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
             return functionTypeSymbol;
         }
     }
-    for (Module* importedModule : GetModule()->ImportedModules(context))
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
         functionTypeSymbol = importedModule->GetSymbolTable()->GetFunctionTypeSymbol(key, context);
         if (functionTypeSymbol)
@@ -1295,7 +1298,7 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, std::int64_
     {
         return arrayTypeSymbol;
     }
-    for (Module* importedModule : GetModule()->ImportedModules(context))
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
         arrayTypeSymbol = importedModule->GetSymbolTable()->GetArrayType(elementType, size, context);
         if (arrayTypeSymbol)
