@@ -69,7 +69,7 @@ void EndBlock(Context* context)
 
 void RemoveBlock(Context* context)
 {
-    context->GetSymbolTable()->RemoveBlock();
+    context->GetSymbolTable()->RemoveBlock(context);
 }
 
 void MapNode(otava::ast::Node* node, Context* context)

@@ -89,6 +89,8 @@ public:
     void Init(Context* context);
     inline void SetKind(ModuleKind kind_) noexcept { kind = kind_; }
     inline ModuleKind Kind() const noexcept { return kind; }
+    void SetInterfaceUnitName(const std::string& interfaceUnitName);
+    std::string InterfaceUnitName();
     inline bool IsReadOnly() const noexcept { return symbolTable.IsReadOnly(); }
     std::string Name();
     inline const std::string& FilePath() const noexcept { return filePath; }
@@ -171,6 +173,8 @@ private:
     StringTable stringTable;
     StringOffset nameOffset;
     const char* name;
+    StringOffset interfaceUnitNameOffset;
+    const char* interfaceUnitName;
     SymbolTable symbolTable;
     EvaluationContext evaluationContext;
     SymbolIndexMap symbolIndexMap;

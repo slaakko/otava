@@ -9,6 +9,7 @@ import soul.ast.spg;
 import otava.ast;
 import otava.token;
 import otava.lexer;
+import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.classes;
 import otava.parser.attribute;
@@ -1312,6 +1313,7 @@ soul::parser::Match TypeParser<LexerT>::SimpleTypeSpecifier(LexerT& lexer, otava
     soul::ast::Span tmpPos = soul::ast::Span();
     std::unique_ptr<otava::ast::Node> nns = std::unique_ptr<otava::ast::Node>();
     bool isConstructorNameNode = bool();
+    otava::symbols::ScopePtr scopePtr = otava::symbols::ScopePtr();
     std::unique_ptr<otava::ast::Node> simpleType;
     std::unique_ptr<otava::ast::Node> nns1;
     std::unique_ptr<otava::ast::Node> tmp;
@@ -1474,8 +1476,7 @@ soul::parser::Match TypeParser<LexerT>::SimpleTypeSpecifier(LexerT& lexer, otava
                                                                     if (match.hit)
                                                                     {
                                                                         nns.reset(nns2.release());
-                                                                        otava::symbols::BeginScope(nns.get(), context);
-                                                                        span = lexer.GetSpan(pos);
+                                                                        scopePtr.Reset(otava::symbols::GetScope(nns.get(), context), context);
                                                                     }
                                                                     *parentMatch21 = match;
                                                                 }
@@ -1498,7 +1499,7 @@ soul::parser::Match TypeParser<LexerT>::SimpleTypeSpecifier(LexerT& lexer, otava
                                                                             std::unique_ptr<otava::ast::Node> typeNameNode;
                                                                             typeNameNode.reset(typeName.release());
                                                                             isConstructorNameNode = context->IsConstructorNameNode(typeNameNode.get());
-                                                                            otava::symbols::EndScope(context);
+                                                                            scopePtr.Reset();
                                                                             if (isConstructorNameNode)
                                                                             {
                                                                                 pass = false;
@@ -1515,7 +1516,7 @@ soul::parser::Match TypeParser<LexerT>::SimpleTypeSpecifier(LexerT& lexer, otava
                                                                         }
                                                                         else
                                                                         {
-                                                                            otava::symbols::EndScope(context);
+                                                                            scopePtr.Reset();
                                                                         }
                                                                         if (match.hit && !pass)
                                                                         {

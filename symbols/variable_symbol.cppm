@@ -61,6 +61,7 @@ private:
     bool temporary;
     std::int32_t layoutIndex;
     VariableSymbol* global;
+    SymbolId globalId;
     bool contentFetched;
     void GetContent(Context* context);
 };
@@ -69,6 +70,11 @@ enum class ParameterKind : std::uint8_t
 {
     regular, returnValueParam
 };
+
+constexpr std::uint8_t ToUnderlying(ParameterKind parameterKind)
+{
+    return std::uint8_t(parameterKind);
+}
 
 class ParameterSymbol : public Symbol
 {
@@ -85,8 +91,8 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:
-    AstNodeHeader astNodeHeader;
     ParameterKind parameterKind;
+    AstNodeHeader astNodeHeader;
     std::unique_ptr<otava::ast::Node> defaultValue;
     SymbolId typeId;
     TypeSymbol* type;

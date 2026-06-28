@@ -70,7 +70,7 @@ public:
     using value_type = T;
     using pointer = P;
     using reference = R;
-    using iterator_category = bidirectional_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
     using node_type = rb_node<value_type>;
 
     inline rb_node_iterator() noexcept : n(nullptr) {}

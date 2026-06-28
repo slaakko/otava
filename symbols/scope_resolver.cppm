@@ -15,8 +15,7 @@ class Context;
 
 Scope* ResolveScope(otava::ast::Node* nnsNode, Context* context);
 
-void BeginScope(otava::ast::Node* nnsNode, Context* context);
-void EndScope(Context* context);
 void AddParentScope(otava::ast::Node* node, Context* context);
+otava::symbols::Scope* GetScope(otava::ast::Node* nnsNode, Context* context);
 
 } // namespace otava::symbols

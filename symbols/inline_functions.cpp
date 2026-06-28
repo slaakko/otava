@@ -10,6 +10,7 @@ import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
+import otava.symbols.scope_ptr;
 import otava.symbols.statement_binder;
 import otava.ast.function;
 
@@ -75,7 +76,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
         InstantiationScope instantiationScope(context->GetModule(), fn->Parent(context)->GetScope());
         //instantiationScope.PushParentScope(context->GetSymbolTable()->GetNamespaceScope(U"std", sourcePos, context));
         instantiationScope.PushParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
-        context->GetSymbolTable()->BeginScope(&instantiationScope);
+        ScopePtr instantiationScopePtr(&instantiationScope, context);
         Instantiator instantiator(context, &instantiationScope);
         FunctionSymbol* inlineFn = nullptr;
         try
@@ -121,7 +122,6 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);
             return fn;
         }
-        context->GetSymbolTable()->EndScope();
         //instantiationScope.PopParentScope();
         instantiationScope.PopParentScope();
         context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped); 

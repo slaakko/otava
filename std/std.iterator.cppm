@@ -29,7 +29,7 @@ struct iterator_traits<T*>
     using value_type = T;
     using pointer = T*;
     using reference = T&;
-    using iterator_category = random_access_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
 };
 
 template<typename T>
@@ -39,7 +39,7 @@ struct iterator_traits<const T*>
     using value_type = T;
     using pointer = const T*;
     using reference = const T&;
-    using iterator_category = random_access_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
 };
 
 namespace detail {

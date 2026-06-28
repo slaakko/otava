@@ -12,6 +12,7 @@ import otava.token;
 import otava.lexer;
 import otava.symbols.classes;
 import otava.symbols.declaration;
+import otava.symbols.scope_ptr;
 import otava.symbols.symbol_table;
 import otava.parser.attribute;
 import otava.parser.concepts;
@@ -4099,6 +4100,7 @@ soul::parser::Match ClassParser<LexerT>::CtorInitializerSaved(LexerT& lexer, ota
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 1303477245251158045);
     otava::ast::ConstructorInitializerNode* ctorInitializerNode = nullptr;
+    otava::symbols::ScopePtr scopePtr = otava::symbols::ScopePtr();
     std::unique_ptr<otava::ast::Node> memberInitializerList;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -4124,7 +4126,7 @@ soul::parser::Match ClassParser<LexerT>::CtorInitializerSaved(LexerT& lexer, ota
                     {
                         lexer.BeginRecordedParse(ctorInitializerNode->GetLexerPosPair());
                         otava::symbols::Scope *functionScope = static_cast<otava::symbols::Scope*>(ctorInitializerNode->FunctionScope());
-                        context->GetSymbolTable()->BeginScope(functionScope);
+                        scopePtr.Reset(functionScope, context);
                     }
                 }
                 if (match.hit && !pass)
@@ -4150,7 +4152,7 @@ soul::parser::Match ClassParser<LexerT>::CtorInitializerSaved(LexerT& lexer, ota
                     {
                         ctorInitializerNode->SetMemberInitializerListNode(memberInitializerList.release());
                         lexer.EndRecordedParse();
-                        context->GetSymbolTable()->EndScope();
+                        scopePtr.Reset();
                         {
                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
                             if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "CtorInitializerSaved");

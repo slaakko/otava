@@ -195,8 +195,9 @@ void ModuleDependencyVisitor::Visit(otava::ast::ModuleNameNode& node)
         interfaceUnitName = node.Str();
         m.reset(new otava::symbols::Module(util::Path::GetFileName(fileName) + ".cpp"));
         m->SetKind(otava::symbols::ModuleKind::implementationModule);
+        m->SetInterfaceUnitName(interfaceUnitName);
         m->AddImportedModuleName("std.type.fundamental");
-        m->AddImportedModuleName(node.Str());
+        m->AddImportedModuleName(interfaceUnitName);
     }
 }
 
@@ -307,7 +308,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     }
     project->SetOutputFilePath(outputFilePath);
     project->AddRoots(moduleMapper);
-    project->InitModules();
+    project->InitFiles();
     std::vector<std::string> asmFileNames;
     std::vector<std::string> cppFileNames;
     std::vector<std::string> resourceFileNames;
@@ -411,7 +412,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     {
         moduleContext.SetFlag(otava::symbols::ContextFlags::noWarnings);
     }
-    project->LoadModules(moduleMapper, config, optLevel, configurations, &moduleContext);
     otava::symbols::Index importIndex = otava::symbols::Index(moduleMapper.ModuleCount());
     if (project->GetTarget() == Target::program)
     {
@@ -437,6 +437,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             otava::symbols::MakeModuleDirPath(reference->Root(), config, optLevel, configurations), reference->Name() + ".count"));
         ReadModuleCountFile(countFilePath, moduleMapper);
     }
+    project->LoadModules(moduleMapper, config, optLevel, configurations, &moduleContext);
     std::vector<std::pair<std::int32_t, std::string>> files;
     std::vector<std::int32_t> topologicalOrder = MakeTopologicalOrder(project->InterfaceFiles(), project);
     soul::lexer::FileMap* fileMap = project->GetFileMap();
@@ -518,10 +519,12 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         project->Index().import(module->GetSymbolTable()->ClassIndex());
         module->Write(project->Root(), config, optLevel, context.get(), configurations);
         context.reset();
+/*
         if (project->GetTarget() == Target::library)
         {
             moduleMapper.RemoveModule(module.get());
         }
+*/
     }
     for (std::int32_t file : project->SourceFiles())
     {
@@ -597,10 +600,12 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             functionCallsInlined += context->FunctionCallsInlined();
         }
         context.reset();
+/*
         if (project->GetTarget() == Target::library)
         {
             moduleMapper.RemoveModule(module.get());
         }
+*/
     }
     project->WriteTraceInfo(moduleDirPath);
     project->WriteClassIndex(moduleDirPath);

@@ -44,8 +44,8 @@ public:
     inline bool empty() const noexcept { return tbl.empty(); }
     inline size_type size() const noexcept { return tbl.size(); }
 
-    inline pair<iterator, bool> insert(const value_type& x) { return tbl.insert(x); }
-    inline pair<iterator, bool> insert(value_type&& x) { return tbl.insert(x); }
+    inline std::pair<iterator, bool> insert(const value_type& x) { return tbl.insert(x); }
+    inline std::pair<iterator, bool> insert(value_type&& x) { return tbl.insert(x); }
 
     inline iterator erase(iterator position) { return tbl.erase(position); }
     inline iterator erase(const_iterator position) { return tbl.erase(position); }

@@ -91,8 +91,8 @@ public:
     class_index& ClassIndex() { return index; }
     void PushScope();
     void PopScope();
-    void BeginScope(Scope* scope);
-    void EndScope();
+    void BeginScope(Scope* scope, Context* context);
+    void EndScope(Context* context);
     void BeginScopeGeneric(Scope* scope, Context* context);
     void EndScopeGeneric(Context* context);
     void PushTopScopeIndex();
@@ -100,24 +100,24 @@ public:
     inline void SetTopScopeIndex(int topScopeIndex_) noexcept { topScopeIndex = topScopeIndex_; }
     inline int TopScopeIndex() const noexcept { return topScopeIndex; }
     void BeginNamespace(const std::string& name, otava::ast::Node* node, Context* context);
-    void EndNamespace();
+    void EndNamespace(Context* context);
     void BeginNamespace(otava::ast::Node* node, Context* context);
-    void EndNamespace(int level);
+    void EndNamespace(int level, Context* context);
     void BeginClass(const std::string& name, ClassKind classKind, TypeSymbol* spcialiation, otava::ast::Node* node, Context* context);
     void AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::FullSpan& fullSpan, Context* context);
-    void EndClass();
+    void EndClass(Context* context);
     void AddForwardClassDeclaration(const std::string& name, ClassKind classKind, TypeSymbol* specialization, otava::ast::Node* node, Context* context);
     void AddFriend(const std::string& name, otava::ast::Node* node, Context* context);
     void BeginEnumeratedType(const std::string& name, EnumTypeKind kind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context);
-    void EndEnumeratedType();
+    void EndEnumeratedType(Context* context);
     void AddForwardEnumDeclaration(const std::string& name, EnumTypeKind enumTypeKind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context);
     void AddEnumerator(const std::string& name, Value* value, otava::ast::Node* node, Context* context);
     BlockSymbol* BeginBlock(const soul::ast::FullSpan& fullSpan, Context* context);
     void EndBlock(Context* context);
-    void RemoveBlock();
+    void RemoveBlock(Context* context);
     void BeginTemplateDeclaration(otava::ast::Node* node, Context* context);
-    void EndTemplateDeclaration();
-    void RemoveTemplateDeclaration();
+    void EndTemplateDeclaration(Context* context);
+    void RemoveTemplateDeclaration(Context* context);
     void AddTemplateParameter(const std::string& name, otava::ast::Node* node, Symbol* constraint, int index, ParameterSymbol* parameter,
         otava::ast::Node* defaultTemplateArgNode, Context* context);
     FunctionSymbol* AddFunction(const std::string& name, const std::vector<TypeSymbol*>& specialization, otava::ast::Node* node, FunctionKind kind,

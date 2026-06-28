@@ -84,6 +84,7 @@ public:
     virtual bool IsStatic() const noexcept;
     virtual bool IsExplicit() const noexcept;
     bool IsDestructor() const noexcept;
+    bool HasForwardDeclarationType(Context* context) const;
     virtual bool IsPointerCopyAssignment() const noexcept { return false; }
     virtual ParameterSymbol* ThisParam(Context* context) const;
     virtual FunctionKind GetFunctionKind() const noexcept { return functionKind; }
@@ -153,6 +154,7 @@ public:
     const std::vector<VariableSymbol*>& LocalVariables() const noexcept { return localVariables; }
     void AddClass(ClassTypeSymbol* cls);
     void RemoveClass(ClassTypeSymbol* cls);
+    inline const std::vector<ClassTypeSymbol*>& Classes() const noexcept { return classes; }
 private:
     FunctionSymbolFlags flags;
     FunctionQualifiers qualifiers;
@@ -197,9 +199,10 @@ class FunctionDefinitionSymbol : public FunctionSymbol
 public:
     FunctionDefinitionSymbol(Module* module_, SymbolId id_);
     FunctionDefinitionSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    ~FunctionDefinitionSymbol();
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline void SetDeclaration(FunctionSymbol* declaration_) noexcept { declaration = declaration_; }
+    void SetDeclaration(FunctionSymbol* declaration_, Context* context) noexcept;
     inline FunctionSymbol* Declaration() const noexcept { return declaration; }
     void MapBlock(int blockId, Symbol* block);
     Symbol* GetBlock(int blockId) const noexcept;
@@ -210,6 +213,32 @@ public:
     bool IsMemberFunction(Context* context) const noexcept;
     inline std::int32_t DefIndex() const noexcept { return defIndex; }
     inline void SetDefIndex(std::int32_t defIndex_) noexcept { defIndex = defIndex_; }
+    FunctionKind GetFunctionKind() const noexcept override;
+    bool IsConst() const noexcept override;
+    bool IsVirtual() const noexcept override;
+    bool IsPure() const noexcept override;
+    bool IsOverride() const noexcept override;
+    bool IsFinal() const noexcept override;
+    bool IsNoExcept() const noexcept override;
+    void SetNoExcept() noexcept override;
+    void SetOverride() noexcept override;
+    void SetFinal() noexcept override;
+    bool IsInline() const noexcept override;
+    void SetInline() noexcept override;
+    bool IsUnparsed() const noexcept override;
+    void SetUnparsed() noexcept override;
+    void ResetUnparsed() noexcept override;
+    bool Parsing() const noexcept override;
+    void SetParsing() noexcept override;
+    void ResetParsing() noexcept override;
+    std::int32_t VTabIndex() const noexcept override;
+    bool IsStatic() const noexcept override;
+    bool IsExplicit() const noexcept override;
+    TypeSymbol* ConversionParamType() const noexcept override;
+    TypeSymbol* GetConversionParamType(Context* context) const override;
+    TypeSymbol* ConversionArgType() const noexcept override;
+    TypeSymbol* GetConversionArgType(Context* context) const override;
+    std::int32_t ConversionDistance() const noexcept override;
     void AddDefinitionToGroup(Context* context) override;
     TypeSymbol* NonChildFunctionResultType(Context* context) const noexcept;
     void SetResultVarName(const std::string& resultVarName_);
@@ -220,6 +249,8 @@ public:
     ClassParsingMap* GetClassParsingMap() const noexcept override;
     void SetClassParsingMap(ClassParsingMap* classParsingMap_) noexcept override;
     std::string IrName(Context* context) const override;
+    otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) const override;
+    void SetReturnType(TypeSymbol* returnType_, Context* context) override;
 private:
     FunctionSymbol* declaration;
     SymbolId declarationId;

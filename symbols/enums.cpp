@@ -10,6 +10,8 @@ import otava.symbols.emitter;
 import otava.symbols.evaluator;
 import otava.symbols.exception;
 import otava.symbols.fundamental_type_operation;
+import otava.symbols.modules;
+import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.type_resolver;
 import otava.symbols.value;
@@ -54,7 +56,12 @@ TypeSymbol* EnumeratedTypeSymbol::UnderlyingType(Context* context)
     }
     if (IsReadOnly() && underlyingTypeId != zeroSymbolId)
     {
-        underlyingType = context->GetSymbolTable()->GetTypeSymbol(underlyingTypeId, context);
+        underlyingType = GetModule()->GetSymbolTable()->GetTypeSymbol(underlyingTypeId, context);
+        if (!underlyingType)
+        {
+            ThrowException("underlying type id " + std::to_string(ToUnderlying(underlyingTypeId)) + " of enumerated type '" + Name() + "' not found", 
+                GetFullSpan(), context);
+        }
     }
     return underlyingType;
 }
@@ -214,11 +221,24 @@ void EnumTypeDefaultCtor::Read(Reader& reader)
     enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
 }
 
+void EnumTypeDefaultCtor::Resolve(Context* context)
+{
+    if (IsReadOnly() && enumTypeId != zeroSymbolId && !enumType)
+    {
+        enumType = GetModule()->GetSymbolTable()->GetEnumeratedTypeSymbol(enumTypeId, context);
+        if (!enumType)
+        {
+            ThrowException("enumerated type id " + std::to_string(ToUnderlying(enumTypeId)) + " not found", GetFullSpan(), context);
+        }
+    }
+}
+
 void EnumTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
     const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) 
 {
     if ((flags & OperationFlags::defaultInit) != OperationFlags::none)
     {
+        Resolve(context);
         emitter.Stack().Push(enumType->IrType(emitter, fullSpan, context)->DefaultValue());
         OperationFlags storeFlags = OperationFlags::none;
         if ((flags & OperationFlags::storeDeref) != OperationFlags::none)
@@ -652,7 +672,7 @@ void EnumCreator::Visit(otava::ast::IdentifierNode& node)
 {
     if (createEnumeratedType)
     {
-        context->GetSymbolTable()->BeginScope(scope);
+        context->GetSymbolTable()->BeginScope(scope, context);
         if (opaque)
         {
             context->GetSymbolTable()->AddForwardEnumDeclaration(node.Str(), enumTypeKind, underlyingType, &node, context);
@@ -670,7 +690,7 @@ void EnumCreator::Visit(otava::ast::IdentifierNode& node)
 
 void EnumCreator::Visit(otava::ast::UnnamedNode& node)
 {
-    context->GetSymbolTable()->BeginScope(scope);
+    context->GetSymbolTable()->BeginScope(scope, context);
     context->GetSymbolTable()->BeginEnumeratedType(std::string(), enumTypeKind, underlyingType, &node, context);
 }
 
@@ -694,8 +714,8 @@ void EndEnumType(otava::ast::Node* node, Context* context)
         ThrowException("cpp20.symbols.enums: EndEnumeratedType(): enum scope expected", node->GetFullSpan(), context);
     }
     EnumeratedTypeSymbol* enumType = static_cast<EnumeratedTypeSymbol*>(currentSymbol);
-    context->GetSymbolTable()->EndEnumeratedType();
-    context->GetSymbolTable()->EndScope();
+    context->GetSymbolTable()->EndEnumeratedType(context);
+    context->GetSymbolTable()->EndScope(context);
     BindEnumType(enumType, node->GetFullSpan(), context);
 }
 
@@ -749,7 +769,7 @@ void ProcessEnumForwardDeclaration(otava::ast::Node* node, Context* context)
 {
     EnumCreator creator(context, true, false);
     node->Accept(creator);
-    context->GetSymbolTable()->EndScope();
+    context->GetSymbolTable()->EndScope(context);
 }
 
 } // namespace otava::symbols

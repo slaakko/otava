@@ -41,7 +41,7 @@ public:
     using const_reference = const value_type&;
     using pointer = value_type*;
     using const_pointer = const value_type*;
-    using iterator_category = bidirectional_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
 
     list_iterator() noexcept : n(nullptr) {}
     list_iterator(node_type* n_) noexcept : n(n_) {}

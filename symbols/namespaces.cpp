@@ -52,7 +52,7 @@ void NamespaceSymbol::Expand(Context* context)
             }
             else
             {
-                ThrowException("namespace symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
+                //ThrowException("namespace symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
             }
         }
         else
@@ -107,7 +107,7 @@ void EndNamespace(otava::ast::Node* node, int level, Context* context)
     {
         ThrowException("otava.symbols.namespace: EndNamespace(): namespace scope expected", node->GetFullSpan(), context);
     }
-    context->GetSymbolTable()->EndNamespace(level);
+    context->GetSymbolTable()->EndNamespace(level, context);
 }
 
 } // namespace otava::symbols

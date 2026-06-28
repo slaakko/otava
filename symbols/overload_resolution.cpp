@@ -1188,6 +1188,10 @@ std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<Func
     for (Index i = Index(0); i < Index(n); ++i)
     {
         FunctionSymbol* viableFunction = viableFunctions[ToUnderlying(i)];
+        if (!viableFunction->GetModule())
+        {
+            continue;
+        }
         if (viableFunctionSet.find(viableFunction) != viableFunctionSet.end())
         {
             continue;
@@ -1398,6 +1402,10 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         }
     }
     std::unique_ptr<FunctionMatch> bestMatch = SelectBestMatchingFunction(viableFunctions, templateArgs, args, groupName, fullSpan, context, ex);
+    if (bestMatch && bestMatch->function->Name() == "vector<StreamObserver*>")
+    {
+        int x = 0;
+    }
     if (!bestMatch)
     {
         context->ResetFlag(ContextFlags::ignoreClassTemplateSpecializations);

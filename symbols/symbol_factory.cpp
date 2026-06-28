@@ -393,7 +393,6 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     {
         return new EnumTypeLess(module, symbolId);
     }
-/*
     case SymbolKind::arrayTypeDefaultCtor:
     {
         return new ArrayTypeDefaultCtor(module, symbolId);
@@ -422,7 +421,6 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     {
         return new ArrayTypeEnd(module, symbolId);
     }
-*/
     case SymbolKind::functionGroupTypeSymbol:
     {
         return new FunctionGroupTypeSymbol(module, symbolId);

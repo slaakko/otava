@@ -123,6 +123,7 @@ public:
     void UnmapFunction(FunctionSymbol* function);
     void SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol);
     FunctionDefinitionSymbol* GetMemFnDefSymbol(int32_t defIndex) const noexcept;
+    void ResetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol);
     inline const std::map<std::int32_t, FunctionDefinitionSymbol*>& MemFnDefSymbolMap() const noexcept { return memFnDefSymbolMap; }
     otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context) override;
     std::string IrName(Context* context) const override;
@@ -218,6 +219,8 @@ public:
     ClassTypeSymbol* GetClassTypeSymbol(Context* context) const;
     TypeSymbol* Specialization(Context* context);
     void SetSpecialization(TypeSymbol* specialization_, Context* context) noexcept;
+    std::string IrName(Context* context) const override;
+    bool HasForwardClassDeclarationSymbol(Context* context) const override { return true; }
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:

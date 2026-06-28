@@ -369,6 +369,7 @@ private:
     void SetCurrentBlockSymbol(int blockId);
     void GenerateDestructorCallsForCurrentStatement();
     std::string optimizedIntermediateFilePath;
+    std::set<std::string> generatedFunctions;
     otava::symbols::Context& context;
     otava::symbols::Emitter* emitter;
     std::string config;
@@ -803,6 +804,7 @@ void CodeGenerator::Visit(otava::symbols::BoundEmptyStatementNode& node)
 
 void CodeGenerator::Visit(otava::symbols::BoundCompileUnitNode& node)
 {
+    generatedFunctions.clear();
     context.PushSetFlag(otava::symbols::ContextFlags::requireForwardResolved);
     if (globalMain)
     {
@@ -922,6 +924,15 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
         BuildGotoTargetMap(node.Body(), &context);
     }
     std::string functionDefinitionName = functionDefinition->IrName(&context);
+    if (functionDefinition->HasForwardDeclarationType(&context))
+    {
+        return;
+    }
+    if (generatedFunctions.find(functionDefinitionName) != generatedFunctions.end())
+    {
+        return;
+    }
+    generatedFunctions.insert(functionDefinitionName);
     if (functionDefinition->GroupName() == "main")
     {
         mainIrName = functionDefinitionName;

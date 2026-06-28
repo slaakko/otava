@@ -248,6 +248,7 @@
     <ClCompile Include="reader.cppm" />
     <ClCompile Include="scope.cpp" />
     <ClCompile Include="scope.cppm" />
+    <ClCompile Include="scope_ptr.cppm" />
     <ClCompile Include="scope_resolver.cpp" />
     <ClCompile Include="scope_resolver.cppm" />
     <ClCompile Include="section.cpp" />

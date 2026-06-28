@@ -44,7 +44,7 @@ public:
     inline bool IsBound() const noexcept { return bound; }
     inline void SetBound() noexcept { bound = true; }
     void Bind(const soul::ast::FullSpan& fullSpan, Context* context);
-    TypeSymbol* ElementType(Context* context) const noexcept;
+    TypeSymbol* ElementType(Context* context) const;
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
     otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context) override;
     inline std::int64_t Size() const noexcept { return size; }

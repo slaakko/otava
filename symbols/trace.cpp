@@ -8,6 +8,7 @@ module otava.symbols.trace;
 import otava.symbols.context;
 import otava.symbols.declaration;
 import otava.symbols.project;
+import otava.symbols.scope_ptr;
 import otava.ast.declaration;
 import otava.ast.expression;
 import otava.ast.identifier;
@@ -287,14 +288,14 @@ void GenerateEnterFunctionCode(otava::ast::Node* functionDefinitionNode, Functio
                     otava::ast::SimpleDeclarationNode* entrySimpleDeclarationNode = new otava::ast::SimpleDeclarationNode(soul::ast::Span(), -1,
                         entryDeclSpecifiers, entryInitDeclaratorList, nullptr, nullptr);
                     otava::ast::DeclarationStatementNode* entryStatementNode = new otava::ast::DeclarationStatementNode(soul::ast::Span(), -1, entrySimpleDeclarationNode);
-                    context->GetSymbolTable()->BeginScope(fn->GetScope());
+                    ScopePtr fnScopePtr(fn->GetScope(), context);
                     Symbol* block = context->GetSymbolTable()->GetSymbolNothrow(compoundStatement);
-                    context->GetSymbolTable()->BeginScope(block->GetScope());
+                    ScopePtr blockScopePtr(block->GetScope(), context);
                     context->PushSetFlag(ContextFlags::saveDeclarations);
                     otava::symbols::ProcessSimpleDeclaration(entrySimpleDeclarationNode, nullptr, context);
                     context->PopFlags();
                     compoundStatement->InsertNode(0, entryStatementNode);
-                    context->GetSymbolTable()->EndScope();
+                    blockScopePtr.Reset();
                     otava::ast::DeclSpecifierSequenceNode* guardDeclSpecifiers = new otava::ast::DeclSpecifierSequenceNode(soul::ast::Span(), -1);
                     otava::ast::NestedNameSpecifierNode* guardNns = new otava::ast::NestedNameSpecifierNode(soul::ast::Span(), -1);
                     guardNns->AddNode(new otava::ast::IdentifierNode(soul::ast::Span(), -1, "std"));
@@ -313,14 +314,13 @@ void GenerateEnterFunctionCode(otava::ast::Node* functionDefinitionNode, Functio
                         guardDeclSpecifiers, guardInitDeclaratorList, nullptr, nullptr);
                     otava::ast::DeclarationStatementNode* guardStatementNode = new otava::ast::DeclarationStatementNode(soul::ast::Span(), -1, guardSimpleDeclarationNode);
                     Symbol* guardBlock = context->GetSymbolTable()->GetSymbolNothrow(compoundStatement);
-                    context->GetSymbolTable()->BeginScope(guardBlock->GetScope());
+                    ScopePtr guardBlockPtr(guardBlock->GetScope(), context);
                     context->PushSetFlag(ContextFlags::saveDeclarations);
                     otava::symbols::ProcessSimpleDeclaration(guardSimpleDeclarationNode, nullptr, context);
                     context->PopFlags();
                     compoundStatement->InsertNode(1, guardStatementNode);
-                    context->GetSymbolTable()->EndScope();
-                    context->GetSymbolTable()->EndScope();
-
+                    guardBlockPtr.Reset();
+                    fnScopePtr.Reset();
                     otava::ast::MemberExprNode* memberExprNode = new otava::ast::MemberExprNode(soul::ast::Span(), -1,
                         new otava::ast::IdentifierNode(soul::ast::Span(), -1, "@entry"),
                         new otava::ast::DotNode(soul::ast::Span(), -1),

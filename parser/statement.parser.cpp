@@ -12,6 +12,7 @@ import otava.token;
 import otava.lexer;
 import otava.symbols.block;
 import otava.symbols.classes;
+import otava.symbols.scope_ptr;
 import otava.symbols.symbol_table;
 import otava.parser.attribute;
 import otava.parser.declaration;
@@ -1184,6 +1185,7 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatementSaved(LexerT& lexe
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4569043890895585286);
     otava::ast::CompoundStatementNode* compoundStatementNode = nullptr;
     std::unique_ptr<otava::ast::Node> statementNode = std::unique_ptr<otava::ast::Node>();
+    otava::symbols::ScopePtr scopePtr = otava::symbols::ScopePtr();
     std::unique_ptr<otava::ast::Node> stmt;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -1207,7 +1209,7 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatementSaved(LexerT& lexe
                     }
                     lexer.BeginRecordedParse(compoundStatementNode->GetLexerPosPair());
                     otava::symbols::Scope *functionScope = static_cast<otava::symbols::Scope*>(compoundStatementNode->FunctionScope());
-                    context->GetSymbolTable()->BeginScope(functionScope);
+                    scopePtr.Reset(functionScope, context);
                 }
                 if (match.hit && !pass)
                 {
@@ -1320,7 +1322,7 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatementSaved(LexerT& lexe
                                     lexer.EndRecordedParse();
                                     otava::symbols::MapNode(compoundStatementNode, context);
                                     otava::symbols::EndBlock(context);
-                                    context->GetSymbolTable()->EndScope();
+                                    scopePtr.Reset();
                                     {
                                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "CompoundStatementSaved");
@@ -1356,7 +1358,7 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatementSaved(LexerT& lexe
                     if (match.hit)
                     {
                         lexer.EndRecordedParse();
-                        context->GetSymbolTable()->EndScope();
+                        scopePtr.Reset();
                         pass = false;
                     }
                     if (match.hit && !pass)

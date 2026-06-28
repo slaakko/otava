@@ -10,6 +10,7 @@ import otava.symbols.exception;
 import otava.symbols.instantiator;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
+import otava.symbols.scope_ptr;
 import otava.symbols.writer;
 import otava.symbols.reader;
 
@@ -124,9 +125,8 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
                     otava::ast::Node* defaultTemplateArgNode = templateParameter->DefaultTemplateArg();
                     if (defaultTemplateArgNode)
                     {
-                        context->GetSymbolTable()->BeginScope(&instantiationScope);
+                        ScopePtr instantiationScopePtr(&instantiationScope, context);
                         templateArg = ResolveType(defaultTemplateArgNode, DeclarationFlags::none, context);
-                        context->GetSymbolTable()->EndScope();
                     }
                     else
                     {
@@ -146,7 +146,7 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
                 instantiationScope.Install(boundTemplateParameter, context);
                 context->GetSymbolTable()->MapSymbol(boundTemplateParameter);
             }
-            context->GetSymbolTable()->BeginScope(&instantiationScope);
+            ScopePtr instantiationScopePtr(&instantiationScope, context);
             Instantiator instantiator(context, &instantiationScope);
             try
             {
@@ -160,7 +160,7 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
                 ThrowException("otava.symbols.alias_type_templates: error instantiating specialization '" +
                     specialization->FullName(context) + "': " + std::string(ex.what()), node->GetFullSpan(), context);
             }
-            context->GetSymbolTable()->EndScope();
+            instantiationScopePtr.Reset();
         }
         else
         {

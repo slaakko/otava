@@ -10,6 +10,7 @@ import otava.ast.visitor;
 import otava.ast.templates;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.scope_ptr;
 import otava.symbols.type_resolver;
 
 namespace otava::symbols {
@@ -96,10 +97,10 @@ void ScopeResolver::Visit(otava::ast::IdentifierNode& node)
 void ScopeResolver::Visit(otava::ast::TemplateIdNode& node)
 {
     first = false;
-    context->GetSymbolTable()->BeginScope(currentScope);
+    ScopePtr scopePtr(currentScope, context);
     TypeSymbol* type = ResolveType(&node, DeclarationFlags::none, context);
     currentScope = type->GetScope();
-    context->GetSymbolTable()->EndScope();
+    scopePtr.Reset();
 }
 
 Scope* ResolveScope(otava::ast::Node* nnsNode, Context* context)
@@ -109,15 +110,10 @@ Scope* ResolveScope(otava::ast::Node* nnsNode, Context* context)
     return resolver.GetScope();
 }
 
-void BeginScope(otava::ast::Node* nnsNode, Context* context)
+otava::symbols::Scope* GetScope(otava::ast::Node* nnsNode, Context* context)
 {
     Scope* scope = ResolveScope(nnsNode, context);
-    context->GetSymbolTable()->BeginScope(scope);
-}
-
-void EndScope(Context* context)
-{
-    context->GetSymbolTable()->EndScope();
+    return scope;
 }
 
 void AddParentScope(otava::ast::Node* node, Context* context)

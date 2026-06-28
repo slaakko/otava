@@ -9,6 +9,7 @@ export module otava.parser.type;
 [implementation]import otava.ast;
 [implementation]import otava.token;
 [implementation]import otava.lexer;
+[implementation]import otava.symbols.scope_ptr;
 [implementation]import otava.symbols.scope_resolver;
 [implementation]import otava.symbols.classes;
 [implementation]import otava.parser.attribute;
@@ -186,7 +187,7 @@ parser TypeParser
         ;
 
     SimpleTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span tmpPos, 
-        var std::unique_ptr<otava::ast::Node> nns, var bool isConstructorNameNode) : otava::ast::Node*
+        var std::unique_ptr<otava::ast::Node> nns, var bool isConstructorNameNode, var otava::symbols::ScopePtr scopePtr) : otava::ast::Node*
         ::= 
         (   SimpleType:simpleType
             { 
@@ -203,14 +204,14 @@ parser TypeParser
                 |   NestedNameSpecifier(context):nns2
                     { 
                         nns.reset(nns2); 
-                        otava::symbols::BeginScope(nns.get(), context); span = lexer.GetSpan(pos); 
+                        scopePtr.Reset(otava::symbols::GetScope(nns.get(), context), context);
                     }
                     TypeName(context):typeName
                     { 
                         std::unique_ptr<otava::ast::Node> typeNameNode;
                         typeNameNode.reset(typeName);
                         isConstructorNameNode = context->IsConstructorNameNode(typeNameNode.get());
-                        otava::symbols::EndScope(context);
+                        scopePtr.Reset();
                         if (isConstructorNameNode)
                         {
                             pass = false;
@@ -222,7 +223,7 @@ parser TypeParser
                     }
                     /
                     {
-                        otava::symbols::EndScope(context);
+                        scopePtr.Reset();
                     }
                 |   empty{ if (isConstructorNameNode) pass = false; } 
                     TypeName(context):typeName2

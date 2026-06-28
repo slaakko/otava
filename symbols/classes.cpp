@@ -14,6 +14,7 @@ import otava.symbols.function_symbol;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
 import otava.symbols.project;
+import otava.symbols.scope_ptr;
 import otava.symbols.statement_binder;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
@@ -120,6 +121,21 @@ ClassTypeSymbol::~ClassTypeSymbol()
     for (FunctionSymbol* fn : fns)
     {
         fn->SetIndex(undefinedIndex);
+        fn->RemoveClass(this);
+    }
+    std::vector<FunctionDefinitionSymbol*> defs;
+    for (const auto& f : memFnDefSymbolMap)
+    {
+        FunctionDefinitionSymbol* fn = f.second;
+        if (fn)
+        {
+            defs.push_back(fn);
+        }
+    }
+    memFnDefSymbolMap.clear();
+    for (FunctionDefinitionSymbol* fn : defs)
+    {
+        fn->SetDefIndex(-1);
         fn->RemoveClass(this);
     }
 }
@@ -389,7 +405,18 @@ void ClassTypeSymbol::SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol
         memFnDefSymbol->SetDefIndex(nextMemFnDefIndex++);
     }
     memFnDefSymbolMap[memFnDefSymbol->DefIndex()] = memFnDefSymbol;
+    memFnDefSymbol->AddClass(this);
     nextMemFnDefIndex = std::max(nextMemFnDefIndex, memFnDefSymbol->DefIndex() + 1);
+}
+
+void ClassTypeSymbol::ResetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol)
+{
+    if (destructing) return;
+    std::int32_t defIndex = memFnDefSymbol->DefIndex();
+    if (defIndex != -1)
+    {
+        memFnDefSymbolMap.erase(defIndex);
+    }
 }
 
 FunctionDefinitionSymbol* ClassTypeSymbol::GetMemFnDefSymbol(int32_t defIndex) const noexcept
@@ -1059,6 +1086,15 @@ bool ForwardClassDeclarationSymbol::IsComplete(std::set<const TypeSymbol*>& visi
     }
 }
 
+std::string ForwardClassDeclarationSymbol::IrName(Context* context) const
+{
+    std::string irName;
+    irName.append("class_fwd_").append(Name());
+    std::string shaMaterial = FullName(context);
+    irName.append("_").append(util::GetSha1MessageDigest(shaMaterial));
+    return irName;
+}
+
 TemplateDeclarationSymbol* ForwardClassDeclarationSymbol::ParentTemplateDeclaration(Context* context) const noexcept
 {
     Symbol* parentSymbol = Parent(context);
@@ -1413,7 +1449,7 @@ void EndClass(otava::ast::Node* node, Context* context)
         }
     }
     context->PopFlags();
-    context->GetSymbolTable()->EndClass();
+    context->GetSymbolTable()->EndClass(context);
     if (classTypeSymbol->Level() == 0)
     {
         ParseInlineMemberFunctions(specNode, classTypeSymbol, context);
@@ -1496,7 +1532,7 @@ void FunctionDefinitionMapBuilderVisitor::Visit(otava::ast::FunctionDefinitionNo
 
 void ParseInlineMemberFunctions(otava::ast::Node* classSpecifierNode, ClassTypeSymbol* classTypeSymbol, Context* context)
 {
-    context->GetSymbolTable()->BeginScope(classTypeSymbol->GetScope());
+    ScopePtr scopePtr(classTypeSymbol->GetScope(), context);
     FunctionDefinitionMapBuilderVisitor visitor(context);
     classSpecifierNode->Accept(visitor);
     ClassParsingMap* classParsingMap = visitor.GetClassParsingMap();
@@ -1504,7 +1540,6 @@ void ParseInlineMemberFunctions(otava::ast::Node* classSpecifierNode, ClassTypeS
     {
         ParseInlineMemberFunction(context, fn);
     }
-    context->GetSymbolTable()->EndScope();
 }
 
 void ParseInlineMemberFunction(Context* context, FunctionSymbol* memfn)
@@ -1725,7 +1760,7 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
     destructorDefinitionSymbol->SetParent(classTypeSymbol);
     destructorDefinitionSymbol->SetFunctionKind(FunctionKind::destructor);
     destructorDefinitionSymbol->SetAccess(Access::public_);
-    destructorDefinitionSymbol->SetDeclaration(destructorSymbol.get());
+    destructorDefinitionSymbol->SetDeclaration(destructorSymbol.get(), context);
     destructorDefinitionSymbol->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
     destructorDefinitionSymbol->SetFixedIrName(destructorSymbol->IrName(context));
     destructorDefinitionSymbol->SetNoExcept();
@@ -1929,6 +1964,7 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
     }
     if (!temporary->GetType()->IsClassTypeSymbol()) return;
     ClassTypeSymbol* cls = static_cast<ClassTypeSymbol*>(temporary->GetType());
+    if (cls->IsReadOnly()) return;
     BoundFunctionCallNode* destructorCall = MakeDestructorCall(cls, arg, nullptr, constructTemporary->GetFullSpan(), context);
     if (!destructorCall) return;
     if (context->CurrentProject()->HasDefine("PRINT_TEMPORARIES"))

@@ -27,7 +27,7 @@ public:
     std::string GroupName(Context* context) override;
     std::string FullName(Context* context) const override;
     std::string IrName(Context* context) const override;
-    void SetClassTemplate(ClassTypeSymbol* classTemplate_) noexcept;
+    void SetClassTemplate(ClassTypeSymbol* classTemplate_, Context* context) noexcept;
     const std::vector<Symbol*>& TemplateArguments(Context* context) const;
     void AddTemplateArgument(Symbol* templateArgument);
     void AddInstantiatedVirtualFunctionSpecialization(FunctionSymbol* specialization);
@@ -41,6 +41,7 @@ public:
     inline void SetDestructor(FunctionSymbol* destructor_) noexcept { destructor = destructor_; }
     inline bool InstantiatingDestructor() const noexcept { return instantiatingDestructor; }
     inline void SetInstantiatingDestructor(bool instantiating) noexcept { instantiatingDestructor = instantiating; }
+    bool HasForwardClassDeclarationSymbol(Context* context) const override;
     void Write(Writer& writer);
     void Read(Reader& reader);
 private:

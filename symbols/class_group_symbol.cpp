@@ -123,12 +123,19 @@ ClassGroupSymbol::ClassGroupSymbol(Module* module_, SymbolId id_, const std::str
 {
 }
 
-void ClassGroupSymbol::AddClass(ClassTypeSymbol* cls)
+void ClassGroupSymbol::AddClass(ClassTypeSymbol* cls, Context* context)
 {
     if (std::find(classes.begin(), classes.end(), cls) == classes.end())
     {
         cls->SetGroup(this);
         classes.push_back(cls);
+        for (ForwardClassDeclarationSymbol* fwd : forwardDeclarations)
+        {
+            if (fwd->Arity(context) == cls->Arity(context))
+            {
+                fwd->SetClassTypeSymbol(cls);
+            }
+        }
     }
 }
 
@@ -263,6 +270,19 @@ const std::vector<ForwardClassDeclarationSymbol*>& ClassGroupSymbol::ForwardDecl
     return forwardDeclarations;
 }
 
+ClassTypeSymbol* ClassGroupSymbol::GetClass(Cardinality arity, Context* context) const
+{
+    const std::vector<ClassTypeSymbol*>& classes = Classes(context);
+    for (ClassTypeSymbol* cls : classes)
+    {
+        if (cls->Arity(context) == arity)
+        {
+            return cls;
+        }
+    }
+    return nullptr;
+}
+
 ForwardClassDeclarationSymbol* ClassGroupSymbol::GetForwardDeclaration(Cardinality arity, Context* context) const
 {
     const std::vector<ForwardClassDeclarationSymbol*>& forwardDeclarations = ForwardDeclarations(context);
@@ -356,6 +376,12 @@ void ClassGroupSymbol::Write(Writer& writer)
     {
         writer.GetBinaryStreamWriter().Write(ToUnderlying(cls->Id()));
     }
+    Cardinality fwdCount = Cardinality(forwardDeclarations.size());
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(fwdCount));
+    for (ForwardClassDeclarationSymbol* fwd : forwardDeclarations)
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(fwd->Id()));
+    }
 }
 
 void ClassGroupSymbol::Read(Reader& reader)
@@ -366,6 +392,12 @@ void ClassGroupSymbol::Read(Reader& reader)
     {
         SymbolId classId = SymbolId(reader.CurrentReader().ReadUInt());
         classIds.push_back(classId);
+    }
+    Cardinality fwdCount = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < Index(fwdCount); ++i)
+    {
+        SymbolId fwdId = SymbolId(reader.CurrentReader().ReadUInt());
+        fwdDeclIds.push_back(fwdId);
     }
 }
 
@@ -381,7 +413,23 @@ void ClassGroupSymbol::GetContent(Context* context)
             ThrowException("class id " + std::to_string(ToUnderlying(classId)) + " not found from class group '" + FullName(context) + "' from module '" + 
                 GetModule()->Name() + "'");
         }
-        classes.push_back(cls);
+        if (std::find(classes.begin(), classes.end(), cls) == classes.end())
+        {
+            classes.push_back(cls);
+        }
+    }
+    for (SymbolId fwdId : fwdDeclIds)
+    {
+        ForwardClassDeclarationSymbol* fwd = GetModule()->GetSymbolTable()->GetForwardClassDeclarationSymbol(fwdId, context);
+        if (!fwd)
+        {
+            ThrowException("class forward declartion id " + std::to_string(ToUnderlying(fwdId)) + " not found from class group '" + 
+                FullName(context) + "' from module '" + GetModule()->Name() + "'");
+        }
+        if (std::find(forwardDeclarations.begin(), forwardDeclarations.end(), fwd) == forwardDeclarations.end())
+        {
+            forwardDeclarations.push_back(fwd);
+        }
     }
 }
 

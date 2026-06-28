@@ -48,6 +48,10 @@ ArrayTypeSymbol::ArrayTypeSymbol(Module* module_, SymbolId id_, TypeSymbol* elem
     TypeSymbol(module_, id_, MakeArrayTypeName(elementType_, size_, context)), bound(false), elementType(elementType_), elementTypeId(zeroSymbolId), size(size_)
 {
     GetScope()->SetKind(ScopeKind::arrayScope);
+    if (elementType->GetModule() != GetModule())
+    {
+        GetModule()->GetSymbolTable()->AddImportedSymbol(elementType->Id(), elementType->GetModule()->Id());
+    }
 }
 
 void ArrayTypeSymbol::Write(Writer& writer)
@@ -109,7 +113,7 @@ void ArrayTypeSymbol::Bind(const soul::ast::FullSpan& fullSpan, Context* context
     endGroup->AddFunction(arrayTypeEnd);
 }
 
-TypeSymbol* ArrayTypeSymbol::ElementType(Context* context) const noexcept
+TypeSymbol* ArrayTypeSymbol::ElementType(Context* context) const 
 {
     if (elementType)
     {
@@ -146,7 +150,7 @@ otava::intermediate::Type* ArrayTypeSymbol::IrType(Emitter& emitter, const soul:
     otava::intermediate::Type* type = emitter.GetType(id);
     if (!type)
     {
-        type = emitter.MakeArrayType(size, elementType->IrType(emitter, fullSpan, context));
+        type = emitter.MakeArrayType(size, ElementType(context)->IrType(emitter, fullSpan, context));
         emitter.SetType(id, type);
     }
     return type;

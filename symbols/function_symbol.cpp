@@ -257,6 +257,22 @@ bool FunctionSymbol::IsDestructor() const noexcept
     return GroupName() == "@destructor";
 }
 
+bool FunctionSymbol::HasForwardDeclarationType(Context* context) const 
+{
+    for (ParameterSymbol* parameter : MemFnParameters(context))
+    {
+        TypeSymbol* baseType = parameter->GetType(context)->GetBaseType(context);
+        if (baseType->HasForwardClassDeclarationSymbol(context)) return true;
+    }
+    TypeSymbol* returnType = ReturnType(context);
+    if (returnType)
+    {
+        TypeSymbol* baseType = returnType->GetBaseType(context);
+        if (baseType->HasForwardClassDeclarationSymbol(context)) return true;
+    }
+    return false;
+}
+
 void FunctionSymbol::SetConversionParamType(TypeSymbol* conversionParamType_) noexcept
 {
     conversionParamType = conversionParamType_;
@@ -1186,6 +1202,14 @@ FunctionDefinitionSymbol::FunctionDefinitionSymbol(Module* module_, SymbolId id_
 {
 }
 
+FunctionDefinitionSymbol::~FunctionDefinitionSymbol()
+{
+    for (ClassTypeSymbol* cls : Classes())
+    {
+        cls->ResetMemFnDefSymbol(this);
+    }
+}
+
 bool FunctionDefinitionSymbol::IsMemberFunction(Context* context) const noexcept
 {
     if (declaration)
@@ -1193,6 +1217,284 @@ bool FunctionDefinitionSymbol::IsMemberFunction(Context* context) const noexcept
         return declaration->IsMemberFunction(context);
     }
     return false;
+}
+
+FunctionKind FunctionDefinitionSymbol::GetFunctionKind() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->GetFunctionKind();
+    }
+    else
+    {
+        return FunctionSymbol::GetFunctionKind();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsVirtual() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsVirtual();
+    }
+    else
+    {
+        return FunctionSymbol::IsVirtual();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsConst() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsConst();
+    }
+    else
+    {
+        return FunctionSymbol::IsConst();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsPure() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsPure();
+    }
+    else
+    {
+        return FunctionSymbol::IsPure();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsOverride() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsOverride();
+    }
+    else
+    {
+        return FunctionSymbol::IsOverride();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsFinal() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsFinal();
+    }
+    else
+    {
+        return FunctionSymbol::IsFinal();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsNoExcept() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsNoExcept();
+    }
+    else
+    {
+        return FunctionSymbol::IsNoExcept();
+    }
+}
+
+void FunctionDefinitionSymbol::SetNoExcept() noexcept
+{
+    if (declaration)
+    {
+        declaration->SetNoExcept();
+    }
+    FunctionSymbol::SetNoExcept();
+}
+
+void FunctionDefinitionSymbol::SetOverride() noexcept
+{
+    if (declaration)
+    {
+        declaration->SetOverride();
+    }
+    FunctionSymbol::SetOverride();
+}
+
+void FunctionDefinitionSymbol::SetFinal() noexcept
+{
+    if (declaration)
+    {
+        declaration->SetFinal();
+    }
+    FunctionSymbol::SetFinal();
+}
+
+bool FunctionDefinitionSymbol::IsInline() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsInline();
+    }
+    return FunctionSymbol::IsInline();
+}
+void FunctionDefinitionSymbol::SetInline() noexcept
+{
+    if (declaration)
+    {
+        declaration->SetInline();
+    }
+    FunctionSymbol::SetInline();
+}
+
+bool FunctionDefinitionSymbol::IsUnparsed() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsUnparsed();
+    }
+    return FunctionSymbol::IsUnparsed();
+}
+
+void FunctionDefinitionSymbol::SetUnparsed() noexcept
+{
+    if (declaration)
+    {
+        declaration->SetUnparsed();
+    }
+    FunctionSymbol::SetUnparsed();
+}
+
+void FunctionDefinitionSymbol::ResetUnparsed() noexcept
+{
+    if (declaration)
+    {
+        declaration->ResetUnparsed();
+    }
+    FunctionSymbol::ResetUnparsed();
+}
+
+bool FunctionDefinitionSymbol::Parsing() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->Parsing();
+    }
+    return FunctionSymbol::Parsing();
+}
+
+void FunctionDefinitionSymbol::SetParsing() noexcept
+{
+    if (declaration)
+    {
+        declaration->SetParsing();
+    }
+    FunctionSymbol::SetParsing();
+}
+
+void FunctionDefinitionSymbol::ResetParsing() noexcept
+{
+    if (declaration)
+    {
+        declaration->ResetParsing();
+    }
+    FunctionSymbol::ResetParsing();
+}
+
+std::int32_t FunctionDefinitionSymbol::VTabIndex() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->VTabIndex();
+    }
+    else
+    {
+        return FunctionSymbol::VTabIndex();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsStatic() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsStatic();
+    }
+    else
+    {
+        return FunctionSymbol::IsStatic();
+    }
+}
+
+bool FunctionDefinitionSymbol::IsExplicit() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->IsExplicit();
+    }
+    else
+    {
+        return FunctionSymbol::IsExplicit();
+    }
+}
+
+TypeSymbol* FunctionDefinitionSymbol::ConversionParamType() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->ConversionParamType();
+    }
+    else
+    {
+        return FunctionSymbol::ConversionParamType();
+    }
+}
+
+TypeSymbol* FunctionDefinitionSymbol::GetConversionParamType(Context* context) const 
+{
+    if (declaration)
+    {
+        return declaration->GetConversionParamType(context);
+    }
+    else
+    {
+        return FunctionSymbol::GetConversionParamType(context);
+    }
+}
+
+TypeSymbol* FunctionDefinitionSymbol::ConversionArgType() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->ConversionArgType();
+    }
+    else
+    {
+        return FunctionSymbol::ConversionArgType();
+    }
+}
+
+TypeSymbol* FunctionDefinitionSymbol::GetConversionArgType(Context* context) const
+{
+    if (declaration)
+    {
+        return declaration->GetConversionArgType(context);
+    }
+    else
+    {
+        return FunctionSymbol::GetConversionArgType(context);
+    }
+}
+
+std::int32_t FunctionDefinitionSymbol::ConversionDistance() const noexcept
+{
+    if (declaration)
+    {
+        return declaration->ConversionDistance();
+    }
+    else
+    {
+        return FunctionSymbol::ConversionDistance();
+    }
 }
 
 void FunctionDefinitionSymbol::AddDefinitionToGroup(Context* context)
@@ -1297,6 +1599,15 @@ void FunctionDefinitionSymbol::Read(Reader& reader)
     defIndex = reader.CurrentReader().ReadInt();
 }
 
+void FunctionDefinitionSymbol::SetDeclaration(FunctionSymbol* declaration_, Context* context) noexcept
+{
+    declaration = declaration_;
+    if (declaration->GetModule() != GetModule())
+    {
+        context->GetModule()->GetSymbolTable()->AddImportedSymbol(declaration->Id(), declaration->GetModule()->Id());
+    }
+}
+
 std::string FunctionDefinitionSymbol::IrName(Context* context) const
 {
     if (declaration)
@@ -1315,6 +1626,27 @@ std::string FunctionDefinitionSymbol::IrName(Context* context) const
         }
         return irName;
     }
+}
+
+otava::intermediate::Type* FunctionDefinitionSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) const
+{
+    if (declaration)
+    {
+        return declaration->IrType(emitter, fullSpan, context);
+    }
+    else
+    {
+        return FunctionSymbol::IrType(emitter, fullSpan, context);
+    }
+}
+
+void FunctionDefinitionSymbol::SetReturnType(TypeSymbol* returnType_, Context* context)
+{
+    if (declaration && !declaration->IsReadOnly())
+    {
+        declaration->SetReturnType(returnType_, context);
+    }
+    FunctionSymbol::SetReturnType(returnType_, context);
 }
 
 ExplicitlyInstantiatedFunctionDefinitionSymbol::ExplicitlyInstantiatedFunctionDefinitionSymbol(Module* module_, SymbolId id_) :

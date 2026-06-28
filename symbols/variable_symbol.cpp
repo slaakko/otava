@@ -20,14 +20,14 @@ namespace otava::symbols {
 VariableSymbol::VariableSymbol(Module* module_, SymbolId id_) : 
     Symbol(module_, id_), level(0), foundFromParent(false), nodeId(-1), temporary(false), value(nullptr), global(nullptr), layoutIndex(-1), 
     declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), contentFetched(false), valueId(zeroSymbolId),
-    index(-1)
+    index(-1), globalId(zeroSymbolId)
 {
 }
 
 VariableSymbol::VariableSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     Symbol(module_, id_, name_), level(0), foundFromParent(false), nodeId(-1), temporary(false), value(nullptr), global(nullptr), layoutIndex(-1),
     declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), contentFetched(false), valueId(zeroSymbolId),
-    index(-1)
+    index(-1), globalId(zeroSymbolId)
 {
 }
 
@@ -181,7 +181,18 @@ void VariableSymbol::Write(Writer& writer)
     {
         writer.GetBinaryStreamWriter().Write(ToUnderlying(zeroSymbolId));
     }
+    if (global)
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(global->Id()));
+    }
+    else
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(zeroSymbolId));
+    }
     writer.GetBinaryStreamWriter().Write(index);
+    writer.GetBinaryStreamWriter().Write(level);
+    writer.GetBinaryStreamWriter().Write(foundFromParent);
+    writer.GetBinaryStreamWriter().Write(temporary);
     writer.GetBinaryStreamWriter().Write(layoutIndex);
 }
 
@@ -191,7 +202,11 @@ void VariableSymbol::Read(Reader& reader)
     declaredTypeId = SymbolId(reader.CurrentReader().ReadUInt());
     initializerTypeId = SymbolId(reader.CurrentReader().ReadUInt());
     valueId = SymbolId(reader.CurrentReader().ReadUInt());
+    globalId = SymbolId(reader.CurrentReader().ReadUInt());
     index = reader.CurrentReader().ReadInt();
+    level = reader.CurrentReader().ReadInt();
+    foundFromParent = reader.CurrentReader().ReadBool();
+    temporary = reader.CurrentReader().ReadBool();
     layoutIndex = reader.CurrentReader().ReadInt();
 }
 
@@ -218,6 +233,18 @@ void VariableSymbol::GetContent(Context* context)
     if (valueId != zeroSymbolId)
     {
         value = GetModule()->GetSymbolTable()->GetValue(valueId, context);
+        if (!value)
+        {
+            ThrowException("variable value id " + std::to_string(ToUnderlying(valueId)) + " not found", GetFullSpan(), context);
+        }
+    }
+    if (globalId != zeroSymbolId)
+    {
+        global = GetModule()->GetSymbolTable()->GetVariableSymbol(globalId, context);
+        if (!global)
+        {
+            ThrowException("variable global id " + std::to_string(ToUnderlying(globalId)) + " not found", GetFullSpan(), context);
+        }
     }
 }
 
@@ -344,6 +371,7 @@ TypeSymbol* ParameterSymbol::GetReferredType(Context* context)
 void ParameterSymbol::Write(Writer& writer)
 {
     Symbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(parameterKind));
     writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
     otava::symbols::WriteNode(writer, defaultValue.get(), astNodeHeader);
 }
@@ -351,6 +379,7 @@ void ParameterSymbol::Write(Writer& writer)
 void ParameterSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
+    parameterKind = ParameterKind(reader.CurrentReader().ReadByte());
     typeId = SymbolId(reader.CurrentReader().ReadUInt());
     defaultValue = otava::symbols::ReadNode(reader, GetModule(), astNodeHeader);
 }

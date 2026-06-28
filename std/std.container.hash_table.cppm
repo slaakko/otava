@@ -168,7 +168,7 @@ public:
     inline float load_factor() const noexcept { return loadf; }
     inline float max_load_factor() const noexcept { return max_loadf; }
     inline void max_load_factor(float z) noexcept { max_loadf = z; }
-    pair<iterator, bool> insert(const value_type& value)
+    std::pair<iterator, bool> insert(const value_type& value)
     {
         if (buckets.empty())
         {

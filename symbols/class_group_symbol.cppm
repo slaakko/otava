@@ -40,10 +40,11 @@ public:
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
     Symbol* GetSingleSymbol(Context* context) override;
     ClassTypeSymbol* GetBestMatchingClass(const std::vector<Symbol*>& templateArgs, TemplateMatchInfo& matchInfo, Context* context);
-    void AddClass(ClassTypeSymbol* cls);
+    void AddClass(ClassTypeSymbol* cls, Context* context);
     void AddForwardDeclaration(ForwardClassDeclarationSymbol* fwd);
     const std::vector<ClassTypeSymbol*>& Classes(Context* context) const;
     const std::vector<ForwardClassDeclarationSymbol*>& ForwardDeclarations(Context* context) const;
+    ClassTypeSymbol* GetClass(Cardinality arity, Context* context) const;
     ForwardClassDeclarationSymbol* GetForwardDeclaration(Cardinality arity, Context* context) const;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;

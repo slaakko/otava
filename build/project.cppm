@@ -66,7 +66,7 @@ public:
     inline const std::vector<std::int32_t>& InterfaceFiles() const { return interfaceFiles; }
     inline const std::vector<std::int32_t>& SourceFiles() const { return sourceFiles; }
     const std::string& GetModuleSourceFilePath(std::int32_t fileId) const;
-    void InitModules();
+    void InitFiles();
     void LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std::string& config, int optLevel, const std::set<std::string>& configurations,
         otava::symbols::Context* context);
     bool UpToDate(const std::string& config, int optLevel, const std::set<std::string>& configurations) const;

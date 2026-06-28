@@ -13,6 +13,7 @@ export module otava.parser.statement;
 [implementation]import otava.lexer;
 [implementation]import otava.symbols.block;
 [implementation]import otava.symbols.classes;
+[implementation]import otava.symbols.scope_ptr;
 [implementation]import otava.symbols.symbol_table;
 [implementation]import otava.parser.attribute;
 [implementation]import otava.parser.declaration;
@@ -177,7 +178,7 @@ parser StatementParser
         ;
 
     CompoundStatementSaved(otava::symbols::Context* context, var otava::ast::CompoundStatementNode* compoundStatementNode, 
-        var std::unique_ptr<otava::ast::Node> statementNode) : otava::ast::Node*
+        var std::unique_ptr<otava::ast::Node> statementNode, var otava::symbols::ScopePtr scopePtr) : otava::ast::Node*
         ::= empty
         { 
             compoundStatementNode = otava::parser::recorded::parse::GetSavedCompoundStatementNode(context); 
@@ -187,7 +188,7 @@ parser StatementParser
             }
             lexer.BeginRecordedParse(compoundStatementNode->GetLexerPosPair()); 
             otava::symbols::Scope* functionScope = static_cast<otava::symbols::Scope*>(compoundStatementNode->FunctionScope());
-            context->GetSymbolTable()->BeginScope(functionScope);
+            scopePtr.Reset(functionScope, context);
         }
         (
             LBRACE
@@ -209,14 +210,14 @@ parser StatementParser
                 lexer.EndRecordedParse(); 
                 otava::symbols::MapNode(compoundStatementNode, context);
                 otava::symbols::EndBlock(context); 
-                context->GetSymbolTable()->EndScope();
+                scopePtr.Reset();
                 return compoundStatementNode; 
             }
         )
         |   empty
         {
             lexer.EndRecordedParse();
-            context->GetSymbolTable()->EndScope();
+            scopePtr.Reset();
             pass = false;
         }
         ;

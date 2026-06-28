@@ -46,6 +46,7 @@ std::int16_t Project::Id() const noexcept
 
 void Project::AddRoots(otava::symbols::ModuleMapper& moduleMapper)
 {
+    moduleMapper.AddRoot(root);
     for (const auto& referenceFilePath : referenceFilePaths)
     {
         std::string referenceRoot = util::GetFullPath(util::Path::Combine(root, util::Path::GetDirectoryName(referenceFilePath)));
@@ -67,7 +68,7 @@ bool Project::HasDefine(const std::string& symbol) const noexcept
     return false;
 }
 
-void Project::InitModules()
+void Project::InitFiles()
 {
     if (initialized) return;
     initialized = true;

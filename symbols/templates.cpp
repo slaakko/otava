@@ -215,12 +215,12 @@ void EndTemplateDeclaration(otava::ast::Node* node, Context* context)
         ThrowException("otava.symbols.templates: EndTemplateDeclaration(): template scope expected", node->GetFullSpan(), context);
     }
     context->PopFlags();
-    context->GetSymbolTable()->EndTemplateDeclaration();
+    context->GetSymbolTable()->EndTemplateDeclaration(context);
 }
 
 void RemoveTemplateDeclaration(Context* context)
 {
-    context->GetSymbolTable()->RemoveTemplateDeclaration();
+    context->GetSymbolTable()->RemoveTemplateDeclaration(context);
 }
 
 class TemplateParameterCreator : public otava::ast::DefaultVisitor

@@ -188,11 +188,11 @@ otava::intermediate::Type* FunctionTypeSymbol::IrType(Emitter& emitter, const so
     if (!type)
     {
         std::vector<otava::intermediate::Type*> paramTypes;
-        for (TypeSymbol* paramType : parameterTypes)
+        for (TypeSymbol* paramType : ParameterTypes(context))
         {
             paramTypes.push_back(paramType->IrType(emitter, fullSpan, context));
         }
-        type = emitter.MakeFunctionType(returnType->IrType(emitter, fullSpan, context), paramTypes);
+        type = emitter.MakeFunctionType(ReturnType(context)->IrType(emitter, fullSpan, context), paramTypes);
         emitter.SetType(id, type);
     }
     return type;

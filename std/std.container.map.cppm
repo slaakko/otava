@@ -58,11 +58,11 @@ public:
         iterator it = ib.first;
         return it->second;
     }
-    inline pair<iterator, bool> insert(const value_type& x)
+    inline std::pair<iterator, bool> insert(const value_type& x)
     {
         return tree.insert(x);
     }
-    inline pair<iterator, bool> insert(value_type&& x)
+    inline std::pair<iterator, bool> insert(value_type&& x)
     {
         return tree.insert(std::move(x));
     }

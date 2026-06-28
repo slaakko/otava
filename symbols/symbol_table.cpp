@@ -123,13 +123,13 @@ void SymbolTable::PopScope()
     scopeStack.pop_back();
 }
 
-void SymbolTable::BeginScope(Scope* scope)
+void SymbolTable::BeginScope(Scope* scope, Context* context)
 {
     PushScope();
     currentScope = scope;
 }
 
-void SymbolTable::EndScope()
+void SymbolTable::EndScope(Context* context)
 {
     PopScope();
 }
@@ -144,7 +144,7 @@ void SymbolTable::BeginScopeGeneric(Scope* scope, Context* context)
     }
     else
     {
-        BeginScope(scope);
+        BeginScope(scope, context);
     }
 }
 
@@ -158,7 +158,7 @@ void SymbolTable::EndScopeGeneric(Context* context)
     }
     else
     {
-        EndScope();
+        EndScope(context);
     }
 }
 
@@ -437,7 +437,7 @@ void SymbolTable::BeginNamespace(const std::string& name, otava::ast::Node* node
     }
     if (name.empty())
     {
-        BeginScope(currentScope);
+        BeginScope(currentScope, context);
     }
     else
     {
@@ -451,7 +451,7 @@ void SymbolTable::BeginNamespace(const std::string& name, otava::ast::Node* node
                 {
                     MapNode(node, namespaceSymbol);
                 }
-                BeginScope(namespaceSymbol->GetScope());
+                BeginScope(namespaceSymbol->GetScope(), context);
                 return;
             }
             else
@@ -467,13 +467,13 @@ void SymbolTable::BeginNamespace(const std::string& name, otava::ast::Node* node
             MapNode(node, namespaceSymbol);
         }
         currentScope->SymbolScope(context)->AddSymbol(namespaceSymbol, fullSpan, context);
-        BeginScope(namespaceSymbol->GetScope());
+        BeginScope(namespaceSymbol->GetScope(), context);
     }
 }
 
-void SymbolTable::EndNamespace()
+void SymbolTable::EndNamespace(Context* context)
 {
-    EndScope();
+    EndScope(context);
 }
 
 void SymbolTable::BeginNamespace(otava::ast::Node* node, Context* context)
@@ -481,11 +481,11 @@ void SymbolTable::BeginNamespace(otava::ast::Node* node, Context* context)
     BeginNamespace(node->Str(), node, context);
 }
 
-void SymbolTable::EndNamespace(int level)
+void SymbolTable::EndNamespace(int level, Context* context)
 {
     for (int i = 0; i < level; ++i)
     {
-        EndNamespace();
+        EndNamespace(context);
     }
 }
 
@@ -504,10 +504,10 @@ void SymbolTable::BeginClass(const std::string& name, ClassKind classKind, TypeS
     classTypeSymbol->SetSpecialization(specialization, context);
     classTypeSymbol->SetAstNodeId(node->Id());
     currentScope->SymbolScope(context)->AddSymbol(classTypeSymbol, fullSpan, context);
-    classGroup->AddClass(classTypeSymbol);
+    classGroup->AddClass(classTypeSymbol, context);
     MapNode(node, classTypeSymbol);
     SetSpecifierNode(classTypeSymbol, node);
-    BeginScope(classTypeSymbol->GetScope());
+    BeginScope(classTypeSymbol->GetScope(), context);
     switch (classKind)
     {
     case ClassKind::class_:
@@ -538,11 +538,11 @@ void SymbolTable::AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::Full
     }
 }
 
-void SymbolTable::EndClass()
+void SymbolTable::EndClass(Context* context)
 {
     --classLevel;
     PopAccess();
-    EndScope();
+    EndScope(context);
 }
 
 void SymbolTable::AddForwardClassDeclaration(const std::string& name, ClassKind classKind, TypeSymbol* specialization, otava::ast::Node* node, Context* context)
@@ -595,12 +595,12 @@ void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind
     currentScope->SymbolScope(context)->AddSymbol(enumTypeSymbol, fullSpan, context);
     MapNode(node, enumTypeSymbol);
     enumGroup->SetEnumType(enumTypeSymbol);
-    BeginScope(enumTypeSymbol->GetScope());
+    BeginScope(enumTypeSymbol->GetScope(), context);
 }
 
-void SymbolTable::EndEnumeratedType()
+void SymbolTable::EndEnumeratedType(Context* context)
 {
-    EndScope();
+    EndScope(context);
 }
 
 void SymbolTable::AddForwardEnumDeclaration(const std::string& name, EnumTypeKind enumTypeKind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context)
@@ -674,12 +674,12 @@ void SymbolTable::EndBlock(Context* context)
     EndScopeGeneric(context);
 }
 
-void SymbolTable::RemoveBlock()
+void SymbolTable::RemoveBlock(Context* context)
 {
     Symbol* symbol = currentScope->GetSymbol();
     if (symbol && symbol->IsBlockSymbol())
     {
-        EndScope();
+        EndScope(context);
         currentScope->RemoveSymbol(symbol);
     }
     else
@@ -695,20 +695,20 @@ void SymbolTable::BeginTemplateDeclaration(otava::ast::Node* node, Context* cont
         context->GetNextSymbolId(SymbolKind::templateDeclarationSymbol), std::string());
     templateDeclarationSymbol->SetFullSpan(node->GetFullSpan());
     currentScope->SymbolScope(context)->AddSymbol(templateDeclarationSymbol, node->GetFullSpan(), context);
-    BeginScope(templateDeclarationSymbol->GetScope());
+    BeginScope(templateDeclarationSymbol->GetScope(), context);
 }
 
-void SymbolTable::EndTemplateDeclaration()
+void SymbolTable::EndTemplateDeclaration(Context* context)
 {
-    EndScope();
+    EndScope(context);
 }
 
-void SymbolTable::RemoveTemplateDeclaration()
+void SymbolTable::RemoveTemplateDeclaration(Context* context)
 {
     Symbol* symbol = currentScope->GetSymbol();
     if (symbol && symbol->IsTemplateDeclarationSymbol())
     {
-        EndScope();
+        EndScope(context);
         currentScope->RemoveSymbol(symbol);
     }
 }
@@ -797,6 +797,10 @@ FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, 
 {
     get = false;
     std::string groupName = name;
+    if (groupName == "random")
+    {
+        int x = 0;
+    }
     Symbol* containerSymbol = scope->SymbolScope(context)->GetSymbol();
     if (containerSymbol && containerSymbol->SimpleName(context) == name)
     {
@@ -865,7 +869,7 @@ FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, 
         definition->IsSpecialization(), context);
     if (declaration)
     {
-        definition->SetDeclaration(declaration);
+        definition->SetDeclaration(declaration, context);
         definition->SetAccess(declaration->GetAccess());
     }
     return definition;
@@ -1091,7 +1095,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
     SymbolId symbolId = context->GetNextSymbolId(SymbolKind::classTemplateSpecializationSymbol);
     classTemplateSpecializationMap[key] = symbolId;
     classTemplateSpecialization = new ClassTemplateSpecializationSymbol(module, symbolId, MakeSpecializationName(classTemplate, templateArguments));
-    classTemplateSpecialization->SetClassTemplate(classTemplate);
+    classTemplateSpecialization->SetClassTemplate(classTemplate, context);
     for (Symbol* templateArgument : templateArguments)
     {
         classTemplateSpecialization->AddTemplateArgument(templateArgument);

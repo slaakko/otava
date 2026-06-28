@@ -13,6 +13,7 @@ export module otava.parser.classes;
 [implementation]import otava.lexer;
 [implementation]import otava.symbols.classes;
 [implementation]import otava.symbols.declaration;
+[implementation]import otava.symbols.scope_ptr;
 [implementation]import otava.symbols.symbol_table;
 [implementation]import otava.parser.attribute;
 [implementation]import otava.parser.concepts;
@@ -402,7 +403,8 @@ parser ClassParser
         }
         ;
 
-    CtorInitializerSaved(otava::symbols::Context* context, var otava::ast::ConstructorInitializerNode* ctorInitializerNode) : otava::ast::Node*
+    CtorInitializerSaved(otava::symbols::Context* context, var otava::ast::ConstructorInitializerNode* ctorInitializerNode, var otava::symbols::ScopePtr scopePtr) : 
+        otava::ast::Node*
         ::= empty
             {
                 ctorInitializerNode = otava::parser::recorded::parse::GetSavedCtorInitializerNode(context);
@@ -414,14 +416,14 @@ parser ClassParser
                 {
                     lexer.BeginRecordedParse(ctorInitializerNode->GetLexerPosPair()); 
                     otava::symbols::Scope* functionScope = static_cast<otava::symbols::Scope*>(ctorInitializerNode->FunctionScope());
-                    context->GetSymbolTable()->BeginScope(functionScope);
+                    scopePtr.Reset(functionScope, context);
                 }
             }
             MemberInitializerList(context):memberInitializerList
             {
                 ctorInitializerNode->SetMemberInitializerListNode(memberInitializerList);
                 lexer.EndRecordedParse(); 
-                context->GetSymbolTable()->EndScope();
+                scopePtr.Reset();
                 return ctorInitializerNode;
             }
         |   empty

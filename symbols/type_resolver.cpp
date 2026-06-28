@@ -15,6 +15,7 @@ import otava.symbols.derivations;
 import otava.symbols.evaluator;
 import otava.symbols.expression_binder;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.templates;
 import otava.ast.declaration;
@@ -299,11 +300,11 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
     if (context->GetFlag(ContextFlags::processingAliasDeclation))
     {
         context->GetSymbolTable()->PushTopScopeIndex();
-        BeginScope(node.NestedNameSpecifier(), context);
+        ScopePtr scopePtr(GetScope(node.NestedNameSpecifier(), context), context);
         createTypeSymbol = true;
         node.GetId()->Accept(*this);
         createTypeSymbol = false;
-        EndScope(context);
+        scopePtr.Reset();
         context->GetSymbolTable()->PopTopScopeIndex();
     }
     else
@@ -331,11 +332,11 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
                 }
             }
             context->GetSymbolTable()->PushTopScopeIndex();
-            context->GetSymbolTable()->BeginScope(&instantiationScope);
-            BeginScope(node.NestedNameSpecifier(), context);
+            ScopePtr instantiationScopePtr(&instantiationScope, context);
+            ScopePtr scopePtr(GetScope(node.NestedNameSpecifier(), context), context);
             node.GetId()->Accept(*this);
-            EndScope(context);
-            context->GetSymbolTable()->EndScope();
+            scopePtr.Reset();
+            instantiationScopePtr.Reset();
             context->GetSymbolTable()->PopTopScopeIndex();
         }
     }
@@ -354,9 +355,9 @@ void TypeResolver::Visit(otava::ast::DeclTypeSpecifierNode& node)
 void TypeResolver::Visit(otava::ast::QualifiedIdNode& node)
 {
     context->GetSymbolTable()->PushTopScopeIndex();
-    BeginScope(node.Left(), context);
+    ScopePtr scopePtr(GetScope(node.Left(), context), context);
     node.Right()->Accept(*this);
-    EndScope(context);
+    scopePtr.Reset();
     context->GetSymbolTable()->PopTopScopeIndex();
 }
 

@@ -48,12 +48,12 @@ public:
     mapped_type& operator[](const key_type& key)
     {
         value_type value(key, mapped_type());
-        pair<iterator, bool> ib = insert(value);
+        std::pair<iterator, bool> ib = insert(value);
         iterator it = ib.first;
         return it->second;
     }
 
-    inline pair<iterator, bool> insert(const value_type& x) { return tbl.insert(x); }
+    inline std::pair<iterator, bool> insert(const value_type& x) { return tbl.insert(x); }
 
     inline iterator erase(iterator position) { return tbl.erase(position); }
     inline iterator erase(const_iterator position) { return tbl.erase(position); }

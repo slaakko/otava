@@ -14,6 +14,7 @@ import otava.symbols.expr_parser;
 import otava.symbols.expression_binder;
 import otava.symbols.instantiator;
 import otava.symbols.project;
+import otava.symbols.scope_ptr;
 import otava.symbols.statement_binder;
 import otava.symbols.stmt_parser;
 import otava.symbols.type_compare;
@@ -294,7 +295,7 @@ FunctionDefinitionSymbol* MakeInvokeFn(BoundFunctionCallNode* fnCall, Scope* par
             new otava::ast::FunctionBodyNode(fullSpan.span, -1, invokeBlock)));
     InstantiationScope invokeInstantiationScope(context->GetModule(), context->GetBoundFunction()->GetFunctionDefinitionSymbol()->Parent(context)->GetScope());
     invokeInstantiationScope.PushParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
-    context->GetSymbolTable()->BeginScope(&invokeInstantiationScope);
+    ScopePtr instantiationScopePtr(&invokeInstantiationScope, context);
     Instantiator invokeInstantiator(context, &invokeInstantiationScope);
     invokeInstantiator.SetFunctionNode(invokeFnNode.get());
     context->PushParentFn(parentFn);
@@ -313,7 +314,7 @@ FunctionDefinitionSymbol* MakeInvokeFn(BoundFunctionCallNode* fnCall, Scope* par
     otava::symbols::EndFunctionDefinition(invokeFnNode.get(), invokeFnScopeCount, context);
     context->PopFlags();
     context->PopFlags();
-    context->GetSymbolTable()->EndScope();
+    instantiationScopePtr.Reset();
     context->PopParentFn();
     invokeInstantiationScope.PopParentScope();
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
@@ -356,7 +357,7 @@ FunctionDefinitionSymbol* MakeCleanupFn(Cleanup& cleanup, Scope* parentFnScope, 
         cleanupDeclarator, nullptr, new otava::ast::FunctionBodyNode(fullSpan.span, -1, cleanupBlock)));
     InstantiationScope cleanupInstantiationScope(context->GetModule(), context->GetBoundFunction()->GetFunctionDefinitionSymbol()->Parent(context)->GetScope());
     cleanupInstantiationScope.PushParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
-    context->GetSymbolTable()->BeginScope(&cleanupInstantiationScope);
+    ScopePtr cleanupInstantiationScopePtr(&cleanupInstantiationScope, context);
     Instantiator cleanupInstantiator(context, &cleanupInstantiationScope);
     cleanupInstantiator.SetFunctionNode(cleanupFnNode.get());
     context->PushSetFlag(ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
@@ -373,7 +374,7 @@ FunctionDefinitionSymbol* MakeCleanupFn(Cleanup& cleanup, Scope* parentFnScope, 
     otava::symbols::EndFunctionDefinition(cleanupFnNode.get(), cleanupFnScopeCount, context);
     context->PopFlags();
     context->PopFlags();
-    context->GetSymbolTable()->EndScope();
+    cleanupInstantiationScopePtr.Reset();
     cleanupInstantiationScope.PopParentScope();
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
     cleanupFnSymbol->SetFnDefNode(cleanupFnNode.release());

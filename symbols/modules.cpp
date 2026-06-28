@@ -187,7 +187,7 @@ void ModuleHeader::Read(Reader& reader)
 }
 
 Module::Module(util::FileMapping* fileMapping_) :
-    kind(ModuleKind::none), stringTable(this), nameOffset(), name(""), symbolIndexMap(this), symbolTable(this, true),
+    kind(ModuleKind::none), stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""), symbolIndexMap(this), symbolTable(this, true),
     evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1), 
     index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false), 
     namespaceIdsRead(false), destructing(false)
@@ -197,6 +197,7 @@ Module::Module(util::FileMapping* fileMapping_) :
 
 Module::Module(const std::string& name_) :
     kind(ModuleKind::none), stringTable(this), nameOffset(stringTable.AddString(name_)), name(stringTable.CharPtr(nameOffset)), 
+    interfaceUnitNameOffset(), interfaceUnitName(""),
     symbolIndexMap(this), symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false), 
     importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), 
     importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), destructing(false)
@@ -214,7 +215,6 @@ Module::~Module()
     {
         scope->ResetModule();
     }
-    std::cout << "~module:" << Name() << "\n";
 }
 
 void Module::AddFunction(FunctionSymbol* fn)
@@ -254,6 +254,20 @@ std::string Module::Name()
     return stringTable.GetString(nameOffset);
 }
 
+std::string Module::InterfaceUnitName()
+{
+    if (kind == ModuleKind::implementationModule)
+    {
+        return stringTable.GetString(interfaceUnitNameOffset);
+    }
+    return std::string();
+}
+
+void Module::SetInterfaceUnitName(const std::string& interfaceUnitName)
+{
+    interfaceUnitNameOffset = stringTable.AddString(interfaceUnitName);
+}
+
 void Module::AddExportedModuleName(const std::string& exportModuleName)
 {
     header.exportedModuleNames.push_back(stringTable.AddString(exportModuleName));
@@ -280,12 +294,28 @@ std::vector<Module*> Module::ExportedModules(Context* context)
 std::vector<Module*> Module::ImportedModules(Context* context)
 {
     std::vector<Module*> importedModules;
+    if (Kind() == ModuleKind::implementationModule)
+    {
+        std::string interfaceUnitName = InterfaceUnitName();
+        Module* interfaceUnit = context->GetModule(interfaceUnitName);
+        std::vector<Module*> interfaceUnitImports = interfaceUnit->ImportedModules(context);
+        for (Module* importedModule : interfaceUnitImports)
+        {
+            if (std::find(importedModules.begin(), importedModules.end(), importedModule) == importedModules.end())
+            {
+                importedModules.push_back(importedModule);
+            }
+        }
+    }
     Cardinality count = ImportedModuleNameCount();
     for (Index i = Index(0); i < Index(count); ++i)
     {
         std::string importedModuleName = GetImportedModuleName(i);
         Module* m = context->GetModule(importedModuleName);
-        importedModules.push_back(m);
+        if (std::find(importedModules.begin(), importedModules.end(), m) == importedModules.end())
+        {
+            importedModules.push_back(m);
+        }
     }
     return importedModules;
 }

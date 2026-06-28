@@ -10,6 +10,7 @@ import otava.symbols.exception;
 import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
 import otava.symbols.instantiation_queue;
+import otava.symbols.scope_ptr;
 import otava.symbols.statement_binder;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
@@ -155,9 +156,8 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
                 otava::ast::Node* defaultTemplateArgNode = templateParameter->DefaultTemplateArg();
                 if (defaultTemplateArgNode)
                 {
-                    context->GetSymbolTable()->BeginScope(&instantiationScope);
+                    ScopePtr instantiatioonScopePtr(&instantiationScope, context);
                     templateArg = ResolveType(defaultTemplateArgNode, DeclarationFlags::none, context);
-                    context->GetSymbolTable()->EndScope();
                 }
                 else
                 {
@@ -177,7 +177,7 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
             instantiationScope.Install(boundTemplateParameter, context);
             context->GetSymbolTable()->MapSymbol(boundTemplateParameter);
         }
-        context->GetSymbolTable()->BeginScope(&instantiationScope);
+        ScopePtr instantiationScopePtr(&instantiationScope, context);
         Instantiator instantiator(context, &instantiationScope);
         FunctionSymbol* specialization = nullptr;
         try
@@ -230,7 +230,6 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
             ThrowException("otava.symbols.function_templates: error instantiating specialization '" + specializationFullName +
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);
         }
-        context->GetSymbolTable()->EndScope();
         instantiationScope.PopParentScope();
         instantiationScope.PopParentScope();
         context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
@@ -264,9 +263,8 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
                 otava::ast::Node* defaultTemplateArgNode = templateParameter->DefaultTemplateArg();
                 if (defaultTemplateArgNode)
                 {
-                    context->GetSymbolTable()->BeginScope(&instantiationScope);
+                    ScopePtr instantiationScopePtr(&instantiationScope, context);
                     templateArg = ResolveType(defaultTemplateArgNode, DeclarationFlags::none, context);
-                    context->GetSymbolTable()->EndScope();
                 }
                 else
                 {
@@ -286,7 +284,7 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
             instantiationScope.Install(boundTemplateParameter, context);
             context->GetSymbolTable()->MapSymbol(boundTemplateParameter);
         }
-        context->GetSymbolTable()->BeginScope(&instantiationScope);
+        ScopePtr instantiationScopePtr(&instantiationScope, context);
         Instantiator instantiator(context, &instantiationScope);
         FunctionSymbol* specialization = nullptr;
         try
@@ -334,7 +332,6 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
             ThrowException("otava.symbols.function_templates: error instantiating specialization '" + specializationName +
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);
         }
-        context->GetSymbolTable()->EndScope();
         instantiationScope.PopParentScope();
         instantiationScope.PopParentScope();
         context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped); 
