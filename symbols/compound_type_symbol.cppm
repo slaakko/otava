@@ -45,6 +45,8 @@ class CompoundTypeSymbol : public TypeSymbol
 public:
     CompoundTypeSymbol(Module* module_, SymbolId id_);
     CompoundTypeSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    SymbolId IrId() const noexcept override { return irId; }
+    inline void SetIrId(SymbolId irId_) noexcept { irId = irId_; }
     TypeSymbol* GetBaseType(Context* context) override;
     void SetBaseType(TypeSymbol* baseType_) noexcept;
     TypeSymbol* PlainType(Context* context) override;
@@ -69,6 +71,7 @@ private:
     TypeSymbol* baseType;
     SymbolId baseTypeId;
     Derivations derivations;
+    SymbolId irId;
 };
 
 } // namespace otava::symbols

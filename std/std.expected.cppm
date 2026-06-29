@@ -4,6 +4,7 @@ import std.type.fundamental;
 import std.algorithm;
 import std.utilities.utility;
 import std.functional;
+import std.type_traits;
 
 export namespace std {
 

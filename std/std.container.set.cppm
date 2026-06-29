@@ -3,6 +3,7 @@ export module std.container.set;
 import std.type.fundamental;
 import std.functional;
 import std.utilities.pair;
+import std.utilities.unique_ptr;
 import std.container.rb_tree;
 
 export namespace std {

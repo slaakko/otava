@@ -146,12 +146,12 @@ bool ArrayTypeSymbol::IsValidDeclarationScope(ScopeKind scopeKind) const noexcep
 
 otava::intermediate::Type* ArrayTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    SymbolId id = Id();
-    otava::intermediate::Type* type = emitter.GetType(id);
+    SymbolId irId = IrId();
+    otava::intermediate::Type* type = emitter.GetType(irId);
     if (!type)
     {
         type = emitter.MakeArrayType(size, ElementType(context)->IrType(emitter, fullSpan, context));
-        emitter.SetType(id, type);
+        emitter.SetType(irId, type);
     }
     return type;
 }

@@ -1,5 +1,10 @@
 module std.cow_string;
 
+import std.new_delete_op;
+import std.algorithm;
+import std.utilities.utility;
+import std.type_traits;
+
 namespace std {
 
 cow_string::cow_string() : chars()

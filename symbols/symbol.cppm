@@ -184,6 +184,7 @@ public:
     inline SymbolId Id() const noexcept { return id; }
     inline StringOffset NameOffset() const noexcept { return nameOffset; }
     std::string Name() const;
+    virtual SymbolId IrId() const noexcept { return Id(); }
     virtual std::string SimpleName(Context* context) { return Name(); }
     void SetName(const std::string& name_);
     virtual std::string FullName(Context* context) const;

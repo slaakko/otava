@@ -3,6 +3,7 @@ export module std.exception;
 import std.type.fundamental;
 import std.basic_string;
 import std.cow_string;
+import std.utilities.shared_ptr;
 
 export namespace std {
 

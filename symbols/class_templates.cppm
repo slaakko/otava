@@ -24,12 +24,14 @@ public:
     bool IsComplete(std::set<const TypeSymbol*>& visited, const TypeSymbol*& incompleteType, Context* context) const override;
     ClassTypeSymbol* ClassTemplate(Context* context) const;
     std::string SimpleName(Context* context) override { return ClassTemplate(context)->SimpleName(context); }
+    SymbolId IrId() const noexcept override { return irId; }
+    inline void SetIrId(SymbolId irId_) noexcept { irId = irId_; }
     std::string GroupName(Context* context) override;
     std::string FullName(Context* context) const override;
     std::string IrName(Context* context) const override;
     void SetClassTemplate(ClassTypeSymbol* classTemplate_, Context* context) noexcept;
     const std::vector<Symbol*>& TemplateArguments(Context* context) const;
-    void AddTemplateArgument(Symbol* templateArgument);
+    void AddTemplateArgument(Symbol* templateArgument, Context* context);
     void AddInstantiatedVirtualFunctionSpecialization(FunctionSymbol* specialization);
     TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, 
         TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context) noexcept override;
@@ -49,6 +51,7 @@ private:
     mutable std::vector<Symbol*> templateArguments;
     SymbolId classTemplateId;
     std::vector<SymbolId> templateArgumentIds;
+    SymbolId irId;
     mutable bool templateArgumentsSet;
     bool instantiated;
     std::vector<FunctionSymbol*> instantiatedVirtualFunctionSpecializations;

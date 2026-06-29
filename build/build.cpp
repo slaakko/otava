@@ -519,17 +519,16 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         project->Index().import(module->GetSymbolTable()->ClassIndex());
         module->Write(project->Root(), config, optLevel, context.get(), configurations);
         context.reset();
-/*
-        if (project->GetTarget() == Target::library)
-        {
-            moduleMapper.RemoveModule(module.get());
-        }
-*/
+        moduleMapper.RemoveModule(module.get());
     }
     for (std::int32_t file : project->SourceFiles())
     {
         std::string filePath = fileMap->GetFilePath(file);
         std::cout << "> " << filePath << "\n";
+        if (filePath == "D:/work/otava/projects/soul/ast/re.cpp")
+        {
+            int x = 0;
+        }
         files.push_back(std::make_pair(file, filePath));
         soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t> lexer = otava::lexer::MakeLexer(
             fileMap->GetFileContent(file).c_str(),
@@ -600,12 +599,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             functionCallsInlined += context->FunctionCallsInlined();
         }
         context.reset();
-/*
-        if (project->GetTarget() == Target::library)
-        {
-            moduleMapper.RemoveModule(module.get());
-        }
-*/
+        moduleMapper.RemoveModule(module.get());
     }
     project->WriteTraceInfo(moduleDirPath);
     project->WriteClassIndex(moduleDirPath);

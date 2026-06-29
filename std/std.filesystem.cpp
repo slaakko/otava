@@ -1,6 +1,10 @@
 module std.filesystem;
 
 import std.utf;
+import std.algorithm;
+import std.utilities.utility;
+import std.type_traits;
+import std.rt;
 
 namespace std::filesystem {
 

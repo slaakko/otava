@@ -5,6 +5,7 @@ import std.new_delete_op;
 import std.atomic;
 import std.thread.mutex;
 import std.init;
+import std.iterator;
 
 namespace std {
 

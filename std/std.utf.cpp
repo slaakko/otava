@@ -3,6 +3,9 @@ module std.utf;
 import std.exception;
 import std.stream;
 import std.new_delete_op;
+import std.rt;
+import std.utilities.utility;
+import std.type_traits;
 
 namespace std {
 

@@ -4,6 +4,7 @@ import std.type.fundamental;
 import std.functional;
 import std.utilities.pair;
 import std.container.hash_table;
+import std.container.vector;
 
 export namespace std {
 

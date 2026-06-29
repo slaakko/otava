@@ -1,6 +1,7 @@
 export module std.container.hash_table;
 
 import std.type.fundamental;
+import std.utilities.pair;
 import std.algorithm;
 import std.functional;
 import std.iterator;

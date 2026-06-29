@@ -21,6 +21,7 @@ import otava.symbols.classes;
 import otava.symbols.emitter;
 import otava.symbols.enums;
 import otava.symbols.exception;
+import otava.symbols.operation_repository;
 import otava.symbols.project;
 import otava.symbols.stmt_parser;
 import otava.symbols.statement_binder;
@@ -1022,6 +1023,21 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
     for (int i = 0; i < np; ++i)
     {
         otava::symbols::ParameterSymbol* parameter = functionDefinition->MemFnParameters(&context)[i];
+        if (parameter->GetType(&context)->IsClassTypeSymbol())
+        {
+            otava::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<otava::symbols::ClassTypeSymbol*>(parameter->GetType(&context));
+            if (classTypeSymbol->IsClassTemplateSpecializationSymbol() && classTypeSymbol->IsReadOnly() && !classTypeSymbol->CopyCtor())
+            {
+                otava::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<otava::symbols::ClassTemplateSpecializationSymbol*>(classTypeSymbol);
+                classTypeSymbol = context.GetSymbolTable()->MakeClassTemplateSpecialization(specialization->ClassTemplate(&context),
+                    specialization->TemplateArguments(&context), node.GetFullSpan(), &context, true);
+                parameter->SetType(classTypeSymbol, &context);
+            }
+            if (!classTypeSymbol->CopyCtor())
+            {
+                classTypeSymbol->GenerateCopyCtor(node.GetFullSpan(), &context);
+            }
+        }
         otava::symbols::TypeSymbol* type = parameter->GetReferredType(&context);
         if (type)
         {

@@ -24,14 +24,14 @@ namespace otava::symbols {
 
 ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(Module* module_, SymbolId id_) : 
     ClassTypeSymbol(module_, id_), classTemplateId(zeroSymbolId), templateArgumentsSet(false), instantiated(false), destructor(nullptr), destructorId(zeroSymbolId),
-    instantiatingDestructor(false)
+    instantiatingDestructor(false), irId(id_)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
 
 ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     ClassTypeSymbol(module_, id_, name_), classTemplateId(zeroSymbolId), templateArgumentsSet(false), instantiated(false), destructor(nullptr), destructorId(zeroSymbolId),
-    instantiatingDestructor(false)
+    instantiatingDestructor(false), irId(id_)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
@@ -137,7 +137,8 @@ const std::vector<Symbol*>& ClassTemplateSpecializationSymbol::TemplateArguments
             Symbol* templateArgument = GetModule()->GetSymbolTable()->GetSymbol(templateArgumentId, context);
             if (!templateArgument)
             {
-                ThrowException("template argument id " + std::to_string(ToUnderlying(templateArgumentId)) + " not found", GetFullSpan(), context);
+                ThrowException("template argument id " + std::to_string(ToUnderlying(templateArgumentId)) + " not found: "
+                    "note: class template name is '" + FullName(context) + "'", GetFullSpan(), context);
             }
             templateArguments.push_back(templateArgument);
         }
@@ -145,9 +146,13 @@ const std::vector<Symbol*>& ClassTemplateSpecializationSymbol::TemplateArguments
     return templateArguments;
 }
 
-void ClassTemplateSpecializationSymbol::AddTemplateArgument(Symbol* templateArgument)
+void ClassTemplateSpecializationSymbol::AddTemplateArgument(Symbol* templateArgument, Context* context)
 {
     templateArguments.push_back(templateArgument);
+    if (templateArgument->GetModule() != GetModule())
+    {
+        GetModule()->GetSymbolTable()->AddImportedSymbol(templateArgument->Id(), templateArgument->GetModule()->Id());
+    }
 }
 
 void ClassTemplateSpecializationSymbol::AddInstantiatedVirtualFunctionSpecialization(FunctionSymbol* specialization)
@@ -269,7 +274,6 @@ std::string ClassTemplateSpecializationSymbol::IrName(Context* context) const
 {
     std::string fullIrName = ClassTemplate(context)->IrName(context);
     std::string shaMaterial;
-    shaMaterial.append(std::to_string(ToUnderlying(Id())));
     for (Symbol* templateArg : TemplateArguments(context))
     {
         shaMaterial.append(1, '.').append(templateArg->IrName(context));
@@ -290,6 +294,7 @@ void ClassTemplateSpecializationSymbol::Write(Writer& writer)
     {
         writer.GetBinaryStreamWriter().Write(ToUnderlying(templateArgument->Id()));
     }
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(irId));
 }
 
 void ClassTemplateSpecializationSymbol::Read(Reader& reader)
@@ -303,6 +308,7 @@ void ClassTemplateSpecializationSymbol::Read(Reader& reader)
         SymbolId templateArgumentId = SymbolId(reader.CurrentReader().ReadUInt());
         templateArgumentIds.push_back(templateArgumentId);
     }
+    irId = SymbolId(reader.CurrentReader().ReadUInt());
 }
 
 MemFnKey::MemFnKey() : memFnId(zeroSymbolId)
@@ -412,7 +418,6 @@ bool IsVirtualFunctionNode(otava::ast::Node* node)
 
 void InstantiateVirtualFunctions(ClassTemplateSpecializationSymbol* specialization, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    std::string fname = specialization->FullName(context);
     bool prevInternallyMapped = context->GetModule()->GetNodeIdFactory()->IsInternallyMapped(); 
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(true); 
     std::set<const Symbol*> visited;
@@ -509,8 +514,6 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     Cardinality arity = templateDeclaration->Arity();
     ClassTemplateSpecializationSymbol* specialization = context->GetSymbolTable()->MakeClassTemplateSpecialization(
         classTemplate, templateArgs, fullSpan, context, createNew);
-    std::string fname = specialization->FullName(context);
-    specialization->IrName(context);
     Cardinality m = Cardinality(templateArgs.size());
     bool wasInstantiated = specialization->Instantiated();
     if (wasInstantiated && arity == m)
@@ -926,6 +929,7 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
                         context->PopBoundFunction();
                         instantiationScope.PopParentScope();
                         functionDefinition->GetScope()->ClearParentScopes();
+                        classTemplateSpecialization->GetScope()->ClearParentScopes();
                         //context->GetSymbolTable()->MapClassTemplateSpecialization(classTemplateSpecialization); TODO
                     }
                     else
@@ -986,6 +990,7 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
                 }
                 classTemplateSpecialization->GetScope()->AddParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
                 classTemplateSpecialization->GetScope()->AddParentScope(classTemplateSpecialization->ClassTemplate(context)->GetScope()->GetNamespaceScope(context));
+                classTemplateSpecialization->GetScope()->AddParentScope(context->GetSymbolTable()->GetNamespaceScope("std", fullSpan, context));
                 InstantiationScope instantiationScope(context->GetModule(), classTemplateSpecialization->GetScope());
                 std::vector<std::unique_ptr<BoundTemplateParameterSymbol>> boundTemplateParameters;
                 for (Index i = Index(0); i < Index(arity); ++i)
@@ -1065,6 +1070,7 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
                 {
                     //context->GetSymbolTable()->UnmapType(boundTemplateParameter.get());
                 }
+                classTemplateSpecialization->GetScope()->ClearParentScopes();
                 return specialization;
             }
             else

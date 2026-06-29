@@ -3,7 +3,9 @@ export module std.container.unordered_map;
 import std.type.fundamental;
 import std.functional;
 import std.utilities.pair;
+import std.utilities.unique_ptr;
 import std.container.hash_table;
+import std.container.vector;
 
 export namespace std {
 

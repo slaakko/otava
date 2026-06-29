@@ -132,6 +132,7 @@ public:
     AliasTypeSymbol* AddAliasType(otava::ast::Node* idNnode, otava::ast::Node* aliasTypeNode, TypeSymbol* type, Context* context);
     void AddUsingDeclaration(otava::ast::Node* node, Symbol* symbol, Context* context);
     void AddUsingDirective(NamespaceSymbol* ns, otava::ast::Node* node, Context* context);
+    void SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context);
     TypeSymbol* GetCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context);
     TypeSymbol* MakeCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context);
     ArrayTypeSymbol* GetArrayType(TypeSymbol* elementType, std::int64_t size, Context* context);
@@ -147,6 +148,7 @@ public:
         Context* context);
     ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
         Context* context);
+    void SetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context);
     ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
         const soul::ast::FullSpan& fullSpan, Context* context);
     ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
@@ -220,15 +222,15 @@ public:
     void WriteFundamentalTypeMap(Writer& writer);
     void ReadFundamentalTypeMap();
     void ReadFundamentalTypeMap(Reader& reader);
-    void WriteCompoundTypeMap(Writer& writer);
-    void ReadCompoundTypeMap();
-    void ReadCompoundTypeMap(Reader& reader);
+    void WriteCompoundTypeMaps(Writer& writer);
+    void ReadCompoundTypeMaps();
+    void ReadCompoundTypeMaps(Reader& reader);
     void WriteAliasTypeTemplateMap(Writer& writer);
     void ReadAliasTypeTemplateMap();
     void ReadAliasTypeTemplateMap(Reader& reader);
-    void WriteClassTemplateSpecializationMap(Writer& writer);
-    void ReadClassTemplateSpecializationMap();
-    void ReadClassTemplateSpecializationMap(Reader& reader);
+    void WriteClassTemplateSpecializationMaps(Writer& writer);
+    void ReadClassTemplateSpecializationMaps();
+    void ReadClassTemplateSpecializationMaps(Reader& reader);
     void WriteExplicitInstantiationMap(Writer& writer);
     void ReadExplicitInstantiationMap();
     void ReadExplicitInstantiationMap(Reader& reader);
@@ -265,10 +267,12 @@ private:
     std::unordered_map<std::uint8_t, SymbolId> fundamentalTypeMap;
     bool compoundTypeMapRead;
     std::unordered_map<CompoundTypeKey, SymbolId, CompoundTypeKeyHash, CompoundTypeKeyEqual> compoundTypeMap;
+    std::unordered_map<CompoundTypeKey, SymbolId, CompoundTypeKeyHash, CompoundTypeKeyEqual> irCompoundTypeMap;
     bool aliasTypeTemplateMapRead;
     std::unordered_map<SpecializationKey, SymbolId, SpecializationKeyHash, SpecializationKeyEqual> aliasTypeTemplateMap;
     bool classTemplateSpecializationMapRead;
     std::unordered_map<SpecializationKey, SymbolId, SpecializationKeyHash, SpecializationKeyEqual> classTemplateSpecializationMap;
+    std::unordered_map<SpecializationKey, SymbolId, SpecializationKeyHash, SpecializationKeyEqual> irClassTemplateSpecializationMap;
     bool explicitInstantiationMapRead;
     std::unordered_map<SpecializationKey, SymbolId, SpecializationKeyHash, SpecializationKeyEqual> explicitInstantiationMap;
     bool functionTypeMapRead;

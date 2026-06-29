@@ -183,8 +183,8 @@ void FunctionTypeSymbol::GetContent(Context* context)
 
 otava::intermediate::Type* FunctionTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
 {
-    SymbolId id = Id();
-    otava::intermediate::Type* type = emitter.GetType(id);
+    SymbolId irId = IrId();
+    otava::intermediate::Type* type = emitter.GetType(irId);
     if (!type)
     {
         std::vector<otava::intermediate::Type*> paramTypes;
@@ -193,7 +193,7 @@ otava::intermediate::Type* FunctionTypeSymbol::IrType(Emitter& emitter, const so
             paramTypes.push_back(paramType->IrType(emitter, fullSpan, context));
         }
         type = emitter.MakeFunctionType(ReturnType(context)->IrType(emitter, fullSpan, context), paramTypes);
-        emitter.SetType(id, type);
+        emitter.SetType(irId, type);
     }
     return type;
 }

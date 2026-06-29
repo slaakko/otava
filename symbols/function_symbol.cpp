@@ -935,9 +935,9 @@ void FunctionSymbol::SetCompileUnitId(const std::string& compileUnitId_)
 
 otava::intermediate::Type* FunctionSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) const
 {
-    SymbolId id = Id();
+    SymbolId irId = IrId();
     std::string fname = FullName(context);
-    otava::intermediate::Type* type = emitter.GetType(id);
+    otava::intermediate::Type* type = emitter.GetType(irId);
     if (!type)
     {
         otava::intermediate::Type* returnIrType = nullptr;
@@ -969,7 +969,7 @@ otava::intermediate::Type* FunctionSymbol::IrType(Emitter& emitter, const soul::
             paramIrTypes.push_back(ReturnValueParam(context)->GetReferredType(context)->IrType(emitter, fullSpan, context));
         }
         type = emitter.MakeFunctionType(returnIrType, paramIrTypes);
-        emitter.SetType(id, type);
+        emitter.SetType(irId, type);
     }
     return type;
 }

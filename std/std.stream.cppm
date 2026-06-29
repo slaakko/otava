@@ -4,6 +4,7 @@ import std.type.fundamental;
 import std.basic_string;
 import std.utf;
 import std.atexit;
+import std.rt;
 
 export namespace std {
 

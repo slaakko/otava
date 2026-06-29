@@ -449,7 +449,7 @@ void Scope::ImportModuleScopes(Context* context)
 {
     if (imported) return;
     imported = true;
-    const std::vector<Module*>& importedModules = GetModule()->AllImportedModules(context);
+    const std::vector<Module*>& importedModules = GetModule()->ImportExportModules(context);
     for (Module* m : importedModules)
     {
         Scope* thatScope = m->GetSymbolTable()->GetGlobalNs(context)->GetScope();
@@ -805,8 +805,24 @@ void ContainerScope::Import(Scope* that, Context* context)
             for (const auto& s : symbolIdMap)
             {
                 SymbolId symbolId = s.second;
-                Symbol* usingDeclaration = that->GetModule()->GetSymbolTable()->GetSymbol(symbolId, context);
-                AddUsingDeclaration(usingDeclaration, soul::ast::FullSpan(), context);
+                Module* module = that->GetModule();
+                Symbol* usingDeclaration = module->GetSymbolTable()->GetSymbol(symbolId, context);
+                if (!usingDeclaration)
+                {
+                    std::vector<Module*> im = module->ImportExportModules(context);
+                    for (Module* importedModule : im)
+                    {
+                        usingDeclaration = importedModule->GetSymbolTable()->GetSymbol(symbolId, context);
+                        if (usingDeclaration)
+                        {
+                            break;
+                        }
+                    }
+                }
+                if (usingDeclaration)
+                {
+                    AddUsingDeclaration(usingDeclaration, soul::ast::FullSpan(), context);
+                }
             }
         }
     }

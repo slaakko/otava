@@ -3016,6 +3016,7 @@ std::unique_ptr<BoundExpressionNode> BindExpression(otava::ast::Node* node, Cont
             expr.reset(new BoundConversionNode(expr.release(), conversionFunction, fullSpan, conversionFunction->ReturnType(context)));
         }
     }
+
     if (expr)
     {
         expr->SetSource(node->Clone());
@@ -3032,6 +3033,10 @@ std::unique_ptr<BoundExpressionNode> BindExpression(otava::ast::Node* node, Cont
             }
         }
         context->PopFlags();
+    }
+    if (expr->GetType() && expr->GetType()->HasForwardClassDeclarationSymbol(context))
+    {
+        expr->SetType(expr->GetType()->FinalType(node->GetFullSpan(), context));
     }
     return expr;
 }

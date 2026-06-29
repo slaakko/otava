@@ -797,10 +797,6 @@ FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, 
 {
     get = false;
     std::string groupName = name;
-    if (groupName == "random")
-    {
-        int x = 0;
-    }
     Symbol* containerSymbol = scope->SymbolScope(context)->GetSymbol();
     if (containerSymbol && containerSymbol->SimpleName(context) == name)
     {
@@ -907,7 +903,7 @@ void SymbolTable::SetSpecifierNode(Symbol* symbol, otava::ast::Node* node)
 
 TypeSymbol* SymbolTable::GetCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context)
 {
-    ReadCompoundTypeMap();
+    ReadCompoundTypeMaps();
     auto it = compoundTypeMap.find(CompoundTypeKey(baseType->Id(), derivations));
     if (it != compoundTypeMap.end())
     {
@@ -915,6 +911,33 @@ TypeSymbol* SymbolTable::GetCompoundType(TypeSymbol* baseType, Derivations deriv
         return GetTypeSymbol(symbolId, context);
     }
     return nullptr;
+}
+
+void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context)
+{
+    CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(), compoundTypeSymbol->GetDerivations());
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    {
+        auto it = importedModule->GetSymbolTable()->irCompoundTypeMap.find(irKey);
+        if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
+        {
+            SymbolId irId = it->second;
+            compoundTypeSymbol->SetIrId(irId);
+            return;
+        }
+    }
+    auto it = irCompoundTypeMap.find(irKey);
+    if (it != irCompoundTypeMap.end())
+    {
+        SymbolId irId = it->second;
+        compoundTypeSymbol->SetIrId(irId);
+    }
+    else
+    {
+        SymbolId irId = context->GetNextSymbolId(SymbolKind::compoundTypeSymbol);
+        irCompoundTypeMap[irKey] = irId;
+        compoundTypeSymbol->SetIrId(irId);
+    }
 }
 
 TypeSymbol* SymbolTable::MakeCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context)
@@ -950,6 +973,7 @@ TypeSymbol* SymbolTable::MakeCompoundType(TypeSymbol* baseType, Derivations deri
     CompoundTypeSymbol* compoundTypeSymbol = new CompoundTypeSymbol(module, symbolId, MakeCompoundTypeName(baseType, drv));
     compoundTypeSymbol->SetBaseType(baseType);
     compoundTypeSymbol->SetDerivations(drv);
+    SetIrId(compoundTypeSymbol, context);
     GlobalNs()->GetScope()->AddSymbol(compoundTypeSymbol, soul::ast::FullSpan(), context);
     return compoundTypeSymbol;
 }
@@ -1025,7 +1049,7 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
 ClassTemplateSpecializationSymbol* SymbolTable::GetClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
     Context* context)
 {
-    ReadClassTemplateSpecializationMap();
+    ReadClassTemplateSpecializationMaps();
     SpecializationKey key;
     key.typeSymbolId = classTemplate->Id();
     for (Symbol* templateArg : templateArguments)
@@ -1044,6 +1068,38 @@ ClassTemplateSpecializationSymbol* SymbolTable::GetClassTemplateSpecialization(C
         return classtemplateSpecializationSymbol;
     }
     return nullptr;
+}
+
+void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context)
+{
+    SpecializationKey irKey;
+    irKey.typeSymbolId = specialization->ClassTemplate(context)->IrId();
+    for (Symbol* templateArg : specialization->TemplateArguments(context))
+    {
+        irKey.templateArgumentIds.push_back(templateArg->IrId());
+    }
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    {
+        auto it = importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.find(irKey);
+        if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
+        {
+            SymbolId irId = it->second;
+            specialization->SetIrId(irId);
+            return;
+        }
+    }
+    auto it = irClassTemplateSpecializationMap.find(irKey);
+    if (it != irClassTemplateSpecializationMap.end())
+    {
+        SymbolId irId = it->second;
+        specialization->SetIrId(irId);
+    }
+    else
+    {
+        SymbolId irId = context->GetNextSymbolId(SymbolKind::classTemplateSpecializationSymbol);
+        irClassTemplateSpecializationMap[irKey] = irId;
+        specialization->SetIrId(irId);
+    }
 }
 
 ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
@@ -1098,8 +1154,9 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
     classTemplateSpecialization->SetClassTemplate(classTemplate, context);
     for (Symbol* templateArgument : templateArguments)
     {
-        classTemplateSpecialization->AddTemplateArgument(templateArgument);
+        classTemplateSpecialization->AddTemplateArgument(templateArgument, context);
     }
+    SetIrId(classTemplateSpecialization, context);
     GlobalNs()->GetScope()->AddSymbol(classTemplateSpecialization, fullSpan, context);
     return classTemplateSpecialization;
 }
@@ -1511,7 +1568,7 @@ void SymbolTable::ReadFundamentalTypeMap(Reader& reader)
     reader.PopCurrentReader();
 }
 
-void SymbolTable::WriteCompoundTypeMap(Writer& writer)
+void SymbolTable::WriteCompoundTypeMaps(Writer& writer)
 {
     writer.GetBinaryStreamWriter().Write(ToUnderlying(Cardinality(compoundTypeMap.size())));
     for (const auto& c : compoundTypeMap)
@@ -1521,17 +1578,25 @@ void SymbolTable::WriteCompoundTypeMap(Writer& writer)
         key.Write(writer);
         writer.GetBinaryStreamWriter().Write(ToUnderlying(symbolId));
     }
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(Cardinality(irCompoundTypeMap.size())));
+    for (const auto& c : irCompoundTypeMap)
+    {
+        CompoundTypeKey key = c.first;
+        SymbolId symbolId = c.second;
+        key.Write(writer);
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(symbolId));
+    }
 }
 
-void SymbolTable::ReadCompoundTypeMap()
+void SymbolTable::ReadCompoundTypeMaps()
 {
     if (compoundTypeMapRead || !IsReadOnly()) return;
     compoundTypeMapRead = true;
     Reader reader(GetModule()->GetFileMapping());
-    ReadCompoundTypeMap(reader);
+    ReadCompoundTypeMaps(reader);
 }
 
-void SymbolTable::ReadCompoundTypeMap(Reader& reader)
+void SymbolTable::ReadCompoundTypeMaps(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetCompoundTypeMapOffset())), module->GetCompoundTypeMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
@@ -1541,6 +1606,14 @@ void SymbolTable::ReadCompoundTypeMap(Reader& reader)
         key.Read(reader);
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
         compoundTypeMap[key] = symbolId;
+    }
+    Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < Index(irCount); ++i)
+    {
+        CompoundTypeKey key;
+        key.Read(reader);
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        irCompoundTypeMap[key] = symbolId;
     }
     reader.PopCurrentReader();
 }
@@ -1579,7 +1652,7 @@ void SymbolTable::ReadAliasTypeTemplateMap(Reader& reader)
     reader.PopCurrentReader();
 }
 
-void SymbolTable::WriteClassTemplateSpecializationMap(Writer& writer)
+void SymbolTable::WriteClassTemplateSpecializationMaps(Writer& writer)
 {
     writer.GetBinaryStreamWriter().Write(ToUnderlying(Cardinality(classTemplateSpecializationMap.size())));
     for (const auto& a : classTemplateSpecializationMap)
@@ -1589,17 +1662,25 @@ void SymbolTable::WriteClassTemplateSpecializationMap(Writer& writer)
         key.Write(writer);
         writer.GetBinaryStreamWriter().Write(ToUnderlying(symbolId));
     }
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(Cardinality(irClassTemplateSpecializationMap.size())));
+    for (const auto& a : irClassTemplateSpecializationMap)
+    {
+        SpecializationKey key = a.first;
+        SymbolId symbolId = a.second;
+        key.Write(writer);
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(symbolId));
+    }
 }
 
-void SymbolTable::ReadClassTemplateSpecializationMap()
+void SymbolTable::ReadClassTemplateSpecializationMaps()
 {
     if (classTemplateSpecializationMapRead || !IsReadOnly()) return;
     classTemplateSpecializationMapRead = true;
     Reader reader(GetModule()->GetFileMapping());
-    ReadClassTemplateSpecializationMap(reader);
+    ReadClassTemplateSpecializationMaps(reader);
 }
 
-void SymbolTable::ReadClassTemplateSpecializationMap(Reader& reader)
+void SymbolTable::ReadClassTemplateSpecializationMaps(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetClassTemplateSpecializationMapOffset())), 
         module->GetClassTemplateSpecializationMapLength());
@@ -1610,6 +1691,14 @@ void SymbolTable::ReadClassTemplateSpecializationMap(Reader& reader)
         key.Read(reader);
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
         classTemplateSpecializationMap[key] = symbolId;
+    }
+    Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < Index(irCount); ++i)
+    {
+        SpecializationKey key;
+        key.Read(reader);
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        irClassTemplateSpecializationMap[key] = symbolId;
     }
     reader.PopCurrentReader();
 }

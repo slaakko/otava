@@ -447,12 +447,12 @@ FunctionSymbol* ClassTypeSymbol::GetFunctionByIndex(std::int32_t functionIndex) 
 
 otava::intermediate::Type* ClassTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    SymbolId id = Id();
-    otava::intermediate::Type* irType = emitter.GetType(id);
+    SymbolId irId = IrId();
+    otava::intermediate::Type* irType = emitter.GetType(irId);
     if (!irType)
     {
-        irType = emitter.GetOrInsertFwdDeclaredStructureType(id, FullName(context));
-        emitter.SetType(id, irType);
+        irType = emitter.GetOrInsertFwdDeclaredStructureType(irId, FullName(context));
+        emitter.SetType(irId, irType);
         MakeObjectLayout(fullSpan, context);
         int n = objectLayout.size();
         std::vector<otava::intermediate::Type*> elementTypes;
@@ -468,8 +468,8 @@ otava::intermediate::Type* ClassTypeSymbol::IrType(Emitter& emitter, const soul:
         otava::intermediate::StructureType* structureType = static_cast<otava::intermediate::StructureType*>(type);
         structureType->SetMetadataRef(metadataRef);
         irType = type;
-        emitter.SetType(id, irType);
-        emitter.ResolveForwardReferences(id, structureType);
+        emitter.SetType(irId, irType);
+        emitter.ResolveForwardReferences(irId, structureType);
     }
     return irType;
 }
@@ -1133,6 +1133,23 @@ Cardinality ForwardClassDeclarationSymbol::Arity(Context* context) noexcept
 
 TypeSymbol* ForwardClassDeclarationSymbol::FinalType(const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    ClassTypeSymbol* cls = GetClassTypeSymbol(context);
+    if (cls)
+    {
+        classTypeSymbol = cls;
+    }
+    else
+    {
+        ClassGroupSymbol* group = Group(context);
+        if (group)
+        {
+            cls = group->GetClass(Arity(context), context);
+            if (cls)
+            {
+                classTypeSymbol = cls;
+            }
+        }
+    }
     if (classTypeSymbol)
     {
         return classTypeSymbol->FinalType(fullSpan, context);
@@ -1152,6 +1169,10 @@ ClassTypeSymbol* ForwardClassDeclarationSymbol::GetClassTypeSymbol(Context* cont
     if (IsReadOnly() && classTypeSymbolId != zeroSymbolId)
     {
         classTypeSymbol = GetModule()->GetSymbolTable()->GetClassTypeSymbol(classTypeSymbolId, context);
+        if (!classTypeSymbol)
+        {
+            ThrowException("class type symbol id " + std::to_string(ToUnderlying(classTypeSymbolId)) + " not found", GetFullSpan(), context);
+        }
     }
     return classTypeSymbol;
 }
@@ -1744,6 +1765,12 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
         FunctionGroupSymbol* functionGroup = classTypeSymbol->GetScope()->GroupScope(context)->GetOrInsertFunctionGroup("@destructor", fullSpan, context);
         Symbol* destructorSymbol = trivialClassDestructor.get();
         functionGroup->AddFunction(trivialClassDestructor.get());
+        if (classTypeSymbol->IsClassTemplateSpecializationSymbol() && classTypeSymbol->IsReadOnly())
+        {
+            ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(classTypeSymbol);
+            classTypeSymbol = context->GetSymbolTable()->MakeClassTemplateSpecialization(specialization->ClassTemplate(context),
+                specialization->TemplateArguments(context), fullSpan, context, true);
+        }
         classTypeSymbol->AddSymbol(trivialClassDestructor.release(), fullSpan, context);
         return destructorSymbol;
     }
@@ -1849,6 +1876,12 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
         FunctionGroupSymbol* functionGroup = classTypeSymbol->GetScope()->GroupScope(context)->GetOrInsertFunctionGroup("@destructor", fullSpan, context);
         FunctionSymbol* trivialDestructor = trivialClassDestructor.get();
         functionGroup->AddFunction(trivialClassDestructor.get());
+        if (classTypeSymbol->IsClassTemplateSpecializationSymbol() && classTypeSymbol->IsReadOnly())
+        {
+            ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(classTypeSymbol);
+            classTypeSymbol = context->GetSymbolTable()->MakeClassTemplateSpecialization(specialization->ClassTemplate(context),
+                specialization->TemplateArguments(context), fullSpan, context, true);
+        }
         classTypeSymbol->AddSymbol(trivialClassDestructor.release(), fullSpan, context);
         return trivialDestructor;
     }
@@ -1856,8 +1889,20 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
     FunctionGroupSymbol* functionGroup = classTypeSymbol->GetScope()->GroupScope(context)->GetOrInsertFunctionGroup("@destructor", fullSpan, context);
     functionGroup->AddFunction(destructorSymbol.get());
     FunctionSymbol* destructor = destructorDefinitionSymbol.get();
+    if (classTypeSymbol->IsClassTemplateSpecializationSymbol() && classTypeSymbol->IsReadOnly())
+    {
+        ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(classTypeSymbol);
+        classTypeSymbol = context->GetSymbolTable()->MakeClassTemplateSpecialization(specialization->ClassTemplate(context),
+            specialization->TemplateArguments(context), fullSpan, context, true);
+    }
     classTypeSymbol->AddSymbol(destructorSymbol.release(), fullSpan, context);
     functionGroup->AddFunctionDefinition(destructorDefinitionSymbol.get(), context);
+    if (classTypeSymbol->IsClassTemplateSpecializationSymbol() && classTypeSymbol->IsReadOnly())
+    {
+        ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(classTypeSymbol);
+        classTypeSymbol = context->GetSymbolTable()->MakeClassTemplateSpecialization(specialization->ClassTemplate(context),
+            specialization->TemplateArguments(context), fullSpan, context, true);
+    }
     classTypeSymbol->AddSymbol(destructorDefinitionSymbol.release(), fullSpan, context);
     BoundCompoundStatementNode* body = new BoundCompoundStatementNode(fullSpan);
     MakeObjectLayouts(classTypeSymbol, context, fullSpan);

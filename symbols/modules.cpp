@@ -410,7 +410,7 @@ void Module::Write(Writer& writer)
     Length fundamentalTypeTableLength = Length(writer.Position() - ToUnderlying(header.fundamentalTypeTableOffset));
     header.fundamentalTypeTableLength = fundamentalTypeTableLength;
     header.compoundTypeMapOffset = FileOffset(writer.Position());
-    symbolTable.WriteCompoundTypeMap(writer);
+    symbolTable.WriteCompoundTypeMaps(writer);
     Length compoundTypeMapLength = Length(writer.Position() - ToUnderlying(header.compoundTypeMapOffset));
     header.compoundTypeMapLength = compoundTypeMapLength;
     header.aliasTypeTemplateMapOffset = FileOffset(writer.Position());
@@ -418,7 +418,7 @@ void Module::Write(Writer& writer)
     Length aliasTypeTemplateMapLength = Length(writer.Position() - ToUnderlying(header.aliasTypeTemplateMapOffset));
     header.aliasTypeTemplateMapLength = aliasTypeTemplateMapLength;
     header.classTemplateSpecializationMapOffset = FileOffset(writer.Position());
-    symbolTable.WriteClassTemplateSpecializationMap(writer);
+    symbolTable.WriteClassTemplateSpecializationMaps(writer);
     Length classTemplateSpecializationMapLength = Length(writer.Position() - ToUnderlying(header.classTemplateSpecializationMapOffset));
     header.classTemplateSpecializationMapLength = classTemplateSpecializationMapLength;
     header.explicitInstantiationMapOffset = FileOffset(writer.Position());

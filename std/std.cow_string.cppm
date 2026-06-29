@@ -4,6 +4,7 @@ import std.type.fundamental;
 import std.basic_string;
 import std.container.vector;
 import std.utilities.shared_ptr;
+import std.rt;
 
 export namespace std {
 

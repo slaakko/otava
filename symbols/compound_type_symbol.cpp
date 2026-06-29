@@ -85,12 +85,12 @@ void CompoundTypeKey::Read(Reader& reader)
 }
 
 CompoundTypeSymbol::CompoundTypeSymbol(Module* module_, SymbolId id_) : 
-    TypeSymbol(module_, id_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId)
+    TypeSymbol(module_, id_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId), irId(id_)
 {
 }
 
 CompoundTypeSymbol::CompoundTypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    TypeSymbol(module_, id_, name_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId)
+    TypeSymbol(module_, id_, name_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId), irId(id_)
 {
 }
 
@@ -279,6 +279,7 @@ void CompoundTypeSymbol::Write(Writer& writer)
     TypeSymbol::Write(writer);
     writer.GetBinaryStreamWriter().Write(ToUnderlying(baseType->Id()));
     otava::symbols::Write(writer, derivations);
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(irId));
 }
 
 void CompoundTypeSymbol::Read(Reader& reader)
@@ -286,12 +287,13 @@ void CompoundTypeSymbol::Read(Reader& reader)
     TypeSymbol::Read(reader);
     baseTypeId = SymbolId(reader.CurrentReader().ReadUInt());
     otava::symbols::Read(reader, derivations);
+    irId = SymbolId(reader.CurrentReader().ReadUInt());
 }
 
 otava::intermediate::Type* CompoundTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    SymbolId id = Id();
-    otava::intermediate::Type* type = emitter.GetType(id);
+    SymbolId irId = IrId();
+    otava::intermediate::Type* type = emitter.GetType(irId);
     if (!type)
     {
         TypeSymbol* btype = GetBaseType(context);
@@ -313,7 +315,7 @@ otava::intermediate::Type* CompoundTypeSymbol::IrType(Emitter& emitter, const so
         {
             type = emitter.MakePtrType(type);
         }
-        emitter.SetType(id, type);
+        emitter.SetType(irId, type);
     }
     return type;
 }
