@@ -46,7 +46,7 @@ std::string SymbolKindStr(SymbolKind kind)
     case SymbolKind::functionGroupSymbol: return "functionGroup";
     case SymbolKind::variableGroupSymbol: return "variableGroup";
     case SymbolKind::aliasGroupSymbol: return "aliasGroup";
-    case SymbolKind::enumGroupSymbol: return "enumGroup";
+    //case SymbolKind::enumGroupSymbol: return "enumGroup";
     case SymbolKind::boolValueSymbol: return "boolValue";
     case SymbolKind::integerValueSymbol: return "integerValue";
     case SymbolKind::floatingValueSymbol: return "floatingValue";
@@ -465,10 +465,12 @@ SymbolGroupKind Symbol::GetSymbolGroupKind() const noexcept
     {
         return SymbolGroupKind::classSymbolGroup;
     }
+/*
     case SymbolKind::enumGroupSymbol:
     {
         return SymbolGroupKind::enumSymbolGroup;
     }
+*/
     case SymbolKind::templateParameterSymbol:
     case SymbolKind::templateParamGroupSymbol:
     case SymbolKind::boundTemplateParameterSymbol:
@@ -552,7 +554,7 @@ bool Symbol::CanInstall() const noexcept
     case SymbolKind::classTemplateSpecializationSymbol:
     case SymbolKind::conceptSymbol:
     case SymbolKind::compoundTypeSymbol:
-    case SymbolKind::enumTypeSymbol:
+    //case SymbolKind::enumTypeSymbol:
     case SymbolKind::functionSymbol:
     case SymbolKind::functionDefinitionSymbol:
     case SymbolKind::fundamentalTypeUnaryPlus:

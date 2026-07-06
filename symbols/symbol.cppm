@@ -225,7 +225,7 @@ public:
     inline bool IsForwardClassDeclarationSymbol() const noexcept { return kind == SymbolKind::forwardClassDeclarationSymbol; }
     inline bool IsConceptGroupSymbol() const noexcept { return kind == SymbolKind::conceptGroupSymbol; }
     inline bool IsConceptSymbol() const noexcept { return kind == SymbolKind::conceptSymbol; }
-    inline bool IsEnumGroupSymbol() const noexcept { return kind == SymbolKind::enumGroupSymbol; }
+    //inline bool IsEnumGroupSymbol() const noexcept { return kind == SymbolKind::enumGroupSymbol; }
     inline bool IsEnumeratedTypeSymbol() const noexcept { return kind == SymbolKind::enumTypeSymbol; }
     inline bool IsForwardEnumDeclarationSymbol() const noexcept { return kind == SymbolKind::forwardEnumDeclarationSymbol; }
     inline bool IsEnumConstantSymbol() const noexcept { return kind == SymbolKind::enumConstantSymbol; }

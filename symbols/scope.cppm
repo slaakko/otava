@@ -29,6 +29,7 @@ class UsingDirectiveScope;
 class ClassTemplateSpecializationSymbol;
 class Writer;
 class Reader;
+class InstantiationScope;
 
 enum class ScopeKind : std::uint8_t
 {
@@ -110,6 +111,7 @@ public:
     inline Module* GetModule() const noexcept { return module; }
     inline void ResetModule() { module = nullptr; }
     inline ScopeKind Kind() const noexcept { return kind; }
+    inline bool IsInstantiationScope() const noexcept { return kind == ScopeKind::instantiationScope; }
     inline void SetKind(ScopeKind kind_) noexcept { kind = kind_; }
     inline bool IsReadOnly() const noexcept { return readOnly; }
     inline bool IsGlobal() const noexcept { return global; }
@@ -142,7 +144,7 @@ public:
     virtual void PushParentScope(Scope* parentScope);
     virtual void PopParentScope();
     virtual bool HasParentScope(const Scope* parentScope) const noexcept { return false; }
-    virtual void ClearParentScopes() {}
+    virtual void ClearParentScopes();
     virtual void AddBaseScope(Scope* baseScope, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual void AddUsingDeclaration(Symbol* usingDeclaration, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual void AddUsingDirective(NamespaceSymbol* ns, const soul::ast::FullSpan& fullSpan, Context* context);
@@ -151,7 +153,7 @@ public:
     virtual FunctionGroupSymbol* GetOrInsertFunctionGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual VariableGroupSymbol* GetOrInsertVariableGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual AliasGroupSymbol* GetOrInsertAliasGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
-    virtual EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
+    //virtual EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     void Read();
     inline const std::unordered_map<SymbolOffset, SymbolId>& SymbolIdMap() const noexcept { return symbolIdMap; }
@@ -195,7 +197,7 @@ public:
     Symbol* GetSymbol() noexcept override;
     ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const override;
     inline ContainerSymbol* GetContainerSymbol() const noexcept { return containerSymbol; }
-    inline void SetContainerSymbol(ContainerSymbol* containerSymbol_) noexcept { containerSymbol = containerSymbol_; }
+    void SetContainerSymbol(ContainerSymbol* containerSymbol_) noexcept;
     void AddUsingDeclaration(Symbol* usingDeclaration, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void AddUsingDirective(NamespaceSymbol* ns, const soul::ast::FullSpan& fullSpan, Context* context) override;
     std::string FullName(Context* context) const override;
@@ -208,11 +210,13 @@ public:
     FunctionGroupSymbol* GetOrInsertFunctionGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     VariableGroupSymbol* GetOrInsertVariableGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     AliasGroupSymbol* GetOrInsertAliasGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    //EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     bool HasParentScope(const Scope* parentScope) const noexcept override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    void AddInstantiationScope(InstantiationScope* instantiationScope);
+    void RemoveInstantiationScope(InstantiationScope* instantiationScope);
 private:
     std::vector<Scope*> parentScopes;
     std::vector<Scope*> baseScopes;
@@ -223,6 +227,7 @@ private:
     std::vector<std::unique_ptr<Scope>> scopes;
     bool parentScopePushed;
     bool destructing;
+    std::vector<InstantiationScope*> instantiationScopes;
 };
 
 class UsingDeclarationScope : public Scope
@@ -258,6 +263,7 @@ class InstantiationScope : public Scope
 {
 public:
     InstantiationScope(Module* module_, Scope* parentScope_) noexcept;
+    ~InstantiationScope();
     std::string FullName(Context* context) const override;
     Scope* GroupScope(Context* context) noexcept override;
     Scope* SymbolScope(Context* context) noexcept override;
@@ -266,13 +272,34 @@ public:
     ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const override;
     void Lookup(const std::string& id, SymbolGroupKind symbolGroupKind, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
-    void PushParentScope(Scope* parentScope_) override;
+    void PushParentScope(Scope* parentScope) override;
     void PopParentScope() override;
+    void RemoveParentScope(Scope* parentScope);
     bool HasParentScope(const Scope* parentScope) const noexcept override;
 private:
     std::vector<Scope*> parentScopes;
+    bool destructing;
 };
 
 Scope* MakeScope(Module* module, ScopeKind scopeKind, ContainerScope* parentScope);
+
+class Scopes
+{
+public:
+    Scopes();
+    void AddScope(Scope* scope);
+    inline const std::vector<Scope*>& GetScopes() const noexcept { return scopes; }
+private:
+    std::vector<Scope*> scopes;
+};
+
+std::vector<std::string> GetContainerNames(Symbol* symbol, Context* context);
+
+struct ParentScopeCleaner
+{
+    ParentScopeCleaner(Scope* scope_) : scope(scope_) {}
+    ~ParentScopeCleaner() { scope->ClearParentScopes(); }
+    Scope* scope;
+};
 
 } // namespace otava::symbols

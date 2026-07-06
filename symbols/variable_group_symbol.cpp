@@ -125,7 +125,7 @@ void VariableGroupSymbol::Expand(Context* context)
             }
             else
             {
-                ThrowException("variable group symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
+                //ThrowException("variable group symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
             }
         }
         else

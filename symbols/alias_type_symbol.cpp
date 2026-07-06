@@ -47,6 +47,12 @@ TypeSymbol* AliasTypeSymbol::ReferredType(Context* context) const
         referredType = typeSymbol;
         if (!referredType)
         {
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                ThrowException("referred type id " + std::to_string(ToUnderlying(referredTypeId)) + " of alias type '" + FullName(context) + "' not found: " + 
+                    std::string(ex.what()), GetFullSpan(), context);
+            }
             ThrowException("referred type id " + std::to_string(ToUnderlying(referredTypeId)) + " of alias type '" + FullName(context) + "' not found", GetFullSpan(), context);
         }
     }
@@ -74,6 +80,17 @@ Cardinality AliasTypeSymbol::Arity(Context* context) noexcept
 otava::intermediate::Type* AliasTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     return DirectType(context)->IrType(emitter, fullSpan, context);
+}
+
+bool AliasTypeSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const
+{
+    if (visited.find(this) != visited.end()) return false;
+    visited.insert(this);
+    if (referredType)
+    {
+        return referredType->IsTemplateParameterInstantiation(context, visited);
+    }
+    return false;
 }
 
 void AliasTypeSymbol::Write(Writer& writer)
@@ -112,6 +129,11 @@ void AliasDeclarationProcessor::Visit(otava::ast::AliasDeclarationNode& node)
     type = ResolveType(node.DefiningTypeId(), DeclarationFlags::none, context);
     if (!type)
     {
+        if (context->HasException())
+        {
+            Exception ex = context->ReleaseException();
+            ThrowException("alias declaration processor: type not resolved: " + std::string(ex.what()), node.GetFullSpan(), context);
+        }
         ThrowException("alias declaration processor: type not resolved", node.GetFullSpan(), context);
     }
     while (type->IsAliasTypeSymbol())

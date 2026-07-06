@@ -168,6 +168,8 @@ public:
     inline bool IsOpNewCall() const { return kind == NodeKind::opNewCall; }
     inline bool IsPtrDeclaratorNode() const noexcept { return kind == NodeKind::ptrDeclaratorNode; }
     inline bool IsSimpleDeclarationNode() const noexcept { return kind == NodeKind::simpleDeclarationNode; }
+    inline bool IsMemberDeclarationNode() const noexcept { return kind == NodeKind::memberDeclarationNode; }
+    inline bool IsMemberDeclaratorListNode() const noexcept { return kind == NodeKind::memberDeclaratorListNode; }
 private:
     NodeKind kind;
     soul::ast::Span span;

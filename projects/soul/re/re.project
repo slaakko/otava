@@ -1,0 +1,12 @@
+project soul.re;
+target=library;
+reference <../../util/util.project>;
+reference <../ast/ast.project>;
+reference <../lex/lex.project>;
+reference <../lexer/lexer.project>;
+reference <../parser/parser.project>;
+reference <../token/token.project>;
+interface <re.cppm>;
+interface <re.parser.cppm>;
+source <re.parser.cpp>;
+interface <token_parser.cppm>;

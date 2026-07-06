@@ -269,7 +269,10 @@ bool CompoundTypeSymbol::IsTemplateParameterInstantiation(Context* context, std:
     if (visited.find(thisSymbol) == visited.end())
     {
         visited.insert(thisSymbol);
-        return baseType->IsTemplateParameterInstantiation(context, visited);
+        if (baseType)
+        {
+            return baseType->IsTemplateParameterInstantiation(context, visited);
+        }
     }
     return false;
 }

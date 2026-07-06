@@ -62,10 +62,12 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     {
         return new ClassGroupSymbol(module, symbolId);
     }
+    /*
     case SymbolKind::enumGroupSymbol:
     {
         return new EnumGroupSymbol(module, symbolId);
     }
+    */
     case SymbolKind::boolValueSymbol:
     {
         return new BoolValue(module, symbolId);

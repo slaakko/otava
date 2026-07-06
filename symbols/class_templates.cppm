@@ -89,6 +89,25 @@ private:
     std::unordered_map<MemFnKey, SymbolId, MemFnKeyHash, MemFnKeyEqual> memFnKeyMap;
 };
 
+class TemplateModulePtr
+{
+public:
+    TemplateModulePtr(Context* context_, Module* module_) noexcept;
+    ~TemplateModulePtr();
+private:
+    Context* context;
+    Module* module;
+};
+
+class TemplateScopePtr
+{
+public:
+    TemplateScopePtr(Context* context_, Scope* nsScope) noexcept;
+    ~TemplateScopePtr();
+private:
+    Context* context;
+};
+
 ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArgs,
     const soul::ast::FullSpan& fullSpan, Context* context);
 ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArgs,

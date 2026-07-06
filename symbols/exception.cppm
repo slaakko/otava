@@ -42,6 +42,10 @@ void ThrowException(const std::string& message, const soul::ast::FullSpan& fullS
 [[noreturn]]
 void ThrowException(const Exception& ex);
 
+Exception MakeException(const std::string& message);
+Exception MakeException(const std::string& message, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
+Exception MakeException(const std::string& message, const soul::ast::FullSpan& fullSpan, const soul::ast::FullSpan& refSpan, otava::symbols::Context* context);
+
 void PrintWarning(const Exception& ex, Context* context);
 
 void PrintWarning(const std::string& message, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);

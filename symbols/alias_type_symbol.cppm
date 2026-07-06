@@ -28,6 +28,7 @@ public:
     Cardinality Arity(Context* context) noexcept;
     TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
     otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:

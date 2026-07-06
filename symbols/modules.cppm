@@ -233,4 +233,16 @@ private:
     ModuleId nextModuleId;
 };
 
+class ModulePtr
+{
+public:
+    ModulePtr(Module* module_, Context* context_) noexcept;
+    ~ModulePtr();
+    inline Module* GetModule() const noexcept { return module; }
+private:
+    Module* prevModule;
+    Module* module;
+    Context* context;
+};
+
 } // namespace otava::symbols

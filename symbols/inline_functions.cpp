@@ -90,6 +90,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
             {
                 inlineFn->SetSpecialization();
                 FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(inlineFn);
+                ParentScopeCleaner parentScopeClearn(functionDefinition->GetScope());
                 functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
                 functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
                 functionDefinition->SetParent(fn->Parent(context));
@@ -104,7 +105,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
                     context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
                 }
                 context->PopBoundFunction();
-                functionDefinition->GetScope()->ClearParentScopes();
+
             }
             else
             {

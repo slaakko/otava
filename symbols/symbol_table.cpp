@@ -327,14 +327,6 @@ void SymbolTable::MapNode(otava::ast::Node* node, Symbol* symbol, MapKind kind)
     {
         symbolNodeMap[symbol] = node;
     }
-/*  TODO
-    if (symbol->Parent() && symbol->Parent()->IsClassTemplateSpecializationSymbol())
-    {
-        ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(symbol->Parent());
-        specialization->SetProject();
-        AddChangedClassTemplateSpecialization(specialization);
-    }
-*/
 }
 
 otava::ast::Node* SymbolTable::GetNodeNothrow(Symbol* symbol) const noexcept
@@ -581,12 +573,14 @@ void SymbolTable::AddFriend(const std::string& name, otava::ast::Node* node, Con
 void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context)
 {
     soul::ast::FullSpan fullSpan = node->GetFullSpan();
+/*
     EnumGroupSymbol* enumGroup = currentScope->GroupScope(context)->GetOrInsertEnumGroup(name, fullSpan, context);
     EnumeratedTypeSymbol* enumType = enumGroup->GetEnumType(context);
     if (enumType)
     {
         ThrowException("enumerated type '" + name + "' not unique", fullSpan, context);
     }
+*/
     EnumeratedTypeSymbol* enumTypeSymbol = new EnumeratedTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::enumTypeSymbol), name);
     enumTypeSymbol->SetAccess(CurrentAccess());
     enumTypeSymbol->SetEnumTypeKind(kind);
@@ -594,7 +588,7 @@ void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind
     enumTypeSymbol->SetFullSpan(fullSpan);
     currentScope->SymbolScope(context)->AddSymbol(enumTypeSymbol, fullSpan, context);
     MapNode(node, enumTypeSymbol);
-    enumGroup->SetEnumType(enumTypeSymbol);
+    //enumGroup->SetEnumType(enumTypeSymbol);
     BeginScope(enumTypeSymbol->GetScope(), context);
 }
 
@@ -974,6 +968,10 @@ TypeSymbol* SymbolTable::MakeCompoundType(TypeSymbol* baseType, Derivations deri
     compoundTypeSymbol->SetBaseType(baseType);
     compoundTypeSymbol->SetDerivations(drv);
     SetIrId(compoundTypeSymbol, context);
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(compoundTypeSymbol, soul::ast::FullSpan(), context);
     return compoundTypeSymbol;
 }
@@ -1041,6 +1039,10 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
     for (Symbol* templateArgument : templateArguments)
     {
         aliasTypeTemplateSpecialization->AddTemplateArgument(templateArgument);
+    }
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
     }
     GlobalNs()->GetScope()->AddSymbol(aliasTypeTemplateSpecialization, soul::ast::FullSpan(), context);
     return aliasTypeTemplateSpecialization;
@@ -1157,6 +1159,10 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
         classTemplateSpecialization->AddTemplateArgument(templateArgument, context);
     }
     SetIrId(classTemplateSpecialization, context);
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(classTemplateSpecialization, fullSpan, context);
     return classTemplateSpecialization;
 }
@@ -1204,6 +1210,10 @@ void SymbolTable::AddExplicitInstantiation(ExplicitInstantiationSymbol* explicit
         key.templateArgumentIds.push_back(templateArg->Id());
     }
     explicitInstantiationMap[key] = symbolId;
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(explicitInstantiationSymbol, fullSpan, context);
 }
 
@@ -1270,6 +1280,10 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
     for (TypeSymbol* parameterType : parameterTypes)
     {
         functionTypeSymbol->AddParameterType(parameterType);
+    }
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
     }
     GlobalNs()->GetScope()->AddSymbol(functionTypeSymbol, soul::ast::FullSpan(), context);
     return functionTypeSymbol;
@@ -1368,6 +1382,10 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, std::int64_
         }
     }
     arrayTypeSymbol = new ArrayTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::arrayTypeSymbol), elementType, size, context);
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(arrayTypeSymbol, soul::ast::FullSpan(), context);
     return arrayTypeSymbol;
 }
@@ -1377,6 +1395,10 @@ DependentTypeSymbol* SymbolTable::MakeDependentTypeSymbol(otava::ast::Node* node
     DependentTypeSymbol* dependentTypeSymbol = new DependentTypeSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::dependentTypeSymbol), std::string());
     dependentTypeSymbol->ResetNode(node);
     dependentTypeSymbol->SetFullSpan(node->GetFullSpan());
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(dependentTypeSymbol, node->GetFullSpan(), context);
     return dependentTypeSymbol;
 }
@@ -1385,6 +1407,10 @@ ClassGroupTypeSymbol* SymbolTable::MakeClassGroupTypeSymbol(ClassGroupSymbol* cl
 {
     ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::classGroupTypeSymbol), classGroup->Name());
     classGroupTypeSymbol->SetClassGroup(classGroup);
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(classGroupTypeSymbol, classGroup->GetFullSpan(), context);
     return classGroupTypeSymbol;
 }
@@ -1402,6 +1428,10 @@ FunctionGroupTypeSymbol* SymbolTable::MakeFunctionGroupTypeSymbol(FunctionGroupS
     FunctionGroupTypeSymbol* functionGroupTypeSymbol = new FunctionGroupTypeSymbol(
         GetModule(), context->GetNextSymbolId(SymbolKind::functionGroupTypeSymbol), functionGroup->Name());
     functionGroupTypeSymbol->SetFunctionGroup(functionGroup);
+    if (context->GetCompileUnitModule() != GetModule())
+    {
+        int x = 0;
+    }
     GlobalNs()->GetScope()->AddSymbol(functionGroupTypeSymbol, functionGroup->GetFullSpan(), context);
     return functionGroupTypeSymbol;
 }
@@ -2176,6 +2206,7 @@ AliasGroupSymbol* SymbolTable::GetAliasGroupSymbol(SymbolId id, Context* context
     return nullptr;
 }
 
+/*
 EnumGroupSymbol* SymbolTable::GetEnumGroupSymbol(SymbolId id, Context* context)
 {
     Symbol* symbol = GetSymbol(id, context);
@@ -2192,6 +2223,7 @@ EnumGroupSymbol* SymbolTable::GetEnumGroupSymbol(SymbolId id, Context* context)
     }
     return nullptr;
 }
+*/
 
 VariableGroupSymbol* SymbolTable::GetVariableGroupSymbol(SymbolId id, Context* context)
 {

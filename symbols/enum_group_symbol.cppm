@@ -13,6 +13,7 @@ export namespace otava::symbols {
 class EnumeratedTypeSymbol;
 class ForwardEnumDeclarationSymbol;
 
+/*
 class EnumGroupSymbol : public Symbol
 {
 public:
@@ -26,6 +27,7 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     void Expand(Context* context) override;
+    bool HasContent() const noexcept override;
 private:
     EnumeratedTypeSymbol* enumType;
     SymbolId enumTypeId;
@@ -33,5 +35,6 @@ private:
     EnumGroupSymbol* readOnlyEnumGroup;
     bool expanded;
 };
+*/
 
 } // namespace otava::symbols

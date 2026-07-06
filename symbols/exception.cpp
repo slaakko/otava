@@ -152,6 +152,21 @@ void ThrowException(const Exception& ex)
     throw ex;
 }
 
+Exception MakeException(const std::string& message)
+{
+    return Exception(message);
+}
+
+Exception MakeException(const std::string& message, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
+{
+    return Exception(message, fullSpan, soul::ast::FullSpan(), context);
+}
+
+Exception MakeException(const std::string& message, const soul::ast::FullSpan& fullSpan, const soul::ast::FullSpan& refSpan, otava::symbols::Context* context)
+{
+    return Exception(message, fullSpan, refSpan, context);
+}
+
 void PrintWarning(const Exception& ex, Context* context)
 {
     if (!context->GetFlag(ContextFlags::noWarnings))

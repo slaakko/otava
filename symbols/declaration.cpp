@@ -33,6 +33,8 @@ import otava.symbols.function_templates;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.instantiation_queue;
 import otava.symbols.overload_resolution;
+import otava.symbols.scope_ptr;
+import otava.symbols.scope_resolver;
 import otava.symbols.statement_binder;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
@@ -750,6 +752,10 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
             fullSpan = parameterDeclaration.declarator->Node()->GetFullSpan();
         }
         TypeSymbol* parameterType = MapType(functionSymbol, parameterDeclaration.type, context);
+        if (!parameterType)
+        {
+            ThrowException("parameter type of parameter '" + name + "' of function declarator '" + functionSymbol->Name() + " not resolved", fullSpan, context);
+        }
         ParameterSymbol* parameter = context->GetSymbolTable()->CreateParameter(name, node, parameterType, context);
         if (parameterDeclaration.initializer)
         {

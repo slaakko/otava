@@ -191,6 +191,7 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
             {
                 specialization->SetSpecialization();
                 FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(specialization);
+                ParentScopeCleaner parentScopeCleaner(functionDefinition->GetScope());
                 functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
                 if (!context->InstantiationIrName().empty())
                 {
@@ -213,7 +214,6 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
                     context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
                 }
                 context->PopBoundFunction();
-                functionDefinition->GetScope()->ClearParentScopes();
             }
             else
             {
@@ -293,6 +293,7 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
             instantiator.SetFunctionNode(node);
             node->Accept(instantiator);
             specialization = instantiator.GetSpecialization();
+            ParentScopeCleaner parentScopeCleaner(specialization->GetScope());
             specialization->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
             context->RemoveSpecialization(node);
             if (specialization)
@@ -314,7 +315,6 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
                     }
                 }
                 std::string irName = specialization->IrName(context);
-                specialization->GetScope()->ClearParentScopes();
             }
             else
             {

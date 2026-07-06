@@ -13,6 +13,7 @@ import otava.symbols.reader;
 
 namespace otava::symbols {
 
+/*
 EnumGroupSymbol::EnumGroupSymbol(Module* module_, SymbolId id_) : 
     Symbol(module_, id_), enumType(nullptr), enumTypeId(zeroSymbolId), forwardDeclaration(nullptr), readOnlyEnumGroup(nullptr), expanded(false)
 {
@@ -80,6 +81,10 @@ bool EnumGroupSymbol::IsExportSymbol(Context* context) const noexcept
 
 void EnumGroupSymbol::Expand(Context* context)
 {
+    if (Name() == "ResourceFlags")
+    {
+        int x = 0;
+    }
     if (expanded) return;
     expanded = true;
     for (const auto& moduleSymbolId : ModuleSymbolIds())
@@ -127,5 +132,16 @@ EnumeratedTypeSymbol* EnumGroupSymbol::GetEnumType(Context* context)
     }
     return enumType;
 }
+
+bool EnumGroupSymbol::HasContent() const noexcept
+{
+    if (enumType || forwardDeclaration || readOnlyEnumGroup && readOnlyEnumGroup->HasContent() || enumTypeId != zeroSymbolId)
+    {
+        return true;
+    }
+    return false;
+}
+
+*/
 
 } // namespace otava::symbols

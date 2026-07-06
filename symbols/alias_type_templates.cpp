@@ -152,6 +152,8 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
             {
                 context->PushSetFlag(ContextFlags::instantiateAliasTypeTemplate);
                 context->SetAliasType(specialization);
+                TemplateModulePtr templateModulePtr(context, aliasTypeSymbol->GetModule());
+                TemplateScopePtr templateScopePtr(context, aliasTypeSymbol->GetScope()->GetNamespaceScope(context));
                 aliasTypeNode->Accept(instantiator);
                 context->PopFlags();
             }

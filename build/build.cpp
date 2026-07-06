@@ -488,6 +488,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         context->SetDebugOutputStream(outFile);
         std::unique_ptr<otava::symbols::Module> module = project->ReleaseModule(file);
         context->SetModule(module.get());
+        context->SetCompileUnitModule(module.get());
         module->Init(context.get());
         module->SetImportIndex(importIndex++);
         module->SetFilePath(filePath);
@@ -525,10 +526,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     {
         std::string filePath = fileMap->GetFilePath(file);
         std::cout << "> " << filePath << "\n";
-        if (filePath == "D:/work/otava/projects/soul/ast/re.cpp")
-        {
-            int x = 0;
-        }
         files.push_back(std::make_pair(file, filePath));
         soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t> lexer = otava::lexer::MakeLexer(
             fileMap->GetFileContent(file).c_str(),
@@ -571,6 +568,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         context->SetDebugOutputStream(outFile);
         std::unique_ptr<otava::symbols::Module> module = project->ReleaseModule(file);
         context->SetModule(module.get());
+        context->SetCompileUnitModule(module.get());
         module->Init(context.get());
         module->SetImportIndex(importIndex++);
         module->SetFilePath(filePath);

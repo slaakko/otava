@@ -7,7 +7,7 @@ module otava.build_solution;
 
 namespace otava::build {
 
-Solution::Solution(const std::string& filePath_, const std::string& name_)
+Solution::Solution(const std::string& filePath_, const std::string& name_) : filePath(filePath_), name(name_)
 {
 }
 

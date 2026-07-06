@@ -303,8 +303,6 @@ void Scope::AddParentScope(Scope* parentScope_)
 
 void Scope::RemoveParentScope(Scope* parentScope)
 {
-    SetExceptionThrown();
-    throw std::runtime_error("could not remove parent scope");
 }
 
 void Scope::PushParentScope(Scope* parentScope)
@@ -317,6 +315,10 @@ void Scope::PopParentScope()
 {
     SetExceptionThrown();
     throw std::runtime_error("could not pop parent scope");
+}
+
+void Scope::ClearParentScopes()
+{
 }
 
 void Scope::AddBaseScope(Scope* baseScope, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -365,11 +367,13 @@ AliasGroupSymbol* Scope::GetOrInsertAliasGroup(const std::string& name, const so
     return nullptr;
 }
 
+/*
 EnumGroupSymbol* Scope::GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     ThrowException("cannot add enum group '" + name + "' to " + ScopeKindStr(kind) + " '" + FullName(context) + "'", fullSpan, context);
     return nullptr;
 }
+*/
 
 TemplateParamGroupSymbol* Scope::GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {
@@ -510,6 +514,7 @@ void Scope::Import(Scope* that, Context* context)
             classGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
             break;
         }
+/*
         case SymbolGroupKind::enumSymbolGroup:
         {
             StringOffset stringOffset = GetStringOffset(symbolOffset);
@@ -518,6 +523,7 @@ void Scope::Import(Scope* that, Context* context)
             enumGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
             break;
         }
+*/
         case SymbolGroupKind::templateParamSymbolGroup:
         {
             StringOffset stringOffset = GetStringOffset(symbolOffset);
@@ -587,6 +593,10 @@ ContainerScope::~ContainerScope()
     {
         parentScope->RemoveContainerScope(this);
     }
+    for (InstantiationScope* instantiationScope : instantiationScopes)
+    {
+        instantiationScope->RemoveParentScope(this);
+    }
 }
 
 std::vector<Scope*> ContainerScope::ParentScopes(Context* context) 
@@ -637,6 +647,10 @@ void ContainerScope::AddParentScope(Scope* parentScope)
 
 void ContainerScope::RemoveParentScope(Scope* parentScope)
 {
+    for (Scope* pscope : parentScopes)
+    {
+        pscope->RemoveParentScope(parentScope);
+    }
     parentScopes.erase(std::remove(parentScopes.begin(), parentScopes.end(), parentScope), parentScopes.end());
 }
 
@@ -662,6 +676,22 @@ void ContainerScope::ClearParentScopes()
 {
     parentScopes.clear();
 }
+
+void ContainerScope::AddInstantiationScope(InstantiationScope* instantiationScope)
+{
+    if (std::find(instantiationScopes.begin(), instantiationScopes.end(), instantiationScope) == instantiationScopes.end())
+    {
+        instantiationScopes.push_back(instantiationScope);
+    }
+}
+
+void ContainerScope::RemoveInstantiationScope(InstantiationScope* instantiationScope)
+{
+    if (destructing) return;
+    instantiationScopes.erase(std::remove(instantiationScopes.begin(), instantiationScopes.end(), instantiationScope),
+        instantiationScopes.end());
+}
+
 
 Scope* ContainerScope::GetClassScope(Context* context) const noexcept
 {
@@ -729,6 +759,11 @@ void ContainerScope::AddBaseScope(Scope* baseScope, const soul::ast::FullSpan& f
 Symbol* ContainerScope::GetSymbol() noexcept
 {
     return containerSymbol;
+}
+
+void ContainerScope::SetContainerSymbol(ContainerSymbol* containerSymbol_) noexcept
+{
+    containerSymbol = containerSymbol_;
 }
 
 ClassTemplateSpecializationSymbol* ContainerScope::GetClassTemplateSpecialization(std::set<Scope*>& visited) const
@@ -846,6 +881,7 @@ void ContainerScope::Lookup(const std::string& name, SymbolGroupKind symbolGroup
     {
         for (Scope* parentScope : ParentScopes(context))
         {
+            if (!parentScope->GetModule()) continue;
             if (symbols.empty() || (flags & LookupFlags::all) != LookupFlags::none)
             {
                 parentScope->Lookup(name, symbolGroupKinds, scopeLookup, flags, symbols, visited, context);
@@ -991,6 +1027,7 @@ AliasGroupSymbol* ContainerScope::GetOrInsertAliasGroup(const std::string& name,
     return aliasGroupSymbol;
 }
 
+/*
 EnumGroupSymbol* ContainerScope::GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     Symbol* symbol = Scope::Lookup(name, 
@@ -1007,6 +1044,7 @@ EnumGroupSymbol* ContainerScope::GetOrInsertEnumGroup(const std::string& name, c
     AddSymbol(enumGroupSymbol, fullSpan, context);
     return enumGroupSymbol;
 }
+*/
 
 TemplateParamGroupSymbol* ContainerScope::GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {
@@ -1161,10 +1199,23 @@ std::string UsingDirectiveScope::FullName(Context* context) const
     return ns->FullName(context);
 }
 
-InstantiationScope::InstantiationScope(Module* module_, Scope* parentScope_) noexcept : Scope(module_)
+InstantiationScope::InstantiationScope(Module* module_, Scope* parentScope_) noexcept : Scope(module_), destructing(false)
 {
     SetKind(ScopeKind::instantiationScope);
     parentScopes.push_back(parentScope_);
+}
+
+InstantiationScope::~InstantiationScope()
+{
+    destructing = true;
+    for (Scope* parentScope : parentScopes)
+    {
+        if (parentScope->IsContainerScope())
+        {
+            ContainerScope* containerScope = static_cast<ContainerScope*>(parentScope);
+            containerScope->RemoveInstantiationScope(this);
+        }
+    }
 }
 
 std::string InstantiationScope::FullName(Context* context) const
@@ -1185,14 +1236,31 @@ Scope* InstantiationScope::SymbolScope(Context* context) noexcept
     return first->SymbolScope(context);
 }
 
-void InstantiationScope::PushParentScope(Scope* parentScope_)
+void InstantiationScope::PushParentScope(Scope* parentScope)
 {
-    parentScopes.insert(parentScopes.begin(), parentScope_);
+    parentScopes.insert(parentScopes.begin(), parentScope);
+    if (parentScope->IsContainerScope())
+    {
+        ContainerScope* containerScope = static_cast<ContainerScope*>(parentScope);
+        containerScope->AddInstantiationScope(this);
+    }
 }
 
 void InstantiationScope::PopParentScope()
 {
+    Scope* parentScope = *parentScopes.begin();
+    if (parentScope->IsContainerScope())
+    {
+        ContainerScope* containerScope = static_cast<ContainerScope*>(parentScope);
+        containerScope->RemoveInstantiationScope(this);
+    }
     parentScopes.erase(parentScopes.begin());
+}
+
+void InstantiationScope::RemoveParentScope(Scope* parentScope)
+{
+    if (destructing) return;
+    parentScopes.erase(std::remove(parentScopes.begin(), parentScopes.end(), parentScope), parentScopes.end());
 }
 
 bool InstantiationScope::HasParentScope(const Scope* parentScope) const noexcept
@@ -1242,6 +1310,7 @@ Scope* InstantiationScope::GetNamespaceScope(Context* context) const noexcept
 {
     for (Scope* parentScope : parentScopes)
     {
+        if (parentScope->IsInstantiationScope()) continue;
         Scope* namespaceScope = parentScope->GetNamespaceScope(context);
         if (namespaceScope)
         {
@@ -1302,6 +1371,42 @@ Scope* MakeScope(Module* module, ScopeKind scopeKind, ContainerScope* parentScop
         }
     }
     return nullptr;
+}
+
+Scopes::Scopes()
+{
+}
+
+void Scopes::AddScope(Scope* scope)
+{
+    if (std::find(scopes.begin(), scopes.end(), scope) == scopes.end())
+    {
+        scopes.push_back(scope);
+    }
+}
+
+void GetContainerNames(Symbol* symbol, std::vector<std::string>& names, Context* context)
+{
+    if (symbol)
+    {
+        std::string name = symbol->Name();
+        if (!name.empty())
+        {
+            names.push_back(name);
+        }
+        Symbol* parent = symbol->Parent(context);
+        if (parent)
+        {
+            GetContainerNames(parent, names, context);
+        }
+    }
+}
+
+std::vector<std::string> GetContainerNames(Symbol* symbol, Context* context)
+{
+    std::vector<std::string> names;
+    GetContainerNames(symbol, names, context);
+    return names;
 }
 
 } // namespace otava::symbols

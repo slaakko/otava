@@ -97,6 +97,16 @@ void NestedNameSpecifierNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string NestedNameSpecifierNode::Str() const
+{
+    std::string str;
+    for (const auto& node : Nodes())
+    {
+        str.append(node->Str());
+    }
+    return str;
+}
+
 QualifiedIdNode::QualifiedIdNode(const soul::ast::Span& span_, int fileIndex_) noexcept : BinaryNode(NodeKind::qualifiedIdNode, span_, fileIndex_, nullptr, nullptr)
 {
 }
@@ -116,6 +126,13 @@ Node* QualifiedIdNode::Clone() const
 void QualifiedIdNode::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string QualifiedIdNode::Str() const
+{
+    std::string str = Left()->Str();
+    str.append(Right()->Str());
+    return str;
 }
 
 IdentifierListNode::IdentifierListNode(const soul::ast::Span& span_, int fileIndex_) noexcept : ListNode(NodeKind::identifierListNode, span_, fileIndex_)

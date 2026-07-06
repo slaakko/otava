@@ -203,7 +203,7 @@ public:
     AliasTypeSymbol* GetAliasTypeSymbol(SymbolId id, Context* context);
     FunctionTypeSymbol* GetFunctionTypeSymbol(SymbolId id, Context* context);
     AliasGroupSymbol* GetAliasGroupSymbol(SymbolId id, Context* context);
-    EnumGroupSymbol* GetEnumGroupSymbol(SymbolId id, Context* context);
+    //EnumGroupSymbol* GetEnumGroupSymbol(SymbolId id, Context* context);
     VariableGroupSymbol* GetVariableGroupSymbol(SymbolId id, Context* context);
     TemplateParameterSymbol* GetTemplateParameterSymbol(SymbolId id, Context* context);
     TemplateParamGroupSymbol* GetTemplateParamGroupSymbol(SymbolId id, Context* context);

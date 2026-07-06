@@ -636,6 +636,11 @@ void StatementBinder::Visit(otava::ast::ExpressionListNode& node)
             std::unique_ptr<BoundExpressionNode> arg = BindExpression(item, context);
             if (!arg)
             {
+                if (context->HasException())
+                {
+                    Exception ex = context->ReleaseException();
+                    ThrowException("could not bind expression: " + std::string(ex.what()), item->GetFullSpan(), context);
+                }
                 ThrowException("could not bind expression", item->GetFullSpan(), context);
             }
             initializerArgs.push_back(std::move(arg));
@@ -736,6 +741,11 @@ void StatementBinder::Visit(otava::ast::IfStatementNode& node)
     std::unique_ptr<BoundExpressionNode> condition = BindExpression(node.Condition(), context);
     if (!condition)
     {
+        if (context->HasException())
+        {
+            Exception ex = context->ReleaseException();
+            ThrowException("could not bind expression: " + std::string(ex.what()), node.Condition()->GetFullSpan(), fullSpan, context);
+        }
         ThrowException("could not bind expression", node.Condition()->GetFullSpan(), fullSpan, context);
     }
     if (condition->GetType()->IsReferenceType())
@@ -786,6 +796,11 @@ void StatementBinder::Visit(otava::ast::SwitchStatementNode& node)
     std::unique_ptr<BoundExpressionNode> condition = BindExpression(node.Condition(), context);
     if (!condition)
     {
+        if (context->HasException())
+        {
+            Exception ex = context->ReleaseException();
+            ThrowException("could not bind expression: " + std::string(ex.what()), node.Condition()->GetFullSpan(), fullSpan, context);
+        }
         ThrowException("could not bind expression", node.Condition()->GetFullSpan(), fullSpan, context);
     }
     if (condition->GetType()->IsReferenceType())
@@ -821,6 +836,11 @@ void StatementBinder::Visit(otava::ast::CaseStatementNode& node)
     std::unique_ptr<BoundExpressionNode> caseExpr = BindExpression(node.CaseExpression(), context);
     if (!caseExpr)
     {
+        if (context->HasException())
+        {
+            Exception ex = context->ReleaseException();
+            ThrowException("could not bind expression: " + std::string(ex.what()), node.CaseExpression()->GetFullSpan(), fullSpan, context);
+        }
         ThrowException("could not bind expression", node.CaseExpression()->GetFullSpan(), fullSpan, context);
     }
     TypeSymbol* switchCondType = context->GetSwitchCondType();
@@ -896,6 +916,11 @@ void StatementBinder::Visit(otava::ast::WhileStatementNode& node)
         std::unique_ptr<BoundExpressionNode> condition = BindExpression(node.Condition(), context);
         if (!condition)
         {
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                ThrowException("could not bind expression: " + std::string(ex.what()), node.Condition()->GetFullSpan(), fullSpan, context);
+            }
             ThrowException("could not bind expression", node.Condition()->GetFullSpan(), fullSpan, context);
         }
         if (condition->GetType()->IsReferenceType())
@@ -955,6 +980,11 @@ void StatementBinder::Visit(otava::ast::DoStatementNode& node)
     std::unique_ptr<BoundExpressionNode> condition = BindExpression(node.Expression(), context);
     if (!condition)
     {
+        if (context->HasException())
+        {
+            Exception ex = context->ReleaseException();
+            ThrowException("could not bind expression: " + std::string(ex.what()), node.Expression()->GetFullSpan(), fullSpan, context);
+        }
         ThrowException("could not bind expression", node.Expression()->GetFullSpan(), fullSpan, context);
     }
     if (condition->GetType()->IsReferenceType())
@@ -1129,6 +1159,11 @@ void StatementBinder::Visit(otava::ast::ForStatementNode& node)
         std::unique_ptr<BoundExpressionNode> condition = BindExpression(node.Condition(), context);
         if (!condition)
         {
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                ThrowException("could not bind expression: " + std::string(ex.what()), node.Condition()->GetFullSpan(), fullSpan, context);
+            }
             ThrowException("could not bind expression", node.Condition()->GetFullSpan(), fullSpan, context);
         }
         if (condition->GetType()->IsReferenceType())
@@ -1150,6 +1185,11 @@ void StatementBinder::Visit(otava::ast::ForStatementNode& node)
         std::unique_ptr<BoundExpressionNode> loopExpr = BindExpression(node.LoopExpr(), context);
         if (!loopExpr)
         {
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                ThrowException("could not bind expression: " + std::string(ex.what()), node.LoopExpr()->GetFullSpan(), fullSpan, context);
+            }
             ThrowException("could not bind expression", node.LoopExpr()->GetFullSpan(), fullSpan, context);
         }
         context->PopFlags();
@@ -1225,6 +1265,11 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
                 expression = BindExpression(node.ReturnValue(), context);
                 if (!expression)
                 {
+                    if (context->HasException())
+                    {
+                        Exception ex = context->ReleaseException();
+                        ThrowException("could not bind expression: " + std::string(ex.what()), node.ReturnValue()->GetFullSpan(), fullSpan, context);
+                    }
                     ThrowException("could not bind expression", node.ReturnValue()->GetFullSpan(), fullSpan, context);
                 }
                 if (expression->IsBoundFunctionPtrCallNode())
@@ -1285,6 +1330,11 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
                 context->PopFlags();
                 if (!returnValueExpr)
                 {
+                    if (context->HasException())
+                    {
+                        Exception ex = context->ReleaseException();
+                        ThrowException("could not bind expression: " + std::string(ex.what()), node.ReturnValue()->GetFullSpan(), fullSpan, context);
+                    }
                     ThrowException("could not bind expression", node.ReturnValue()->GetFullSpan(), fullSpan, context);
                 }
                 if (!TypesEqual(returnValueExpr->GetType(), returnType, context))
@@ -1439,6 +1489,11 @@ void StatementBinder::Visit(otava::ast::ExpressionStatementNode& node)
         std::unique_ptr<BoundExpressionNode> expr = BindExpression(node.Expression(), context);
         if (!expr)
         {
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                ThrowException("could not bind expression: " + std::string(ex.what()), node.Expression()->GetFullSpan(), fullSpan, context);
+            }
             ThrowException("could not bind expression", node.Expression()->GetFullSpan(), fullSpan, context);
         }
         if (!context->GetFlag(ContextFlags::invoke))

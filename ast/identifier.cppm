@@ -47,6 +47,7 @@ public:
     NestedNameSpecifierNode(const soul::ast::Span& span_, int fileIndex_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
+    std::string Str() const override;
 };
 
 class QualifiedIdNode : public BinaryNode
@@ -56,6 +57,7 @@ public:
     QualifiedIdNode(const soul::ast::Span& span_, int fileIndex_, Node* nns_, Node* unqualifiedId_) noexcept;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
+    std::string Str() const override;
 };
 
 class IdentifierListNode : public ListNode

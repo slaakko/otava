@@ -298,6 +298,10 @@ std::vector<Module*> Module::ImportedModules(Context* context)
     {
         std::string interfaceUnitName = InterfaceUnitName();
         Module* interfaceUnit = context->GetModule(interfaceUnitName);
+        if (std::find(importedModules.begin(), importedModules.end(), interfaceUnit) == importedModules.end())
+        {
+            importedModules.push_back(interfaceUnit);
+        }
         std::vector<Module*> interfaceUnitImports = interfaceUnit->ImportedModules(context);
         for (Module* importedModule : interfaceUnitImports)
         {
@@ -703,6 +707,21 @@ std::string ModuleMapper::GetProjectFilePath(const std::string& moduleName) cons
         }
     }
     return std::string();
+}
+
+ModulePtr::ModulePtr(Module* module_, Context* context_) noexcept : module(module_), context(context_)
+{
+    prevModule = context->GetModule();
+    if (!module->GetSymbolTable()->CurrentScope())
+    {
+        module->GetSymbolTable()->SetCurrentScope(module->GetSymbolTable()->GetGlobalNs(context)->GetScope());
+    }
+    context->SetModule(module);
+}
+
+ModulePtr::~ModulePtr()
+{
+    context->SetModule(prevModule);
 }
 
 } // namespace otava::symbols

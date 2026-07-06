@@ -1402,10 +1402,6 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         }
     }
     std::unique_ptr<FunctionMatch> bestMatch = SelectBestMatchingFunction(viableFunctions, templateArgs, args, groupName, fullSpan, context, ex);
-    if (bestMatch && bestMatch->function->Name() == "vector<StreamObserver*>")
-    {
-        int x = 0;
-    }
     if (!bestMatch)
     {
         context->ResetFlag(ContextFlags::ignoreClassTemplateSpecializations);

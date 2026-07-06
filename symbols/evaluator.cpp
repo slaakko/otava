@@ -9,6 +9,7 @@ import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.scope_resolver;
+import otava.symbols.scope_ptr;
 import otava.symbols.symbol;
 import otava.symbols.type_resolver;
 import otava.ast.identifier;
@@ -169,8 +170,21 @@ void Evaluator::Visit(otava::ast::NullPtrLiteralNode& node)
 
 void Evaluator::Visit(otava::ast::QualifiedIdNode& node)
 {
+    Scopes scopes = GetScopes(node.Left(), context);
+    for (Scope* scope : scopes.GetScopes())
+    {
+        ScopePtr scopePtr(scope, context);
+        Value* value = Evaluate(node.Right(), context);
+        if (value)
+        {
+            this->value = value;
+            return;
+        }
+    }
+/*
     scope = ResolveScope(node.Left(), context);
     node.Right()->Accept(*this);
+*/
 }
 
 void Evaluator::Visit(otava::ast::IdentifierNode& node)

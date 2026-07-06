@@ -187,7 +187,7 @@ parser TypeParser
         ;
 
     SimpleTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span tmpPos, 
-        var std::unique_ptr<otava::ast::Node> nns, var bool isConstructorNameNode, var otava::symbols::ScopePtr scopePtr) : otava::ast::Node*
+        var std::unique_ptr<otava::ast::Node> nns, var bool isConstructorNameNode, var otava::symbols::ScopesPtr scopesPtr) : otava::ast::Node*
         ::= 
         (   SimpleType:simpleType
             { 
@@ -204,14 +204,15 @@ parser TypeParser
                 |   NestedNameSpecifier(context):nns2
                     { 
                         nns.reset(nns2); 
-                        scopePtr.Reset(otava::symbols::GetScope(nns.get(), context), context);
+                        otava::symbols::Scopes scopes = otava::symbols::GetScopes(nns.get(), context);
+                        scopesPtr.Reset(std::move(scopes), context);
                     }
                     TypeName(context):typeName
                     { 
                         std::unique_ptr<otava::ast::Node> typeNameNode;
                         typeNameNode.reset(typeName);
                         isConstructorNameNode = context->IsConstructorNameNode(typeNameNode.get());
-                        scopePtr.Reset();
+                        scopesPtr.Reset();
                         if (isConstructorNameNode)
                         {
                             pass = false;
@@ -223,7 +224,7 @@ parser TypeParser
                     }
                     /
                     {
-                        scopePtr.Reset();
+                        scopesPtr.Reset();
                     }
                 |   empty{ if (isConstructorNameNode) pass = false; } 
                     TypeName(context):typeName2

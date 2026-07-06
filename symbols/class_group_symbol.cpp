@@ -369,6 +369,10 @@ ClassTypeSymbol* ClassGroupSymbol::GetBestMatchingClass(const std::vector<Symbol
 
 void ClassGroupSymbol::Write(Writer& writer)
 {
+    if (Name() == "Span")
+    {
+        int x = 0;
+    }
     Symbol::Write(writer);
     Cardinality classCount = Cardinality(classes.size());
     writer.GetBinaryStreamWriter().Write(ToUnderlying(classCount));
@@ -387,6 +391,10 @@ void ClassGroupSymbol::Write(Writer& writer)
 void ClassGroupSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
+    if (Name() == "Span")
+    {
+        int x = 0;
+    }
     Cardinality classCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(classCount); ++i)
     {

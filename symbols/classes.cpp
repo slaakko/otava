@@ -824,6 +824,10 @@ const std::vector<FunctionSymbol*>& ClassTypeSymbol::MemberFunctions(Context* co
 
 void ClassTypeSymbol::Write(Writer& writer)
 {
+    if (Name() == "Span")
+    {
+        int x = 0;
+    }
     TypeSymbol::Write(writer);
     writer.GetBinaryStreamWriter().Write(ToUnderlying(flags));
     writer.GetBinaryStreamWriter().Write(ToUnderlying(classKind));
@@ -896,6 +900,10 @@ void ClassTypeSymbol::Write(Writer& writer)
 void ClassTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
+    if (Name() == "Span")
+    {
+        int x = 0;
+    }
     flags = ClassTypeSymbolFlags(reader.CurrentReader().ReadByte());
     classKind = ClassKind(reader.CurrentReader().ReadByte());
     Cardinality baseClassCount = Cardinality(reader.CurrentReader().ReadUInt());
@@ -1356,7 +1364,7 @@ void BaseClassResolver::Visit(otava::ast::BaseSpecifierNode& node)
         ClassGroupSymbol* classGroup = classGroupType->GetClassGroup();
         for (ClassTypeSymbol* cls : classGroup->Classes(context))
         {
-            std::cout << cls->FullName(context) << "\n";
+            baseClasses.push_back(cls);
         }
     }
     else

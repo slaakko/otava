@@ -1,0 +1,133 @@
+export module soul.re.parser;
+
+[interface]import soul.ast.re;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.lex.re;
+[implementation]import soul.re.token.parser;
+
+parser RegExParser
+{
+    lexer soul::lex::re::RegExLexer<char32_t>;
+
+    main;
+
+    RegularExpression(soul::ast::re::LexerContext* lexerContext) : soul::ast::re::Nfa
+        ::= Alternative(lexerContext):alternative{ return alternative; }
+        ;
+
+    Alternative(soul::ast::re::LexerContext* lexerContext, var soul::ast::re::Nfa value) : soul::ast::re::Nfa
+        ::= 
+        (
+            Catenation(lexerContext):left{ value = left; } 
+            (
+                PIPE Catenation(lexerContext):right{ value = soul::ast::re::Alt(*lexerContext, value, right); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    Catenation(soul::ast::re::LexerContext* lexerContext, var soul::ast::re::Nfa value) : soul::ast::re::Nfa
+        ::= 
+        (
+            Repetition(lexerContext):left{ value = left; } 
+            (
+                Repetition(lexerContext):right{ value = soul::ast::re::Cat(value, right); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    Repetition(soul::ast::re::LexerContext* lexerContext, var soul::ast::re::Nfa value) : soul::ast::re::Nfa
+        ::=
+        (   Primary(lexerContext):left{ value = left; }
+            (   STAR{ value = soul::ast::re::Kleene(*lexerContext, value); }
+            |   PLUS{ value = soul::ast::re::Pos(*lexerContext, value); }
+            |   QUEST{ value = soul::ast::re::Opt(*lexerContext, value); }
+            )?
+        )
+        {
+            return value;
+        }
+        ;
+
+    Primary(soul::ast::re::LexerContext* lexerContext, var soul::ast::re::Nfa value) : soul::ast::re::Nfa
+        ::=
+        (   LPAREN Alternative(lexerContext):alt{ value = alt; } RPAREN!
+        |   ESCAPE{ value = soul::ast::re::MakeNfa(*lexerContext, lexerContext->MakeChar(soul::re::token::parser::MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos)))); }
+        |   CARET{ value = soul::ast::re::MakeNfa(*lexerContext, lexerContext->MakeChar('^')); }
+        |   MINUS{ value = soul::ast::re::MakeNfa(*lexerContext, lexerContext->MakeChar('-')); }
+        |   CHARACTER{ auto match = lexer.GetToken(pos).ToString(); value = soul::ast::re::MakeNfa(*lexerContext, lexerContext->MakeChar(match.front())); }
+        |   DOT{ value = soul::ast::re::MakeNfa(*lexerContext, lexerContext->MakeAny()); }
+        |   Class(lexerContext):cls{ value = soul::ast::re::MakeNfa(*lexerContext, cls); }
+        |   ExpressionReference:ref{ value = lexerContext->MakeExpr(ref); }
+        )
+        {
+            return value;
+        }
+        ;
+
+    Class(soul::ast::re::LexerContext* lexerContext, var soul::ast::re::Class* cls) : soul::ast::re::Class*
+        ::= 
+        (
+            LBRACKET{ cls = lexerContext->MakeClass(); } 
+            (
+                (
+                    CARET{ cls->SetInverse(); }
+                )? 
+                (
+                    Range(lexerContext):r{ cls->AddSymbol(r); }
+                )*
+            ) 
+            RBRACKET!
+        )
+        {
+            return cls;
+        }
+        ;
+
+    Range(soul::ast::re::LexerContext* lexerContext, var soul::ast::re::Symbol* symbol) : soul::ast::re::Symbol*
+        ::= 
+        (
+            Char:s 
+            (   MINUS Char:e{ symbol = lexerContext->MakeRange(s, e); } 
+            |   empty{ symbol = lexerContext->MakeChar(s); }
+            )
+        )
+        {
+            return symbol;
+        }
+        ;
+
+    Char : char32_t
+        ::= LPAREN{ return '('; }
+        |   RPAREN{ return ')'; }
+        |   LBRACKET{ return '['; }
+        |   LBRACE{ return '{'; }
+        |   RBRACE{ return '}'; }
+        |   PIPE{ return '|'; }
+        |   STAR{ return '*'; }
+        |   PLUS{ return '+'; }
+        |   QUEST{ return '?'; }
+        |   DOT{ return '.'; }
+        |   ESCAPE{ return soul::re::token::parser::MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos)); }
+        |   CARET{ return '^'; }
+        |   MINUS{ return '-'; }
+        |   CHARACTER{ auto match = lexer.GetToken(pos).ToString(); return match.front(); }
+        ;
+
+    ExpressionReference(var std::string s) : std::string
+        ::= 
+        (
+            LBRACE
+            (CHARACTER{ s.append(util::ToUtf8(lexer.GetToken(pos).ToString())); })+
+            RBRACE{ return s; }
+        )
+        ;
+}

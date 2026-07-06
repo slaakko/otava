@@ -1,0 +1,7 @@
+project soul.token;
+target=library;
+interface <soul.cpp.op.token.cppm>;
+interface <soul.cpp.token.cppm>;
+interface <soul.punctuation.token.cppm>;
+interface <soul.tool.token.cppm>;
+interface <token.cppm>;

@@ -28,7 +28,7 @@ SectionKind ToSectionKind(SymbolKind symbolKind)
     case SymbolKind::classGroupSymbol:
     case SymbolKind::conceptGroupSymbol:
     case SymbolKind::aliasGroupSymbol:
-    case SymbolKind::enumGroupSymbol:
+    //case SymbolKind::enumGroupSymbol:
     case SymbolKind::nullPtrTypeSymbol:
     case SymbolKind::aliasTypeSymbol:
     case SymbolKind::arrayTypeSymbol:

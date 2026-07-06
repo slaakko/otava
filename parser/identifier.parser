@@ -11,6 +11,7 @@ export module otava.parser.identifier;
 [implementation]import otava.lexer;
 [implementation]import otava.symbols.symbol;
 [implementation]import otava.symbols.symbol_table;
+[implementation]import otava.symbols.type_resolver;
 [implementation]import otava.parser.function;
 [implementation]import otava.parser.guard;
 [implementation]import otava.parser.literal;
@@ -120,15 +121,9 @@ parser IdentifierParser
     TypeIdentifierChecked(otava::symbols::Context* context) : otava::ast::Node*
         ::= ID
             { 
-                std::unique_ptr<otava::ast::IdentifierNode> identifier(otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)));
-                otava::symbols::Symbol* symbol = context->GetSymbolTable()->Lookup(
-                    util::ToUtf8(identifier->Str()), 
-                    otava::symbols::SymbolGroupKind::aliasSymbolGroup | 
-                    otava::symbols::SymbolGroupKind::classSymbolGroup | 
-                    otava::symbols::SymbolGroupKind::enumSymbolGroup |
-                    otava::symbols::SymbolGroupKind::templateParamSymbolGroup,
-                    lexer.GetFullSpan(pos), 
-                    context);
+                std::unique_ptr<otava::ast::IdentifierNode> identifier(otava::parser::token::ParseIdentifier(
+                    lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)));
+                otava::symbols::Symbol* symbol = otava::symbols::ResolveTypeIdentifier(identifier->Str(), lexer.GetFullSpan(pos), context);
                 if (symbol && (symbol->IsTypeSymbol() || symbol->IsClassGroupSymbol() || symbol->IsAliasGroupSymbol()))
                 {
                     context->GetSymbolTable()->MapNode(identifier.get(), symbol);

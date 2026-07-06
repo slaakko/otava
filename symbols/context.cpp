@@ -37,13 +37,13 @@ RangeForBlockIds::RangeForBlockIds() : compoundBlockId(-1), forActionStatementId
 Context::Context() : 
     flags(ContextFlags::none), optLevel(-1), node(nullptr), boundCompileUnit(new BoundCompileUnitNode()),
     moduleMapper(nullptr), emitter(nullptr), traceInfo(nullptr),
-    lexer(nullptr), module(nullptr), stdTypeFundamentalModule(nullptr), rejectTemplateId(false), nextBlockId(0), 
+    lexer(nullptr), module(nullptr), compileUnitModule(nullptr), stdTypeFundamentalModule(nullptr), rejectTemplateId(false), nextBlockId(0), 
     currentBlockId(-1), currentProject(nullptr), parentFn(nullptr), parentBlockId(-1), memFunDefSymbolIndex(-1), fileMap(nullptr), 
     aliasType(nullptr), debugOutputStream(nullptr), ptr(nullptr), argType(nullptr), paramType(nullptr), nodeId(-1), statementBinder(nullptr),
     totalFunctionsCompiled(0), functionCallsInlined(0), functionsInlined(0), invokes(0), unresolvedInvokes(0), argIndex(0),
     boundFunctionSerial(0), trySerial(0), invokeSerial(0), cleanupSerial(0), resultSerial(0), labelSerial(0), ehReturnFromSerial(0), childControlResultSerial(0),
     conditionVariableSerial(0), streamInitVarSerial(0), instantiationQueue(nullptr), switchCondType(nullptr), declaredInitializerType(nullptr),
-    parentStatementIndex(-1)
+    parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateNsScope(nullptr), hasException(false)
 {
 }
 
@@ -517,6 +517,66 @@ std::string Context::NextStreamInitVarName()
 {
     std::string streamInitVariableName = "__sentry" + std::to_string(NextStreamInitVarSerial());
     return streamInitVariableName;
+}
+
+void Context::PushScopes(Scopes&& scopes_)
+{
+    scopesStack.push(std::move(scopes));
+    scopes = std::move(scopes_);
+}
+
+void Context::PopScopes()
+{
+    scopes = std::move(scopesStack.top());
+    scopesStack.pop();
+}
+
+void Context::PushScope(Scope* scope_)
+{
+    scopeStack.push(scope);
+    scope = scope_;
+}
+
+void Context::PopScope()
+{
+    scope = scopeStack.top();
+    scopeStack.pop();
+}
+
+void Context::PushTemplateModule(Module* templateModule_)
+{
+    templateModuleStack.push(templateModule);
+    templateModule = templateModule_;
+}
+
+void Context::PopTemplateModule()
+{
+    templateModule = templateModuleStack.top();
+    templateModuleStack.pop();
+}
+
+void Context::PushTemplateNsScope(Scope* templateNsScope_)
+{
+    templateNsScopeStack.push(templateNsScope);
+    templateNsScope = templateNsScope_;
+}
+
+void Context::PopTemplateNsScope()
+{
+    templateNsScope = templateNsScopeStack.top();
+    templateNsScopeStack.pop();
+}
+
+void Context::SetException(Exception&& exception_)
+{
+    exception = std::move(exception_);
+    hasException = true;
+}
+
+Exception Context::ReleaseException()
+{
+    hasException = false;
+    return std::move(exception);
 }
 
 } // namespace otava::symbols

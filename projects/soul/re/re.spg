@@ -1,0 +1,6 @@
+project re;
+parser <re.parser>;
+tokens <../token/soul.cpp.op.token>;
+tokens <../token/soul.cpp.token>;
+tokens <../token/soul.punctuation.token>;
+tokens <../token/soul.tool.token>;

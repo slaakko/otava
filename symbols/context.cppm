@@ -6,8 +6,10 @@
 export module otava.symbols.context;
 
 import otava.symbols.bound_tree;
+import otava.symbols.exception;
 import otava.symbols.modules;
 import otava.symbols.id;
+import otava.symbols.scope;
 import otava.symbols.symbol;
 import otava.symbols.symbol_index_map;
 import otava.symbols.template_param_compare;
@@ -79,6 +81,9 @@ enum class ContextFlags : std::int64_t
     debugMemory = static_cast<std::int64_t>(1) << 52,
     acquireTemporaryDestructorCalls = static_cast<std::int64_t>(1) << 53,
     skipMapIo = static_cast<std::int64_t>(1) << 54,
+    dontThrow = static_cast<std::int64_t>(1) << 55,
+    qualifiedScope = static_cast<std::int64_t>(1) << 56,
+    emptyDestructor = static_cast<std::int64_t>(1) << 57,
     sticky = noWarnings | expected
 };
 
@@ -128,7 +133,9 @@ public:
     inline Lexer* GetLexer() const noexcept { return lexer; }
     inline void SetLexer(Lexer* lexer_) noexcept { lexer = lexer_; }
     inline void SetModule(Module* module_) noexcept { module = module_; }
+    inline void SetCompileUnitModule(Module* module_) noexcept { compileUnitModule = module_; }
     inline Module* GetModule() const noexcept { return module; }
+    inline Module* GetCompileUnitModule() const noexcept { return compileUnitModule; }
     inline void SetModuleMapper(ModuleMapper* moduleMapper_) noexcept { moduleMapper = moduleMapper_;  }
     inline ModuleMapper* GetModuleMapper() const noexcept { return moduleMapper; }
     inline SymbolTable* GetSymbolTable() const noexcept { return GetModule()->GetSymbolTable(); }
@@ -278,8 +285,26 @@ public:
     inline void IncUnresolvedInvokes() noexcept { ++unresolvedInvokes; }
     inline void SetInvokes(int invokes_) noexcept { invokes = invokes_; }
     inline void SetUnresolvedInvokes(int unresolvedInvokes_) { unresolvedInvokes = unresolvedInvokes_; }
+    void PushScopes(Scopes&& scopes_);
+    void PopScopes();
+    inline bool HasScopes() const noexcept { return !scopesStack.empty(); }
+    inline Scopes& GetScopes() noexcept { return scopes; }
+    void PushScope(Scope* scope_);
+    void PopScope();
+    Scope* GetScope() const { return scope; }
+    void PushTemplateModule(Module* templateModule_);
+    void PopTemplateModule();
+    inline Module* GetTemplateModule() const noexcept { return templateModule; }
+    void PushTemplateNsScope(Scope* classTemplateNsScope_);
+    void PopTemplateNsScope();
+    inline Scope* GetTemplateNsScope() const noexcept { return templateNsScope; }
+    inline bool HasException() const noexcept { return hasException; }
+    inline void ResetException() noexcept { hasException = false; }
+    void SetException(Exception&& exception_);
+    Exception ReleaseException();
 private:
     Module* module;
+    Module* compileUnitModule;
     mutable Module* stdTypeFundamentalModule;
     ModuleMapper* moduleMapper;
     Emitter* emitter;
@@ -352,6 +377,16 @@ private:
     TypeSymbol* declaredInitializerType;
     std::stack<int> parentStatementIndexStack;
     int parentStatementIndex;
+    Scopes scopes;
+    std::stack<Scopes> scopesStack;
+    Scope* scope;
+    std::stack<Scope*> scopeStack;
+    Module* templateModule;
+    std::stack<Module*> templateModuleStack;
+    Scope* templateNsScope;
+    std::stack<Scope*> templateNsScopeStack;
+    bool hasException;
+    Exception exception;
 };
 
 } // namespace otava::symbols

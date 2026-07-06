@@ -11,6 +11,7 @@ import otava.token;
 import otava.lexer;
 import otava.symbols.symbol;
 import otava.symbols.symbol_table;
+import otava.symbols.type_resolver;
 import otava.parser.function;
 import otava.parser.guard;
 import otava.parser.literal;
@@ -1110,7 +1111,7 @@ soul::parser::Match IdentifierParser<LexerT>::TypeIdentifierChecked(LexerT& lexe
         if (match.hit)
         {
             std::unique_ptr<otava::ast::IdentifierNode> identifier(otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)));
-            otava::symbols::Symbol *symbol = context->GetSymbolTable()->Lookup(util::ToUtf8(identifier->Str()), otava::symbols::SymbolGroupKind::aliasSymbolGroup | otava::symbols::SymbolGroupKind::classSymbolGroup | otava::symbols::SymbolGroupKind::enumSymbolGroup | otava::symbols::SymbolGroupKind::templateParamSymbolGroup, lexer.GetFullSpan(pos), context);
+            otava::symbols::Symbol *symbol = otava::symbols::ResolveTypeIdentifier(identifier->Str(), lexer.GetFullSpan(pos), context);
             if (symbol && (symbol->IsTypeSymbol() || symbol->IsClassGroupSymbol() || symbol->IsAliasGroupSymbol()))
             {
                 context->GetSymbolTable()->MapNode(identifier.get(), symbol);

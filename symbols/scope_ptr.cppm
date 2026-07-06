@@ -44,4 +44,16 @@ private:
     Context* context;
 };
 
+class ScopesPtr
+{
+public:
+    inline ScopesPtr() noexcept : context(nullptr) {}
+    ScopesPtr(Scopes&& scopes, Context* context_);
+    void Reset(Scopes&& scopes, Context* context_) noexcept;
+    void Reset();
+    ~ScopesPtr();
+private:
+    Context* context;
+};
+
 } // namespace otava::symbols
