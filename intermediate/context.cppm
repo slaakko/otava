@@ -123,16 +123,16 @@ public:
     {
         return types.GetStructureType(span, typeId, fieldTypeRefs);
     }
-    inline FwdDeclaredStructureType* GetFwdDeclaredStructureType(std::uint32_t id)
+    inline FwdDeclaredStructureType* GetFwdDeclaredStructureType(std::uint64_t id)
     {
         return types.GetFwdDeclaredStructureType(id);
     }
-    inline FwdDeclaredStructureType* MakeFwdDeclaredStructureType(std::uint32_t id, std::int32_t typeId, const std::string& comment)
+    inline FwdDeclaredStructureType* MakeFwdDeclaredStructureType(std::uint64_t id, std::int32_t typeId, const std::string& comment)
     {
         return types.MakeFwdDeclaredStructureType(id, typeId, comment);
     }
     inline void AddFwdDependentType(FwdDeclaredStructureType* fwdType, Type* type) { types.AddFwdDependentType(fwdType, type); }
-    inline void ResolveForwardReferences(std::uint32_t id, StructureType* structureType) { types.ResolveForwardReferences(id, structureType); }
+    inline void ResolveForwardReferences(std::uint64_t id, StructureType* structureType) { types.ResolveForwardReferences(id, structureType); }
     inline ArrayType* GetArrayType(const soul::ast::Span& span, std::int32_t typeId, std::int64_t size, const TypeRef& elementTypeRef)
     {
         return types.GetArrayType(span, typeId, size, elementTypeRef);

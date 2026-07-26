@@ -1,0 +1,3 @@
+project unique_ptr;
+target=program;
+source <main.cpp>;

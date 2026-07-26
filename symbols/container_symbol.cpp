@@ -110,7 +110,7 @@ void ContainerSymbol::ReadBody()
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         memberIds.push_back(symbolId);
     }
     reader.PopCurrentReader();
@@ -160,7 +160,7 @@ void ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
         Module* m = GetModule();
         SymbolTable* symbolTable = m->GetSymbolTable();
         symbolTable->AddSymbol(symbol);
-        symbolTable->MapSymbol(symbol);
+        symbolTable->MapSymbol(symbol, context);
         if (symbol->IsFundamentalTypeSymbol())
         {
             FundamentalTypeSymbol* fundamentalTypeSymbol = static_cast<FundamentalTypeSymbol*>(symbol);

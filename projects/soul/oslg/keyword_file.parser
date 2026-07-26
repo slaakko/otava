@@ -1,0 +1,54 @@
+export module soul.slg.keyword.file.parser;
+
+[interface]import soul.ast.slg;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.common.common.parser;
+[implementation]import soul.common.token.parser;
+[implementation]import soul.lex.slg;
+
+parser KeywordFileParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+
+    main;
+    using CommonParser.QualifiedId;
+    using CommonParser.Import;
+
+    KeywordFile(var std::unique_ptr<soul::ast::slg::KeywordFile> keywordFile, var std::unique_ptr<soul::ast::slg::KeywordCollection> keywordCollection) : soul::ast::slg::KeywordFile*
+        ::= 
+        (
+            empty{ keywordFile.reset(new soul::ast::slg::KeywordFile(lexer.FileName())); }
+            Imports(keywordFile.get()):imports
+            KEYWORDS
+            QualifiedId:keywordCollectionName{ keywordCollection.reset(new soul::ast::slg::KeywordCollection(keywordCollectionName)); }
+            LBRACE 
+            (Keyword:keyword{ keywordCollection->AddKeyword(keyword); } % COMMA)?
+            RBRACE
+        )
+        {
+            keywordFile->SetKeywordCollection(keywordCollection.release());
+            return keywordFile.release();
+        }
+        ;
+
+    Imports(soul::ast::slg::KeywordFile* keywordFile)
+        ::= (Import:imp{ keywordFile->AddImport(imp); })*
+        ;
+
+    Keyword(var std::string str, var std::string tokenName) : soul::ast::slg::Keyword*
+        ::= 
+        (   
+            LPAREN 
+            STRING_LITERAL{ str = util::ToUtf8(soul::common::token::parser::ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos))); } 
+            COMMA
+            ID{ tokenName = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+            RPAREN
+        )
+        {
+            return new soul::ast::slg::Keyword(lexer.GetSourcePos(pos), str, tokenName);
+        }
+        ;
+}

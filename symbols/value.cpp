@@ -10,6 +10,7 @@ import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import util.text_util;
 
 namespace otava::symbols {
 
@@ -177,7 +178,7 @@ void Value::Write(Writer& writer)
 void Value::Read(Reader& reader)
 {
     Symbol::Read(reader);
-    typeId = SymbolId(reader.CurrentReader().ReadUInt());
+    typeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 BoolValue::BoolValue(Module* module_, SymbolId id_) : Value(module_, id_)
@@ -405,7 +406,7 @@ CharValue::CharValue(Module* module_, SymbolId id_) : Value(module_, id_)
 }
 
 CharValue::CharValue(Module* module_, char32_t value_, Context* context) :
-    Value(module_, context->GetNextSymbolId(SymbolKind::charValueSymbol), util::ToUtf8(std::u32string(1, value_))), value(value_)
+    Value(module_, context->GetNextSymbolId(SymbolKind::charValueSymbol), util::HexEscape(util::ToUtf8(std::u32string(1, value_)))), value(value_)
 {
 }
 
@@ -508,7 +509,7 @@ void SymbolValue::Write(Writer& writer)
 void SymbolValue::Read(Reader& reader)
 {
     Value::Read(reader);
-    symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+    symbolId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 otava::intermediate::Value* SymbolValue::IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -567,7 +568,7 @@ void InvokeValue::Write(Writer& writer)
 void InvokeValue::Read(Reader& reader)
 {
     Value::Read(reader);
-    subjectId = SymbolId(reader.CurrentReader().ReadUInt());
+    subjectId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 ArrayValueHeader::ArrayValueHeader() : bodyOffset(FileOffset(0)), bodyLength(Length(0))
@@ -681,7 +682,7 @@ void ArrayValue::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId elementValueId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId elementValueId = SymbolId(reader.CurrentReader().ReadULong());
         elementValueIds.push_back(elementValueId);
     }
     reader.CurrentReader().Skip(ToUnderlying(header.bodyLength));
@@ -809,7 +810,7 @@ void StructureValue::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId fieldValueId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId fieldValueId = SymbolId(reader.CurrentReader().ReadULong());
         fieldValueIds.push_back(fieldValueId);
     }
     reader.CurrentReader().Skip(ToUnderlying(header.bodyLength));

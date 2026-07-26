@@ -86,6 +86,8 @@ public:
     void RemoveFunction(FunctionSymbol* fn);
     void AddScope(Scope* scope);
     void RemoveScope(Scope* scope);
+    void AddSymbol(Symbol* symbol);
+    void RemoveSymbol(Symbol* symbol);
     void Init(Context* context);
     inline void SetKind(ModuleKind kind_) noexcept { kind = kind_; }
     inline ModuleKind Kind() const noexcept { return kind; }
@@ -94,7 +96,7 @@ public:
     inline bool IsReadOnly() const noexcept { return symbolTable.IsReadOnly(); }
     std::string Name();
     inline const std::string& FilePath() const noexcept { return filePath; }
-    void SetFilePath(const std::string& filePath_) { filePath = filePath_; }
+    void SetFilePath(const std::string& filePath_);
     util::FileMapping* GetFileMapping();
     inline StringTable* GetStringTable() const noexcept { return const_cast<StringTable*>(&stringTable); }
     inline SymbolTable* GetSymbolTable() const noexcept { return const_cast<SymbolTable*>(&symbolTable); }
@@ -129,7 +131,7 @@ public:
     inline std::int32_t FileId() const noexcept { return fileId; }
     inline void SetFileId(std::int32_t fileId_) noexcept { fileId = fileId_; }
     inline ModuleId Id() const noexcept { return id; }
-    inline void SetId(ModuleId id_) noexcept { id = id_; }
+    void SetId(ModuleId id_) noexcept;
     inline Index GetIndex() const noexcept { return index; }
     inline void SetIndex(Index index_) noexcept { index = index_; }
     inline Index ImportIndex() const noexcept { return importIndex; }
@@ -198,6 +200,7 @@ private:
     otava::ast::NodeMap astNodeMap;
     std::vector<FunctionSymbol*> fns;
     std::vector<Scope*> scopes;
+    std::vector<Symbol*> symbols;
     std::vector<SymbolId> namespaceIds;
     bool namespaceIdsRead;
     bool destructing;
@@ -218,19 +221,20 @@ public:
     void RemoveModule(Module* module);
     inline SymbolIndexMap* GetSymbolIndexMap() const noexcept { return const_cast<SymbolIndexMap*>(&symbolIndexMap); }
     std::string GetProjectFilePath(const std::string& moduleName) const;
-    inline Cardinality ModuleCount() const noexcept { return moduleCount; }
-    inline void SetModuleCount(Cardinality moduleCount_) noexcept { moduleCount = moduleCount_; }
-    inline ModuleId GetNextModuleId() noexcept { return nextModuleId++; }
-    inline ModuleId NextModuleId() noexcept { return nextModuleId;  }
-    inline void SetNextModuleId(ModuleId moduleId) noexcept { nextModuleId = moduleId; }
+    ModuleId MakeModuleId(const std::string& moduleName) noexcept;
+    inline Cardinality ModuleCount() const noexcept { return Cardinality(modules.size()); }
+    void AddBuiltModule(Module* module);
+    void PrintModules();
+    ProjectId MakeProjectId(const std::string& projectName);
+    void AddProjectId(const std::string& projectName, ProjectId projectId);
 private:
     std::vector<std::string> roots;
     std::vector<std::unique_ptr<Module>> modules;
     std::unordered_map<std::string, Module*> moduleNameMap;
     std::unordered_map<ModuleId, Module*> moduleIdMap;
     SymbolIndexMap symbolIndexMap;
-    Cardinality moduleCount;
-    ModuleId nextModuleId;
+    std::vector<std::unique_ptr<Module>> builtModules;
+    std::set<ProjectId> projectIds;
 };
 
 class ModulePtr
@@ -239,6 +243,7 @@ public:
     ModulePtr(Module* module_, Context* context_) noexcept;
     ~ModulePtr();
     inline Module* GetModule() const noexcept { return module; }
+    void Reset();
 private:
     Module* prevModule;
     Module* module;

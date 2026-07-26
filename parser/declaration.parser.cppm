@@ -46,6 +46,7 @@ struct DeclarationParser
     static soul::parser::Match StaticAssertDeclaration(LexerT& lexer, otava::symbols::Context* context);
     static soul::parser::Match StaticAssert(LexerT& lexer);
     static soul::parser::Match AliasDeclaration(LexerT& lexer, otava::symbols::Context* context);
+    static soul::parser::Match AssumeDefiningTypeId(LexerT& lexer, otava::symbols::Context* context);
     static soul::parser::Match DeclSpecifierSeq(LexerT& lexer, otava::symbols::Context* context);
     static soul::parser::Match Inline(LexerT& lexer);
     static soul::parser::Match DeclSpecifier(LexerT& lexer, otava::symbols::Context* context);

@@ -11,6 +11,7 @@ import otava.symbols.exception;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
 import otava.symbols.type_symbol;
+import otava.symbols.variable_group_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
 import util.sha1;
@@ -19,16 +20,24 @@ namespace otava::symbols {
 
 VariableSymbol::VariableSymbol(Module* module_, SymbolId id_) : 
     Symbol(module_, id_), level(0), foundFromParent(false), nodeId(-1), temporary(false), value(nullptr), global(nullptr), layoutIndex(-1), 
-    declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), contentFetched(false), valueId(zeroSymbolId),
-    index(-1), globalId(zeroSymbolId)
+    declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), valueId(zeroSymbolId),
+    index(-1), globalId(zeroSymbolId), groupId(zeroSymbolId), group(nullptr)
 {
 }
 
 VariableSymbol::VariableSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     Symbol(module_, id_, name_), level(0), foundFromParent(false), nodeId(-1), temporary(false), value(nullptr), global(nullptr), layoutIndex(-1),
-    declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), contentFetched(false), valueId(zeroSymbolId),
-    index(-1), globalId(zeroSymbolId)
+    declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), valueId(zeroSymbolId),
+    index(-1), globalId(zeroSymbolId), groupId(zeroSymbolId), group(nullptr)
 {
+}
+
+VariableSymbol::~VariableSymbol()
+{
+    if (group)
+    {
+        group->ResetVariables();
+    }
 }
 
 bool VariableSymbol::IsLocalVariable(Context* context)
@@ -82,18 +91,14 @@ std::string VariableSymbol::IrName(Context* context) const
 void VariableSymbol::SetDeclaredType(TypeSymbol* declaredType_, Context* context) noexcept
 {
     declaredType = declaredType_;
-    if (declaredType->GetModule() != context->GetModule())
+    if (declaredType->GetModule() != GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(declaredType->Id(), declaredType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(declaredType->Id(), declaredType->GetModule()->Id());
     }
 }
 
 TypeSymbol* VariableSymbol::GetInitializerType(Context* context) 
 {
-    if (initializerType)
-    {
-        return initializerType;
-    }
     if (IsReadOnly() && initializerTypeId != zeroSymbolId)
     {
         GetContent(context);
@@ -104,9 +109,9 @@ TypeSymbol* VariableSymbol::GetInitializerType(Context* context)
 void VariableSymbol::SetInitializerType(TypeSymbol* initializerType_, Context* context) noexcept
 {
     initializerType = initializerType_;
-    if (initializerType && initializerType->GetModule() != context->GetModule())
+    if (initializerType && initializerType->GetModule() != GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(initializerType->Id(), initializerType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(initializerType->Id(), initializerType->GetModule()->Id());
     }
 }
 
@@ -194,26 +199,33 @@ void VariableSymbol::Write(Writer& writer)
     writer.GetBinaryStreamWriter().Write(foundFromParent);
     writer.GetBinaryStreamWriter().Write(temporary);
     writer.GetBinaryStreamWriter().Write(layoutIndex);
+    if (group)
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(group->Id()));
+    }
+    else
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(zeroSymbolId));
+    }
 }
 
 void VariableSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
-    declaredTypeId = SymbolId(reader.CurrentReader().ReadUInt());
-    initializerTypeId = SymbolId(reader.CurrentReader().ReadUInt());
-    valueId = SymbolId(reader.CurrentReader().ReadUInt());
-    globalId = SymbolId(reader.CurrentReader().ReadUInt());
+    declaredTypeId = SymbolId(reader.CurrentReader().ReadULong());
+    initializerTypeId = SymbolId(reader.CurrentReader().ReadULong());
+    valueId = SymbolId(reader.CurrentReader().ReadULong());
+    globalId = SymbolId(reader.CurrentReader().ReadULong());
     index = reader.CurrentReader().ReadInt();
     level = reader.CurrentReader().ReadInt();
     foundFromParent = reader.CurrentReader().ReadBool();
     temporary = reader.CurrentReader().ReadBool();
     layoutIndex = reader.CurrentReader().ReadInt();
+    groupId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void VariableSymbol::GetContent(Context* context)
 {
-    if (contentFetched) return;
-    contentFetched = true;
     if (declaredTypeId != zeroSymbolId)
     {
         declaredType = GetModule()->GetSymbolTable()->GetTypeSymbol(declaredTypeId, context);
@@ -235,7 +247,11 @@ void VariableSymbol::GetContent(Context* context)
         value = GetModule()->GetSymbolTable()->GetValue(valueId, context);
         if (!value)
         {
-            ThrowException("variable value id " + std::to_string(ToUnderlying(valueId)) + " not found", GetFullSpan(), context);
+            value = GetModule()->GetEvaluationContext()->GetValue(valueId);
+        }
+        if (!value)
+        {
+            //ThrowException("variable value id " + std::to_string(ToUnderlying(valueId)) + " not found", GetFullSpan(), context); FIXME
         }
     }
     if (globalId != zeroSymbolId)
@@ -245,6 +261,10 @@ void VariableSymbol::GetContent(Context* context)
         {
             ThrowException("variable global id " + std::to_string(ToUnderlying(globalId)) + " not found", GetFullSpan(), context);
         }
+    }
+    if (groupId != zeroSymbolId)
+    {
+        group = GetModule()->GetSymbolTable()->GetVariableGroupSymbol(groupId, context);
     }
 }
 
@@ -258,7 +278,7 @@ ParameterSymbol::ParameterSymbol(Module* module_, SymbolId id_, const std::strin
 {
 }
 
-void ParameterSymbol::SetDefaultValue(otava::ast::Node* defaultValue_) noexcept 
+void ParameterSymbol::SetDefaultValue(otava::ast::Node* defaultValue_) noexcept
 { 
     if (defaultValue_)
     {
@@ -277,7 +297,14 @@ TypeSymbol* ParameterSymbol::GetType(Context* context)
         type = GetModule()->GetSymbolTable()->GetTypeSymbol(typeId, context);
         if (!type)
         {
-            ThrowException("parameter '" + Name() + "' type id " + std::to_string(ToUnderlying(typeId)) + " not found", GetFullSpan(), context);
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                context->GetModuleMapper()->PrintModules();
+                ThrowException("type id " + 
+                    std::to_string(ToUnderlying(typeId)) + " of parameter '" + Name() + "' not found: " + std::string(ex.what()), GetFullSpan(), context);
+            }
+            ThrowException("type id " + std::to_string(ToUnderlying(typeId)) + " of parameter '" + Name() + "' not found", GetFullSpan(), context);
         }
     }
     return type;
@@ -286,9 +313,9 @@ TypeSymbol* ParameterSymbol::GetType(Context* context)
 void ParameterSymbol::SetType(TypeSymbol* type_, Context* context) noexcept
 {
     type = type_;
-    if (type->GetModule() != context->GetModule())
+    if (type->GetModule() != GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
     }
 }
 
@@ -380,7 +407,7 @@ void ParameterSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
     parameterKind = ParameterKind(reader.CurrentReader().ReadByte());
-    typeId = SymbolId(reader.CurrentReader().ReadUInt());
+    typeId = SymbolId(reader.CurrentReader().ReadULong());
     defaultValue = otava::symbols::ReadNode(reader, GetModule(), astNodeHeader);
 }
 

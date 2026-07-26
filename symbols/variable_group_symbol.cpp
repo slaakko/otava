@@ -13,13 +13,21 @@ import otava.symbols.variable_symbol;
 namespace otava::symbols {
 
 VariableGroupSymbol::VariableGroupSymbol(Module* module_, SymbolId id_) : 
-    Symbol(module_, id_), variablesFetched(false), expanded(false), readOnlyVariableGroup(nullptr)
+    Symbol(module_, id_), variablesFetched(false)
 {
 }
 
 VariableGroupSymbol::VariableGroupSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    Symbol(module_, id_, name_), variablesFetched(false), expanded(false), readOnlyVariableGroup(nullptr)
+    Symbol(module_, id_, name_), variablesFetched(false)
 {
+}
+
+VariableGroupSymbol::~VariableGroupSymbol()
+{
+    for (VariableSymbol* variable : variables)
+    {
+        variable->ResetGroup();
+    }
 }
 
 bool VariableGroupSymbol::IsValidDeclarationScope(ScopeKind scopeKind) const noexcept
@@ -43,14 +51,6 @@ Symbol* VariableGroupSymbol::GetSingleSymbol(Context* context)
     {
         GetVariables(context);
     }
-    else
-    {
-        Expand(context);
-    }
-    if (readOnlyVariableGroup)
-    {
-        return readOnlyVariableGroup->GetSingleSymbol(context);
-    }
     if (variables.size() == 1)
     {
         Symbol* front = variables.front();
@@ -66,8 +66,15 @@ void VariableGroupSymbol::AddVariable(VariableSymbol* variableSymbol)
 {
     if (std::find(variables.begin(), variables.end(), variableSymbol) == variables.end())
     {
+        variableSymbol->SetGroup(this);
         variables.push_back(variableSymbol);
     }
+}
+
+void VariableGroupSymbol::ResetVariables()
+{
+    variables.clear();
+    variablesFetched = false;
 }
 
 void VariableGroupSymbol::GetVariables(Context* context)
@@ -93,62 +100,11 @@ bool VariableGroupSymbol::IsEmpty() const noexcept
     return variables.empty() && variableIds.empty();
 }
 
-void VariableGroupSymbol::Expand(Context* context)
-{
-    if (expanded) return;
-    expanded = true;
-    for (const auto& moduleSymbolId : ModuleSymbolIds())
-    {
-        ModuleId moduleId = moduleSymbolId.moduleId;
-        Module* module = context->GetModuleMapper()->GetModule(moduleId);
-        if (module)
-        {
-            SymbolId symbolId = moduleSymbolId.symbolId;
-            VariableGroupSymbol* variableGroup = module->GetSymbolTable()->GetVariableGroupSymbol(symbolId, context);
-            if (variableGroup)
-            {
-                if (!readOnlyVariableGroup || readOnlyVariableGroup->IsEmpty())
-                {
-                    readOnlyVariableGroup = variableGroup;
-                }
-                else if (!variableGroup->IsEmpty())
-                {
-                    Symbol* symbol = readOnlyVariableGroup->GetSingleSymbol(context);
-                    Symbol* prev = variableGroup->GetSingleSymbol(context);
-                    if (symbol != prev)
-                    {
-                        symbol = readOnlyVariableGroup->GetSingleSymbol(context);
-                        prev = variableGroup->GetSingleSymbol(context);
-                        ThrowException("variable type '" + symbol->Name() + "' not unique", symbol->GetFullSpan(), prev->GetFullSpan(), context);
-                    }
-                }
-            }
-            else
-            {
-                //ThrowException("variable group symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
-            }
-        }
-        else
-        {
-            ThrowException("import module " + std::to_string(ToUnderlying(moduleId)) + " not found from variable group '" + FullName(context) +
-                "' of module " + GetModule()->Name());
-        }
-    }
-}
-
 const std::vector<VariableSymbol*>& VariableGroupSymbol::Variables(Context* context)
 {
     if (IsReadOnly())
     {
         GetVariables(context);
-    }
-    else
-    {
-        Expand(context);
-    }
-    if (readOnlyVariableGroup)
-    {
-        return readOnlyVariableGroup->Variables(context);
     }
     return variables;
 }
@@ -158,14 +114,6 @@ VariableSymbol* VariableGroupSymbol::GetVariable(int arity, Context* context)
     if (IsReadOnly())
     {
         GetVariables(context);
-    }
-    else
-    {
-        Expand(context);
-    }
-    if (readOnlyVariableGroup)
-    {
-        return readOnlyVariableGroup->GetVariable(arity, context);
     }
     for (VariableSymbol* variable : variables)
     {
@@ -194,7 +142,7 @@ void VariableGroupSymbol::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId variableId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId variableId = SymbolId(reader.CurrentReader().ReadULong());
         variableIds.push_back(variableId);
     }
 }

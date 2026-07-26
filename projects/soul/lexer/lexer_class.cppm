@@ -2,6 +2,7 @@ export module soul.lexer.cls;
 
 import std;
 import soul.ast.source_pos;
+import soul.ast.common;
 import util.unicode;
 import soul.ast.slg;
 import soul.ast.lexer_pos_pair;
@@ -14,6 +15,7 @@ import soul.lexer.keyword;
 import soul.lexer.lexeme;
 import soul.lexer.parsing_log;
 import soul.lexer.token;
+import soul.lexer.variables;
 
 export namespace soul::lexer {
 
@@ -401,7 +403,7 @@ public:
     {
         soul::ast::SourcePos sourcePos = GetSourcePos(p);
         std::string parserStateStr = GetParserStateStr();
-        throw ParsingException("parsing error at '" + fileName + ":" + std::to_string(sourcePos.line) + "': " + name + " expected:\n" + ErrorLines(p) + parserStateStr,
+        throw soul::lexer::ParsingException("parsing error at '" + fileName + ":" + std::to_string(sourcePos.line) + "': " + name + " expected:\n" + ErrorLines(p) + parserStateStr,
             fileName, sourcePos);
     }
     std::string GetParserStateStr() const
@@ -434,7 +436,7 @@ public:
         std::cout.flush();
         soul::ast::SourcePos sourcePos = GetSourcePos(farthestPos);
         parsing_error_thrown = true;
-        throw ParsingException(GetError(farthestPos), fileName, sourcePos);
+        throw soul::lexer::ParsingException(GetError(farthestPos), fileName, sourcePos);
     }
     void SetLog(ParsingLog* log_) noexcept override
     {
@@ -816,7 +818,7 @@ private:
     std::vector<const Char*> lineStarts;
     std::map<std::int64_t, std::string>* ruleNameMapPtr;
     ParsingLog* log;
-    Machine::Variables vars;
+    VariableClassType vars;
     std::stack<LexerState<Char, LexerBase<Char>>> stateStack;
     PPHook ppHook;
     bool skip;

@@ -150,7 +150,7 @@ public:
     const std::vector<VariableSymbol*>& MemberVariables(Context* context) const;
     const std::vector<VariableSymbol*>& StaticMemberVariables(Context* context) const;
     const std::vector<FunctionSymbol*>& MemberFunctions(Context* context) const;
-    bool HasBaseClass(TypeSymbol* baseClass, int& distance, Context* context) const noexcept override;
+    bool HasBaseClass(TypeSymbol* baseClass, int& distance, Context* context) const override;
     bool HasPolymorphicBaseClass(Context* context) const noexcept;
     bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     inline const std::vector<TypeSymbol*>& ObjectLayout() const noexcept { return objectLayout; }
@@ -198,6 +198,7 @@ private:
     mutable bool contentFetched;
     bool destructing;
     void GetContent(Context* context) const;
+    void ClearContent();
 };
 
 class ForwardClassDeclarationSymbol : public TypeSymbol
@@ -210,7 +211,7 @@ public:
     TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
     Cardinality Arity(Context* context) noexcept;
     ClassGroupSymbol* Group(Context* context) const;
-    inline void SetGroup(ClassGroupSymbol* group_) noexcept { group = group_; }
+    void SetGroup(ClassGroupSymbol* group_) noexcept;
     inline void SetClassKind(ClassKind classKind_) noexcept { classKind = classKind_; }
     inline ClassKind GetClassKind() const noexcept { return classKind; }
     TypeSymbol* FinalType(const soul::ast::FullSpan& fullSpan, Context* context) override;

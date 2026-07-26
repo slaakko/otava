@@ -15,29 +15,29 @@ void SetEx()
     ex = true;
 }
 
-std::string SoulVersionStr()
+std::string OtavaVersionStr()
 {
-    return "5.0.0";
+    return "0.1.0";
 }
 
-std::string SoulRoot()
+std::string OtavaRoot()
 {
-    std::string soulRoot;
-    const char* soulRootEnv = std::getenv("SOUL_ROOT");
-    if (soulRootEnv)
+    std::string otavaRoot;
+    const char* otavaRootEnv = std::getenv("OTAVA_ROOT");
+    if (otavaRootEnv)
     {
-        soulRoot = soulRootEnv;
+        otavaRoot = otavaRootEnv;
     }
-    if (soulRoot.empty())
+    if (otavaRoot.empty())
     {
-        throw UnicodeException("please set 'SOUL_ROOT' environment variable to contain /path/to/soul directory.");
+        throw UnicodeException("please set 'OTAVA_ROOT' environment variable to contain /path/to/otava directory.");
     }
-    return soulRoot;
+    return otavaRoot;
 }
 
-std::string SoulUcdFilePath()
+std::string OtavaUcdFilePath()
 {
-    return GetFullPath(Path::Combine(Path::Combine(SoulRoot(), "unicode"), "soul_ucd.bin"));
+    return GetFullPath(Path::Combine(Path::Combine(OtavaRoot(), "unicode"), "otava_ucd.bin"));
 }
 
 std::u32string ToUpper(const std::u32string& s)

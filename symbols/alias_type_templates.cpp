@@ -48,11 +48,11 @@ void AliasTypeTemplateSpecializationSymbol::Read(Reader& reader)
 {
     AliasTypeSymbol::Read(reader);
     instantiated = reader.CurrentReader().ReadBool();
-    aliasTypeTemplateId = SymbolId(reader.CurrentReader().ReadUInt());
+    aliasTypeTemplateId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId templateArgumentId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId templateArgumentId = SymbolId(reader.CurrentReader().ReadULong());
         templateArgumentIds.push_back(templateArgumentId);
     }
 }
@@ -88,7 +88,7 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
 {
     AliasTypeTemplateSpecializationSymbol* specialization = context->GetSymbolTable()->MakeAliasTypeTemplateSpecialization(typeSymbol, templateArgs, context);
     if (specialization->Instantiated()) return specialization;
-    otava::ast::Node* aliasTypeNode = context->GetSymbolTable()->GetNodeNothrow(typeSymbol);
+    otava::ast::Node* aliasTypeNode = context->GetSymbolTable()->GetNodeNothrow(typeSymbol, context);
     if (!aliasTypeNode)
     {
         Module* module = typeSymbol->GetModule();
@@ -144,18 +144,17 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
                 boundTemplateParameter->SetBoundSymbol(templateArg);
                 boundTemplateParameters.push_back(std::unique_ptr<BoundTemplateParameterSymbol>(boundTemplateParameter));
                 instantiationScope.Install(boundTemplateParameter, context);
-                context->GetSymbolTable()->MapSymbol(boundTemplateParameter);
+                context->GetSymbolTable()->MapSymbol(boundTemplateParameter, context);
             }
             ScopePtr instantiationScopePtr(&instantiationScope, context);
             Instantiator instantiator(context, &instantiationScope);
             try
             {
-                context->PushSetFlag(ContextFlags::instantiateAliasTypeTemplate);
+                FlagSetter flagSetter(context, ContextFlags::instantiateAliasTypeTemplate);
                 context->SetAliasType(specialization);
                 TemplateModulePtr templateModulePtr(context, aliasTypeSymbol->GetModule());
                 TemplateScopePtr templateScopePtr(context, aliasTypeSymbol->GetScope()->GetNamespaceScope(context));
                 aliasTypeNode->Accept(instantiator);
-                context->PopFlags();
             }
             catch (const std::exception& ex)
             {

@@ -1,0 +1,3 @@
+project fn_declarator;
+target=program;
+source <fn_declarator.cpp>;

@@ -85,6 +85,7 @@ public:
     void Visit(otava::ast::FunctionDeclaratorNode& node) override;
     void Visit(otava::ast::NewTypeIdNode& node) override;
     void Visit(otava::ast::ArrayNewDeclaratorNode& node) override;
+    inline void SetCreateTypeSymbol() noexcept { createTypeSymbol = true; }
 private:
     Context* context;
     TypeSymbol* type;
@@ -108,15 +109,18 @@ TypeResolver::TypeResolver(Context* context_, const soul::ast::FullSpan& fullSpa
     pointerCount(0),
     typeResolved(false),
     createTypeSymbol(false),
+    failed(false),
     size(),
-    fullSpan(fullSpan_), 
-    failed(false)
+    fullSpan(fullSpan_) 
 {
 }
 
 TypeSymbol* TypeResolver::GetType()
 {
-    if (failed) return nullptr;
+    if (failed)
+    {
+        return nullptr;
+    }
     ResolveType();
     return type;
 }
@@ -180,6 +184,7 @@ void TypeResolver::Visit(otava::ast::DefiningTypeIdNode& node)
 {
     if (failed) return;
     node.DefiningTypeSpecifiers()->Accept(*this);
+    if (failed) return;
     if (!type)
     {
         ResolveBaseType(&node);
@@ -187,6 +192,7 @@ void TypeResolver::Visit(otava::ast::DefiningTypeIdNode& node)
     }
     if (failed) return;
     node.AbstractDeclarator()->Accept(*this);
+    if (failed) return;
     ResolveType();
 }
 
@@ -194,10 +200,11 @@ void TypeResolver::Visit(otava::ast::TypeSpecifierSequenceNode& node)
 {
     if (failed) return;
     VisitSequenceContent(node);
+    if (failed) return;
     if (!type)
     {
-        if (failed) return;
         ResolveBaseType(&node);
+        if (failed) return;
         type = baseType;
     }
     if (failed) return;
@@ -411,6 +418,7 @@ void TypeResolver::Visit(otava::ast::RvalueRefNode& node)
 
 void TypeResolver::Visit(otava::ast::PtrNode& node)
 {
+    if (failed) return;
     ++pointerCount;
 }
 
@@ -424,6 +432,11 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
         ScopePtr scopePtr(scope, context);
         createTypeSymbol = true;
         node.GetId()->Accept(*this);
+        if (failed)
+        {
+            context->GetSymbolTable()->PopTopScopeIndex();
+            return;
+        }
         createTypeSymbol = false;
         context->GetSymbolTable()->PopTopScopeIndex();
     }
@@ -448,13 +461,18 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
                     boundTemplateParameter->SetBoundSymbol(templateParamType.second);
                     boundTemplateParameters.push_back(std::unique_ptr<BoundTemplateParameterSymbol>(boundTemplateParameter));
                     instantiationScope.Install(boundTemplateParameter, context);
-                    context->GetSymbolTable()->MapSymbol(boundTemplateParameter);
+                    context->GetSymbolTable()->MapSymbol(boundTemplateParameter, context);
                 }
             }
             context->GetSymbolTable()->PushTopScopeIndex();
             ScopePtr instantiationScopePtr(&instantiationScope, context);
             ScopePtr scopePtr(GetScope(node.NestedNameSpecifier(), context), context);
             node.GetId()->Accept(*this);
+            if (failed)
+            {
+                context->GetSymbolTable()->PopTopScopeIndex();
+                return;
+            }
             scopePtr.Reset();
             instantiationScopePtr.Reset();
             context->GetSymbolTable()->PopTopScopeIndex();
@@ -477,7 +495,8 @@ void TypeResolver::Visit(otava::ast::DeclTypeSpecifierNode& node)
             }
             return;
         }
-        ThrowException("type for decltype specifier not resolved", node.GetFullSpan(), context);
+        type = nullptr;
+        return;
     }
     type = expr->GetType()->PlainType(context);
 }
@@ -492,9 +511,18 @@ void TypeResolver::Visit(otava::ast::QualifiedIdNode& node)
     {
         ModulePtr modulePtr(scope->GetModule(), context);
         ScopePtr scopePtr(scope, context);
-        type = otava::symbols::ResolveType(node.Right(), DeclarationFlags::none, context, TypeResolverFlags::dontThrow);
+        TypeResolverFlags flags = TypeResolverFlags::dontThrow;
+        if (scope->GetSymbol()->IsTemplateParameterSymbol() && node.Right()->IsIdentifierNode()  && context->GetFlag(ContextFlags::processingAliasDeclation))
+        {
+            flags = flags | TypeResolverFlags::createTypeSymbol;
+        }
+        type = otava::symbols::ResolveType(node.Right(), DeclarationFlags::none, context, flags);
         if (type)
         {
+            scopePtr.Reset();
+            modulePtr.Reset();
+            context->ResetException();
+            context->GetSymbolTable()->PopTopScopeIndex();
             return;
         }
         else
@@ -522,18 +550,17 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
 {
     if (failed) return;
     soul::ast::FullSpan fullSpan = node.GetFullSpan();
-    Symbol* symbol = context->GetSymbolTable()->Lookup(node.Str(),
+    Symbol* symbol = nullptr;
+    Symbol* s = context->GetSymbolTable()->Lookup(node.Str(),
         SymbolGroupKind::aliasSymbolGroup |
         SymbolGroupKind::classSymbolGroup |
         SymbolGroupKind::enumSymbolGroup |
         SymbolGroupKind::templateParamSymbolGroup, fullSpan, context);
-    if (!symbol)
+    if (s)
     {
-        Symbol* mappedSymbol = context->GetSymbolTable()->GetSymbolNothrow(&node);
-        if (mappedSymbol && mappedSymbol->IsTypeSymbol())
+        if (!s->IsForwardClassDeclarationSymbol() || !context->GetFlag(ContextFlags::rejectIncompleteTypes))
         {
-            type = static_cast<TypeSymbol*>(mappedSymbol);
-            return;
+            symbol = s;
         }
     }
     if (!symbol)
@@ -543,15 +570,19 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
             const Scopes& scopes = context->GetScopes();
             for (Scope* scope : scopes.GetScopes())
             {
-                symbol = scope->Lookup(node.Str(),
+                Symbol* s = scope->Lookup(node.Str(),
                     otava::symbols::SymbolGroupKind::aliasSymbolGroup |
                     otava::symbols::SymbolGroupKind::classSymbolGroup |
                     otava::symbols::SymbolGroupKind::enumSymbolGroup |
                     otava::symbols::SymbolGroupKind::templateParamSymbolGroup,
                     ScopeLookup::allScopes, fullSpan, context, LookupFlags::none);
-                if (symbol)
+                if (s)
                 {
-                    break;
+                    if (!s->IsForwardClassDeclarationSymbol() || !context->GetFlag(ContextFlags::rejectIncompleteTypes))
+                    {
+                        symbol = s;
+                        break;
+                    }
                 }
             }
         }
@@ -560,12 +591,63 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
     {
         int topScopeIndex = context->GetSymbolTable()->TopScopeIndex();
         context->GetSymbolTable()->SetTopScopeIndex(0);
-        symbol = context->GetSymbolTable()->LookupInScopeStack(node.Str(), 
+        Symbol* s = context->GetSymbolTable()->LookupInScopeStack(node.Str(), 
             SymbolGroupKind::aliasSymbolGroup | 
             SymbolGroupKind::classSymbolGroup | 
             SymbolGroupKind::enumSymbolGroup |
             SymbolGroupKind::templateParamSymbolGroup, fullSpan, context, LookupFlags::none);
         context->GetSymbolTable()->SetTopScopeIndex(topScopeIndex);
+        if (s)
+        {
+            if (!s->IsForwardClassDeclarationSymbol() || !context->GetFlag(ContextFlags::rejectIncompleteTypes))
+            {
+                symbol = s;
+            }
+        }
+    }
+    if (!symbol && !createTypeSymbol && (resolverFlags & TypeResolverFlags::dontLookImports) == TypeResolverFlags::none)
+    {
+        std::vector<std::string> containerNames;
+        Scope* currentScope = context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context);
+        if (currentScope)
+        {
+            containerNames = GetContainerNames(currentScope->GetSymbol(), context);
+        }
+        Scope* templateNsScope = context->GetTemplateNsScope();
+        if (templateNsScope)
+        {
+            Symbol* symbol = templateNsScope->GetSymbol();
+            containerNames = GetContainerNames(symbol, context);
+        }
+        std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
+        Module* templateModule = context->GetTemplateModule();
+        if (templateModule)
+        {
+            std::vector<Module*> templateModules = templateModule->ImportExportModules(context);
+            for (Module* module : templateModules)
+            {
+                if (std::find(importedModules.begin(), importedModules.end(), module) == importedModules.end())
+                {
+                    importedModules.push_back(module);
+                }
+            }
+        }
+        for (Module* module : importedModules)
+        {
+            ModulePtr modulePtr(module, context);
+            Scope* containerScope = EnterScope(context->GetSymbolTable()->CurrentScope(), containerNames, node.GetFullSpan(), context);
+            ScopePtr scopePtr(containerScope, context);
+            TypeSymbol* typeSymbol = otava::symbols::ResolveType(&node, DeclarationFlags::none, context, 
+                resolverFlags | TypeResolverFlags::dontThrow | TypeResolverFlags::dontLookImports);
+            if (typeSymbol)
+            {
+                if (!typeSymbol->IsForwardClassDeclarationSymbol() || !context->GetFlag(ContextFlags::rejectIncompleteTypes))
+                {
+                    type = typeSymbol;
+                    return;
+                }
+            }
+        }
     }
     if (symbol)
     {
@@ -646,7 +728,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
                 NestedTypeSymbol* nestedTypeSymbol = new NestedTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::nestedTypeSymbol), node.Str());
                 if (containerSymbol->IsReadOnly())
                 {
-                    context->GetModule()->GetSymbolTable()->GlobalNs()->AddSymbol(nestedTypeSymbol, fullSpan, context);
+                    context->GetModule()->GetSymbolTable()->GetGlobalNs(context)->AddSymbol(nestedTypeSymbol, fullSpan, context);
                     nestedTypeSymbol->SetParent(containerSymbol);
                 }
                 else
@@ -779,7 +861,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
                 }
             }
         }
-        if (!templateArg)
+        if (templateArg)
         {
             ModulePtr compileUnitModule(context->GetCompileUnitModule(), context);
             templateArg = templateArg->DirectType(context)->FinalType(fullSpan, context);
@@ -930,6 +1012,10 @@ void TypeResolver::Visit(otava::ast::TypeIdNode& node)
     node.Declarator()->Accept(*this);
     typeResolved = false;
     ResolveType();
+    if (type)
+    {
+        context->ResetException();
+    }
 }
 
 void TypeResolver::Visit(otava::ast::FunctionDeclaratorNode& node)
@@ -959,14 +1045,29 @@ void TypeResolver::Visit(otava::ast::ArrayNewDeclaratorNode& node)
 
 TypeSymbol* ResolveType(otava::ast::Node* node, DeclarationFlags flags, Context* context)
 {
+    FlagSetter rejectIncompleteTypeFlagSetter(context, ContextFlags::rejectIncompleteTypes);
+    TypeSymbol* type = ResolveType(node, flags, context, TypeResolverFlags::dontThrow);
+    if (type)
+    {
+        return type;
+    }
+    rejectIncompleteTypeFlagSetter.Reset();
     return ResolveType(node, flags, context, TypeResolverFlags::none);
 }
 
 TypeSymbol* ResolveType(otava::ast::Node* node, DeclarationFlags flags, Context* context, TypeResolverFlags resolverFlags)
 {
     TypeResolver resolver(context, node->GetFullSpan(), flags, resolverFlags);
+    if ((resolverFlags & TypeResolverFlags::createTypeSymbol) != TypeResolverFlags::none)
+    {
+        resolver.SetCreateTypeSymbol();
+    }
     node->Accept(resolver);
     TypeSymbol* type = resolver.GetType();
+    if (type)
+    {
+        context->ResetException();
+    }
     return type;
 }
 
@@ -1048,27 +1149,24 @@ Symbol* ResolveTypeIdentifier(const std::string& name, const soul::ast::FullSpan
             }
         }
     }
-    else
+    Scope* currentSymbolScope = context->GetSymbolTable()->CurrentScope()->SymbolScope(context);
+    Symbol* sym = currentSymbolScope->GetSymbol();
+    std::vector<std::string> containerNames = GetContainerNames(sym, context);
+    std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importedModules)
     {
-        Scope* currentSymbolScope = context->GetSymbolTable()->CurrentScope()->SymbolScope(context);
-        Symbol* symbol = currentSymbolScope->GetSymbol();
-        std::vector<std::string> containerNames = GetContainerNames(symbol, context);
-        std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
-        for (Module* importedModule : importedModules)
+        ModulePtr modulePtr(importedModule, context);
+        Scope* containerScope = EnterScope(importedModule->GetSymbolTable()->CurrentScope(), containerNames, fullSpan, context);
+        ScopePtr scopePtr(containerScope, context);
+        symbol = context->GetSymbolTable()->Lookup(name,
+            otava::symbols::SymbolGroupKind::aliasSymbolGroup |
+            otava::symbols::SymbolGroupKind::classSymbolGroup |
+            otava::symbols::SymbolGroupKind::enumSymbolGroup |
+            otava::symbols::SymbolGroupKind::templateParamSymbolGroup,
+            fullSpan, context);
+        if (symbol)
         {
-            ModulePtr modulePtr(importedModule, context);
-            Scope* containerScope = EnterScope(importedModule->GetSymbolTable()->CurrentScope(), containerNames, fullSpan, context);
-            ScopePtr scopePtr(containerScope, context);
-            symbol = context->GetSymbolTable()->Lookup(name,
-                otava::symbols::SymbolGroupKind::aliasSymbolGroup |
-                otava::symbols::SymbolGroupKind::classSymbolGroup |
-                otava::symbols::SymbolGroupKind::enumSymbolGroup |
-                otava::symbols::SymbolGroupKind::templateParamSymbolGroup,
-                fullSpan, context);
-            if (symbol)
-            {
-                return symbol;
-            }
+            return symbol;
         }
     }
     return nullptr;

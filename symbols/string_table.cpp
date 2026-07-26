@@ -9,6 +9,7 @@ import otava.symbols.modules;
 import otava.symbols.writer;
 import util.memory_reader;
 import util.binary_stream_writer;
+import util.text_util;
 import util.utility;
 
 namespace otava::symbols {
@@ -26,9 +27,9 @@ void StringTableHeader::Write(Writer& writer)
 
 void StringTableHeader::Read(Reader& reader)
 {
-    start = FileOffset(reader.CurrentReader().ReadInt());
-    length = Length(reader.CurrentReader().ReadInt());
-    count = Cardinality(reader.CurrentReader().ReadInt());
+    start = FileOffset(reader.CurrentReader().ReadUInt());
+    length = Length(reader.CurrentReader().ReadUInt());
+    count = Cardinality(reader.CurrentReader().ReadUInt());
 }
 
 StringTable::StringTable(Module* module_) : module(module_), length(Length(0)), headerRead(false), stringsRead(false)
@@ -61,16 +62,23 @@ StringOffset StringTable::AddString(const std::string& s)
     return offset;
 }
 
-std::string StringTable::GetString(StringOffset offset)
+std::string StringTable::GetString(StringOffset offset, bool unescape)
 {
     if (module->IsReadOnly())
     {
         ReadHeader();
         const std::uint8_t* pos = util::Advance(module->GetFileMapping()->Start(), ToUnderlying(header.start) + ToUnderlying(offset));
-        util::MemoryReader reader(pos, std::int32_t(util::Advance(module->GetFileMapping()->Start(), 
+        util::MemoryReader reader(pos, std::uint32_t(util::Advance(module->GetFileMapping()->Start(), 
             ToUnderlying(header.start) + ToUnderlying(header.length)) - pos));
-        std::string str = reader.ReadString();
-        return str;
+        std::string hexEscapedStr = reader.ReadString();
+        if (unescape)
+        {
+            return util::HexUnescape(hexEscapedStr);
+        }
+        else
+        {
+            return hexEscapedStr;
+        }
     }
     else
     {
@@ -81,6 +89,11 @@ std::string StringTable::GetString(StringOffset offset)
         }
     }
     return std::string();
+}
+
+std::string StringTable::GetString(StringOffset offset)
+{
+    return GetString(offset, true);
 }
 
 const char* StringTable::CharPtr(StringOffset offset)
@@ -110,7 +123,7 @@ void StringTable::Write(Writer& writer)
     util::BinaryStreamWriter& binaryStreamWriter = writer.GetBinaryStreamWriter();
     for (const auto& s : strings)
     {
-        binaryStreamWriter.Write(s);
+        binaryStreamWriter.Write(util::HexEscape(s));
     }
     FileOffset end = FileOffset(writer.Position());
     Length length = Length(end - contentStart);
@@ -146,9 +159,11 @@ void StringTable::ReadStrings()
     StringOffset offset = StringOffset(0);
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        std::string str = GetString(offset);
+        std::string hexEscapedStr = GetString(offset, false);
+        std::string str = util::HexUnescape(hexEscapedStr);
         stringMap[str] = offset;
-        offset += str.length() + 1;
+        offsetMap[offset] = str;
+        offset += hexEscapedStr.length() + 1;
     }
 }
 

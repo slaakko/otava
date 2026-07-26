@@ -50,7 +50,7 @@ void ConversionTable::Write(Writer& writer)
     for (const auto& e : conversionMap)
     {
         const ConversionTableEntry& entry = e.first;
-        std::uint32_t functionId = e.second;
+        std::uint64_t functionId = e.second;
         writer.GetBinaryStreamWriter().Write(entry.paramTypeId);
         writer.GetBinaryStreamWriter().Write(entry.argTypeId);
         writer.GetBinaryStreamWriter().Write(functionId);
@@ -73,9 +73,9 @@ void ConversionTable::Read(Reader& reader)
     for (Index i = Index(0); i < Index(count); ++i)
     {
         ConversionTableEntry entry;
-        entry.paramTypeId = reader.CurrentReader().ReadUInt();
-        entry.argTypeId = reader.CurrentReader().ReadUInt();
-        std::uint32_t functionId = reader.CurrentReader().ReadUInt();
+        entry.paramTypeId = reader.CurrentReader().ReadULong();
+        entry.argTypeId = reader.CurrentReader().ReadULong();
+        std::uint64_t functionId = reader.CurrentReader().ReadULong();
         conversionMap[entry] = functionId;
     }
 }

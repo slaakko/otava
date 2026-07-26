@@ -72,7 +72,7 @@ void TemplateParameterSymbol::Read(Reader& reader)
     TypeSymbol::Read(reader);
     defaultTemplateArgNode = otava::symbols::ReadNode(reader, GetModule(), astNodeHeader);
     reader.CurrentReader().Skip(ToUnderlying(astNodeHeader.nodeLength));
-    parameterSymbolId = SymbolId(reader.CurrentReader().ReadUInt());
+    parameterSymbolId = SymbolId(reader.CurrentReader().ReadULong());
     index = reader.CurrentReader().ReadInt();
 }
 
@@ -161,7 +161,7 @@ void TemplateDeclarationSymbol::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId templateParameterId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId templateParameterId = SymbolId(reader.CurrentReader().ReadULong());
         templateParameterIds.push_back(templateParameterId);
     }
 }
@@ -416,11 +416,11 @@ void ExplicitInstantiationSymbol::Write(Writer& writer)
 void ExplicitInstantiationSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
-    specializationId = SymbolId(reader.CurrentReader().ReadUInt());
+    specializationId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality n = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(n); ++i)
     {
-        SymbolId id = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId id = SymbolId(reader.CurrentReader().ReadULong());
         functionDefinitionSymbolIds.push_back(id);
     }
 }

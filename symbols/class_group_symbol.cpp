@@ -10,6 +10,7 @@ import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.compound_type_symbol;
 import otava.symbols.exception;
+import otava.symbols.scope_resolver;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.writer;
@@ -114,12 +115,12 @@ int Match(Symbol* templateArg, TypeSymbol* specialization, Index index, Template
 }
 
 ClassGroupSymbol::ClassGroupSymbol(Module* module_, SymbolId id_) : 
-    Symbol(module_, id_), contentFetched(false), expanded(false), classesSet(false), forwardDeclarationsSet(false)
+    Symbol(module_, id_), contentFetched(false), classesSet(false), forwardDeclarationsSet(false)
 {
 }
 
 ClassGroupSymbol::ClassGroupSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    Symbol(module_, id_, name_), contentFetched(false), expanded(false), classesSet(false), forwardDeclarationsSet(false)
+    Symbol(module_, id_, name_), contentFetched(false), classesSet(false), forwardDeclarationsSet(false)
 {
 }
 
@@ -169,10 +170,6 @@ Symbol* ClassGroupSymbol::GetSingleSymbol(Context* context)
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<ClassTypeSymbol*> allClasses;
     for (ClassTypeSymbol* cls : classes)
     {
@@ -181,32 +178,12 @@ Symbol* ClassGroupSymbol::GetSingleSymbol(Context* context)
             allClasses.push_back(cls);
         }
     }
-    for (ClassGroupSymbol* readOnlyClassGroup : readOnlyClassGroups)
-    {
-        for (ClassTypeSymbol* cls : readOnlyClassGroup->Classes(context))
-        {
-            if (cls && std::find(allClasses.begin(), allClasses.end(), cls) == allClasses.end())
-            {
-                allClasses.push_back(cls);
-            }
-        }
-    }
     std::vector<ForwardClassDeclarationSymbol*> allForwardDeclarations;
     for (ForwardClassDeclarationSymbol* fwd : forwardDeclarations)
     {
         if (fwd && std::find(allForwardDeclarations.begin(), allForwardDeclarations.end(), fwd) == allForwardDeclarations.end())
         {
             allForwardDeclarations.push_back(fwd);
-        }
-    }
-    for (ClassGroupSymbol* readOnlyClassGroup : readOnlyClassGroups)
-    {
-        for (ForwardClassDeclarationSymbol* fwd : readOnlyClassGroup->ForwardDeclarations(context))
-        {
-            if (fwd && std::find(allForwardDeclarations.begin(), allForwardDeclarations.end(), fwd) == allForwardDeclarations.end())
-            {
-                allForwardDeclarations.push_back(fwd);
-            }
         }
     }
     if (allClasses.size() == 1)
@@ -238,6 +215,33 @@ std::vector<Symbol*> MakeTemplateArgs(const std::unordered_map<TemplateParameter
 
 const std::vector<ClassTypeSymbol*>& ClassGroupSymbol::Classes(Context* context) const
 {
+    if (!context->GetFlag(ContextFlags::dontLookImports))
+    {
+        Scope* currentSymbolScope = context->GetSymbolTable()->CurrentScope()->SymbolScope(context);
+        Symbol* sym = currentSymbolScope->GetSymbol();
+        std::vector<std::string> containerNames = GetContainerNames(sym, context);
+        std::vector<Module*> modules = context->GetModule()->ImportExportModules(context);
+        for (Module* module : modules)
+        {
+            Scope* globalNsScope = module->GetSymbolTable()->GetGlobalNs(context)->GetScope();
+            Scope* containerScope = EnterScope(globalNsScope, containerNames, GetFullSpan(), context);
+            Symbol* s = containerScope->Lookup(
+                Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::thisScope, GetFullSpan(), context, LookupFlags::dontResolveSingle);
+            if (s && s->IsClassGroupSymbol())
+            {
+                ClassGroupSymbol* group = static_cast<ClassGroupSymbol*>(s);
+                FlagSetter noImportsFlagSetter(context, ContextFlags::dontLookImports);
+                std::vector<ClassTypeSymbol*> groupClasses = group->Classes(context);
+                for (ClassTypeSymbol* cls : groupClasses)
+                {
+                    if (std::find(classes.begin(), classes.end(), cls) == classes.end())
+                    {
+                        classes.push_back(cls);
+                    }
+                }
+            }
+        }
+    }
     if (IsReadOnly() && !classesSet)
     {
         classesSet = true;
@@ -302,10 +306,6 @@ ClassTypeSymbol* ClassGroupSymbol::GetBestMatchingClass(const std::vector<Symbol
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<std::pair<ClassTypeSymbol*, TemplateMatchInfo>> viableClasses;
     Cardinality arity = Cardinality(templateArgs.size());
     std::vector<ClassTypeSymbol*> allClasses;
@@ -314,16 +314,6 @@ ClassTypeSymbol* ClassGroupSymbol::GetBestMatchingClass(const std::vector<Symbol
         if (cls)
         {
             allClasses.push_back(cls);
-        }
-    }
-    for (ClassGroupSymbol* readOnlyClassGroup : readOnlyClassGroups)
-    {
-        for (ClassTypeSymbol* cls : readOnlyClassGroup->Classes(context))
-        {
-            if (cls && std::find(allClasses.begin(), allClasses.end(), cls) == allClasses.end())
-            {
-                allClasses.push_back(cls);
-            }
         }
     }
     for (ClassTypeSymbol* cls : allClasses)
@@ -369,10 +359,6 @@ ClassTypeSymbol* ClassGroupSymbol::GetBestMatchingClass(const std::vector<Symbol
 
 void ClassGroupSymbol::Write(Writer& writer)
 {
-    if (Name() == "Span")
-    {
-        int x = 0;
-    }
     Symbol::Write(writer);
     Cardinality classCount = Cardinality(classes.size());
     writer.GetBinaryStreamWriter().Write(ToUnderlying(classCount));
@@ -391,20 +377,16 @@ void ClassGroupSymbol::Write(Writer& writer)
 void ClassGroupSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
-    if (Name() == "Span")
-    {
-        int x = 0;
-    }
     Cardinality classCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(classCount); ++i)
     {
-        SymbolId classId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId classId = SymbolId(reader.CurrentReader().ReadULong());
         classIds.push_back(classId);
     }
     Cardinality fwdCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(fwdCount); ++i)
     {
-        SymbolId fwdId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId fwdId = SymbolId(reader.CurrentReader().ReadULong());
         fwdDeclIds.push_back(fwdId);
     }
 }
@@ -441,45 +423,20 @@ void ClassGroupSymbol::GetContent(Context* context)
     }
 }
 
-void ClassGroupSymbol::Expand(Context* context)
-{
-    if (expanded) return;
-    expanded = true;
-    for (const auto& moduleSymbolId : ModuleSymbolIds())
-    {
-        ModuleId moduleId = moduleSymbolId.moduleId;
-        Module* module = context->GetModuleMapper()->GetModule(moduleId);
-        if (module)
-        {
-            SymbolId symbolId = moduleSymbolId.symbolId;
-            ClassGroupSymbol* classGroup = module->GetSymbolTable()->GetClassGroupSymbol(symbolId, context);
-            if (classGroup)
-            {
-                readOnlyClassGroups.push_back(classGroup);
-            }
-            else
-            {
-                //ThrowException("class group symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
-            }
-        }
-        else
-        {
-            ThrowException("import module " + std::to_string(ToUnderlying(moduleId)) + " not found from class group '" + FullName(context) +
-                "' of module " + GetModule()->Name());
-        }
-    }
-}
-
 bool ClassGroupSymbol::IsExportSymbol(Context* context) const noexcept
 {
-    return Symbol::IsExportSymbol(context) && ContainsExportClass(context);
+    return Symbol::IsExportSymbol(context) && ContainsExportClassOrFwdDeclaration(context);
 }
 
-bool ClassGroupSymbol::ContainsExportClass(Context* context) const noexcept
+bool ClassGroupSymbol::ContainsExportClassOrFwdDeclaration(Context* context) const noexcept
 {
     for (ClassTypeSymbol* cls : classes)
     {
         if (cls->IsExportSymbol(context)) return true;
+    }
+    for (ForwardClassDeclarationSymbol* fwd : forwardDeclarations)
+    {
+        if (fwd->IsExportSymbol(context)) return true;
     }
     return false;
 }

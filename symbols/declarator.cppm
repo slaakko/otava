@@ -45,6 +45,8 @@ public:
     SimpleDeclarator(const std::string& name_, otava::ast::Node* node_);
 };
 
+class FunctionDeclarator;
+
 struct Declaration
 {
     Declaration() noexcept;

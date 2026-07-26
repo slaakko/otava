@@ -33,7 +33,7 @@ void Writer::Write(Symbol* symbol)
     }
     else
     {
-        std::uint32_t zero = ToUnderlying(zeroSymbolId);
+        std::uint64_t zero = ToUnderlying(zeroSymbolId);
         binaryStreamWriter.Write(zero);
     }
 }

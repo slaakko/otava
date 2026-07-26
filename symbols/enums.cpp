@@ -68,9 +68,10 @@ TypeSymbol* EnumeratedTypeSymbol::UnderlyingType(Context* context)
 
 otava::intermediate::Type* EnumeratedTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    if (underlyingType)
+    TypeSymbol* ut = UnderlyingType(context);
+    if (ut)
     {
-        return underlyingType->IrType(emitter, fullSpan, context);
+        return ut->IrType(emitter, fullSpan, context);
     }
     else
     {
@@ -96,7 +97,7 @@ void EnumeratedTypeSymbol::Write(Writer& writer)
 void EnumeratedTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
-    underlyingTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    underlyingTypeId = SymbolId(reader.CurrentReader().ReadULong());
     bound = reader.CurrentReader().ReadBool();
     enumTypeKind = EnumTypeKind(reader.CurrentReader().ReadByte());
 }
@@ -184,8 +185,8 @@ void EnumConstantSymbol::Write(Writer& writer)
 void EnumConstantSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
-    valueId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
+    valueId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 bool EnumTypeLessFunctor::operator()(EnumeratedTypeSymbol* left, EnumeratedTypeSymbol* right) const noexcept
@@ -218,7 +219,7 @@ void EnumTypeDefaultCtor::Write(Writer& writer)
 void EnumTypeDefaultCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeDefaultCtor::Resolve(Context* context)
@@ -277,7 +278,7 @@ void EnumTypeCopyCtor::Write(Writer& writer)
 void EnumTypeCopyCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -320,7 +321,7 @@ void EnumTypeMoveCtor::Write(Writer& writer)
 void EnumTypeMoveCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeMoveCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -366,7 +367,7 @@ void EnumTypeCopyAssignment::Write(Writer& writer)
 void EnumTypeCopyAssignment::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeCopyAssignment::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -406,7 +407,7 @@ void EnumTypeMoveAssignment::Write(Writer& writer)
 void EnumTypeMoveAssignment::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeMoveAssignment::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -448,7 +449,7 @@ void EnumTypeEqual::Write(Writer& writer)
 void EnumTypeEqual::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeEqual::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -490,7 +491,7 @@ void EnumTypeLess::Write(Writer& writer)
 void EnumTypeLess::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void EnumTypeLess::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,

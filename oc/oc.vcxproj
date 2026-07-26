@@ -153,6 +153,9 @@
     <ProjectReference Include="..\lexer\lexer.vcxproj">
       <Project>{482e3b51-5ad0-49ec-9891-c902c3ba65ff}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\optimizer\optimizer.vcxproj">
+      <Project>{04c54a1b-abd4-4cf1-a0a7-a33486f06e0d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\parser\parser.vcxproj">
       <Project>{99213559-3a97-464f-b1e2-67ff44bf3b0d}</Project>
     </ProjectReference>

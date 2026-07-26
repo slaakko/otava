@@ -163,7 +163,7 @@ void Instantiator::Visit(otava::ast::CompoundStatementNode& node)
     {
         context->PushParentBlockId(node.BlockId());
     }
-    context->GetSymbolTable()->MapNode(&node, block);
+    context->GetSymbolTable()->MapNode(&node, block, context);
     VisitSequence(node);
     EndBlock(context);
     if (context->GetFlag(ContextFlags::setParentBlockIds))
@@ -185,7 +185,7 @@ void Instantiator::Visit(otava::ast::IfStatementNode& node)
     {
         context->PushParentBlockId(node.BlockId());
     }
-    context->GetSymbolTable()->MapNode(&node, block);
+    context->GetSymbolTable()->MapNode(&node, block, context);
     node.ThenStatement()->Accept(*this);
     if (node.ElseStatement())
     {
@@ -205,7 +205,7 @@ void Instantiator::Visit(otava::ast::SwitchStatementNode& node)
     {
         context->PushParentBlockId(node.BlockId());
     }
-    context->GetSymbolTable()->MapNode(&node, block);
+    context->GetSymbolTable()->MapNode(&node, block, context);
     node.Statement()->Accept(*this);
     EndBlock(context);
     if (context->GetFlag(ContextFlags::setParentBlockIds))
@@ -221,7 +221,7 @@ void Instantiator::Visit(otava::ast::WhileStatementNode& node)
     {
         context->PushParentBlockId(node.BlockId());
     }
-    context->GetSymbolTable()->MapNode(&node, block);
+    context->GetSymbolTable()->MapNode(&node, block, context);
     node.Statement()->Accept(*this);
     EndBlock(context);
     if (context->GetFlag(ContextFlags::setParentBlockIds))
@@ -242,7 +242,7 @@ void Instantiator::Visit(otava::ast::ForStatementNode& node)
     {
         context->PushParentBlockId(node.BlockId());
     }
-    context->GetSymbolTable()->MapNode(&node, block);
+    context->GetSymbolTable()->MapNode(&node, block, context);
     if (node.InitStatement())
     {
         node.InitStatement()->Accept(*this);

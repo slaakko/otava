@@ -35,12 +35,8 @@ TemplateDeclarationSymbol* AliasTypeSymbol::ParentTemplateDeclaration(Context* c
     return nullptr;
 }
 
-TypeSymbol* AliasTypeSymbol::ReferredType(Context* context) const
+TypeSymbol* AliasTypeSymbol::ReferredType(Context* context) 
 {
-    if (referredType)
-    {
-        return referredType;
-    }
     if (IsReadOnly() && referredTypeId != zeroSymbolId)
     {
         TypeSymbol* typeSymbol = GetModule()->GetSymbolTable()->GetTypeSymbol(referredTypeId, context);
@@ -57,6 +53,15 @@ TypeSymbol* AliasTypeSymbol::ReferredType(Context* context) const
         }
     }
     return referredType;
+}
+
+void AliasTypeSymbol::SetReferredType(TypeSymbol* referredType_) noexcept
+{ 
+    referredType = referredType_; 
+    if (referredType && GetModule() != referredType->GetModule())
+    {
+        GetModule()->GetSymbolTable()->AddImportedSymbol(referredType->Id(), referredType->GetModule()->Id());
+    }
 }
 
 TypeSymbol* AliasTypeSymbol::DirectType(Context* context)
@@ -102,7 +107,7 @@ void AliasTypeSymbol::Write(Writer& writer)
 void AliasTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
-    referredTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    referredTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 class AliasDeclarationProcessor : public otava::ast::DefaultVisitor
@@ -124,7 +129,7 @@ AliasDeclarationProcessor::AliasDeclarationProcessor(Context* context_) : contex
 
 void AliasDeclarationProcessor::Visit(otava::ast::AliasDeclarationNode& node)
 {
-    context->PushSetFlag(ContextFlags::processingAliasDeclation);
+    FlagSetter flagSetter(context, ContextFlags::processingAliasDeclation);
     idNode = node.Identifier();
     type = ResolveType(node.DefiningTypeId(), DeclarationFlags::none, context);
     if (!type)
@@ -141,7 +146,6 @@ void AliasDeclarationProcessor::Visit(otava::ast::AliasDeclarationNode& node)
         AliasTypeSymbol* aliasType = static_cast<AliasTypeSymbol*>(type);
         type = aliasType->ReferredType(context);
     }
-    context->PopFlags();
 }
 
 void ProcessAliasDeclaration(otava::ast::Node* aliasDeclarationNode, Context* context)
@@ -162,7 +166,7 @@ void ProcessAliasDeclaration(otava::ast::Node* aliasDeclarationNode, Context* co
         {
             aliasType->SetReferredType(type);
         }
-        context->GetSymbolTable()->MapNode(aliasDeclarationNode, aliasType);
+        context->GetSymbolTable()->MapNode(aliasDeclarationNode, aliasType, context);
     }
     else
     {

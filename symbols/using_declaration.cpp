@@ -22,12 +22,15 @@ public:
     void Visit(otava::ast::UsingDeclarationNode& node) override;
     void Visit(otava::ast::QualifiedIdNode& node) override;
     void Visit(otava::ast::IdentifierNode& node) override;
+    inline void SetScope(Scope* scope_) noexcept { scope = scope_; }
+    inline bool Succeeded() const noexcept { return succeeded; }
 private:
     Context* context;
     Scope* scope;
+    bool succeeded;
 };
 
-UsingDeclarationProcessor::UsingDeclarationProcessor(Context* context_) : context(context_), scope(context->GetSymbolTable()->CurrentScope())
+UsingDeclarationProcessor::UsingDeclarationProcessor(Context* context_) : context(context_), scope(context->GetSymbolTable()->CurrentScope()), succeeded(false)
 {
 }
 
@@ -38,8 +41,27 @@ void UsingDeclarationProcessor::Visit(otava::ast::UsingDeclarationNode& node)
 
 void UsingDeclarationProcessor::Visit(otava::ast::QualifiedIdNode& node)
 {
-    scope = ResolveScope(node.Left(), context);
-    node.Right()->Accept(*this);
+    Scopes scopes = GetScopes(node.Left(), context);
+    for (Scope* scope : scopes.GetScopes())
+    {
+        context->PushScope(scope);
+        FlagSetter flagSetter(context, ContextFlags::dontThrow);
+        bool succeeded = AddUsingDeclaration(node.Right(), context);
+        context->PopScope();
+        if (succeeded)
+        {
+            return;
+        }
+    }
+    if (context->GetFlag(ContextFlags::dontThrow))
+    {
+        if (!context->HasException())
+        {
+            context->SetException(MakeException("error adding using declaration: scope not found", node.GetFullSpan(), context));
+        }
+        return;
+    }
+    ThrowException("error adding using declaration: scope not found", node.GetFullSpan(), context);
 }
 
 void UsingDeclarationProcessor::Visit(otava::ast::IdentifierNode& node)
@@ -50,12 +72,30 @@ void UsingDeclarationProcessor::Visit(otava::ast::IdentifierNode& node)
     scope->Lookup(node.Str(), SymbolGroupKind::all, ScopeLookup::thisScope, LookupFlags::none, symbols, visited, context);
     if (symbols.empty())
     {
+        if (context->GetFlag(ContextFlags::dontThrow))
+        {
+            if (!context->HasException())
+            {
+                context->SetException(MakeException("symbol '" + node.Str() + "' not found", fullSpan, context));
+            }
+            return;
+        }
         ThrowException("symbol '" + node.Str() + "' not found", fullSpan, context);
     }
+    bool failed = false;
     for (Symbol* symbol : symbols)
     {
         if (symbol->IsNamespaceSymbol())
         {
+            if (context->GetFlag(ContextFlags::dontThrow))
+            {
+                if (!context->HasException())
+                {
+                    context->SetException(MakeException("symbol '" + symbol->FullName(context) + "' denotes a namespace", fullSpan, context));
+                }
+                failed = true;
+                break;
+            }
             ThrowException("symbol '" + symbol->FullName(context) + "' denotes a namespace", fullSpan, context);
         }
         else
@@ -63,12 +103,18 @@ void UsingDeclarationProcessor::Visit(otava::ast::IdentifierNode& node)
             context->GetSymbolTable()->AddUsingDeclaration(&node, symbol, context);
         }
     }
+    succeeded = !failed;
 }
 
-void AddUsingDeclaration(otava::ast::Node* node, Context* context)
+bool AddUsingDeclaration(otava::ast::Node* node, Context* context)
 {
     UsingDeclarationProcessor processor(context);
+    if (context->GetScope())
+    {
+        processor.SetScope(context->GetScope());
+    }
     node->Accept(processor);
+    return processor.Succeeded();
 }
 
 } // namespace otava::symbols

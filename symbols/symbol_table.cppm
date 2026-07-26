@@ -123,7 +123,7 @@ public:
     FunctionSymbol* AddFunction(const std::string& name, const std::vector<TypeSymbol*>& specialization, otava::ast::Node* node, FunctionKind kind,
         FunctionQualifiers qualifiers, DeclarationFlags flags, Context* context);
     void AddFunctionSymbol(Scope* scope, FunctionSymbol* functionSymbol, const soul::ast::FullSpan& fullSpan, Context* context);
-    FunctionDefinitionSymbol* AddOrGetFunctionDefinition(Scope* scope, const std::string& name, const std::vector<TypeSymbol*>& specialization,
+    FunctionDefinitionSymbol* AddOrGetFunctionDefinition(Scope* scope, Scope* declarationScope, const std::string& name, const std::vector<TypeSymbol*>& specialization,
         const std::vector<TypeSymbol*>& parameterTypes, FunctionQualifiers qualifiers, FunctionKind kind, DeclarationFlags declarationFlags,
         otava::ast::Node* node, otava::ast::Node* functionNode, bool& get, Context* context);
     ParameterSymbol* CreateParameter(const std::string& name, otava::ast::Node* node, TypeSymbol* type, Context* context);
@@ -176,13 +176,13 @@ public:
     Symbol* LookupSymbol(Symbol* symbol, Context* context);
     void CollectViableFunctions(const std::vector<std::pair<Scope*, ScopeLookup>>& scopeLookups, const std::string& groupName, 
         const std::vector<TypeSymbol*>& templateArgs, Cardinality arity, std::vector<FunctionSymbol*>& viableFunctions, Context* context);
-    void MapNode(otava::ast::Node* node);
-    void MapNode(otava::ast::Node* node, Symbol* symbol);
-    void MapNode(otava::ast::Node* node, Symbol* symbol, MapKind kind);
-    otava::ast::Node* GetNodeNothrow(Symbol* symbol) const noexcept;
-    otava::ast::Node* GetNode(Symbol* symbol) const;
-    Symbol* GetSymbolNothrow(otava::ast::Node* node) const noexcept;
-    Symbol* GetSymbol(otava::ast::Node* node) const;
+    void MapNode(otava::ast::Node* node, Context* context);
+    void MapNode(otava::ast::Node* node, Symbol* symbol, Context* context);
+    void MapNode(otava::ast::Node* node, Symbol* symbol, MapKind kind, Context* context);
+    otava::ast::Node* GetNodeNothrow(Symbol* symbol, Context* context) const noexcept;
+    otava::ast::Node* GetNode(Symbol* symbol, Context* context) const;
+    Symbol* GetSymbolForNodeNothrow(otava::ast::Node* node, Context* context) const noexcept;
+    Symbol* GetSymbolForNode(otava::ast::Node* node, Context* context) const;
     Symbol* GetSymbol(SymbolId id, Context* context);
     Value* GetValue(SymbolId id, Context* context);
     TypeSymbol* GetTypeSymbol(SymbolId id, Context* context);
@@ -212,7 +212,7 @@ public:
     const std::vector<Symbol*>& Symbols() const { return symbols; }
     inline Symbol* GetTypenameConstraintSymbol() noexcept { return typenameConstraintSymbol; }
     inline void SetTypenameConstraintSymbol(Symbol* typenameConstraintSymbol_) noexcept { typenameConstraintSymbol = typenameConstraintSymbol_; }
-    void MapSymbol(Symbol* symbol);
+    void MapSymbol(Symbol* symbol, Context* context);
     void MapFundamentalType(FundamentalTypeSymbol* fundamentalTypeSymbol);
     void MapFundamentalTypeId(FundamentalTypeKind kind, SymbolId fundamentalTypeId);
     TypeSymbol* GetFundamentalTypeSymbol(FundamentalTypeKind kind, Context* context);

@@ -19,12 +19,12 @@ import otava.symbols.reader;
 namespace otava::symbols {
 
 FunctionGroupSymbol::FunctionGroupSymbol(Module* module_, SymbolId id_) : 
-    Symbol(module_, id_), contentFetched(false), expanded(false)
+    Symbol(module_, id_), contentFetched(false)
 {
 }
 
 FunctionGroupSymbol::FunctionGroupSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    Symbol(module_, id_, name_), contentFetched(false), expanded(false)
+    Symbol(module_, id_, name_), contentFetched(false)
 {
 }
 
@@ -62,18 +62,10 @@ Symbol* FunctionGroupSymbol::GetSingleSymbol(Context* context)
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<Symbol*> fns;
     for (FunctionSymbol* fn : functions)
     {
         fns.push_back(fn);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        fns.push_back(readOnlyFunctionGroup->GetSingleSymbol(context));
     }
     if (fns.size() == 1)
     {
@@ -91,18 +83,9 @@ FunctionDefinitionSymbol* FunctionGroupSymbol::GetSingleDefinition(Context* cont
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<FunctionDefinitionSymbol*> defs;
     for (FunctionDefinitionSymbol* def : definitions)
     {
-        defs.push_back(def);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        FunctionDefinitionSymbol* def = readOnlyFunctionGroup->GetSingleDefinition(context);
         defs.push_back(def);
     }
     if (defs.size() == 1)
@@ -139,14 +122,6 @@ void FunctionGroupSymbol::CollectViableFunctions(Cardinality arity, const std::v
     if (IsReadOnly())
     {
         GetContent(context);
-    }
-    else
-    {
-        Expand(context);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        readOnlyFunctionGroup->CollectViableFunctions(arity, templateArgs, viableFunctions, context);
     }
     if (!templateArgs.empty())
     {
@@ -229,40 +204,28 @@ void FunctionGroupSymbol::Read(Reader& reader)
     Cardinality fnCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(fnCount); ++i)
     {
-        SymbolId fnId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId fnId = SymbolId(reader.CurrentReader().ReadULong());
         functionIds.push_back(fnId);
     }
     Cardinality defCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(defCount); ++i)
     {
-        SymbolId defId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId defId = SymbolId(reader.CurrentReader().ReadULong());
         definitionIds.push_back(defId);
     }
 }
 
 FunctionSymbol* FunctionGroupSymbol::ResolveFunction(const std::vector<TypeSymbol*>& parameterTypes, FunctionQualifiers qualifiers, 
-    const std::vector<TypeSymbol*>& specialization, TemplateDeclarationSymbol* templateDeclaration, bool isSpecialization, Context* context) 
+    const std::vector<TypeSymbol*>& specialization, TemplateDeclarationSymbol* templateDeclaration, bool hasSpecialization, Context* context) 
 {
     if (IsReadOnly())
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<FunctionSymbol*> fns;
     for (FunctionSymbol* function : functions)
     {
         fns.push_back(function);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        FunctionSymbol* fn = readOnlyFunctionGroup->ResolveFunction(parameterTypes, qualifiers, specialization, templateDeclaration, isSpecialization, context);
-        if (fn)
-        {
-            fns.push_back(fn);
-        }
     }
     for (FunctionSymbol* function : fns)
     {
@@ -280,7 +243,7 @@ FunctionSymbol* FunctionGroupSymbol::ResolveFunction(const std::vector<TypeSymbo
                     functionTemplateDeclaration->TemplateParameters(context)[ToUnderlying(i)], context)) continue;
             }
         }
-        if (!function->IsMemberFunction(context) && function->IsSpecialization() != isSpecialization) continue;
+        if (!function->IsMemberFunction(context) && function->HasSpecialization() != hasSpecialization) continue;
         if (function->Arity() == Cardinality(parameterTypes.size()))
         {
             bool found = (qualifiers & FunctionQualifiers::isConst) == (function->Qualifiers() & FunctionQualifiers::isConst);
@@ -289,7 +252,7 @@ FunctionSymbol* FunctionGroupSymbol::ResolveFunction(const std::vector<TypeSymbo
                 if (!specialization.empty())
                 {
                     int n = specialization.size();
-                    if (n != function->Specialization().size())
+                    if (n != function->Specialization(context).size())
                     {
                         found = false;
                     }
@@ -297,7 +260,7 @@ FunctionSymbol* FunctionGroupSymbol::ResolveFunction(const std::vector<TypeSymbo
                     {
                         for (int i = 0; i < n; ++i)
                         {
-                            if (!TypesEqual(specialization[i], function->Specialization()[i], context))
+                            if (!TypesEqual(specialization[i], function->Specialization(context)[i], context))
                             {
                                 found = false;
                                 break;
@@ -309,6 +272,7 @@ FunctionSymbol* FunctionGroupSymbol::ResolveFunction(const std::vector<TypeSymbo
                 {
                     for (Index i = Index(0); i < Index(function->Arity()); ++i)
                     {
+                        FlagSetter fullNameFlagSetter(context, ContextFlags::matchFullNames);
                         if (!TypesEqual(function->Parameters(context)[ToUnderlying(i)]->GetType(context), parameterTypes[ToUnderlying(i)], context))
                         {
                             found = false;
@@ -332,22 +296,10 @@ std::vector<FunctionSymbol*> FunctionGroupSymbol::Functions(Context* context)
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<FunctionSymbol*> fns;
     for (FunctionSymbol* fn : functions)
     {
         fns.push_back(fn);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        std::vector<FunctionSymbol*> roFns = readOnlyFunctionGroup->Functions(context);
-        for (FunctionSymbol* fn : roFns)
-        {
-            fns.push_back(fn);
-        }
     }
     return fns;
 }
@@ -358,22 +310,10 @@ std::vector<FunctionDefinitionSymbol*> FunctionGroupSymbol::Definitions(Context*
     {
         GetContent(context);
     }
-    else
-    {
-        Expand(context);
-    }
     std::vector<FunctionDefinitionSymbol*> defs;
     for (FunctionDefinitionSymbol* def : definitions)
     {
         defs.push_back(def);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        std::vector<FunctionDefinitionSymbol*> roDefs = readOnlyFunctionGroup->Definitions(context);
-        for (FunctionDefinitionSymbol* def : roDefs)
-        {
-            defs.push_back(def);
-        }
     }
     return defs;
 }
@@ -408,7 +348,7 @@ struct FunctionScoreGreater
 
 int MatchFunctionTemplate(FunctionSymbol* function, const std::vector<TypeSymbol*>& templateArgs, Context* context)
 {
-    if (function->Specialization().empty())
+    if (function->Specialization(context).empty())
     {
         return 0;
     }
@@ -420,9 +360,9 @@ int MatchFunctionTemplate(FunctionSymbol* function, const std::vector<TypeSymbol
         for (Index i = Index(0); i < Index(n); ++i)
         {
             TypeSymbol* templateArg = templateArgs[ToUnderlying(i)];
-            if (Index(function->Specialization().size()) >= i)
+            if (Index(function->Specialization(context).size()) >= i)
             {
-                TypeSymbol* specializationType = function->Specialization()[ToUnderlying(i)];
+                TypeSymbol* specializationType = function->Specialization(context)[ToUnderlying(i)];
                 if (templateArg->IsCompoundTypeSymbol())
                 {
                     CompoundTypeSymbol* templateArgCompoundType = static_cast<CompoundTypeSymbol*>(templateArg);
@@ -500,13 +440,6 @@ void FunctionGroupSymbol::CollectBestMatchingViableFunctionTemplates(Cardinality
     {
         fns.push_back(function);
     }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        for (FunctionSymbol* function : readOnlyFunctionGroup->Functions(context))
-        {
-            fns.push_back(function);
-        }
-    }
     for (FunctionSymbol* function : fns)
     {
         if (!function->IsTemplate(context)) continue;
@@ -533,13 +466,6 @@ void FunctionGroupSymbol::CollectBestMatchingViableFunctionTemplates(Cardinality
     for (FunctionDefinitionSymbol* functionDefinition : Definitions(context))
     {
         defs.push_back(functionDefinition);
-    }
-    for (FunctionGroupSymbol* readOnlyFunctionGroup : readOnlyFunctionGroups)
-    {
-        for (FunctionDefinitionSymbol* functionDefinition : readOnlyFunctionGroup->Definitions(context))
-        {
-            defs.push_back(functionDefinition);
-        }
     }
     for (FunctionDefinitionSymbol* functionDefinition : defs)
     {
@@ -579,26 +505,6 @@ void FunctionGroupSymbol::GetContent(Context* context)
         FunctionDefinitionSymbol* def = GetModule()->GetSymbolTable()->GetFunctionDefinitionSymbol(defId, context);
         def->SetGroup(this);
         definitions.push_back(def);
-    }
-}
-
-void FunctionGroupSymbol::Expand(Context* context)
-{
-    if (expanded) return;
-    expanded = true;
-    for (const auto& moduleSymbolId : ModuleSymbolIds())
-    {
-        ModuleId moduleId = moduleSymbolId.moduleId;
-        Module* module = context->GetModuleMapper()->GetModule(moduleId);
-        if (module)
-        {
-            SymbolId symbolId = moduleSymbolId.symbolId;
-            FunctionGroupSymbol* functionGroup = module->GetSymbolTable()->GetFunctionGroupSymbol(symbolId, context);
-            if (functionGroup)
-            {
-                readOnlyFunctionGroups.push_back(functionGroup);
-            }
-        }
     }
 }
 

@@ -512,6 +512,78 @@ std::uint64_t ParseHexULong(const std::string& hexByteStr)
     return std::stoull(hexByteStr, nullptr, 16);
 }
 
+std::string HexEscape(const std::string& s)
+{
+    std::string result;
+    for (char c : s)
+    {
+        std::uint8_t x = static_cast<std::uint8_t>(c);
+        if (int(x) >= 0 && int(x) < 0x20)
+        {
+            result.append("\\x").append(ToHexString(x));
+        }
+        else
+        {
+            result.append(1, c);
+        }
+    }
+    return result;
+}
+
+std::string HexUnescape(const std::string& s)
+{
+    std::string result;
+    std::string hexByteStr;
+    int state = 0;
+    for (char c : s)
+    {
+        switch (state)
+        {
+            case 0:
+            {
+                if (c == '\\')
+                {
+                    state = 1;
+                }
+                else
+                {
+                    result.append(1, c);
+                }
+                break;
+            }
+            case 1:
+            {
+                if (c == 'x')
+                {
+                    hexByteStr.clear();
+                    state = 2;
+                }
+                else
+                {
+                    result.append(1, c);
+                    state = 0;
+                }
+                break;
+            }
+            case 2:
+            {
+                hexByteStr.append(1, c);
+                state = 3;
+                break;
+            }
+            case 3:
+            {
+                hexByteStr.append(1, c);
+                std::uint8_t x = ParseHexByte(hexByteStr);
+                result.append(1, char(x));
+                state = 0;
+                break;
+            }
+        }
+    }
+    return result;
+}
+
 std::int32_t ParseOctal(const std::string& octalDigitStr)
 {
     return std::stoi(octalDigitStr, nullptr, 8);

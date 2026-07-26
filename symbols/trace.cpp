@@ -289,11 +289,10 @@ void GenerateEnterFunctionCode(otava::ast::Node* functionDefinitionNode, Functio
                         entryDeclSpecifiers, entryInitDeclaratorList, nullptr, nullptr);
                     otava::ast::DeclarationStatementNode* entryStatementNode = new otava::ast::DeclarationStatementNode(soul::ast::Span(), -1, entrySimpleDeclarationNode);
                     ScopePtr fnScopePtr(fn->GetScope(), context);
-                    Symbol* block = context->GetSymbolTable()->GetSymbolNothrow(compoundStatement);
+                    Symbol* block = context->GetSymbolTable()->GetSymbolForNodeNothrow(compoundStatement, context);
                     ScopePtr blockScopePtr(block->GetScope(), context);
-                    context->PushSetFlag(ContextFlags::saveDeclarations);
+                    FlagSetter flagSetter(context, ContextFlags::saveDeclarations);
                     otava::symbols::ProcessSimpleDeclaration(entrySimpleDeclarationNode, nullptr, context);
-                    context->PopFlags();
                     compoundStatement->InsertNode(0, entryStatementNode);
                     blockScopePtr.Reset();
                     otava::ast::DeclSpecifierSequenceNode* guardDeclSpecifiers = new otava::ast::DeclSpecifierSequenceNode(soul::ast::Span(), -1);
@@ -313,11 +312,10 @@ void GenerateEnterFunctionCode(otava::ast::Node* functionDefinitionNode, Functio
                     otava::ast::SimpleDeclarationNode* guardSimpleDeclarationNode = new otava::ast::SimpleDeclarationNode(soul::ast::Span(), -1,
                         guardDeclSpecifiers, guardInitDeclaratorList, nullptr, nullptr);
                     otava::ast::DeclarationStatementNode* guardStatementNode = new otava::ast::DeclarationStatementNode(soul::ast::Span(), -1, guardSimpleDeclarationNode);
-                    Symbol* guardBlock = context->GetSymbolTable()->GetSymbolNothrow(compoundStatement);
+                    Symbol* guardBlock = context->GetSymbolTable()->GetSymbolForNodeNothrow(compoundStatement, context);
                     ScopePtr guardBlockPtr(guardBlock->GetScope(), context);
-                    context->PushSetFlag(ContextFlags::saveDeclarations);
+                    FlagSetter simpleDeclarationFlagSetter(context, ContextFlags::saveDeclarations);
                     otava::symbols::ProcessSimpleDeclaration(guardSimpleDeclarationNode, nullptr, context);
-                    context->PopFlags();
                     compoundStatement->InsertNode(1, guardStatementNode);
                     guardBlockPtr.Reset();
                     fnScopePtr.Reset();

@@ -3057,26 +3057,13 @@ soul::parser::Match ExpressionParser<LexerT>::MultiplicativeExpression(LexerT& l
                                             soul::parser::Match* parentMatch9 = &match;
                                             {
                                                 std::int64_t pos = lexer.GetPos();
-                                                bool pass = true;
                                                 soul::parser::Match match = otava::parser::expression::ExpressionParser<LexerT>::PmExpression(lexer, context);
                                                 right.reset(static_cast<otava::ast::Node*>(match.value));
                                                 if (match.hit)
                                                 {
                                                     otava::ast::Node *r = right.release();
                                                     span.Union(r->GetSpan());
-                                                    if (otava::symbols::MultiplicativeRightIdOperandNotFound(op.get(), r, lexer.GetFullSpan(pos), context))
-                                                    {
-                                                        notFound = true;
-                                                        pass = false;
-                                                    }
-                                                    else
-                                                    {
-                                                        expr.reset(new otava::ast::BinaryExprNode(span, lexer.File(), op.release(), expr.release(), r));
-                                                    }
-                                                }
-                                                if (match.hit && !pass)
-                                                {
-                                                    match = soul::parser::Match(false);
+                                                    expr.reset(new otava::ast::BinaryExprNode(span, lexer.File(), op.release(), expr.release(), r));
                                                 }
                                                 *parentMatch9 = match;
                                             }

@@ -203,6 +203,22 @@ void Project::WriteClassIndex(const std::string& moduleDir)
     index.write(writer); 
 }
 
+void Project::ReadProjectId(const std::string& moduleDir)
+{
+    std::string projectIdFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "project.id"));
+    util::FileStream file(projectIdFilePath, util::OpenMode::read | util::OpenMode::binary);
+    util::BinaryStreamReader reader(file);
+    projectId = otava::symbols::ProjectId(reader.ReadUInt());
+}
+
+void Project::WriteProjectId(const std::string& moduleDir)
+{
+    std::string projectIdFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "project.id"));
+    util::FileStream file(projectIdFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::BinaryStreamWriter writer(file);
+    writer.Write(otava::symbols::ToUnderlying(projectId));
+}
+
 void Project::LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std::string& config, int optLevel, const std::set<std::string>& configurations,
     otava::symbols::Context* context)
 {
@@ -211,13 +227,12 @@ void Project::LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std:
 #ifdef DEBUG_SYMBOL_IO
     std::cout << ">project '" << Name() << "' loading modules" << "\n";
 #endif
-    moduleMapper.SetModuleCount(otava::symbols::Cardinality(modules.size()));
     for (const auto& m : modules)
     {
         if (m)
         {
             moduleMap[m->Name()] = m.get();
-            m->SetId(moduleMapper.GetNextModuleId());
+            m->SetId(moduleMapper.MakeModuleId(m->Name()));
             moduleMapper.MapModule(m.get());
             if (std::find(moduleNames.begin(), moduleNames.end(), m->Name()) == moduleNames.end())
             {

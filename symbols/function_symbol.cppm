@@ -47,6 +47,8 @@ public:
     inline void SetBound() noexcept { SetFlag(FunctionSymbolFlags::bound); }
     inline bool IsSpecialization() const noexcept { return GetFlag(FunctionSymbolFlags::specialization); }
     inline void SetSpecialization() noexcept { SetFlag(FunctionSymbolFlags::specialization); }
+    inline bool HasSpecialization() const noexcept { return GetFlag(FunctionSymbolFlags::hasSpecialization); }
+    inline void SetHasSpecialization() noexcept { SetFlag(FunctionSymbolFlags::hasSpecialization); }
     inline bool IsTrivialDestructor() const noexcept { return GetFlag(FunctionSymbolFlags::trivialDestructor); }
     inline bool ReturnsClass() const noexcept { return GetFlag(FunctionSymbolFlags::returnsClass); }
     inline void SetReturnsClass() noexcept { SetFlag(FunctionSymbolFlags::returnsClass); }
@@ -84,7 +86,7 @@ public:
     virtual bool IsStatic() const noexcept;
     virtual bool IsExplicit() const noexcept;
     bool IsDestructor() const noexcept;
-    bool HasForwardDeclarationType(Context* context) const;
+    bool RemoveForwardDeclarationTypes(Context* context);
     virtual bool IsPointerCopyAssignment() const noexcept { return false; }
     virtual ParameterSymbol* ThisParam(Context* context) const;
     virtual FunctionKind GetFunctionKind() const noexcept { return functionKind; }
@@ -121,7 +123,7 @@ public:
     TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
     SpecialFunctionKind GetSpecialFunctionKind(Context* context) const noexcept;
     void SetSpecialization(const std::vector<TypeSymbol*>& specialization_);
-    const std::vector<TypeSymbol*>& Specialization();
+    const std::vector<TypeSymbol*>& Specialization(Context* context) const;
     virtual bool IsMemberFunction(Context* context) const noexcept;
     bool IsTemplate(Context* context) const noexcept;
     Cardinality TemplateArity(Context* context) const noexcept;
@@ -155,6 +157,7 @@ public:
     void AddClass(ClassTypeSymbol* cls);
     void RemoveClass(ClassTypeSymbol* cls);
     inline const std::vector<ClassTypeSymbol*>& Classes() const noexcept { return classes; }
+    void ReplaceIncompleteTypes(FunctionDefinitionSymbol* definition, Context* context);
 private:
     FunctionSymbolFlags flags;
     FunctionQualifiers qualifiers;
@@ -171,8 +174,9 @@ private:
     mutable bool memFnParamsConstructed;
     mutable bool parametersFetched;
     mutable std::string fixedIrName;
+    mutable bool specializationFetched;
     std::vector<SymbolId> specializationIds;
-    std::vector<TypeSymbol*> specialization;
+    mutable std::vector<TypeSymbol*> specialization;
     std::string compileUnitId;
     SymbolId returnTypeId;
     mutable TypeSymbol* returnType;

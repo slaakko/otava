@@ -6,6 +6,7 @@
 export module otava.build_project;
 
 import std;
+import otava.symbols.id;
 import otava.symbols.class_info;
 import otava.symbols.project;
 import otava.symbols.modules;
@@ -83,10 +84,14 @@ public:
     inline Target GetTarget() const { return target; }
     inline otava::symbols::class_index& Index() { return index; }
     inline otava::symbols::TraceInfo& GetTraceInfo() { return traceInfo; };
+    void SetProjectId(otava::symbols::ProjectId projectId_) noexcept { projectId = projectId_; }
+    otava::symbols::ProjectId GetProjectId() const noexcept override { return projectId; }
     void ReadTraceInfo(const std::string& moduleDir);
     void WriteTraceInfo(const std::string& moduleDir);
     void ReadClassIndex(const std::string& moduleDir);
     void WriteClassIndex(const std::string& moduleDir);
+    void ReadProjectId(const std::string& moduleDir);
+    void WriteProjectId(const std::string& moduleDir);
 private:
     soul::lexer::FileMap* fileMap;
     std::string filePath;
@@ -111,6 +116,7 @@ private:
     std::vector<Define> defines;
     otava::symbols::class_index index;
     otava::symbols::TraceInfo traceInfo;
+    otava::symbols::ProjectId projectId;
 };
 
 } // namespace otava::build

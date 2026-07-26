@@ -322,16 +322,16 @@ private:
 class FwdDeclaredStructureType : public Type
 {
 public:
-    FwdDeclaredStructureType(std::uint32_t id_, std::int32_t typeId_) noexcept;
+    FwdDeclaredStructureType(std::uint64_t id_, std::int32_t typeId_) noexcept;
     void Accept(Visitor& visitor) override;
     std::int64_t Size() const noexcept override { return -1; }
     std::int64_t Alignment() const noexcept override { return -1; }
     std::string Name() const override { return "FWD_DECLARED_STRUCTURE_TYPE"; }
-    inline std::uint32_t Id() const noexcept { return id; }
+    inline std::uint64_t Id() const noexcept { return id; }
     inline const std::string& Comment() const noexcept { return comment; }
     void SetComment(const std::string& comment_);
 private:
-    std::uint32_t id;
+    std::uint64_t id;
     std::string comment;
 };
 
@@ -434,10 +434,10 @@ public:
     StructureType* GetStructureType(const soul::ast::Span& span, std::int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs);
     ArrayType* GetArrayType(const soul::ast::Span& span, std::int32_t typeId, std::int64_t size, const TypeRef& elementTypeRef);
     FunctionType* GetFunctionType(const soul::ast::Span& span, std::int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs);
-    FwdDeclaredStructureType* GetFwdDeclaredStructureType(std::uint32_t id);
-    FwdDeclaredStructureType* MakeFwdDeclaredStructureType(std::uint32_t id, std::int32_t typeId, const std::string& comment);
+    FwdDeclaredStructureType* GetFwdDeclaredStructureType(std::uint64_t id);
+    FwdDeclaredStructureType* MakeFwdDeclaredStructureType(std::uint64_t id, std::int32_t typeId, const std::string& comment);
     void AddFwdDependentType(FwdDeclaredStructureType* fwdType, Type* type);
-    void ResolveForwardReferences(std::uint32_t id, StructureType* structureType);
+    void ResolveForwardReferences(std::uint64_t id, StructureType* structureType);
     void ResolveComments();
     inline std::int32_t NextTypeId() noexcept { return nextTypeId++; }
     void Write(util::CodeFormatter& formatter);
@@ -451,8 +451,8 @@ private:
     std::map<std::vector<std::int32_t>, StructureType*> structureTypeMap;
     std::map<std::pair<std::int64_t, std::int32_t>, ArrayType*> arrayTypeMap;
     std::map<std::pair<std::int32_t, std::vector<std::int32_t>>, FunctionType*> functionTypeMap;
-    std::unordered_map<std::uint32_t, FwdDeclaredStructureType*> fwdDeclaredStructureTypes;
-    std::unordered_map<std::uint32_t, std::vector<Type*>> fwdDeclarationMap;
+    std::unordered_map<std::uint64_t, FwdDeclaredStructureType*> fwdDeclaredStructureTypes;
+    std::unordered_map<std::uint64_t, std::vector<Type*>> fwdDeclarationMap;
     VoidType voidType;
     BoolType boolType;
     SByteType sbyteType;

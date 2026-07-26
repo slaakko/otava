@@ -57,7 +57,7 @@ public:
     inline Module* GetModule() const noexcept { return module; }
     inline SectionKind Kind() const noexcept { return kind; }
     Symbol* GetSymbol(SymbolId symbolId, Context* context);
-    void MapSymbol(Symbol* symbol);
+    void MapSymbol(Symbol* symbol, Context* context);
     void AddEntry(Symbol* symbol, const SectionEntry& entry);
     void Write(Writer& writer);
 private:

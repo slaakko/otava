@@ -175,7 +175,7 @@ bool ClassTypeSymbol::IsTemplateParameterInstantiation(Context* context, std::se
     return false;
 }
 
-bool ClassTypeSymbol::HasBaseClass(TypeSymbol* baseClass, int& distance, Context* context) const noexcept
+bool ClassTypeSymbol::HasBaseClass(TypeSymbol* baseClass, int& distance, Context* context) const 
 {
     for (ClassTypeSymbol* baseCls : BaseClasses(context))
     {
@@ -496,13 +496,11 @@ bool Overrides(FunctionSymbol* f, FunctionSymbol* g, Context* context) noexcept
             {
                 ParameterSymbol* p = f->Parameters(context)[i];
                 ParameterSymbol* q = g->Parameters(context)[i];
-                context->PushSetFlag(ContextFlags::matchClassGroup);
+                FlagSetter flagSetter(context, ContextFlags::matchClassGroup | ContextFlags::matchFullNames);
                 if (!TypesEqual(p->GetType(context), q->GetType(context), context))
                 {
-                    context->PopFlags();
                     return false;
                 }
-                context->PopFlags();
             }
             if (f->IsConst() != g->IsConst()) return false;
             return true;
@@ -751,6 +749,10 @@ void ClassTypeSymbol::AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::
 {
     baseClasses.push_back(baseClass);
     GetScope()->AddBaseScope(baseClass->GetScope(), fullSpan, context);
+    if (GetModule() != baseClass->GetModule())
+    {
+        GetModule()->GetSymbolTable()->AddImportedSymbol(baseClass->Id(), baseClass->GetModule()->Id());
+    }
 }
 
 void ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -824,10 +826,6 @@ const std::vector<FunctionSymbol*>& ClassTypeSymbol::MemberFunctions(Context* co
 
 void ClassTypeSymbol::Write(Writer& writer)
 {
-    if (Name() == "Span")
-    {
-        int x = 0;
-    }
     TypeSymbol::Write(writer);
     writer.GetBinaryStreamWriter().Write(ToUnderlying(flags));
     writer.GetBinaryStreamWriter().Write(ToUnderlying(classKind));
@@ -900,53 +898,49 @@ void ClassTypeSymbol::Write(Writer& writer)
 void ClassTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
-    if (Name() == "Span")
-    {
-        int x = 0;
-    }
     flags = ClassTypeSymbolFlags(reader.CurrentReader().ReadByte());
     classKind = ClassKind(reader.CurrentReader().ReadByte());
     Cardinality baseClassCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(baseClassCount); ++i)
     {
-        baseClassIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        baseClassIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality memberVariableCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(memberVariableCount); ++i)
     {
-        memberVariableIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        memberVariableIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality staticMemberVariableCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(staticMemberVariableCount); ++i)
     {
-        staticMemberVariableIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        staticMemberVariableIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality memberFunctionCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(memberFunctionCount); ++i)
     {
-        memberFunctionIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        memberFunctionIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality objectLayoutCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(objectLayoutCount); ++i)
     {
-        objectLayoutIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        objectLayoutIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality conversionFunctionCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(conversionFunctionCount); ++i)
     {
-        conversionFunctionIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        conversionFunctionIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     level = reader.CurrentReader().ReadInt();
-    groupId = SymbolId(reader.CurrentReader().ReadUInt());
+    groupId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality vtabSize = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(vtabSize); ++i)
     {
-        vtabIds.push_back(SymbolId(reader.CurrentReader().ReadUInt()));
+        vtabIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     vptrIndex = reader.CurrentReader().ReadInt();
     deltaIndex = reader.CurrentReader().ReadInt();
     vtabNameOffset = StringOffset(reader.CurrentReader().ReadUInt());
-    specializationId = SymbolId(reader.CurrentReader().ReadUInt());
+    specializationId = SymbolId(reader.CurrentReader().ReadULong());
     nextMemFnDefIndex = reader.CurrentReader().ReadInt();
 }
 
@@ -1002,6 +996,7 @@ void ClassTypeSymbol::GetContent(Context* context) const
             ThrowException("member function id " + std::to_string(ToUnderlying(memberFunctionId)) + " for class '" + FullName(context) + "' not found");
         }
     }
+    int index = 0;
     for (SymbolId objectLayoutId : objectLayoutIds)
     {
         TypeSymbol* layoutType = GetModule()->GetSymbolTable()->GetTypeSymbol(objectLayoutId, context);
@@ -1011,8 +1006,16 @@ void ClassTypeSymbol::GetContent(Context* context) const
         }
         else
         {
-            ThrowException("object layout type id " + std::to_string(ToUnderlying(objectLayoutId)) + " for class '" + FullName(context) + "' not found");
+            if (context->HasException())
+            {
+                Exception ex = context->ReleaseException();
+                ThrowException("object layout type index " + std::to_string(index) + " id " + 
+                    std::to_string(ToUnderlying(objectLayoutId)) + " for class '" + FullName(context) + "' not found : " + std::string(ex.what()));
+            }
+            ThrowException("object layout type index " + std::to_string(index) + " id " + std::to_string(ToUnderlying(objectLayoutId)) + 
+                " for class '" + FullName(context) + "' not found");
         }
+        ++index;
     }
     for (SymbolId conversionFunctionId : conversionFunctionIds)
     {
@@ -1043,6 +1046,19 @@ void ClassTypeSymbol::GetContent(Context* context) const
     {
         specialization = GetModule()->GetSymbolTable()->GetTypeSymbol(specializationId, context);
     }
+}
+
+void ClassTypeSymbol::ClearContent()
+{
+    objectLayout.clear();
+    baseClasses.clear();
+    memberVariables.clear();
+    staticMemberVariables.clear();
+    memberFunctions.clear();
+    objectLayout.clear();
+    conversionFunctions.clear();
+    vtab.clear();
+    contentFetched = false;
 }
 
 ForwardClassDeclarationSymbol::ForwardClassDeclarationSymbol(Module* module_, SymbolId id_) : 
@@ -1126,6 +1142,15 @@ ClassGroupSymbol* ForwardClassDeclarationSymbol::Group(Context* context) const
     return group;
 }
 
+void ForwardClassDeclarationSymbol::SetGroup(ClassGroupSymbol* group_) noexcept
+{
+    group = group_;
+    if (group->GetModule() != GetModule())
+    {
+        GetModule()->GetSymbolTable()->AddImportedSymbol(group->Id(), group->GetModule()->Id());
+    }
+}
+
 Cardinality ForwardClassDeclarationSymbol::Arity(Context* context) noexcept
 {
     TemplateDeclarationSymbol* templateDeclaration = ParentTemplateDeclaration(context);
@@ -1206,15 +1231,11 @@ void ForwardClassDeclarationSymbol::SetSpecialization(TypeSymbol* specialization
 otava::intermediate::Type* ForwardClassDeclarationSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     TypeSymbol* finalType = FinalType(fullSpan, context);
-    if (finalType->IsForwardClassDeclarationSymbol())
+    if (finalType == this)
     {
-        return context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(
-            FundamentalTypeKind::voidType, context)->IrType(emitter, fullSpan, context);
+        return emitter.GetVoidType();
     }
-    else
-    {
-        return finalType->IrType(emitter, fullSpan, context);
-    }
+    return finalType->IrType(emitter, fullSpan, context);
 }
 
 void ForwardClassDeclarationSymbol::Write(Writer& writer)
@@ -1250,19 +1271,29 @@ void ForwardClassDeclarationSymbol::Write(Writer& writer)
 void ForwardClassDeclarationSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
-    classTypeSymbolId = SymbolId(reader.CurrentReader().ReadUInt());
+    classTypeSymbolId = SymbolId(reader.CurrentReader().ReadULong());
     classKind = ClassKind(reader.CurrentReader().ReadByte());
-    specializationId = SymbolId(reader.CurrentReader().ReadUInt());
-    groupId = SymbolId(reader.CurrentReader().ReadUInt());
+    specializationId = SymbolId(reader.CurrentReader().ReadULong());
+    groupId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ThrowMemberDeclarationParsingError(const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
 {
+    if (context->HasException())
+    {
+        Exception ex = context->ReleaseException();
+        ThrowException("error parsing class member declaration: " + std::string(ex.what()), fullSpan, context);
+    }
     ThrowException("class member declaration parsing error", fullSpan, context);
 }
 
 void ThrowStatementParsingError(const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
 {
+    if (context->HasException())
+    {
+        Exception ex = context->ReleaseException();
+        ThrowException("error parsing statement: " + std::string(ex.what()), fullSpan, context);
+    }
     ThrowException("statement parsing error", fullSpan, context);
 }
 
@@ -1352,7 +1383,9 @@ BaseClassResolver::BaseClassResolver(Context* context_) : context(context_)
 
 void BaseClassResolver::Visit(otava::ast::BaseSpecifierNode& node)
 {
+    FlagSetter rejectIncompileTypeFlagSetter(context, ContextFlags::rejectIncompleteTypes);
     TypeSymbol* baseClassType = ResolveType(node.ClassOrDeclType(), DeclarationFlags::none, context);
+    rejectIncompileTypeFlagSetter.Reset();
     if (baseClassType->IsClassTypeSymbol())
     {
         ClassTypeSymbol* baseClass = static_cast<ClassTypeSymbol*>(baseClassType);
@@ -1543,7 +1576,7 @@ FunctionDefinitionMapBuilderVisitor::FunctionDefinitionMapBuilderVisitor(Context
 
 void FunctionDefinitionMapBuilderVisitor::Visit(otava::ast::FunctionDefinitionNode& node)
 {
-    Symbol* symbol = context->GetSymbolTable()->GetSymbol(&node);
+    Symbol* symbol = context->GetSymbolTable()->GetSymbolForNode(&node, context);
     FunctionSymbol* functionSymbol = nullptr;
     if (symbol->IsFunctionSymbol())
     {

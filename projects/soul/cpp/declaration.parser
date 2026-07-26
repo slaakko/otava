@@ -1,0 +1,133 @@
+export module soul.cpp.declaration.parser;
+
+[interface]import soul.ast.cpp;
+[interface]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.cpp.expression.parser;
+[implementation]import soul.cpp.identifier.parser;
+[implementation]import soul.cpp.declarator.parser;
+[implementation]import soul.lex.slg;
+[implementation]import soul.lex.spg;
+
+parser DeclarationParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+    lexer soul::lex::spg::SpgLexer<char32_t>;
+
+    using CppIdentifierParser.CppIdentifier;
+    using CppIdentifierParser.QualifiedCppId;
+    using DeclaratorParser.InitDeclaratorList;
+    using DeclaratorParser.TypeId;
+    using ExpressionParser.AssignmentExpression;
+
+    BlockDeclaration : soul::ast::cpp::Node*
+        ::= NamespaceAliasDefinition:nsAlias{ return nsAlias; }
+        |   UsingDirective:usingDirective{ return usingDirective; }
+        |   UsingDeclaration:usingDeclaration{ return usingDeclaration; }
+        |   SimpleDeclaration:simpleDeclaration{ return simpleDeclaration; }
+        ;
+
+    SimpleDeclaration(var std::unique_ptr<soul::ast::cpp::SimpleDeclarationNode> simpleDeclaration) : soul::ast::cpp::SimpleDeclarationNode*
+        ::= empty{ simpleDeclaration.reset(new soul::ast::cpp::SimpleDeclarationNode(lexer.GetSourcePos(pos))); }
+            (DeclSpecifierSeq(simpleDeclaration.get()):declSpecifierSeq)?
+            (InitDeclaratorList:initDeclaratorList{ simpleDeclaration->SetInitDeclaratorList(initDeclaratorList); })?
+            SEMICOLON
+        {
+            return simpleDeclaration.release();
+        }
+        ;
+
+    DeclSpecifierSeq(soul::ast::cpp::SimpleDeclarationNode* declaration)
+        ::= 
+        (
+            (
+                DeclSpecifier:declSpecifier{ declaration->Add(declSpecifier); }
+            )+
+            |   TypeName:typeName{ declaration->Add(typeName); }
+        )
+        ;
+
+    DeclSpecifier : soul::ast::cpp::DeclSpecifierNode*
+        ::= StorageClassSpecifier:storateClassSpecifier{ return storateClassSpecifier; }
+        |   TypeSpecifier:typeSpecifier{ return typeSpecifier; }
+        |   Typedef:tdef{ return tdef; }
+        ;
+
+    StorageClassSpecifier : soul::ast::cpp::StorageClassSpecifierNode*
+        ::= AUTO{ return new soul::ast::cpp::StorageClassSpecifierNode(lexer.GetSourcePos(pos), "auto"); }
+        |   REGISTER{ return new soul::ast::cpp::StorageClassSpecifierNode(lexer.GetSourcePos(pos), "register"); }
+        |   STATIC{ return new soul::ast::cpp::StorageClassSpecifierNode(lexer.GetSourcePos(pos), "static"); }
+        |   EXTERN{ return new soul::ast::cpp::StorageClassSpecifierNode(lexer.GetSourcePos(pos), "extern"); }
+        |   MUTABLE{ return new soul::ast::cpp::StorageClassSpecifierNode(lexer.GetSourcePos(pos), "mutable"); }
+        ;
+
+    TypeSpecifier : soul::ast::cpp::TypeSpecifierNode*
+        ::= SimpleTypeSpecifier:simpleTypeSpecifier{ return simpleTypeSpecifier; }
+        |   CVQualifier:cvQualifier{ return cvQualifier; }
+        ;
+
+    SimpleTypeSpecifier : soul::ast::cpp::TypeSpecifierNode*
+        ::= CHAR{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "char"); }
+        |   CHAR8T{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "char8_t"); }
+        |   CHAR16T{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "char16_t"); }
+        |   CHAR32T{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "char32_t"); }
+        |   WCHART{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "wchar_t"); }
+        |   BOOL{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "bool"); }
+        |   SHORT{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "short"); }
+        |   INT{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "int"); }
+        |   LONG{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "long"); }
+        |   SIGNED{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "signed"); }
+        |   UNSIGNED{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "unsigned"); }
+        |   FLOAT{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "float"); }
+        |   DOUBLE{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "double"); }
+        |   VOID{ return new soul::ast::cpp::TypeSpecifierNode(lexer.GetSourcePos(pos), "void"); }
+        ;
+
+    TypeName(var std::unique_ptr<soul::ast::cpp::TypeNameNode> typeName) : soul::ast::cpp::TypeNameNode*
+        ::=
+        (
+            QualifiedCppId:qid{ typeName.reset(new soul::ast::cpp::TypeNameNode(lexer.GetSourcePos(pos), qid)); }
+            (
+                LANGLE{ ++vars->leftAngleCount; typeName->SetTemplate(); } 
+                TemplateArgumentList(typeName.get()):args 
+                RANGLE{ --vars->leftAngleCount; }
+            )?
+        )
+        {
+            return typeName.release();
+        }
+        ;
+
+    TemplateArgumentList(soul::ast::cpp::TypeNameNode* typeName)
+        ::= TemplateArgument:arg{ typeName->AddTemplateArgument(arg); } % COMMA
+        ;
+
+    TemplateArgument : soul::ast::cpp::Node*
+        ::= TypeId:typeId{ return typeId; }
+        |   AssignmentExpression:assignmentExpr{ return assignmentExpr; }
+        ;
+
+    Typedef : soul::ast::cpp::DeclSpecifierNode*
+        ::= TYPEDEF{ return new soul::ast::cpp::TypedefNode(lexer.GetSourcePos(pos)); }
+        ;
+
+    CVQualifier : soul::ast::cpp::TypeSpecifierNode*
+        ::= CONST{ return new soul::ast::cpp::ConstNode(lexer.GetSourcePos(pos)); }
+        |   VOLATILE{ return new soul::ast::cpp::VolatileNode(lexer.GetSourcePos(pos)); }
+        ;
+
+    NamespaceAliasDefinition : soul::ast::cpp::UsingObjectNode*
+        ::= (NAMESPACE CppIdentifier:id ASSIGN QualifiedCppId:qid SEMICOLON){ return new soul::ast::cpp::NamespaceAliasNode(lexer.GetSourcePos(pos), id, qid); }
+        ;
+
+    UsingDeclaration : soul::ast::cpp::UsingObjectNode*
+        ::= USING QualifiedCppId:qid SEMICOLON{ return new soul::ast::cpp::UsingDeclarationNode(lexer.GetSourcePos(pos), qid); }
+        ;
+
+    UsingDirective : soul::ast::cpp::UsingObjectNode*
+        ::= USING NAMESPACE QualifiedCppId:ns SEMICOLON{ return new soul::ast::cpp::UsingDirectiveNode(lexer.GetSourcePos(pos), ns); }
+        ;
+}

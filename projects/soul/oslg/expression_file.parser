@@ -1,0 +1,48 @@
+export module soul.slg.expression.file.parser;
+
+[interface]import soul.ast.slg;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.common.common.parser;
+[implementation]import soul.common.token.parser;
+[implementation]import soul.lex.slg;
+
+parser ExpressionFileParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+
+    main;
+    using CommonParser.QualifiedId;
+    using CommonParser.ExprString;
+
+    ExpressionFile(var std::unique_ptr<soul::ast::slg::ExpressionFile> expressionFile, var std::unique_ptr<soul::ast::slg::ExpressionCollection> expressionCollection) :
+        soul::ast::slg::ExpressionFile*
+        ::=
+        (
+            empty{ expressionFile.reset(new soul::ast::slg::ExpressionFile(lexer.FileName())); }
+            EXPRESSIONS
+            QualifiedId:expressionCollectionName{ expressionCollection.reset(new soul::ast::slg::ExpressionCollection(expressionCollectionName)); }
+            LBRACE
+            (
+				Expression:expression{ expressionCollection->AddExpression(expression); }
+			)*
+            RBRACE!
+        )
+        {
+            expressionFile->SetExpressionCollection(expressionCollection.release());
+            return expressionFile.release();
+        }
+        ;
+
+    Expression(var std::string name, var int line) : soul::ast::slg::Expression*
+        ::= 
+        (
+            ID{ auto token = lexer.GetToken(pos); name = util::ToUtf8(token.ToString()); line = token.line; } ASSIGN ExprString:exprString SEMICOLON 
+        )
+        {
+            return new soul::ast::slg::Expression(name, exprString, line);
+        }
+        ;
+}

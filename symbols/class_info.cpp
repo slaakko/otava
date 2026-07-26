@@ -27,14 +27,14 @@ void class_info::add_base(const class_id& id)
 
 void class_info::read(util::BinaryStreamReader& reader)
 {
-    id = class_id(reader.ReadUInt());
+    id = class_id(reader.ReadULong());
     key = static_cast<class_key>(reader.ReadByte());
     name = reader.ReadUtf8String();
     size = reader.ReadLong();
     std::int32_t nb = reader.ReadInt();
     for (int i = 0; i < nb; ++i)
     {
-        std::uint32_t b = reader.ReadUInt();
+        std::uint64_t b = reader.ReadULong();
         add_base(class_id(b));
     }
 }
@@ -50,7 +50,7 @@ void class_info::write(util::BinaryStreamWriter& writer)
     writer.Write(nb);
     for (int i = 0; i < nb; ++i)
     {
-        std::uint32_t b = to_underlying(bases[i]);
+        std::uint64_t b = to_underlying(bases[i]);
         writer.Write(b);
     }
 }

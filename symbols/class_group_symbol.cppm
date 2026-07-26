@@ -48,20 +48,17 @@ public:
     ForwardClassDeclarationSymbol* GetForwardDeclaration(Cardinality arity, Context* context) const;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    void Expand(Context* context) override;
     bool IsExportSymbol(Context* context) const noexcept override;
 private:
     mutable std::vector<ClassTypeSymbol*> classes;
-    std::vector<SymbolId> classIds;
+    mutable std::vector<SymbolId> classIds;
     mutable std::vector<ForwardClassDeclarationSymbol*> forwardDeclarations;
     std::vector<SymbolId> fwdDeclIds;
-    std::vector<ClassGroupSymbol*> readOnlyClassGroups;
     bool contentFetched;
-    bool expanded;
     mutable bool classesSet;
     mutable bool forwardDeclarationsSet;
     void GetContent(Context* context);
-    bool ContainsExportClass(Context* context) const noexcept;
+    bool ContainsExportClassOrFwdDeclaration(Context* context) const noexcept;
 };
 
 } // namespace otava::symbols

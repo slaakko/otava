@@ -529,7 +529,7 @@ void CodeGenerator::GenerateVTab(otava::symbols::ClassTypeSymbol* cls, const sou
     otava::intermediate::Type* arrayPtrType = emitter->MakePtrType(arrayType);
     std::vector<otava::intermediate::Value*> elements;
     otava::symbols::SymbolId classId = cls->Id();
-    otava::intermediate::Value* classIdValue = emitter->EmitConversionValue(voidPtrIrType, emitter->EmitUInt(ToUnderlying(classId)));
+    otava::intermediate::Value* classIdValue = emitter->EmitConversionValue(voidPtrIrType, emitter->EmitULong(ToUnderlying(classId)));
     elements.push_back(classIdValue);
     for (otava::symbols::FunctionSymbol* functionSymbol : cls->VTab())
     {
@@ -688,7 +688,7 @@ void CodeGenerator::GenerateGlobalInitializationFunction()
 {
     Reset();
     std::string setBadAllocExStr;
-    std::uint32_t ext;
+    std::uint64_t ext;
     otava::symbols::FunctionDefinitionSymbol* globalInit = new otava::symbols::FunctionDefinitionSymbol(context.GetModule(), 
         context.GetNextSymbolId(otava::symbols::SymbolKind::functionDefinitionSymbol), "__global_init__");
     globalInit->SetReturnType(context.GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(
@@ -706,7 +706,7 @@ void CodeGenerator::GenerateGlobalInitializationFunction()
     std::unique_ptr<otava::symbols::BoundStatementNode> setBadAllocStmt(otava::symbols::BindStatement(setBadAllocStmtNode.get(), nullptr, &context));
     std::unique_ptr<otava::symbols::BoundCompoundStatementNode> compoundStmt(new otava::symbols::BoundCompoundStatementNode(soul::ast::FullSpan()));
     compoundStmt->AddStatement(setBadAllocStmt.release());
-    context.PushSetFlag(otava::symbols::ContextFlags::makeCompileUnitInitFn);
+    otava::symbols::FlagSetter flagSetter(&context, otava::symbols::ContextFlags::makeCompileUnitInitFn);
     int n = compileUnitInitFnNames.size();
     for (int i = 0; i < n; ++i)
     {
@@ -714,7 +714,6 @@ void CodeGenerator::GenerateGlobalInitializationFunction()
         std::unique_ptr<otava::symbols::BoundStatementNode> initFnCall(otava::symbols::BindStatement(callInitFunctionNode.get(), globalInit, &context));
         compoundStmt->AddStatement(initFnCall.release());
     }
-    context.PopFlags();
     context.GetBoundFunction()->SetBody(compoundStmt.release());
     context.GetBoundFunction()->Accept(*this);
 }
@@ -806,7 +805,7 @@ void CodeGenerator::Visit(otava::symbols::BoundEmptyStatementNode& node)
 void CodeGenerator::Visit(otava::symbols::BoundCompileUnitNode& node)
 {
     generatedFunctions.clear();
-    context.PushSetFlag(otava::symbols::ContextFlags::requireForwardResolved);
+    otava::symbols::FlagSetter flagSetter(&context, otava::symbols::ContextFlags::requireForwardResolved);
     if (globalMain)
     {
         GenerateGlobalInitializationFunction();
@@ -866,7 +865,7 @@ void CodeGenerator::Visit(otava::symbols::BoundCompileUnitNode& node)
     }
     otava::intermediate::GenerateCode(*finalContext, *codeGenerator, verbose);
     asmFileName = util::Path::GetFileName(context.FileName()) + ".asm";
-    context.PopFlags();
+    flagSetter.Reset();
     context.SetTotalFunctionsCompiled(context.TotalFunctionsCompiled() + intermediateContext.TotalFunctions());
     context.SetTotalFunctionsCompiled(context.TotalFunctionsCompiled() + optimizationContext.TotalFunctions());
     context.SetFunctionsInlined(context.FunctionsInlined() + intermediateContext.FunctionsInlined());
@@ -925,8 +924,10 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
         BuildGotoTargetMap(node.Body(), &context);
     }
     std::string functionDefinitionName = functionDefinition->IrName(&context);
-    if (functionDefinition->HasForwardDeclarationType(&context))
+    if (!functionDefinition->RemoveForwardDeclarationTypes(&context))
     {
+        otava::symbols::PrintWarning("not all forward references could not be removed for function '" + 
+            functionDefinition->FullName(&context) + "': no code generated", functionDefinition->GetFullSpan(), &context);
         return;
     }
     if (generatedFunctions.find(functionDefinitionName) != generatedFunctions.end())

@@ -26,11 +26,11 @@ constexpr StringOffset& operator+=(StringOffset& x, std::uint32_t y) noexcept
     return x;
 }
 
-enum class SymbolId : std::uint32_t {};
+enum class SymbolId : std::uint64_t {};
 
 constexpr SymbolId zeroSymbolId = SymbolId(0);
 
-constexpr std::uint32_t ToUnderlying(SymbolId id) noexcept { return std::uint32_t(id); }
+constexpr std::uint64_t ToUnderlying(SymbolId id) noexcept { return std::uint64_t(id); }
 
 enum class Length : std::uint32_t {};
 
@@ -183,5 +183,32 @@ struct ModuleSymbolId
     ModuleId moduleId;
     SymbolId symbolId;
 };
+
+enum class ProjectId : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(ProjectId projectId) noexcept { return std::uint32_t(projectId); }
+
+constexpr ProjectId operator+(ProjectId x, ProjectId y) noexcept
+{
+    return ProjectId(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr ProjectId operator+(ProjectId x, Cardinality y) noexcept
+{
+    return ProjectId(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr ProjectId& operator++(ProjectId& x) noexcept
+{
+    x = x + ProjectId(1);
+    return x;
+}
+
+constexpr ProjectId operator++(ProjectId& x, int) noexcept
+{
+    ProjectId result(x);
+    x = x + ProjectId(1);
+    return result;
+}
 
 } // namespace otava::symbols

@@ -782,7 +782,7 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
         }
         functionSymbol->SetIndex(functionIndex);
         classType->MapFunction(functionSymbol);
-        context->GetSymbolTable()->MapSymbol(functionSymbol);
+        context->GetSymbolTable()->MapSymbol(functionSymbol, context);
     }
     if (functionSymbol->IsExplicitSpecializationDeclaration(context))
     {
@@ -969,9 +969,8 @@ Declaration ProcessInitCondition(otava::ast::InitConditionNode* initCondition, C
 
 void ProcessMemberDeclaration(otava::ast::Node* node, otava::ast::Node* functionNode, Context* context)
 {
-    context->PushResetFlag(ContextFlags::invoke | ContextFlags::tryCatch);
+    FlagResetter flagResetter(context, ContextFlags::invoke | ContextFlags::tryCatch);
     ProcessSimpleDeclaration(node, functionNode, context);
-    context->PopFlags();
 }
 
 Declaration ProcessFunctionDeclaration(otava::ast::Node* node, Context* context)
@@ -1020,6 +1019,7 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
     if (declarationList->declarations.size() == 1)
     {
         Declaration declaration = std::move(declarationList->declarations.front());
+        if (!declaration.declarator) return 0;
         if (declaration.declarator->Kind() == DeclaratorKind::functionDeclarator)
         {
             FunctionDeclarator* functionDeclarator = static_cast<FunctionDeclarator*>(declaration.declarator.get());
@@ -1030,8 +1030,9 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
             {
                 parameterTypes.push_back(parameterDeclaration.type);
             }
+            Scope* declarationScope = GetModuleInterfaceScope(functionDeclarator->GetScope(), declarator->GetFullSpan(), context);
             FunctionDefinitionSymbol* definition = context->GetSymbolTable()->AddOrGetFunctionDefinition(
-                functionDeclarator->GetScope(), functionDeclarator->Name(), functionDeclarator->TemplateArgs(), parameterTypes, qualifiers, kind,
+                functionDeclarator->GetScope(), declarationScope, functionDeclarator->Name(), functionDeclarator->TemplateArgs(), parameterTypes, qualifiers, kind,
                 declaration.flags, declarator, functionNode, get, context);
             TypeSymbol* fnDeclarationReturnType = nullptr;
             FunctionSymbol* fnDeclaration = definition->Declaration();
@@ -1090,6 +1091,10 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
             definition->AddDefinitionToGroup(context);
             TypeSymbol* returnType = MapType(definition, declaration.type, context);
             definition->SetReturnType(returnType, context);
+            if (fnDeclaration)
+            {
+                fnDeclaration->ReplaceIncompleteTypes(definition, context);
+            }
             if (fnDeclarationReturnType && returnType && !TypesEqual(fnDeclarationReturnType, returnType, context))
             {
                 std::set<const Symbol*> visited;
@@ -1139,7 +1144,7 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
             {
                 functionDefinitionSymbol->SetFunctionQualifiers(functionDefinitionSymbol->Qualifiers() | FunctionQualifiers::noreturn);
             }
-            context->GetSymbolTable()->MapNode(functionDefinitionNode, functionDefinitionSymbol);
+            context->GetSymbolTable()->MapNode(functionDefinitionNode, functionDefinitionSymbol, context);
             ClassTypeSymbol* classType = functionDefinitionSymbol->ParentClassType(context);
             if (classType)
             {
@@ -1221,6 +1226,11 @@ void Read(Reader& reader, DeclarationFlags& flags)
 
 void ThrowDeclarationParsingError(const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    if (context->HasException())
+    {
+        Exception ex = context->ReleaseException();
+        ThrowException("declaration parsing error: " + std::string(ex.what()), fullSpan, context);
+    }
     ThrowException("declaration parsing error", fullSpan, context);
 }
 
@@ -1360,9 +1370,9 @@ std::unique_ptr<BoundFunctionCallNode> MakeAtExitForVariable(VariableSymbol* var
         atExitArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundVariableAsVoidPtrNode(new BoundAddressOfNode(
             boundGlobalVariable, fullSpan, boundGlobalVariable->GetType()->AddPointer(context)), fullSpan, voidPtrType)));
         Exception ex;
-        Scope* stdScope = context->GetSymbolTable()->GetNamespaceScope("std", fullSpan, context);
+        Scope* scope = context->GetSymbolTable()->CurrentScope();
         std::vector<TypeSymbol*> templateArgs;
-        atExitCall = ResolveOverload(stdScope, "at_exit", templateArgs, atExitArgs, fullSpan, context, ex);
+        atExitCall = ResolveOverload(scope, "at_exit", templateArgs, atExitArgs, fullSpan, context, ex);
     }
     return atExitCall;
 }

@@ -148,8 +148,7 @@ std::vector<SymbolGroupKind> SymbolGroupKindstoSymbolGroupKindVec(SymbolGroupKin
     return symbolGroupKindVec;
 }
 
-Scope::Scope(Module* module_) noexcept : module(module_), readOnly(module->IsReadOnly()), kind(ScopeKind::none), read(false), global(false), imported(false), 
-    destructing(false)
+Scope::Scope(Module* module_) noexcept : module(module_), readOnly(module->IsReadOnly()), kind(ScopeKind::none), read(false), global(false), destructing(false)
 {
     module->AddScope(this);
 }
@@ -174,14 +173,6 @@ Symbol* Scope::Lookup(const std::string& name, SymbolGroupKind symbolGroupKind, 
     std::vector<Symbol*> symbols;
     std::set<const Scope*> visited;
     Lookup(name, symbolGroupKind, scopeLookup, flags, symbols, visited, context);
-    if (symbols.empty() && !IsReadOnly() && (flags & LookupFlags::dontImport) == LookupFlags::none)
-    {
-        if (IsGlobal())
-        {
-            ImportModuleScopes(context);
-            Lookup(name, symbolGroupKind, scopeLookup, flags, symbols, visited, context);
-        }
-    }
     if (symbols.empty())
     {
         return nullptr;
@@ -383,16 +374,9 @@ TemplateParamGroupSymbol* Scope::GetOrInsertTemplateParamGroup(const std::string
 
 void Scope::Write(Writer& writer)
 {
-    std::vector<std::pair<SymbolOffset, SymbolId>> symbolIdVec;
-    for (const auto& s : symbolIdMap)
-    {
-        SymbolOffset symbolOffset = s.first;
-        SymbolGroupKind groupKind = GetSymbolGroupKind(symbolOffset);
-        symbolIdVec.push_back(s);
-    }
-    Cardinality count = Cardinality(symbolIdVec.size());
+    Cardinality count = Cardinality(symbolIdMap.size());
     writer.GetBinaryStreamWriter().Write(ToUnderlying(count));
-    for (const auto& s : symbolIdVec)
+    for (const auto& s : symbolIdMap)
     {
         SymbolOffset symbolOffset = s.first;
         SymbolId symbolId = s.second;
@@ -423,7 +407,7 @@ void Scope::Read(Reader& reader)
     for (Index i = Index(0); i < Index(count); ++i)
     {
         SymbolOffset symbolOffset = SymbolOffset(reader.CurrentReader().ReadUInt());
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         symbolIdMap[symbolOffset] = symbolId;
     }
     global = reader.CurrentReader().ReadBool();
@@ -447,105 +431,6 @@ void Scope::Install(Symbol* symbol, Context* context)
 void Scope::Uninstall(Symbol* symbol)
 {
     // TODO
-}
-
-void Scope::ImportModuleScopes(Context* context)
-{
-    if (imported) return;
-    imported = true;
-    const std::vector<Module*>& importedModules = GetModule()->ImportExportModules(context);
-    for (Module* m : importedModules)
-    {
-        Scope* thatScope = m->GetSymbolTable()->GetGlobalNs(context)->GetScope();
-        Import(thatScope, context);
-    }
-}
-
-bool Scope::Imported(Scope* scope) noexcept
-{ 
-    return importSet.find(scope) != importSet.end();
-}
-
-void Scope::AddImported(Scope* scope)
-{
-    importSet.insert(scope);
-}
-
-void Scope::Import(Scope* that, Context* context)
-{
-    if (Imported(that)) return;
-    that->Read();
-    for (const auto& symbolOffsetId : that->symbolIdMap)
-    {
-        SymbolOffset symbolOffset = symbolOffsetId.first;
-        SymbolId symbolId = symbolOffsetId.second;
-        SymbolGroupKind symbolGroupKind = GetSymbolGroupKind(symbolOffset);
-        switch (symbolGroupKind)
-        {
-        case SymbolGroupKind::namespaceSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            NamespaceSymbol* ns = GetOrInsertNamespace(name, soul::ast::FullSpan(), context);
-            ns->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-        case SymbolGroupKind::aliasSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            AliasGroupSymbol* aliasGroup = GetOrInsertAliasGroup(name, soul::ast::FullSpan(), context);
-            aliasGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-        case SymbolGroupKind::functionSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            FunctionGroupSymbol* functionGroup = GetOrInsertFunctionGroup(name, soul::ast::FullSpan(), context);
-            functionGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-        case SymbolGroupKind::classSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            ClassGroupSymbol* classGroup = GetOrInsertClassGroup(name, soul::ast::FullSpan(), context);
-            classGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-/*
-        case SymbolGroupKind::enumSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            EnumGroupSymbol* enumGroup = GetOrInsertEnumGroup(name, soul::ast::FullSpan(), context);
-            enumGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-*/
-        case SymbolGroupKind::templateParamSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            TemplateParamGroupSymbol* templateParamGroup = GetOrInsertTemplateParamGroup(name, soul::ast::FullSpan(), context);
-            templateParamGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-        case SymbolGroupKind::variableSymbolGroup:
-        {
-            StringOffset stringOffset = GetStringOffset(symbolOffset);
-            std::string name = that->GetModule()->GetStringTable()->GetString(stringOffset);
-            VariableGroupSymbol* variableGroup = GetOrInsertVariableGroup(name, soul::ast::FullSpan(), context);
-            variableGroup->AddModuleSymbolId(ModuleSymbolId(that->GetModule()->Id(), symbolId));
-            break;
-        }
-        }
-    }
-    if (!IsContainerScope())
-    {
-        AddImported(that);
-    }
 }
 
 Scope* Scope::GroupScope(Context* context) noexcept
@@ -827,43 +712,6 @@ std::string ContainerScope::FullName(Context* context) const
     return containerSymbol->FullName(context);
 }
 
-void ContainerScope::Import(Scope* that, Context* context)
-{
-    if (Imported(that)) return;
-    Scope::Import(that, context);
-    if (that->IsContainerScope())
-    {
-        ContainerScope* thatContainerScope = static_cast<ContainerScope*>(that);
-        if (thatContainerScope->usingDeclarationScope)
-        {
-            const std::unordered_map<SymbolOffset, SymbolId>& symbolIdMap = thatContainerScope->usingDeclarationScope->SymbolIdMap();
-            for (const auto& s : symbolIdMap)
-            {
-                SymbolId symbolId = s.second;
-                Module* module = that->GetModule();
-                Symbol* usingDeclaration = module->GetSymbolTable()->GetSymbol(symbolId, context);
-                if (!usingDeclaration)
-                {
-                    std::vector<Module*> im = module->ImportExportModules(context);
-                    for (Module* importedModule : im)
-                    {
-                        usingDeclaration = importedModule->GetSymbolTable()->GetSymbol(symbolId, context);
-                        if (usingDeclaration)
-                        {
-                            break;
-                        }
-                    }
-                }
-                if (usingDeclaration)
-                {
-                    AddUsingDeclaration(usingDeclaration, soul::ast::FullSpan(), context);
-                }
-            }
-        }
-    }
-    AddImported(that);
-}
-
 void ContainerScope::Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,
     std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) 
 {
@@ -872,19 +720,19 @@ void ContainerScope::Lookup(const std::string& name, SymbolGroupKind symbolGroup
     {
         Scope::Read();
     }
-    else
-    {
-        containerSymbol->Expand(context);
-    }
     Scope::Lookup(name, symbolGroupKinds, scopeLookup, flags, symbols, visited, context);
     if ((scopeLookup & ScopeLookup::parentScope) != ScopeLookup::none)
     {
         for (Scope* parentScope : ParentScopes(context))
         {
             if (!parentScope->GetModule()) continue;
-            if (symbols.empty() || (flags & LookupFlags::all) != LookupFlags::none)
+            if (visited.find(parentScope) == visited.end())
             {
-                parentScope->Lookup(name, symbolGroupKinds, scopeLookup, flags, symbols, visited, context);
+                visited.insert(parentScope);
+                if (symbols.empty() || (flags & LookupFlags::all) != LookupFlags::none)
+                {
+                    parentScope->Lookup(name, symbolGroupKinds, scopeLookup, flags, symbols, visited, context);
+                }
             }
         }
     }
@@ -1165,7 +1013,7 @@ void UsingDirectiveScope::Write(Writer& writer)
 void UsingDirectiveScope::Read(Reader& reader)
 {
     Scope::Read(reader);
-    nsId = SymbolId(reader.CurrentReader().ReadUInt());
+    nsId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void UsingDirectiveScope::Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,

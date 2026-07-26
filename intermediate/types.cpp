@@ -492,7 +492,7 @@ void StructureType::SetComment(const std::string& comment_)
     comment = comment_;
 }
 
-FwdDeclaredStructureType::FwdDeclaredStructureType(std::uint32_t id_, std::int32_t typeId_) noexcept :
+FwdDeclaredStructureType::FwdDeclaredStructureType(std::uint64_t id_, std::int32_t typeId_) noexcept :
     Type(soul::ast::Span(), TypeKind::fwdDeclaredStructureType, typeId_), id(id_)
 {
 }
@@ -917,7 +917,7 @@ FunctionType* Types::GetFunctionType(const soul::ast::Span& span, std::int32_t t
     return functionType;
 }
 
-FwdDeclaredStructureType* Types::GetFwdDeclaredStructureType(std::uint32_t id)
+FwdDeclaredStructureType* Types::GetFwdDeclaredStructureType(std::uint64_t id)
 {
     auto it = fwdDeclaredStructureTypes.find(id);
     if (it != fwdDeclaredStructureTypes.cend())
@@ -930,7 +930,7 @@ FwdDeclaredStructureType* Types::GetFwdDeclaredStructureType(std::uint32_t id)
     }
 }
 
-FwdDeclaredStructureType* Types::MakeFwdDeclaredStructureType(std::uint32_t id, std::int32_t typeId, const std::string& comment)
+FwdDeclaredStructureType* Types::MakeFwdDeclaredStructureType(std::uint64_t id, std::int32_t typeId, const std::string& comment)
 {
     FwdDeclaredStructureType* fwdDeclaredType = new FwdDeclaredStructureType(id, typeId);
     fwdDeclaredType->SetComment(comment);
@@ -949,7 +949,7 @@ void Types::AddFwdDependentType(FwdDeclaredStructureType* fwdType, Type* type)
     }
 }
 
-void Types::ResolveForwardReferences(std::uint32_t id, StructureType* structureType)
+void Types::ResolveForwardReferences(std::uint64_t id, StructureType* structureType)
 {
     FwdDeclaredStructureType* fwdType = GetFwdDeclaredStructureType(id);
     if (fwdType)

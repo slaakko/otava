@@ -17,6 +17,7 @@ class VariableSymbol : public Symbol
 public:
     VariableSymbol(Module* module_, SymbolId id_);
     VariableSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    ~VariableSymbol();
     inline int Arity() const noexcept { return 0; }
     inline int Level() const noexcept { return level; }
     inline void SetLevel(int level_) noexcept { level = level_; }
@@ -45,6 +46,9 @@ public:
     void SetInitializerType(TypeSymbol* initializerType_, Context* context) noexcept;
     TypeSymbol* GetType(Context* context);
     TypeSymbol* GetReferredType(Context* context);
+    inline VariableGroupSymbol* Group() const noexcept { return group; }
+    inline void SetGroup(VariableGroupSymbol* group_) noexcept { group = group_; }
+    inline void ResetGroup() noexcept { group = nullptr; }
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:
@@ -62,7 +66,9 @@ private:
     std::int32_t layoutIndex;
     VariableSymbol* global;
     SymbolId globalId;
-    bool contentFetched;
+    VariableGroupSymbol* group;
+    SymbolId groupId;
+    std::string varName;
     void GetContent(Context* context);
 };
 

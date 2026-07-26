@@ -46,6 +46,7 @@ private:
     void ReadHeader();
     bool stringsRead;
     void ReadStrings();
+    std::string GetString(StringOffset offset, bool unescape);
 };
 
 } // namespace otava::symbols

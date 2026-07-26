@@ -68,6 +68,5 @@ private:
 };
 
 void Optimize(otava::intermediate::IntermediateContext* context);
-void SetOptFn(const std::string& optFn_);
 
 } // otava::optimizer

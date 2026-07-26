@@ -10,6 +10,7 @@ import otava.symbols.declaration;
 import otava.symbols.exception;
 import otava.symbols.evaluator;
 import otava.symbols.function_type_symbol;
+import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.type_resolver;
 import otava.ast.classes;
@@ -60,7 +61,8 @@ ArrayDeclarator::ArrayDeclarator(const std::string& name_, otava::ast::Node* nod
 {
 }
 
-Declaration::Declaration() noexcept : flags(DeclarationFlags::none), type(nullptr), declarator(nullptr), value(nullptr), initializer(nullptr), variable(nullptr)
+Declaration::Declaration() noexcept : 
+    flags(DeclarationFlags::none), type(nullptr), declarator(nullptr), value(nullptr), initializer(nullptr), variable(nullptr)
 {
 }
 
@@ -121,6 +123,7 @@ class DeclaratorProcessor : public otava::ast::DefaultVisitor
 {
 public:
     DeclaratorProcessor(Context* context_, DeclarationFlags flags_, TypeSymbol* baseType_, FunctionQualifiers qualifiers_, otava::ast::Node* declarationNode_);
+    void Reset();
     void SetProcessTrailingQualifiers(bool processTrailingQualifiers_) { processTrailingQualifiers = processTrailingQualifiers_; }
     Declaration GetDeclaration() { return std::move(declaration); }
     void Visit(otava::ast::FunctionDeclaratorNode& node) override;
@@ -195,6 +198,7 @@ private:
     Context* context;
     DeclarationFlags flags;
     TypeSymbol* baseType;
+    TypeSymbol* bt;
     TypeSymbol* returnType;
     std::vector<TypeSymbol*> parameterTypes;
     Declaration declaration;
@@ -207,6 +211,7 @@ private:
     bool processArrayId;
     bool processingFunctionPtrType;
     FunctionQualifiers qualifiers;
+    FunctionQualifiers q;
     FunctionDeclarator* functionDeclarator;
     Scope* scope;
     std::string arrayName;
@@ -218,6 +223,7 @@ DeclaratorProcessor::DeclaratorProcessor(Context* context_, DeclarationFlags fla
     context(context_),
     flags(flags_),
     baseType(baseType_),
+    bt(baseType),
     returnType(nullptr),
     isFunctionDeclarator(false),
     isDestructorDeclarator(false),
@@ -230,8 +236,26 @@ DeclaratorProcessor::DeclaratorProcessor(Context* context_, DeclarationFlags fla
     scope(context->GetSymbolTable()->CurrentScope()),
     functionDeclarator(),
     qualifiers(qualifiers_),
+    q(qualifiers),
     declarationNode(declarationNode_)
 {
+}
+
+void DeclaratorProcessor::Reset()
+{
+    baseType = bt;
+    returnType = nullptr;
+    isFunctionDeclarator = false;
+    isDestructorDeclarator = false;
+    skipIdFunctionDeclarator = false;
+    operatorFunctionId = false;
+    trailingQualifiers = false;
+    processTrailingQualifiers = false;
+    processArrayId = false;
+    processingFunctionPtrType = false;
+    scope = context->GetSymbolTable()->CurrentScope();
+    functionDeclarator = nullptr;
+    qualifiers = q;
 }
 
 void DeclaratorProcessor::Visit(otava::ast::FunctionDeclaratorNode& node)
@@ -788,8 +812,24 @@ void DeclaratorProcessor::Visit(otava::ast::CommaNode& node)
 void DeclaratorProcessor::Visit(otava::ast::QualifiedIdNode& node)
 {
     if (processTrailingQualifiers) return;
-    scope = ResolveScope(node.Left(), context);
-    node.Right()->Accept(*this);
+    FlagSetter flagSetter(context, ContextFlags::dontThrow);
+    Scopes scopes = GetScopes(node.Left(), context);
+    bool reset = false;
+    for (Scope* scope : scopes.GetScopes())
+    {
+        if (reset)
+        {
+            Reset();
+        }
+        ScopePtr scopePtr(scope, context);
+        this->scope = scope;
+        node.Right()->Accept(*this);
+        if (declaration.declarator)
+        {
+            break;
+        }
+        reset = true;
+    }
 }
 
 void DeclaratorProcessor::Visit(otava::ast::IdentifierNode& node)
@@ -843,8 +883,21 @@ void DeclaratorProcessor::Visit(otava::ast::TemplateIdNode& node)
     std::vector<TypeSymbol*> templateArgs;
     for (otava::ast::Node* item : node.Items())
     {
-        TypeSymbol* type = ResolveType(item, DeclarationFlags::none, context);
-        templateArgs.push_back(type);
+        TypeResolverFlags resolverFlags = TypeResolverFlags::none;
+        if (context->GetFlag(ContextFlags::dontThrow))
+        {
+            resolverFlags = resolverFlags | TypeResolverFlags::dontThrow;
+        }
+        TypeSymbol* type = ResolveType(item, DeclarationFlags::none, context, resolverFlags);
+        if (type)
+        {
+            templateArgs.push_back(type);
+        }
+        else
+        {
+            declaration = Declaration();
+            return;
+        }
     }
     if (functionDeclarator)
     {

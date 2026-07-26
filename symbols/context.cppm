@@ -8,6 +8,7 @@ export module otava.symbols.context;
 import otava.symbols.bound_tree;
 import otava.symbols.exception;
 import otava.symbols.modules;
+import otava.symbols.project;
 import otava.symbols.id;
 import otava.symbols.scope;
 import otava.symbols.symbol;
@@ -84,6 +85,9 @@ enum class ContextFlags : std::int64_t
     dontThrow = static_cast<std::int64_t>(1) << 55,
     qualifiedScope = static_cast<std::int64_t>(1) << 56,
     emptyDestructor = static_cast<std::int64_t>(1) << 57,
+    dontLookImports = static_cast<std::int64_t>(1) << 58,
+    matchFullNames = static_cast<std::int64_t>(1) << 59,
+    rejectIncompleteTypes = static_cast<std::int64_t>(1) << 60,
     sticky = noWarnings | expected
 };
 
@@ -148,7 +152,7 @@ public:
     inline SymbolIndexMap* GetSymbolIndexMap() const noexcept { return moduleMapper->GetSymbolIndexMap(); }
     inline SymbolId GetNextSymbolId(SymbolKind symbolKind) noexcept
     { 
-        return MakeSymbolId(symbolKind, GetSymbolIndexMap()->GetNextIndex(symbolKind));
+        return MakeSymbolId(currentProject->GetProjectId(), symbolKind, GetSymbolIndexMap()->GetNextIndex(symbolKind));
     }
     inline soul::lexer::FileMap* GetFileMap() const noexcept { return fileMap; }
     inline void SetFileMap(soul::lexer::FileMap* fileMap_) noexcept { fileMap = fileMap_; }
@@ -387,6 +391,62 @@ private:
     std::stack<Scope*> templateNsScopeStack;
     bool hasException;
     Exception exception;
+};
+
+class FlagSetter
+{
+public:
+    inline FlagSetter() : context(nullptr) {}
+    inline FlagSetter(Context* context_, ContextFlags flags) : context(context_) { context->PushSetFlag(flags); }
+    inline ~FlagSetter() 
+    { 
+        if (context) 
+        { 
+            context->PopFlags(); 
+        } 
+    }
+    inline void Reset()
+    {
+        if (context)
+        {
+            context->PopFlags();
+            context = nullptr;
+        }
+    }
+    inline void Reset(Context* context_, ContextFlags flags)
+    {
+        if (context)
+        {
+            context->PopFlags();
+        }
+        context = context_;
+        context->PushSetFlag(flags);
+    }
+private:
+    Context* context;
+};
+
+class FlagResetter
+{
+public:
+    inline FlagResetter(Context* context_, ContextFlags flags) : context(context_) { context->PushResetFlag(flags); }
+    inline ~FlagResetter()
+    {
+        if (context)
+        {
+            context->PopFlags();
+        }
+    }
+    inline void Reset()
+    {
+        if (context)
+        {
+            context->PopFlags();
+            context = nullptr;
+        }
+    }
+private:
+    Context* context;
 };
 
 } // namespace otava::symbols

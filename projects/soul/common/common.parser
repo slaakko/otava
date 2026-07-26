@@ -1,0 +1,90 @@
+export module soul.common.common.parser;
+
+[interface]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.lex.slg;
+[implementation]import soul.lex.spg;
+[implementation]import soul.common.token.parser;
+
+parser CommonParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+    lexer soul::lex::spg::SpgLexer<char32_t>; 
+
+    QualifiedId(var std::string str) : std::string
+        ::= (ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); } (DOT ID{ str.append(1, '.').append(util::ToUtf8(lexer.GetToken(pos).ToString())); })*){ return str; }
+        ;
+
+    ExportModule(var std::unique_ptr<soul::ast::common::ExportModule> exp) : soul::ast::common::ExportModule*
+        ::= 
+        (
+            ExportKeyword:exportKeyword ModuleKeyword:moduleKeyword QualifiedId:moduleName{ exp.reset(new soul::ast::common::ExportModule(moduleName)); } SEMICOLON
+        )
+        {
+            return exp.release();
+        }
+        ;
+
+    Import(var std::unique_ptr<soul::ast::common::Import> imp, var soul::ast::common::ImportPrefix prefix) : soul::ast::common::Import*
+        ::= 
+        (
+            (ImportPrefix:importPrefix{ prefix = importPrefix; } | empty{ prefix = soul::ast::common::ImportPrefix::interfacePrefix; })
+            ImportKeyword:importKeyword QualifiedId:moduleName{ imp.reset(new soul::ast::common::Import(moduleName, prefix)); } SEMICOLON
+        )
+        {
+            return imp.release();
+        }
+        ;
+
+    ImportPrefix : soul::ast::common::ImportPrefix
+        ::= ImplementationPrefix:implementationPrefix{ return implementationPrefix; }
+        |   InterfacePrefix:interfacePrefix{ return interfacePrefix; }
+        ;
+
+    ExprString : std::string
+        ::= STRING_LITERAL{ return  soul::common::token::parser::MakeExprStringValue(lexer.FileName(), lexer.GetToken(pos)); }
+        ;
+
+    FilePath : std::string
+        ::= FILEPATH{ return soul::common::token::parser::MakeFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+        ;
+
+    ExportKeyword
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "export"; }
+        ;
+
+    ModuleKeyword 
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "module"; }
+        ;
+
+    ImportKeyword
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "import"; }
+        ;
+
+    ImplementationPrefix : soul::ast::common::ImportPrefix
+        ::= LBRACKET ImplementationKeyword:implementationKeyword RBRACKET{ return soul::ast::common::ImportPrefix::implementationPrefix; }
+        ;
+
+    InterfacePrefix : soul::ast::common::ImportPrefix
+        ::= LBRACKET InterfaceKeyword:interfaceKeyword RBRACKET{ return soul::ast::common::ImportPrefix::interfacePrefix; }
+        ;
+
+    ImplementationKeyword 
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "implementation"; }
+        ;
+
+    InterfaceKeyword 
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "interface"; }
+        ;
+
+    ParserKeyword
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "parser"; }
+        ;
+
+    LexerKeyword
+        ::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "lexer"; }
+        ;
+}

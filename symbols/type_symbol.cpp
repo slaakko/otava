@@ -21,11 +21,11 @@ import util.text_util;
 
 namespace otava::symbols {
 
-TypeSymbol::TypeSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_)
+TypeSymbol::TypeSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), destructing(false)
 { 
 }
 
-TypeSymbol::TypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_)
+TypeSymbol::TypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_), destructing(false)
 {
 }
 

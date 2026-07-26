@@ -47,7 +47,7 @@ public:
     TypeSymbol* RemoveRValueRef(Context* context);
     TypeSymbol* RemoveReference(Context* context);
     TypeSymbol* RemoveRefOrPtr(Context* context);
-    virtual bool HasBaseClass(TypeSymbol* baseClass, int& distance, Context* context) const noexcept { return false; }
+    virtual bool HasBaseClass(TypeSymbol* baseClass, int& distance, Context* context) const { return false; }
     virtual bool IsVoidType() const noexcept { return false; }
     virtual bool IsBoolType() const noexcept { return false; }
     virtual bool IsIntType() const noexcept { return false; }
@@ -83,6 +83,8 @@ public:
     virtual TypeSymbol* Unify(TypeSymbol* argType, Context* context);
     virtual TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, 
         TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context);
+private:
+    bool destructing;
 };
 
 class ClassGroupTypeSymbol : public TypeSymbol

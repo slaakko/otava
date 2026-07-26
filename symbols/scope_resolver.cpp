@@ -148,6 +148,7 @@ void ScopeResolver::Visit(otava::ast::TemplateIdNode& node)
     if (type && type->GetScope())
     {
         currentScope = type->GetScope();
+        context->ResetException();
     }
     else if (context->GetFlag(ContextFlags::dontThrow))
     {
@@ -158,14 +159,18 @@ void ScopeResolver::Visit(otava::ast::TemplateIdNode& node)
         }
         return;
     }
-    scopePtr.Reset();
 }
 
 Scope* ResolveScope(otava::ast::Node* nnsNode, Context* context)
 {
     ScopeResolver resolver(context);
     nnsNode->Accept(resolver);
-    return resolver.GetScope();
+    Scope* scope = resolver.GetScope();
+    if (scope)
+    {
+        context->ResetException();
+    }
+    return scope;
 }
 
 Scope* GetScope(otava::ast::Node* nnsNode, Context* context)
@@ -198,7 +203,7 @@ Scope* EnterScope(Scope* scope, const std::vector<std::string>& containerNames, 
 
 Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
 {
-    context->PushSetFlag(ContextFlags::dontThrow);
+    FlagSetter flagSetter(context, ContextFlags::dontThrow);
     Scopes scopes;
     Scope* scope = GetScope(nnsNode, context);
     if (scope)
@@ -206,7 +211,6 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
         scopes.AddScope(scope);
         if (scope->IsClassScope())
         {
-            context->PopFlags();
             return scopes;
         }
     }
@@ -250,7 +254,6 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
             }
         }
     }
-    context->PopFlags();
     return scopes;
 }
 
@@ -263,14 +266,33 @@ void AddParentScope(otava::ast::Node* node, Context* context)
             if (context->GetSymbolTable()->CurrentScope()->IsNamespaceScope())
             {
                 otava::ast::QualifiedIdNode* qualifiedIdNode = static_cast<otava::ast::QualifiedIdNode*>(node);
+                FlagSetter flagSetter(context, ContextFlags::dontThrow);
                 Scope* scope = ResolveScope(qualifiedIdNode->Left(), context);
-                if (scope->IsClassScope())
+                if (scope && scope->IsClassScope())
                 {
                     context->GetSymbolTable()->CurrentScope()->PushParentScope(scope);
                 }
             }
         }
     }
+}
+
+Scope* GetModuleInterfaceScope(Scope* scope, const soul::ast::FullSpan& fullSpan, Context* context)
+{
+    if (context->GetModule()->Kind() == ModuleKind::implementationModule)
+    {
+        std::string interfaceUnitName = context->GetModule()->InterfaceUnitName();
+        Module* interfaceModule = context->GetModule(interfaceUnitName);
+        std::vector<std::string> containerNames = GetContainerNames(scope->GroupScope(context)->GetSymbol(), context);
+        Scope* currentScope = interfaceModule->GetSymbolTable()->CurrentScope();
+        if (!currentScope)
+        {
+            currentScope = interfaceModule->GetSymbolTable()->GetGlobalNs(context)->GetScope();
+        }
+        Scope* containerScope = EnterScope(currentScope, containerNames, fullSpan, context);
+        return containerScope->GroupScope(context);
+    }
+    return scope;
 }
 
 } // namespace otava::symbols

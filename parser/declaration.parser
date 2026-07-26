@@ -487,7 +487,7 @@ parser DeclarationParser
             Identifier(context):identifier 
             AttributeSpecifierSeq(context):attributes? 
             Assign:assign 
-            DefiningTypeId(context):definingTypeId
+            AssumeDefiningTypeId(context):definingTypeId
             Semicolon:semicolon
         )
         {
@@ -504,6 +504,12 @@ parser DeclarationParser
             return aliasDeclarationNode;
         }
         ;
+
+    AssumeDefiningTypeId(otava::symbols::Context* context) : otava::ast::Node*
+        ::= empty{ context->PushSetFlag(otava::symbols::ContextFlags::assumeType); }
+            DefiningTypeId(context):definingTypeId{ context->PopFlags(); return definingTypeId; } / { context->PopFlags(); }
+        ;
+
 
     DeclSpecifierSeq(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> sequence) : otava::ast::Node*
         ::= 

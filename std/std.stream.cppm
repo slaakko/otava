@@ -297,32 +297,32 @@ private:
     void* file;
 };
 
-template<typename CharT>
-class basic_istringstream;;
-template<typename CharT>
-class basic_ostringstream;
-template<typename CharT>
-class basic_stringstream;
-template<typename CharT>
-class basic_ifstream;
-template<typename CharT>
-class basic_fstream;
+//template<typename CharT>
+//class basic_istringstream;;
+//template<typename CharT>
+//class basic_ostringstream;
+//template<typename CharT>
+//class basic_stringstream;
+//template<typename CharT>
+//class basic_ifstream;
+//template<typename CharT>
+//class basic_fstream;
 using ios = basic_ios<char>;
 using wios = basic_ios<wchar_t>;
 using istream = basic_istream<char>;
 using ostream = basic_ostream<char>;
 using iostream = basic_iostream<char>;
-using ifstream = basic_ifstream<char>;
+//using ifstream = basic_ifstream<char>;
 using ofstream = basic_ofstream<char>;
-using fstream = basic_fstream<char>;
+//using fstream = basic_fstream<char>;
 using wistream = basic_istream<wchar_t>;
 using wostream = basic_ostream<wchar_t>;
-using wistringstream = basic_istringstream<wchar_t>;
-using wostringstream = basic_ostringstream<wchar_t>;
-using wstringstream = basic_stringstream<wchar_t>;
-using wifstream = basic_ifstream<wchar_t>;
+//using wistringstream = basic_istringstream<wchar_t>;
+//using wostringstream = basic_ostringstream<wchar_t>;
+//using wstringstream = basic_stringstream<wchar_t>;
+//using wifstream = basic_ifstream<wchar_t>;
 using wofstream = basic_ofstream<wchar_t>;
-using wfstream = basic_fstream<wchar_t>;
+//using wfstream = basic_fstream<wchar_t>;
 
 extern ostream cout;
 extern ostream cerr;

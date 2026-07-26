@@ -633,7 +633,7 @@ void ExpressionBinder::BindBinaryOp(otava::ast::NodeKind op, const soul::ast::Fu
     std::vector<std::unique_ptr<BoundExpressionNode>> args2;
     args2.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(l.release(), fullSpan, type)));
     args2.push_back(std::unique_ptr<BoundExpressionNode>(r.release()));
-    context->PushSetFlag(ContextFlags::noPtrOps | ContextFlags::skipFirstPtrToBooleanConversion);
+    FlagSetter flagSetter(context, ContextFlags::noPtrOps | ContextFlags::skipFirstPtrToBooleanConversion);
     if (node)
     {
         context->PushNodeId(node->Id());
@@ -643,7 +643,6 @@ void ExpressionBinder::BindBinaryOp(otava::ast::NodeKind op, const soul::ast::Fu
     {
         context->PopNodeId();
     }
-    context->PopFlags();
     if (functionCall1 && !functionCall2)
     {
         if (ex1.Warning())
@@ -803,7 +802,7 @@ void ExpressionBinder::BindUnaryOp(otava::ast::NodeKind op, const soul::ast::Ful
     }
     if (!functionCall)
     {
-        context->PushSetFlag(ContextFlags::skipFirstPtrToBooleanConversion);
+        FlagSetter flagSetter(context, ContextFlags::skipFirstPtrToBooleanConversion);
         TypeSymbol* type = args[0]->GetType()->AddPointer(context);
         args[0].reset(new BoundAddressOfNode(args[0].release(), fullSpan, type));
         if (node)
@@ -815,7 +814,6 @@ void ExpressionBinder::BindUnaryOp(otava::ast::NodeKind op, const soul::ast::Ful
         {
             context->PopNodeId();
         }
-        context->PopFlags();
         if (functionCall)
         {
             if (ex2.Warning())
@@ -1050,9 +1048,8 @@ void ExpressionBinder::BindPrefixInc(const soul::ast::FullSpan& fullSpan, std::u
             child->Clone(),
             new otava::ast::BinaryExprNode(fullSpan.span, fullSpan.fileIndex, new otava::ast::PlusNode(fullSpan.span, fullSpan.fileIndex), child->Clone(),
                 new otava::ast::IntegerLiteralNode(fullSpan.span, fullSpan.fileIndex, 1, otava::ast::Suffix::none, otava::ast::Base::decimal, std::string())));
-        context->PushSetFlag(ContextFlags::suppress_warning);
+        FlagSetter flagSetter(context, ContextFlags::suppress_warning);
         boundExpression = BindExpression(&assignmentExpr, context);
-        context->PopFlags();
     }
 }
 
@@ -1079,9 +1076,8 @@ void ExpressionBinder::BindPrefixDec(const soul::ast::FullSpan& fullSpan, std::u
             child->Clone(),
             new otava::ast::BinaryExprNode(fullSpan.span, fullSpan.fileIndex, new otava::ast::MinusNode(fullSpan.span, fullSpan.fileIndex), child->Clone(),
                 new otava::ast::IntegerLiteralNode(fullSpan.span, fullSpan.fileIndex, 1, otava::ast::Suffix::none, otava::ast::Base::decimal, std::string())));
-        context->PushSetFlag(ContextFlags::suppress_warning);
+        FlagSetter flagSetter(context, ContextFlags::suppress_warning);
         boundExpression = BindExpression(&assignmentExpr, context);
-        context->PopFlags();
     }
 }
 
@@ -1123,23 +1119,17 @@ void ExpressionBinder::Visit(otava::ast::CppCastExprNode& node)
         }
         ThrowException("invalid cast", fullSpan, context);
     }
-    bool reinterpretCast = false;
+    FlagSetter reinterpretCastFlagSetter;
     if (node.Op()->Kind() == otava::ast::NodeKind::reinterpretCastNode)
     {
-        reinterpretCast = true;
-        context->PushSetFlag(ContextFlags::reinterpretCast);
+        reinterpretCastFlagSetter.Reset(context, ContextFlags::reinterpretCast);
     }
     ArgumentMatch argumentMatch;
     FunctionMatch functionMatch;
-    context->PushSetFlag(ContextFlags::cast);
+    FlagSetter flagSetter(context, ContextFlags::cast);
     TypeSymbol* type = boundExpression->GetType()->DirectType(context)->FinalType(fullSpan, context);
     FunctionSymbol* conversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(resultType, type,
         boundExpression.get(), fullSpan, argumentMatch, functionMatch, context);
-    context->PopFlags();
-    if (reinterpretCast)
-    {
-        context->PopFlags();
-    }
     if (conversion)
     {
         if (argumentMatch.preConversionFlags == OperationFlags::addr)
@@ -1616,6 +1606,72 @@ void ExpressionBinder::Visit(otava::ast::IdentifierNode& node)
     {
         symbol = variableGroupSymbol;
     }
+    if (!symbol && !context->GetFlag(ContextFlags::dontLookImports))
+    {
+        FlagSetter flagSetter(context, ContextFlags::dontLookImports | ContextFlags::dontThrow);
+        std::vector<std::string> containerNames;
+        Scope* currentScope = scope;
+        if (!qualifiedScope) 
+        {
+            currentScope = context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context);
+        }
+        if (currentScope)
+        {
+            containerNames = GetContainerNames(currentScope->GetSymbol(), context);
+        }
+        if (!qualifiedScope)
+        {
+            Scope* templateNsScope = context->GetTemplateNsScope();
+            if (templateNsScope)
+            {
+                Symbol* symbol = templateNsScope->GetSymbol();
+                containerNames = GetContainerNames(symbol, context);
+            }
+        }
+        std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
+        Module* templateModule = context->GetTemplateModule();
+        if (templateModule)
+        {
+            std::vector<Module*> templateModules = templateModule->ImportExportModules(context);
+            for (Module* module : templateModules)
+            {
+                if (std::find(importedModules.begin(), importedModules.end(), module) == importedModules.end())
+                {
+                    importedModules.push_back(module);
+                }
+            }
+        }
+        for (Module* module : importedModules)
+        {
+            ModulePtr modulePtr(module, context);
+            Scope* containerScope = EnterScope(context->GetSymbolTable()->CurrentScope(), containerNames, node.GetFullSpan(), context);
+            context->PushScope(containerScope);
+            std::unique_ptr<BoundExpressionNode> expr = BindExpression(&node, context);
+            context->PopScope();
+            if (expr)
+            {
+                boundExpression.reset(expr.release());
+                break;
+            }
+        }
+        if (boundExpression)
+        {
+            return;
+        }
+        else
+        {
+            if (context->GetFlag(ContextFlags::dontThrow))
+            {
+                failed = true;
+                if (!context->HasException())
+                {
+                    context->SetException(MakeException("symbol '" + node.Str() + "' not found", fullSpan, context));
+                }
+                return;
+            }
+            ThrowException("symbol '" + node.Str() + "' not found", fullSpan, context);
+        }
+    }
     if (symbol)
     {
         switch (symbol->Kind())
@@ -1690,9 +1746,19 @@ void ExpressionBinder::Visit(otava::ast::IdentifierNode& node)
             }
             else if (sym && sym == classGroup)
             {
-                ClassGroupSymbol* classGroupSymbol = static_cast<ClassGroupSymbol*>(symbol);
-                ClassGroupTypeSymbol* classGroupType = context->GetSymbolTable()->MakeClassGroupTypeSymbol(classGroupSymbol, context);
-                boundExpression.reset(new BoundClassGroupNode(classGroupSymbol, fullSpan, classGroupType));
+                if (context->GetModule()->IsReadOnly())
+                {
+                    ModulePtr compileUnitModule(context->GetCompileUnitModule(), context);
+                    ClassGroupSymbol* classGroupSymbol = static_cast<ClassGroupSymbol*>(symbol);
+                    ClassGroupTypeSymbol* classGroupType = context->GetSymbolTable()->MakeClassGroupTypeSymbol(classGroupSymbol, context);
+                    boundExpression.reset(new BoundClassGroupNode(classGroupSymbol, fullSpan, classGroupType));
+                }
+                else
+                {
+                    ClassGroupSymbol* classGroupSymbol = static_cast<ClassGroupSymbol*>(symbol);
+                    ClassGroupTypeSymbol* classGroupType = context->GetSymbolTable()->MakeClassGroupTypeSymbol(classGroupSymbol, context);
+                    boundExpression.reset(new BoundClassGroupNode(classGroupSymbol, fullSpan, classGroupType));
+                }
             }
             else
             {
@@ -1732,8 +1798,17 @@ void ExpressionBinder::Visit(otava::ast::IdentifierNode& node)
             }
             else if (sym && sym == aliasGroup)
             {
-                AliasGroupTypeSymbol* aliasGroupType = context->GetSymbolTable()->MakeAliasGroupTypeSymbol(aliasGroup, context);
-                boundExpression.reset(new BoundAliasGroupNode(aliasGroup, fullSpan, aliasGroupType));
+                if (context->GetModule()->IsReadOnly())
+                {
+                    ModulePtr compileUnitModule(context->GetCompileUnitModule(), context);
+                    AliasGroupTypeSymbol* aliasGroupType = context->GetSymbolTable()->MakeAliasGroupTypeSymbol(aliasGroup, context);
+                    boundExpression.reset(new BoundAliasGroupNode(aliasGroup, fullSpan, aliasGroupType));
+                }
+                else
+                {
+                    AliasGroupTypeSymbol* aliasGroupType = context->GetSymbolTable()->MakeAliasGroupTypeSymbol(aliasGroup, context);
+                    boundExpression.reset(new BoundAliasGroupNode(aliasGroup, fullSpan, aliasGroupType));
+                }
             }
             else
             {
@@ -1797,8 +1872,17 @@ void ExpressionBinder::Visit(otava::ast::IdentifierNode& node)
         case SymbolKind::functionGroupSymbol:
         {
             FunctionGroupSymbol* functionGroupSymbol = static_cast<FunctionGroupSymbol*>(symbol);
-            FunctionGroupTypeSymbol* functionGroupType = context->GetSymbolTable()->MakeFunctionGroupTypeSymbol(functionGroupSymbol, context);
-            boundExpression.reset(new BoundFunctionGroupNode(functionGroupSymbol, fullSpan, functionGroupType));
+            if (context->GetModule()->IsReadOnly())
+            {
+                ModulePtr compileUnitModule(context->GetCompileUnitModule(), context);
+                FunctionGroupTypeSymbol* functionGroupType = context->GetSymbolTable()->MakeFunctionGroupTypeSymbol(functionGroupSymbol, context);
+                boundExpression.reset(new BoundFunctionGroupNode(functionGroupSymbol, fullSpan, functionGroupType));
+            }
+            else
+            {
+                FunctionGroupTypeSymbol* functionGroupType = context->GetSymbolTable()->MakeFunctionGroupTypeSymbol(functionGroupSymbol, context);
+                boundExpression.reset(new BoundFunctionGroupNode(functionGroupSymbol, fullSpan, functionGroupType));
+            }
             break;
         }
         case SymbolKind::fundamentalTypeSymbol:
@@ -1847,12 +1931,12 @@ void ExpressionBinder::Visit(otava::ast::IdentifierNode& node)
 void ExpressionBinder::Visit(otava::ast::QualifiedIdNode& node)
 {
     if (failed) return;
-    context->PushSetFlag(ContextFlags::dontThrow);
+    FlagSetter flagSetter(context, ContextFlags::dontThrow);
     Scopes scopes = GetScopes(node.Left(), context);
     for (Scope* scope : scopes.GetScopes())
     {
         bool prevQualifiedScope = qualifiedScope;
-        context->PushSetFlag(ContextFlags::qualifiedScope);
+        FlagSetter qidFlagSetter(context, ContextFlags::qualifiedScope);
         context->PushScope(scope);
         std::unique_ptr<BoundExpressionNode> expr = BindExpression(node.Right(), context);
         if (context->GetFlag(ContextFlags::emptyDestructor))
@@ -1861,11 +1945,9 @@ void ExpressionBinder::Visit(otava::ast::QualifiedIdNode& node)
             context->ResetFlag(ContextFlags::emptyDestructor);
         }
         context->PopScope();
-        context->PopFlags();
         if (expr)
         {
             boundExpression = std::move(expr);
-            context->PopFlags();
             this->scope = scope;
             return;
         }
@@ -1875,14 +1957,6 @@ void ExpressionBinder::Visit(otava::ast::QualifiedIdNode& node)
         failed = true;
         return;
     }
-    context->PopFlags();
-    /*
-    scope = ResolveScope(node.Left(), context);
-    bool prevQualifiedScope = qualifiedScope;
-    qualifiedScope = true;
-    node.Right()->Accept(*this);
-    qualifiedScope = prevQualifiedScope;
-*/
 }
 
 void ExpressionBinder::Visit(otava::ast::DestructorIdNode& node)
@@ -1981,7 +2055,7 @@ void ExpressionBinder::Visit(otava::ast::TemplateIdNode& node)
 {
     if (failed) return;
     Scope* currentScope = context->GetSymbolTable()->CurrentScope();
-    currentScope->PushParentScope(scope);
+    ParentScopeAdder parentScopeAdder(currentScope, scope);
     TypeSymbol* type = ResolveType(&node, DeclarationFlags::none, context, TypeResolverFlags::dontThrow);
     if (type)
     {
@@ -2026,7 +2100,6 @@ void ExpressionBinder::Visit(otava::ast::TemplateIdNode& node)
                 node.GetFullSpan(), context);
         }
     }
-    currentScope->PopParentScope();
 }
 
 void ExpressionBinder::Visit(otava::ast::MemberExprNode& node)
@@ -2066,15 +2139,12 @@ void ExpressionBinder::BindMemberExpr(otava::ast::MemberExprNode* node, std::uni
         scope = memberScope;
         memberScopeSet = true;
     }
+    FlagSetter memberScopeFlagSetter;
     if (memberScopeSet)
     {
-        context->PushSetFlag(ContextFlags::lookupOnlyFromMemberScope);
+        memberScopeFlagSetter.Reset(context, ContextFlags::lookupOnlyFromMemberScope);
     }
     node->GetId()->Accept(*this);
-    if (memberScopeSet)
-    {
-        context->PopFlags();
-    }
     if (emptyDestructor)
     {
         boundExpression.reset(new BoundEmptyDestructorNode(fullSpan));
@@ -2362,10 +2432,6 @@ void ExpressionBinder::Visit(otava::ast::InvokeExprNode& node)
     {
         resolutionFlags = resolutionFlags | OverloadResolutionFlags::dontSearchArgumentScopes;
     }
-    if (context->GetBoundFunction()->GetFunctionDefinitionSymbol()->Id() == SymbolId(845116217))
-    {
-        int x = 0;
-    }
     std::unique_ptr<BoundExpressionNode> subject = BindExpression(node.Subject(), context,
         SymbolGroupKind::functionSymbolGroup | SymbolGroupKind::aliasSymbolGroup | SymbolGroupKind::classSymbolGroup | SymbolGroupKind::enumSymbolGroup |
         SymbolGroupKind::variableSymbolGroup | SymbolGroupKind::templateParamSymbolGroup | SymbolGroupKind::namespaceSymbolGroup, subjectScope);
@@ -2496,21 +2562,19 @@ void ExpressionBinder::Visit(otava::ast::InvokeExprNode& node)
             BoundFunctionGroupNode* boundFunctionGroup = static_cast<BoundFunctionGroupNode*>(subject.get());
             templateArgs = boundFunctionGroup->TemplateArgs();
         }
-        bool flagsPushed = false;
+        FlagSetter flagSetter;
         if (suppressWarning)
         {
-            context->PushSetFlag(ContextFlags::suppress_warning);
-            flagsPushed = true;
+            flagSetter.Reset(context, ContextFlags::suppress_warning);
         }
         context->PushNodeId(node.Id());
+        if (groupName == "EvaluateToXMLInfoDocument")
+        {
+            int x = 0;
+        }
         std::unique_ptr<BoundFunctionCallNode> functionCall = ResolveOverload(subjectScope, groupName, templateArgs, args, fullSpan, context, ex1,
             resolutionFlags);
         context->PopNodeId();
-        if (flagsPushed)
-        {
-            context->PopFlags();
-            flagsPushed = false;
-        }
         if (functionCall)
         {
             if (ex1.Warning())
@@ -2523,18 +2587,12 @@ void ExpressionBinder::Visit(otava::ast::InvokeExprNode& node)
             args.erase(args.begin());
             if (suppressWarning)
             {
-                context->PushSetFlag(ContextFlags::suppress_warning);
-                flagsPushed = true;
+                flagSetter.Reset(context, ContextFlags::suppress_warning);
             }
             resolutionFlags = resolutionFlags | OverloadResolutionFlags::noMemberFunctions;
             context->PushNodeId(node.Id());
             functionCall = ResolveOverload(subjectScope, groupName, templateArgs, args, fullSpan, context, ex2, resolutionFlags);
             context->PopNodeId();
-            if (flagsPushed)
-            {
-                context->PopFlags();
-                flagsPushed = false;
-            }
             if (functionCall)
             {
                 if (ex2.Warning())
@@ -2677,6 +2735,7 @@ void ExpressionBinder::Visit(otava::ast::BinaryExprNode& node)
     if (failed) return;
     soul::ast::FullSpan fullSpan = node.GetFullSpan();
     bool booleanChild = false;
+    FlagSetter flagSetter;
     otava::ast::NodeKind op = node.Op()->Kind();
     switch (op)
     {
@@ -2684,7 +2743,7 @@ void ExpressionBinder::Visit(otava::ast::BinaryExprNode& node)
     case otava::ast::NodeKind::conjunctionNode:
     {
         booleanChild = true;
-        context->PushSetFlag(ContextFlags::acquireTemporaryDestructorCalls);
+        flagSetter.Reset(context, ContextFlags::acquireTemporaryDestructorCalls);
         break;
     }
     }
@@ -2692,14 +2751,12 @@ void ExpressionBinder::Visit(otava::ast::BinaryExprNode& node)
     if (!left)
     {
         failed = true;
-        context->PopFlags();
         return;
     }
     std::unique_ptr<BoundExpressionNode> right = BindExpression(node.Right(), context, booleanChild);
     if (!right)
     {
         failed = true;
-        context->PopFlags();
         return;
     }
     switch (op)
@@ -2707,7 +2764,6 @@ void ExpressionBinder::Visit(otava::ast::BinaryExprNode& node)
     case otava::ast::NodeKind::disjunctionNode:
     case otava::ast::NodeKind::conjunctionNode:
     {
-        context->PopFlags();
         break;
     }
     }
@@ -3281,7 +3337,7 @@ void ExpressionBinder::Visit(otava::ast::ConditionalExprNode& node)
         failed = true;
         return;
     }
-    context->PushSetFlag(ContextFlags::acquireTemporaryDestructorCalls);
+    FlagSetter flagSetter(context, ContextFlags::acquireTemporaryDestructorCalls);
     std::unique_ptr<BoundExpressionNode> thenExpr = BindExpression(node.ThenExpr(), context);
     if (!thenExpr)
     {
@@ -3294,7 +3350,6 @@ void ExpressionBinder::Visit(otava::ast::ConditionalExprNode& node)
         failed = true;
         return;
     }
-    context->PopFlags();
     TypeSymbol* type = thenExpr->GetType();
     if (!TypesEqual(type, elseExpr->GetType(), context))
     {
@@ -3467,9 +3522,8 @@ void ExpressionBinder::Visit(otava::ast::PostfixIncExprNode& node)
                             node.Child()->Clone(),
                             new otava::ast::IntegerLiteralNode(fullSpan.span, fullSpan.fileIndex, 1, otava::ast::Suffix::none, otava::ast::Base::decimal, std::string())))),
                 new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, temporaryName));
-            context->PushSetFlag(ContextFlags::suppress_warning);
+            FlagSetter flagSetter(context, ContextFlags::suppress_warning);
             boundExpression = BindExpression(&expr, context);
-            context->PopFlags();
         }
     }
 }
@@ -3534,13 +3588,13 @@ void ExpressionBinder::Visit(otava::ast::PostfixDecExprNode& node)
 std::unique_ptr<BoundExpressionNode> BindExpression(otava::ast::Node* node, Context* context, SymbolGroupKind symbolGroups, Scope*& scope)
 {
     ExpressionBinder binder(context, symbolGroups);
+    if (context->GetScope())
+    {
+        binder.SetScope(context->GetScope());
+    }
     if (context->GetFlag(ContextFlags::qualifiedScope))
     {
         binder.SetQualifiedScope();
-        if (context->GetScope())
-        {
-            binder.SetScope(context->GetScope());
-        }
     }
     node->Accept(binder);
     context->ResetFlag(ContextFlags::emptyDestructor);

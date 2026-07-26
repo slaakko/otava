@@ -59,23 +59,23 @@ void FunctionTypeSymbolKey::Write(Writer& writer)
 
 void FunctionTypeSymbolKey::Read(Reader& reader)
 {
-    returnTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    returnTypeId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId parameterTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId parameterTypeId = SymbolId(reader.CurrentReader().ReadULong());
         parameterTypeIds.push_back(parameterTypeId);
     }
 }
 
 size_t FunctionTypeSymbolKeyHash::operator()(const FunctionTypeSymbolKey& key) const noexcept
 {
-    size_t hashCode = std::hash<std::uint32_t>()(ToUnderlying(key.returnTypeId));
+    size_t hashCode = std::hash<std::uint64_t>()(ToUnderlying(key.returnTypeId));
     Cardinality count = Cardinality(key.parameterTypeIds.size());
     for (Index i = Index(0); i < Index(count); ++i)
     {
         SymbolId paramTypeId = key.parameterTypeIds[ToUnderlying(i)];
-        size_t paramTypeHashCode = std::hash<std::uint32_t>()(ToUnderlying(paramTypeId));
+        size_t paramTypeHashCode = std::hash<std::uint64_t>()(ToUnderlying(paramTypeId));
         hashCode ^= (paramTypeHashCode << ToUnderlying(i + Index(1))) | (paramTypeHashCode >> ToUnderlying(Index(count) - i + Index(1)));
     }
     return hashCode;
@@ -121,11 +121,11 @@ void FunctionTypeSymbol::Write(Writer& writer)
 void FunctionTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
-    returnTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    returnTypeId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId parameterTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId parameterTypeId = SymbolId(reader.CurrentReader().ReadULong());
         parameterTypeIds.push_back(parameterTypeId);
     }
     ptrIndex = reader.CurrentReader().ReadInt();

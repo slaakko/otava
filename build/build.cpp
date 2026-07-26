@@ -38,6 +38,7 @@ import util.binary_stream_writer;
 import util.buffered_stream;
 import util.file_stream;
 import util.sha1;
+import util.text_util;
 
 namespace otava::build {
 
@@ -253,21 +254,6 @@ void WriteFilesFile(const std::string& projectFilesPath, const std::vector<std::
     }
 }
 
-void ReadModuleCountFile(const std::string& moduleCountFilePath, otava::symbols::ModuleMapper& moduleMapper)
-{
-    util::FileStream moduleCountFile(moduleCountFilePath, util::OpenMode::read | util::OpenMode::binary);
-    util::BinaryStreamReader reader(moduleCountFile);
-    otava::symbols::Cardinality moduleCount(otava::symbols::Cardinality(reader.ReadUInt()));
-    moduleMapper.SetNextModuleId(moduleMapper.NextModuleId() + moduleCount);
-}
-
-void WriteModuleCountFile(const std::string& moduleCountFilePath, otava::symbols::ModuleMapper& moduleMapper)
-{
-    util::FileStream moduleCountFile(moduleCountFilePath, util::OpenMode::write | util::OpenMode::binary);
-    util::BinaryStreamWriter writer(moduleCountFile);
-    writer.Write(otava::symbols::ToUnderlying(moduleMapper.ModuleCount()));
-}
-
 void BuildSequentially(Project* project, const std::string& config, int optLevel, BuildFlags flags, std::ostream* outFile)
 {
     otava::symbols::ResetCompileEnded();
@@ -433,10 +419,14 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     {
         std::string referenceFilesPath = util::GetFullPath(util::Path::Combine(reference->Root(), reference->Name() + ".files"));
         ReadFilesFile(referenceFilesPath, project->GetFileMap());
-        std::string countFilePath = util::GetFullPath(util::Path::Combine(
-            otava::symbols::MakeModuleDirPath(reference->Root(), config, optLevel, configurations), reference->Name() + ".count"));
-        ReadModuleCountFile(countFilePath, moduleMapper);
+        std::string moduleDir = otava::symbols::MakeModuleDirPath(reference->Root(), config, optLevel, configurations);
+        reference->ReadProjectId(moduleDir);
+        moduleMapper.AddProjectId(reference->Name(), reference->GetProjectId());
     }
+    project->SetProjectId(moduleMapper.MakeProjectId(project->Name()));
+    //std::cout << project->Name() << " " << util::ToHexString(otava::symbols::ToUnderlying(project->GetProjectId())) << "\n";
+    std::string moduleDir = otava::symbols::MakeModuleDirPath(project->Root(), config, optLevel, configurations);
+    project->WriteProjectId(moduleDir);
     project->LoadModules(moduleMapper, config, optLevel, configurations, &moduleContext);
     std::vector<std::pair<std::int32_t, std::string>> files;
     std::vector<std::int32_t> topologicalOrder = MakeTopologicalOrder(project->InterfaceFiles(), project);
@@ -521,6 +511,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         module->Write(project->Root(), config, optLevel, context.get(), configurations);
         context.reset();
         moduleMapper.RemoveModule(module.get());
+        moduleMapper.AddBuiltModule(module.release());
     }
     for (std::int32_t file : project->SourceFiles())
     {
@@ -598,6 +589,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         }
         context.reset();
         moduleMapper.RemoveModule(module.get());
+        moduleMapper.AddBuiltModule(module.release());
     }
     project->WriteTraceInfo(moduleDirPath);
     project->WriteClassIndex(moduleDirPath);
@@ -694,7 +686,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     std::string projectFilesPath = util::GetFullPath(util::Path::Combine(project->Root(), project->Name() + ".files"));
     WriteFilesFile(projectFilesPath, files);
     std::string countFilePath = util::GetFullPath(util::Path::Combine(moduleDirPath, project->Name() + ".count"));
-    WriteModuleCountFile(countFilePath, moduleMapper);
     otava::symbols::SetCompileEnded();
     std::cout << "project '" << project->Name() << "' built successfully" << std::endl;
 }

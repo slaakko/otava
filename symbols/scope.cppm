@@ -118,8 +118,6 @@ public:
     inline void SetGlobal() noexcept { global = true; }
     void Install(Symbol* symbol, Context* context);
     void Uninstall(Symbol* symbol);
-    void ImportModuleScopes(Context* context);
-    virtual void Import(Scope* that, Context* context);
     Symbol* Lookup(const std::string& name, SymbolGroupKind symbolGroupKind, ScopeLookup scopeLookup, const soul::ast::FullSpan& fullSpan,
         Context* context, LookupFlags flags);
     inline bool IsBlockScope() const noexcept { return kind == ScopeKind::blockScope; }
@@ -159,8 +157,6 @@ public:
     inline const std::unordered_map<SymbolOffset, SymbolId>& SymbolIdMap() const noexcept { return symbolIdMap; }
     virtual void Write(Writer& writer);
     virtual void Read(Reader& reader);
-    bool Imported(Scope* scope) noexcept;
-    void AddImported(Scope* scope);
     void AddContainerScope(Scope* containerScope);
     void RemoveContainerScope(Scope* containerScope);
 private:
@@ -171,9 +167,7 @@ private:
     std::unordered_map<SymbolOffset, ModuleSymbolId> moduleSymbolIdMap;
     bool read;
     bool global;
-    bool imported;
     bool destructing;
-    std::set<Scope*> importSet;
     std::vector<Scope*> containerScopes;
 };
 
@@ -182,7 +176,6 @@ class ContainerScope : public Scope
 public:
     ContainerScope(Module* module_) noexcept;
     ~ContainerScope();
-    void Import(Scope* that, Context* context) override;
     std::vector<Scope*> ParentScopes(Context* context) override;
     std::vector<Scope*> BaseScopes(Context* context);
     void AddParentScope(Scope* parentScope) override;
@@ -235,7 +228,6 @@ class UsingDeclarationScope : public Scope
 public:
     UsingDeclarationScope(Module* module_, ContainerScope* parentScope_) noexcept;
     std::string FullName(Context* context) const override;
-    void Import(UsingDeclarationScope* that, Context* context);
     void Lookup(const std::string& name, SymbolGroupKind symbolGroupKind, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
 private:
@@ -299,6 +291,13 @@ struct ParentScopeCleaner
 {
     ParentScopeCleaner(Scope* scope_) : scope(scope_) {}
     ~ParentScopeCleaner() { scope->ClearParentScopes(); }
+    Scope* scope;
+};
+
+struct ParentScopeAdder
+{
+    ParentScopeAdder(Scope* scope_, Scope* parentScope) : scope(scope_) { scope->PushParentScope(parentScope); }
+    ~ParentScopeAdder() { scope->PopParentScope(); }
     Scope* scope;
 };
 

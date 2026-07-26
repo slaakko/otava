@@ -296,25 +296,25 @@ void SymbolTable::CollectViableFunctions(const std::vector<std::pair<Scope*, Sco
     }
 }
 
-void SymbolTable::MapNode(otava::ast::Node* node)
+void SymbolTable::MapNode(otava::ast::Node* node, Context* context)
 {
     Symbol* symbol = currentScope->GetSymbol();
-    MapNode(node, symbol);
+    MapNode(node, symbol, context);
 }
 
-void SymbolTable::MapNode(otava::ast::Node* node, Symbol* symbol)
+void SymbolTable::MapNode(otava::ast::Node* node, Symbol* symbol, Context* context)
 {
-    MapNode(node, symbol, MapKind::both);
+    MapNode(node, symbol, MapKind::both, context);
 }
 
-void SymbolTable::MapNode(otava::ast::Node* node, Symbol* symbol, MapKind kind)
+void SymbolTable::MapNode(otava::ast::Node* node, Symbol* symbol, MapKind kind, Context* context)
 {
     if (!node) return;
     if (!symbol) return;
     Symbol* prevSymbol = nullptr;
     if (symbol->IsFunctionSymbol() && !symbol->IsFunctionDefinitionSymbol())
     {
-        prevSymbol = GetSymbolNothrow(node);
+        prevSymbol = GetSymbolForNodeNothrow(node, context);
     }
     if ((kind & MapKind::nodeToSymbol) != MapKind::none)
     {
@@ -329,7 +329,7 @@ void SymbolTable::MapNode(otava::ast::Node* node, Symbol* symbol, MapKind kind)
     }
 }
 
-otava::ast::Node* SymbolTable::GetNodeNothrow(Symbol* symbol) const noexcept
+otava::ast::Node* SymbolTable::GetNodeNothrow(Symbol* symbol, Context* context) const noexcept
 {
     auto it = symbolNodeMap.find(symbol);
     if (it != symbolNodeMap.end())
@@ -339,9 +339,9 @@ otava::ast::Node* SymbolTable::GetNodeNothrow(Symbol* symbol) const noexcept
     return nullptr;
 }
 
-otava::ast::Node* SymbolTable::GetNode(Symbol* symbol) const
+otava::ast::Node* SymbolTable::GetNode(Symbol* symbol, Context* context) const
 {
-    otava::ast::Node* node = GetNodeNothrow(symbol);
+    otava::ast::Node* node = GetNodeNothrow(symbol, context);
     if (node)
     {
         return node;
@@ -353,7 +353,7 @@ otava::ast::Node* SymbolTable::GetNode(Symbol* symbol) const
     }
 }
 
-Symbol* SymbolTable::GetSymbolNothrow(otava::ast::Node* node) const noexcept
+Symbol* SymbolTable::GetSymbolForNodeNothrow(otava::ast::Node* node, Context* context) const noexcept
 {
     auto it = nodeSymbolMap.find(node);
     if (it != nodeSymbolMap.end())
@@ -363,9 +363,9 @@ Symbol* SymbolTable::GetSymbolNothrow(otava::ast::Node* node) const noexcept
     return nullptr;
 }
 
-Symbol* SymbolTable::GetSymbol(otava::ast::Node* node) const
+Symbol* SymbolTable::GetSymbolForNode(otava::ast::Node* node, Context* context) const
 {
-    Symbol* symbol = GetSymbolNothrow(node);
+    Symbol* symbol = GetSymbolForNodeNothrow(node, context);
     if (symbol)
     {
         return symbol;
@@ -404,20 +404,20 @@ AliasTypeSymbol* SymbolTable::AddAliasType(otava::ast::Node* idNode, otava::ast:
     aliasTypeSymbol->SetAstNodeId(aliasTypeNode->Id());
     currentScope->SymbolScope(context)->AddSymbol(aliasTypeSymbol, idNode->GetFullSpan(), context);
     aliasGroup->AddAliasTypeSymbol(aliasTypeSymbol, context);
-    MapNode(aliasTypeNode, aliasTypeSymbol);
+    MapNode(aliasTypeNode, aliasTypeSymbol, context);
     return aliasTypeSymbol;
 }
 
 void SymbolTable::AddUsingDeclaration(otava::ast::Node* node, Symbol* symbol, Context* context)
 {
     currentScope->SymbolScope(context)->AddUsingDeclaration(symbol, node->GetFullSpan(), context);
-    MapNode(node, symbol, MapKind::nodeToSymbol);
+    MapNode(node, symbol, MapKind::nodeToSymbol, context);
 }
 
 void SymbolTable::AddUsingDirective(NamespaceSymbol* ns, otava::ast::Node* node, Context* context)
 {
     currentScope->SymbolScope(context)->AddUsingDirective(ns, node->GetFullSpan(), context);
-    MapNode(node, ns, MapKind::nodeToSymbol);
+    MapNode(node, ns, MapKind::nodeToSymbol, context);
 }
 
 void SymbolTable::BeginNamespace(const std::string& name, otava::ast::Node* node, Context* context)
@@ -441,7 +441,7 @@ void SymbolTable::BeginNamespace(const std::string& name, otava::ast::Node* node
                 NamespaceSymbol* namespaceSymbol = static_cast<NamespaceSymbol*>(symbol);
                 if (node)
                 {
-                    MapNode(node, namespaceSymbol);
+                    MapNode(node, namespaceSymbol, context);
                 }
                 BeginScope(namespaceSymbol->GetScope(), context);
                 return;
@@ -456,7 +456,7 @@ void SymbolTable::BeginNamespace(const std::string& name, otava::ast::Node* node
         namespaceSymbol->SetFullSpan(fullSpan);
         if (node)
         {
-            MapNode(node, namespaceSymbol);
+            MapNode(node, namespaceSymbol, context);
         }
         currentScope->SymbolScope(context)->AddSymbol(namespaceSymbol, fullSpan, context);
         BeginScope(namespaceSymbol->GetScope(), context);
@@ -497,7 +497,7 @@ void SymbolTable::BeginClass(const std::string& name, ClassKind classKind, TypeS
     classTypeSymbol->SetAstNodeId(node->Id());
     currentScope->SymbolScope(context)->AddSymbol(classTypeSymbol, fullSpan, context);
     classGroup->AddClass(classTypeSymbol, context);
-    MapNode(node, classTypeSymbol);
+    MapNode(node, classTypeSymbol, context);
     SetSpecifierNode(classTypeSymbol, node);
     BeginScope(classTypeSymbol->GetScope(), context);
     switch (classKind)
@@ -554,7 +554,7 @@ void SymbolTable::AddForwardClassDeclaration(const std::string& name, ClassKind 
     {
         classGroup->AddForwardDeclaration(forwardDeclarationSymbol.get());
         Symbol* sym = forwardDeclarationSymbol.release();
-        MapNode(node, sym);
+        MapNode(node, sym, context);
         currentScope->SymbolScope(context)->AddSymbol(sym, fullSpan, context);
     }
 }
@@ -587,7 +587,7 @@ void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind
     enumTypeSymbol->SetUnderlyingType(underlyingType);
     enumTypeSymbol->SetFullSpan(fullSpan);
     currentScope->SymbolScope(context)->AddSymbol(enumTypeSymbol, fullSpan, context);
-    MapNode(node, enumTypeSymbol);
+    MapNode(node, enumTypeSymbol, context);
     //enumGroup->SetEnumType(enumTypeSymbol);
     BeginScope(enumTypeSymbol->GetScope(), context);
 }
@@ -651,7 +651,7 @@ void SymbolTable::AddEnumerator(const std::string& name, Value* value, otava::as
     enumConstantSymbol->SetValue(value);
     enumConstantSymbol->SetFullSpan(fullSpan);
     scope->AddSymbol(enumConstantSymbol, fullSpan, context);
-    MapNode(node, enumConstantSymbol);
+    MapNode(node, enumConstantSymbol, context);
 }
 
 BlockSymbol* SymbolTable::BeginBlock(const soul::ast::FullSpan& fullSpan, Context* context)
@@ -731,7 +731,7 @@ void SymbolTable::AddTemplateParameter(const std::string& name, otava::ast::Node
         templateParameterSymbol->AddSymbol(parameter, node->GetFullSpan(), context);
     }
     currentScope->SymbolScope(context)->AddSymbol(templateParameterSymbol, node->GetFullSpan(), context);
-    MapNode(node, templateParameterSymbol);
+    MapNode(node, templateParameterSymbol, context);
     templateParamGroup->SetTemplateParam(templateParameterSymbol);
 }
 
@@ -773,7 +773,7 @@ FunctionSymbol* SymbolTable::AddFunction(const std::string& name, const std::vec
     functionSymbol->SetSpecialization(specialization);
     currentScope->SymbolScope(context)->AddSymbol(functionSymbol, fullSpan, context);
     functionGroup->AddFunction(functionSymbol);
-    MapNode(node, functionSymbol);
+    MapNode(node, functionSymbol, context);
     return functionSymbol;
 }
 
@@ -785,7 +785,8 @@ void SymbolTable::AddFunctionSymbol(Scope* scope, FunctionSymbol* functionSymbol
     functionGroup->AddFunction(functionSymbol);
 }
 
-FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, const std::string& name, const std::vector<TypeSymbol*>& specialization,
+FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, Scope* declarationScope, 
+    const std::string& name, const std::vector<TypeSymbol*>& specialization,
     const std::vector<TypeSymbol*>& parameterTypes, FunctionQualifiers qualifiers, FunctionKind kind, DeclarationFlags declarationFlags, otava::ast::Node* node,
     otava::ast::Node* functionNode, bool& get, Context* context)
 {
@@ -804,7 +805,17 @@ FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, 
     {
         groupName = "@destructor";
     }
-    FunctionGroupSymbol* functionGroup = scope->GroupScope(context)->GetOrInsertFunctionGroup(groupName, node->GetFullSpan(), context);
+    FunctionGroupSymbol* functionGroup = nullptr;
+    Symbol* functionGroupSymbol = declarationScope->Lookup(groupName, SymbolGroupKind::functionSymbolGroup, ScopeLookup::thisScope, node->GetFullSpan(), context,
+        LookupFlags::dontResolveSingle);
+    if (functionGroupSymbol && functionGroupSymbol->IsFunctionGroupSymbol())
+    {
+        functionGroup = static_cast<FunctionGroupSymbol*>(functionGroupSymbol);
+    }
+    else
+    {
+        functionGroup = scope->GroupScope(context)->GetOrInsertFunctionGroup(groupName, node->GetFullSpan(), context);
+    }
     std::unique_ptr<FunctionDefinitionSymbol> functionDefinition(new FunctionDefinitionSymbol(context->GetModule(),
         context->GetNextSymbolId(SymbolKind::functionDefinitionSymbol), name));
     functionDefinition->SetGroup(functionGroup);
@@ -847,7 +858,7 @@ FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, 
         }
     }
     functionDefinition->ClearTemporaryParameters(); 
-    MapNode(node, functionDefinition.get());
+    MapNode(node, functionDefinition.get(), context);
     if (context->MemFunDefSymbolIndex() != -1)
     {
         functionDefinition->SetDefIndex(context->MemFunDefSymbolIndex());
@@ -856,7 +867,7 @@ FunctionDefinitionSymbol* SymbolTable::AddOrGetFunctionDefinition(Scope* scope, 
     FunctionDefinitionSymbol* definition = functionDefinition.get();
     currentScope->SymbolScope(context)->AddSymbol(functionDefinition.release(), node->GetFullSpan(), context);
     FunctionSymbol* declaration = functionGroup->ResolveFunction(parameterTypes, qualifiers, specialization, definition->ParentTemplateDeclaration(context),
-        definition->IsSpecialization(), context);
+        definition->HasSpecialization(), context);
     if (declaration)
     {
         definition->SetDeclaration(declaration, context);
@@ -871,7 +882,7 @@ ParameterSymbol* SymbolTable::CreateParameter(const std::string& name, otava::as
     parameterSymbol->SetType(type, context);
     if (node)
     {
-        MapNode(node, parameterSymbol);
+        MapNode(node, parameterSymbol, context);
         parameterSymbol->SetFullSpan(node->GetFullSpan());
     }
     return parameterSymbol;
@@ -968,10 +979,6 @@ TypeSymbol* SymbolTable::MakeCompoundType(TypeSymbol* baseType, Derivations deri
     compoundTypeSymbol->SetBaseType(baseType);
     compoundTypeSymbol->SetDerivations(drv);
     SetIrId(compoundTypeSymbol, context);
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(compoundTypeSymbol, soul::ast::FullSpan(), context);
     return compoundTypeSymbol;
 }
@@ -1039,10 +1046,6 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
     for (Symbol* templateArgument : templateArguments)
     {
         aliasTypeTemplateSpecialization->AddTemplateArgument(templateArgument);
-    }
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
     }
     GlobalNs()->GetScope()->AddSymbol(aliasTypeTemplateSpecialization, soul::ast::FullSpan(), context);
     return aliasTypeTemplateSpecialization;
@@ -1159,10 +1162,6 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
         classTemplateSpecialization->AddTemplateArgument(templateArgument, context);
     }
     SetIrId(classTemplateSpecialization, context);
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(classTemplateSpecialization, fullSpan, context);
     return classTemplateSpecialization;
 }
@@ -1210,10 +1209,6 @@ void SymbolTable::AddExplicitInstantiation(ExplicitInstantiationSymbol* explicit
         key.templateArgumentIds.push_back(templateArg->Id());
     }
     explicitInstantiationMap[key] = symbolId;
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(explicitInstantiationSymbol, fullSpan, context);
 }
 
@@ -1280,10 +1275,6 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
     for (TypeSymbol* parameterType : parameterTypes)
     {
         functionTypeSymbol->AddParameterType(parameterType);
-    }
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
     }
     GlobalNs()->GetScope()->AddSymbol(functionTypeSymbol, soul::ast::FullSpan(), context);
     return functionTypeSymbol;
@@ -1382,10 +1373,6 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, std::int64_
         }
     }
     arrayTypeSymbol = new ArrayTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::arrayTypeSymbol), elementType, size, context);
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(arrayTypeSymbol, soul::ast::FullSpan(), context);
     return arrayTypeSymbol;
 }
@@ -1395,10 +1382,6 @@ DependentTypeSymbol* SymbolTable::MakeDependentTypeSymbol(otava::ast::Node* node
     DependentTypeSymbol* dependentTypeSymbol = new DependentTypeSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::dependentTypeSymbol), std::string());
     dependentTypeSymbol->ResetNode(node);
     dependentTypeSymbol->SetFullSpan(node->GetFullSpan());
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(dependentTypeSymbol, node->GetFullSpan(), context);
     return dependentTypeSymbol;
 }
@@ -1407,10 +1390,6 @@ ClassGroupTypeSymbol* SymbolTable::MakeClassGroupTypeSymbol(ClassGroupSymbol* cl
 {
     ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::classGroupTypeSymbol), classGroup->Name());
     classGroupTypeSymbol->SetClassGroup(classGroup);
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(classGroupTypeSymbol, classGroup->GetFullSpan(), context);
     return classGroupTypeSymbol;
 }
@@ -1428,10 +1407,6 @@ FunctionGroupTypeSymbol* SymbolTable::MakeFunctionGroupTypeSymbol(FunctionGroupS
     FunctionGroupTypeSymbol* functionGroupTypeSymbol = new FunctionGroupTypeSymbol(
         GetModule(), context->GetNextSymbolId(SymbolKind::functionGroupTypeSymbol), functionGroup->Name());
     functionGroupTypeSymbol->SetFunctionGroup(functionGroup);
-    if (context->GetCompileUnitModule() != GetModule())
-    {
-        int x = 0;
-    }
     GlobalNs()->GetScope()->AddSymbol(functionGroupTypeSymbol, functionGroup->GetFullSpan(), context);
     return functionGroupTypeSymbol;
 }
@@ -1457,7 +1432,7 @@ void SymbolTable::Init(Context* context)
         currentScope = globalNs->GetScope();
         currentScope->SetGlobal();
         Section* section = GetSection(globalNs.get());
-        section->MapSymbol(globalNs.get());
+        section->MapSymbol(globalNs.get(), context);
         if (GetModule()->Name() == "std.type.fundamental")
         {
             MakeFundamentalTypes(context);
@@ -1586,7 +1561,7 @@ void SymbolTable::ReadFundamentalTypeMap(Reader& reader)
     for (Index i = Index(0); i < Index(count); ++i)
     {
         std::uint8_t kindByte = reader.CurrentReader().ReadByte();
-        SymbolId id = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId id = SymbolId(reader.CurrentReader().ReadULong());
         MapFundamentalTypeId(FundamentalTypeKind(kindByte), id);
     }
     Cardinality argumentIdCount = Cardinality(reader.CurrentReader().ReadUInt());
@@ -1634,7 +1609,7 @@ void SymbolTable::ReadCompoundTypeMaps(Reader& reader)
     {
         CompoundTypeKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         compoundTypeMap[key] = symbolId;
     }
     Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
@@ -1642,7 +1617,7 @@ void SymbolTable::ReadCompoundTypeMaps(Reader& reader)
     {
         CompoundTypeKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         irCompoundTypeMap[key] = symbolId;
     }
     reader.PopCurrentReader();
@@ -1676,7 +1651,7 @@ void SymbolTable::ReadAliasTypeTemplateMap(Reader& reader)
     {
         SpecializationKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         aliasTypeTemplateMap[key] = symbolId;
     }
     reader.PopCurrentReader();
@@ -1719,7 +1694,7 @@ void SymbolTable::ReadClassTemplateSpecializationMaps(Reader& reader)
     {
         SpecializationKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         classTemplateSpecializationMap[key] = symbolId;
     }
     Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
@@ -1727,7 +1702,7 @@ void SymbolTable::ReadClassTemplateSpecializationMaps(Reader& reader)
     {
         SpecializationKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         irClassTemplateSpecializationMap[key] = symbolId;
     }
     reader.PopCurrentReader();
@@ -1762,7 +1737,7 @@ void SymbolTable::ReadExplicitInstantiationMap(Reader& reader)
     {
         SpecializationKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         explicitInstantiationMap[key] = symbolId;
     }
     reader.PopCurrentReader();
@@ -1796,7 +1771,7 @@ void SymbolTable::ReadFunctionTypeMap(Reader& reader)
     {
         FunctionTypeSymbolKey key;
         key.Read(reader);
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         functionTypeMap[key] = symbolId;
     }
     reader.PopCurrentReader();
@@ -1867,7 +1842,7 @@ void SymbolTable::ReadSymbolIdVector(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         symbolIds.push_back(symbolId);
     }
 }
@@ -2298,12 +2273,12 @@ void SymbolTable::AddSymbol(Symbol* symbol)
     symbols.push_back(symbol);
 }
 
-void SymbolTable::MapSymbol(Symbol* symbol)
+void SymbolTable::MapSymbol(Symbol* symbol, Context* context)
 {
     Section* section = GetSection(symbol);
     if (section)
     {
-        section->MapSymbol(symbol);
+        section->MapSymbol(symbol, context);
     }
     else
     {

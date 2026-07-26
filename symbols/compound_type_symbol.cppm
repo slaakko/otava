@@ -28,7 +28,7 @@ struct CompoundTypeKeyHash
 {
     inline size_t operator()(const CompoundTypeKey& key) const noexcept
     {
-        return std::hash<std::uint32_t>()(ToUnderlying(key.baseTypeId)) ^ std::hash<std::uint8_t>()(ToUnderlying(key.derivations));
+        return std::hash<std::uint64_t>()(ToUnderlying(key.baseTypeId)) ^ std::hash<std::uint8_t>()(ToUnderlying(key.derivations));
     }
 };
 

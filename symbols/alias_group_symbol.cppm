@@ -27,13 +27,10 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     bool IsExportSymbol(Context* context) const noexcept override;
-    void Expand(Context* context) override;
 private:
     std::vector<AliasTypeSymbol*> aliasTypeSymbols;
     std::vector<SymbolId> aliasTypeSymbolIds;
-    AliasGroupSymbol* readOnlyAliasGroup;
     bool aliasTypeSymbolsFetched;
-    bool expanded;
     void GetAliasTypeSymbols(Context* context);
     bool ContainsExportAliasType(Context* context) const noexcept;
 };

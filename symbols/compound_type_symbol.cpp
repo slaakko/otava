@@ -80,7 +80,7 @@ void CompoundTypeKey::Write(Writer& writer)
 
 void CompoundTypeKey::Read(Reader& reader)
 {
-    baseTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    baseTypeId = SymbolId(reader.CurrentReader().ReadULong());
     otava::symbols::Read(reader, derivations);
 }
 
@@ -96,10 +96,6 @@ CompoundTypeSymbol::CompoundTypeSymbol(Module* module_, SymbolId id_, const std:
 
 TypeSymbol* CompoundTypeSymbol::GetBaseType(Context* context) 
 {
-    if (baseType)
-    {
-        return baseType;
-    }
     if (IsReadOnly() && baseTypeId != zeroSymbolId)
     {
         baseType = GetModule()->GetSymbolTable()->GetTypeSymbol(baseTypeId, context);
@@ -288,9 +284,9 @@ void CompoundTypeSymbol::Write(Writer& writer)
 void CompoundTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
-    baseTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    baseTypeId = SymbolId(reader.CurrentReader().ReadULong());
     otava::symbols::Read(reader, derivations);
-    irId = SymbolId(reader.CurrentReader().ReadUInt());
+    irId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 otava::intermediate::Type* CompoundTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -303,6 +299,13 @@ otava::intermediate::Type* CompoundTypeSymbol::IrType(Emitter& emitter, const so
         if (!btype)
         {
             ThrowException("cannot obtain base type for type '" + Name() + "' because it is incomplete at this point", fullSpan, context);
+        }
+        if (btype->IsForwardClassDeclarationSymbol())
+        {
+            if (!IsPointerType() && !IsReferenceType())
+            {
+                ThrowException("base type for type '" + Name() + "' is incomplete at this point", fullSpan, context);
+            }
         }
         type = btype->IrType(emitter, fullSpan, context);
         int pointerCount = otava::symbols::PointerCount(derivations);

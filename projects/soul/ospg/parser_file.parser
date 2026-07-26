@@ -1,0 +1,274 @@
+export module soul.spg.parser.file.parser;
+
+[interface]import soul.ast.spg;
+[implementation]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.common.common.parser;
+[implementation]import soul.spg.token_parser;
+[implementation]import soul.cpp.declarator.parser;
+[implementation]import soul.cpp.statement.parser;
+[implementation]import soul.cpp.expression.parser; 
+[implementation]import soul.lex.spg;
+[implementation]import soul.ast.cpp;
+[implementation]import soul.spg.parsing_util;
+[implementation]import soul.common.token_parser;
+[implementation]import soul.spg.error;
+
+parser ParserFileParser
+{
+    lexer soul::lex::spg::SpgLexer<char32_t>;
+
+    main;
+    using CommonParser.ExportModule;
+    using CommonParser.Import;
+    using CommonParser.QualifiedId;
+    using CommonParser.ParserKeyword;
+    using CommonParser.LexerKeyword;
+    using DeclaratorParser.TypeId;
+    using DeclaratorParser.Declarator;
+    using StatementParser.CompoundStatement;
+    using ExpressionParser.ExpressionList;
+
+    ParserFile(var std::unique_ptr<soul::ast::spg::ParserFile> parserFile) : soul::ast::spg::ParserFile*
+        ::= 
+        (
+            empty{ parserFile.reset(new soul::ast::spg::ParserFile(lexer.FileName())); }
+            ExportModule:exportModuleDeclaration{ parserFile->SetExportModule(exportModuleDeclaration); }
+            (Import:importDeclaration{ parserFile->AddImport(importDeclaration); })*
+            (Parser:parser{ parserFile->AddParser(parser); })*
+        )
+        {
+            return parserFile.release();
+        }
+        ;
+
+    Parser(var std::unique_ptr<soul::ast::spg::GrammarParser> parser) : soul::ast::spg::GrammarParser*
+        ::= 
+        (
+            ParserKeyword:parserKeyword ID{ parser.reset(new soul::ast::spg::GrammarParser(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+            LBRACE
+            ParserStatement(parser.get()):statement*
+            RBRACE
+        )
+        {
+            return parser.release();
+        }
+        ;
+
+    ParserStatement(soul::ast::spg::GrammarParser* parser)
+        ::= LexerStatement(parser):lexerStatement
+        |   MainStatement(parser):mainStatement
+        |   UsingStatement(parser):usingStatement
+        |   RuleStatement(parser):ruleStatement
+        ;
+
+    LexerStatement(soul::ast::spg::GrammarParser* parser)
+        ::= LexerKeyword:lexerKeyword TypeId:lexerTypeId SEMICOLON{ parser->AddLexer(lexerTypeId); }
+        ;
+
+    MainStatement(soul::ast::spg::GrammarParser* parser)
+        ::= MAIN SEMICOLON{ parser->SetMain(); }
+        ;
+
+    UsingStatement(soul::ast::spg::GrammarParser* parser)
+        ::= 
+        (
+            USING QualifiedId:fullName SEMICOLON
+        )
+        { 
+            parser->AddUsing(lexer.GetSourcePos(pos), fullName); 
+        }
+        ;
+
+    RuleStatement(soul::ast::spg::GrammarParser* parser, var std::unique_ptr<soul::ast::spg::RuleParser> rule)
+        ::= 
+        (
+            ID{ rule.reset(new soul::ast::spg::RuleParser(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+            ParametersAndVariables(rule.get()):paramsAndVars?
+            ReturnType:returnType?
+            PRODUCES
+            RuleBody:definition
+            SEMICOLON
+        )
+        {
+            rule->SetDefinition(definition);
+            rule->SetReturnType(returnType);
+            soul::ast::spg::RuleParser* rulePtr = rule.get();
+            bool succeeded = parser->AddRule(rule.release());
+            if (!succeeded)
+            {
+                soul::spg::error::ThrowRuleNameNotUnique(lexer.FileName(), rulePtr);
+            }
+        }
+        ;
+
+    ParametersAndVariables(soul::ast::spg::RuleParser* rule)
+        ::= LPAREN (ParamOrVariable:paramOrVariable{ rule->AddParamOrVariable(paramOrVariable); } % COMMA)? RPAREN
+        ;
+
+    ParamOrVariable : soul::ast::spg::ParamVar*
+        ::= VAR TypeId:varType Declarator:varName{ return new soul::ast::spg::Variable(lexer.GetSourcePos(pos), varType, varName); }
+        |   TypeId:paramType Declarator:paramName{ return new soul::ast::spg::Parameter(lexer.GetSourcePos(pos), paramType, paramName); }
+        ;
+
+    ReturnType : soul::ast::cpp::TypeIdNode*
+        ::= COLON TypeId:typeId{ return typeId; }
+        ;
+
+    RuleBody : soul::ast::spg::Parser*
+        ::= Choice:choice{ return choice; }
+        ;
+
+    Choice(var std::unique_ptr<soul::ast::spg::Parser> value) : soul::ast::spg::Parser*
+        ::= 
+        (
+            Sequence:left{ value.reset(left); } 
+            (
+                PIPE Sequence:right{ value.reset(new soul::ast::spg::ChoiceParser(lexer.GetSourcePos(pos), value.release(), right)); }
+            )*
+        )
+        {
+            return value.release();
+        }
+        ;
+
+    Sequence(var std::unique_ptr<soul::ast::spg::Parser> value) : soul::ast::spg::Parser*
+        ::=
+        (
+            Difference:left{ value.reset(left); }
+            (
+                Difference:right{ value.reset(new soul::ast::spg::SequenceParser(lexer.GetSourcePos(pos), value.release(), right)); }
+            )*
+        )
+        {
+            return value.release();
+        }
+        ;
+
+    Difference(var std::unique_ptr<soul::ast::spg::Parser> value) : soul::ast::spg::Parser*
+        ::=
+        (
+            List:left{ value.reset(left); }
+            (
+                MINUS List:right{ value.reset(new soul::ast::spg::DifferenceParser(lexer.GetSourcePos(pos), value.release(), right)); }
+            )*
+        )
+        {
+            return value.release();
+        }
+        ;
+
+    List(var std::unique_ptr<soul::ast::spg::Parser> value) : soul::ast::spg::Parser*
+        ::=
+        (
+            Prefix:left{ value.reset(left); }
+            (
+                REM Prefix:right{ value.reset(new soul::ast::spg::ListParser(lexer.GetSourcePos(pos), value.release(), right)); }
+            )?
+        )
+        {
+            return value.release();
+        }
+        ;
+
+    Prefix : soul::ast::spg::Parser*
+        ::= AMP Postfix:lookaheadp{ return new soul::ast::spg::LookaheadParser(lexer.GetSourcePos(pos), lookaheadp); }
+        |   Postfix:postfix{ return postfix; }
+        ;
+
+    Postfix(var std::unique_ptr<soul::ast::spg::Parser> value) : soul::ast::spg::Parser*
+        ::= 
+        (   Primary:primary{ value.reset(primary); }
+            (   STAR{ value.reset(new soul::ast::spg::KleeneParser(lexer.GetSourcePos(pos), value.release())); }
+            |   PLUS{ value.reset(new soul::ast::spg::PositiveParser(lexer.GetSourcePos(pos), value.release())); }
+            |   QUEST{ value.reset(new soul::ast::spg::OptionalParser(lexer.GetSourcePos(pos), value.release())); }
+            )?
+        )
+        {
+            return value.release();
+        }
+        ;
+
+    Primary(var std::unique_ptr<soul::ast::spg::Parser> value) : soul::ast::spg::Parser*
+        ::= 
+        (
+            (   RuleCall:ruleCall{ value.reset(ruleCall); }
+            |   Primitive:primitive{ value.reset(primitive); }
+            |   Grouping:group{ value.reset(group); }
+            )
+            (
+                EXCLAMATION{ value.reset(new soul::ast::spg::ExpectationParser(lexer.GetSourcePos(pos), value.release())); }
+            )?
+            (
+                (
+                    CompoundStatement:successCode
+                    (
+                        DIV CompoundStatement:failureCode
+                    )?
+                )
+                {
+                    value.reset(new soul::ast::spg::ActionParser(lexer.GetSourcePos(pos), value.release(), successCode, failureCode));
+                }
+            )?
+        )
+        {
+            return value.release();
+        }
+        ;
+
+    RuleCall(var std::string ruleName, var std::int64_t nonterminalPos, var std::unique_ptr<soul::ast::cpp::ExprListNode> args) : soul::ast::spg::Parser*
+        ::= 
+        (
+            Nonterminal:nt{ ruleName = nt; nonterminalPos = pos; }
+            (   LPAREN
+                { 
+                    pass = soul::lexer::NoWhiteSpaceBetweenTokens(lexer.GetToken(nonterminalPos), lexer.GetToken(pos)); 
+                    args.reset(new soul::ast::cpp::ExprListNode(lexer.GetSourcePos(pos))); 
+                }
+                ExpressionList(args.get()):arguments 
+                RPAREN
+            )? 
+            COLON 
+            ID
+            {
+                std::string instanceName = util::ToUtf8(lexer.GetToken(pos).ToString());
+                return new soul::ast::spg::NonterminalParser(lexer.GetSourcePos(pos), ruleName, instanceName, args.release());
+            }
+        )
+        ;
+
+    Nonterminal : std::string
+        ::= 
+        (
+            ID
+        )
+        { 
+            return util::ToUtf8(lexer.GetToken(pos).ToString()); 
+        }
+        ;
+
+    Primitive : soul::ast::spg::Parser*
+        ::= 
+        (   EMPTY{ return new soul::ast::spg::EmptyParser(lexer.GetSourcePos(pos)); }
+        |   ANY{ return new soul::ast::spg::AnyParser(lexer.GetSourcePos(pos)); }
+        |   ID{ return new soul::ast::spg::TokenParser(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   CHAR_LITERAL{ return new soul::ast::spg::CharParser(lexer.GetSourcePos(pos), soul::common::token::parser::ParseCharLiteral(lexer.FileName(), lexer.GetToken(pos))); }
+        |   STRING_LITERAL{ return soul::spg::token::parser::ParseStringLiteralOrCharSet(lexer.FileName(), lexer.GetToken(pos), lexer.GetSourcePos(pos)); }
+        )
+        ;
+
+    Grouping : soul::ast::spg::Parser*
+        ::= 
+        (
+            LPAREN 
+            Choice:choice
+            RPAREN
+        )
+        {
+            return new soul::ast::spg::GroupParser(lexer.GetSourcePos(pos), choice);
+        }
+		;
+}

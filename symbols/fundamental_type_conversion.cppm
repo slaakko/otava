@@ -158,8 +158,8 @@ struct FundamentalTypeConversion : public FunctionSymbol
         FunctionSymbol::Read(reader);
         distance = reader.CurrentReader().ReadInt();
         conversionKind = static_cast<ConversionKind>(reader.CurrentReader().ReadByte());
-        paramTypeId = SymbolId(reader.CurrentReader().ReadUInt());
-        argTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+        paramTypeId = SymbolId(reader.CurrentReader().ReadULong());
+        argTypeId = SymbolId(reader.CurrentReader().ReadULong());
     }
     void Resolve(Context* context)
     {

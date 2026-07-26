@@ -76,7 +76,7 @@ FunctionMatch::FunctionMatch() noexcept : function(nullptr), numConversions(0), 
 }
 
 FunctionMatch::FunctionMatch(FunctionSymbol* function_, Context* context_) noexcept :
-    function(function_), context(context_), numConversions(0), numQualifyingConversions(0), specialization(nullptr)
+    function(function_), context(context_), numConversions(0), numQualifyingConversions(0), scopeMatches(false), specialization(nullptr)
 {
 }
 
@@ -87,6 +87,7 @@ FunctionMatch& FunctionMatch::operator=(const FunctionMatch& that)
     argumentMatches = that.argumentMatches;
     numConversions = that.numConversions;
     numQualifyingConversions = that.numQualifyingConversions;
+    scopeMatches = that.scopeMatches;
     templateParameterMap = that.templateParameterMap;
     specialization = that.specialization;
     return *this;
@@ -242,6 +243,14 @@ bool BetterFunctionMatch::operator()(const FunctionMatch& left, const FunctionMa
         {
             return false;
         }
+    }
+    if (left.scopeMatches && !right.scopeMatches)
+    {
+        return true;
+    }
+    else if (right.scopeMatches && !left.scopeMatches)
+    {
+        return false;
     }
     return false;
 }
@@ -1051,9 +1060,8 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
             ParameterSymbol* parameter = functionMatch.function->MemFnParameters(context)[ToUnderlying(i)];
             if (parameter->DefaultValue())
             {
-                context->GetSymbolTable()->CurrentScope()->PushParentScope(functionMatch.function->GetScope());
+                ParentScopeAdder parentScopeAdder(context->GetSymbolTable()->CurrentScope(), functionMatch.function->GetScope());
                 defaultArg = BindExpression(parameter->DefaultValue(), context);
-                context->GetSymbolTable()->CurrentScope()->PopParentScope();
                 arg = defaultArg.get();
                 argType = arg->GetType()->DirectType(context)->FinalType(fullSpan, context);
                 functionMatch.defaultArgs.push_back(std::move(defaultArg));
@@ -1069,13 +1077,13 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
             argType = arg->GetType();
         }
         ParameterSymbol* parameter = functionMatch.function->MemFnParameters(context)[ToUnderlying(i)];
-        context->PushSetFlag(ContextFlags::resolveDependentTypes | ContextFlags::resolveNestedTypes);
+        FlagSetter resolveFlagSetter(context, ContextFlags::resolveDependentTypes | ContextFlags::resolveNestedTypes);
         context->PushTemplateParameterMap(&functionMatch.templateParameterMap);
         TypeSymbol* paramType = parameter->GetReferredType(context)->FinalType(fullSpan, context);
         context->PopTemplateParameterMap();
-        context->PopFlags();
         if (TypesEqual(argType, paramType, context))
         {
+            resolveFlagSetter.Reset();
             ArgumentMatch argumentMatch;
             if (argType->IsClassTypeSymbol() && paramType->IsClassTypeSymbol())
             {
@@ -1085,6 +1093,7 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
         }
         else
         {
+            resolveFlagSetter.Reset();
             bool qualificationConversionMatch = false;
             ArgumentMatch argumentMatch;
             argumentMatch.integerRank = paramType->PlainType(context)->Rank(context);
@@ -1177,9 +1186,10 @@ void SetTemplateArgs(FunctionSymbol* viableFunction, std::unordered_map<Template
     }
 }
 
-std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<FunctionSymbol*>& viableFunctions, const std::vector<TypeSymbol*>& templateArgs,
+std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<FunctionSymbol*>& viableFunctions, Scope* scope, const std::vector<TypeSymbol*>& templateArgs,
     const std::vector<std::unique_ptr<BoundExpressionNode>>& args, const std::string& groupName, const soul::ast::FullSpan& fullSpan, Context* context, Exception& ex)
 {
+    std::string scopeName = scope->GetNamespaceScope(context)->FullName(context);
     std::vector<std::unique_ptr<FunctionMatch>> functionMatches;
     std::set<FunctionSymbol*> viableFunctionSet;
     std::set<std::string> viableFunctionFullNameSet;
@@ -1220,6 +1230,14 @@ std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<Func
         SetTemplateArgs(viableFunction, functionMatch->templateParameterMap, templateArgs, context);
         if (FindConversions(*functionMatch, args, fullSpan, context))
         {
+            if (viableFunction->GetScope() && viableFunction->GetScope()->GetNamespaceScope(context))
+            {
+                std::string viableFunctionScopeName = viableFunction->GetScope()->GetNamespaceScope(context)->FullName(context);
+                if (scopeName == viableFunctionScopeName)
+                {
+                    functionMatch->scopeMatches = true;
+                }
+            }
             functionMatches.push_back(std::move(functionMatch));
         }
     }
@@ -1351,15 +1369,16 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
             }
         }
     }
-    context->PushSetFlag(ContextFlags::ignoreClassTemplateSpecializations);
+    FlagSetter ignoreFlagSetter(context, ContextFlags::ignoreClassTemplateSpecializations);
     FunctionSymbol* operation = context->GetOperationRepository()->GetOperation(groupName, args, fullSpan, context);
-    context->PopFlags();
     if (operation)
     {
+        ignoreFlagSetter.Reset();
         viableFunctions.push_back(operation);
     }
     else
     {
+        ignoreFlagSetter.Reset();
         std::vector<std::pair<Scope*, ScopeLookup>> scopeLookups;
         if ((flags & OverloadResolutionFlags::dontSearchArgumentScopes) != OverloadResolutionFlags::none)
         {
@@ -1389,19 +1408,14 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
                 scopeLookups.push_back(std::make_pair(scope, ScopeLookup::allScopes));
             }
         }
-        bool flagsPushed = false;
+        FlagSetter flagSetter;
         if ((flags & OverloadResolutionFlags::noMemberFunctions) != OverloadResolutionFlags::none)
         {
-            context->PushSetFlag(ContextFlags::skipNonstaticMemberFunctions);
-            flagsPushed = true;
+            flagSetter.Reset(context, ContextFlags::skipNonstaticMemberFunctions);
         }
         context->GetSymbolTable()->CollectViableFunctions(scopeLookups, groupName, templateArgs, Cardinality(args.size()), viableFunctions, context);
-        if (flagsPushed)
-        {
-            context->PopFlags();
-        }
     }
-    std::unique_ptr<FunctionMatch> bestMatch = SelectBestMatchingFunction(viableFunctions, templateArgs, args, groupName, fullSpan, context, ex);
+    std::unique_ptr<FunctionMatch> bestMatch = SelectBestMatchingFunction(viableFunctions, scope, templateArgs, args, groupName, fullSpan, context, ex);
     if (!bestMatch)
     {
         context->ResetFlag(ContextFlags::ignoreClassTemplateSpecializations);
@@ -1410,7 +1424,7 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         {
             viableFunctions.clear();
             viableFunctions.push_back(operation);
-            bestMatch = SelectBestMatchingFunction(viableFunctions, templateArgs, args, groupName, fullSpan, context, ex);
+            bestMatch = SelectBestMatchingFunction(viableFunctions, scope, templateArgs, args, groupName, fullSpan, context, ex);
         }
         if (!bestMatch)
         {
@@ -1428,7 +1442,7 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
     bool instantiate = (flags & OverloadResolutionFlags::dontInstantiate) == OverloadResolutionFlags::none;
     if (instantiate)
     {
-        context->PushResetFlag(ContextFlags::makeChildFn | ContextFlags::invoke | ContextFlags::tryCatch);
+        FlagResetter flagResetter(context, ContextFlags::makeChildFn | ContextFlags::invoke | ContextFlags::tryCatch);
         ParseInlineMemberFunction(context, bestMatch->function);
         if (bestMatch->function->IsTemplate(context))
         {
@@ -1458,7 +1472,6 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         {
             bestMatch->function = InstantiateInlineFunction(bestMatch->function, fullSpan, context);
         }
-        context->PopFlags();
     }
     std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = CreateBoundFunctionCall(*bestMatch, args, fullSpan, ex, context);
     return boundFunctionCall;

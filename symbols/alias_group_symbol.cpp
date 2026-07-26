@@ -26,12 +26,12 @@ struct ReferredTypeEqual
 };
 
 AliasGroupSymbol::AliasGroupSymbol(Module* module_, SymbolId id_) : 
-    Symbol(module_, id_), aliasTypeSymbolsFetched(false), expanded(false), readOnlyAliasGroup(nullptr)
+    Symbol(module_, id_), aliasTypeSymbolsFetched(false)
 {
 }
 
 AliasGroupSymbol::AliasGroupSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    Symbol(module_, id_, name_), aliasTypeSymbolsFetched(false), expanded(false), readOnlyAliasGroup(nullptr)
+    Symbol(module_, id_, name_), aliasTypeSymbolsFetched(false)
 {
 }
 
@@ -76,14 +76,6 @@ Symbol* AliasGroupSymbol::GetSingleSymbol(Context* context)
     {
         GetAliasTypeSymbols(context);
     }
-    else
-    {
-        Expand(context);
-    }
-    if (readOnlyAliasGroup)
-    {
-        return readOnlyAliasGroup->GetSingleSymbol(context);
-    }
     if (aliasTypeSymbols.size() == 1)
     {
         Symbol* front = aliasTypeSymbols.front();
@@ -112,7 +104,7 @@ void AliasGroupSymbol::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId aliasTypeSymbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId aliasTypeSymbolId = SymbolId(reader.CurrentReader().ReadULong());
         aliasTypeSymbolIds.push_back(aliasTypeSymbolId);
     }
 }
@@ -133,14 +125,6 @@ AliasTypeSymbol* AliasGroupSymbol::GetAliasTypeSymbol(Cardinality arity, Context
     if (IsReadOnly())
     {
         GetAliasTypeSymbols(context);
-    }
-    else
-    {
-        Expand(context);
-    }
-    if (readOnlyAliasGroup)
-    {
-        return readOnlyAliasGroup->GetAliasTypeSymbol(arity, context);
     }
     for (AliasTypeSymbol* aliasTypeSymbol : aliasTypeSymbols)
     {
@@ -165,14 +149,6 @@ AliasTypeSymbol* AliasGroupSymbol::GetBestMatchingAliasType(const std::vector<Sy
     if (IsReadOnly())
     {
         GetAliasTypeSymbols(context);
-    }
-    else
-    {
-        Expand(context);
-    }
-    if (readOnlyAliasGroup)
-    {
-        return readOnlyAliasGroup->GetBestMatchingAliasType(templateArgs, context);
     }
     std::vector<std::pair<AliasTypeSymbol*, int>> viableAliasTypes;
     Cardinality arity = Cardinality(templateArgs.size());
@@ -215,49 +191,6 @@ void AliasGroupSymbol::RemoveAliasType(AliasTypeSymbol* aliasType)
 bool AliasGroupSymbol::IsEmpty() const
 {
     return aliasTypeSymbols.empty() && aliasTypeSymbolIds.empty();
-}
-
-void AliasGroupSymbol::Expand(Context* context)
-{
-    if (expanded) return;
-    expanded = true;
-    for (const auto& moduleSymbolId : ModuleSymbolIds())
-    {
-        ModuleId moduleId = moduleSymbolId.moduleId;
-        Module* module = context->GetModuleMapper()->GetModule(moduleId);
-        if (module)
-        {
-            SymbolId symbolId = moduleSymbolId.symbolId;
-            AliasGroupSymbol* aliasGroup = module->GetSymbolTable()->GetAliasGroupSymbol(symbolId, context);
-            if (aliasGroup)
-            {
-                if (!readOnlyAliasGroup || readOnlyAliasGroup->IsEmpty())
-                {
-                    readOnlyAliasGroup = aliasGroup;
-                }
-                else if (!aliasGroup->IsEmpty())
-                {
-                    Symbol* symbol = readOnlyAliasGroup->GetSingleSymbol(context);
-                    Symbol* prev = aliasGroup->GetSingleSymbol(context);
-                    if (symbol != prev)
-                    {
-                        symbol = readOnlyAliasGroup->GetSingleSymbol(context);
-                        prev = aliasGroup->GetSingleSymbol(context);
-                        ThrowException("alias type '" + symbol->Name() + "' not unique", symbol->GetFullSpan(), prev->GetFullSpan(), context);
-                    }
-                }
-            }
-            else
-            {
-                //ThrowException("alias group symbol " + std::to_string(ToUnderlying(symbolId)) + " not found from module " + module->Name());
-            }
-        }
-        else
-        {
-            ThrowException("import module " + std::to_string(ToUnderlying(moduleId)) + " not found from alias group '" + FullName(context) +
-                "' of module " + GetModule()->Name());
-        }
-    }
 }
 
 bool AliasGroupSymbol::IsExportSymbol(Context* context) const noexcept

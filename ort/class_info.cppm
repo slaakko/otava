@@ -11,16 +11,16 @@ import util.binary_stream_writer;
 
 export namespace info {
 
-enum class class_id : std::uint32_t {};
+enum class class_id : std::uint64_t {};
 
 enum class class_key : std::uint8_t
 {
     cls = 0, strct = 1, uni = 2
 };
 
-constexpr std::uint32_t to_underlying(class_id cid)
+constexpr std::uint64_t to_underlying(class_id cid)
 {
-    return std::uint32_t(cid);
+    return std::uint64_t(cid);
 }
 
 class class_info
@@ -61,4 +61,4 @@ private:
 
 } // namespace info
 
-export extern "C" bool ort_is_same_or_has_base(std::uint32_t derived, std::uint32_t base);
+export extern "C" bool ort_is_same_or_has_base(std::uint64_t derived, std::uint64_t base);

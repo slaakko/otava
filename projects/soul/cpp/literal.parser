@@ -1,0 +1,26 @@
+export module soul.cpp.literal.parser;
+
+[interface]import soul.ast.cpp;
+[interface]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.lex.slg;
+[implementation]import soul.lex.spg;
+
+parser LiteralParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+    lexer soul::lex::spg::SpgLexer<char32_t>;
+
+    Literal : soul::ast::cpp::LiteralNode*
+        ::= INTEGER_LITERAL{ return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   FLOATING_LITERAL{ return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   CHAR_LITERAL{ return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   STRING_LITERAL{ return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   TRUE{ return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   FALSE { return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   NULLPTR{ return new soul::ast::cpp::LiteralNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+}

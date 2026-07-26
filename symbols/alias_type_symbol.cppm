@@ -20,8 +20,8 @@ class AliasTypeSymbol : public TypeSymbol
 public:
     AliasTypeSymbol(Module* module_, SymbolId id_);
     AliasTypeSymbol(Module* module_, SymbolId id_, const std::string& name_);
-    TypeSymbol* ReferredType(Context* context) const;
-    inline void SetReferredType(TypeSymbol* referredType_) noexcept { referredType = referredType_; }
+    TypeSymbol* ReferredType(Context* context);
+    void SetReferredType(TypeSymbol* referredType_) noexcept;
     TypeSymbol* DirectType(Context* context) override;
     inline AliasGroupSymbol* Group() const noexcept { return group; }
     inline void SetGroup(AliasGroupSymbol* group_) noexcept { group = group_; }
@@ -33,7 +33,7 @@ public:
     void Read(Reader& reader) override;
 private:
     SymbolId referredTypeId;
-    mutable TypeSymbol* referredType;
+    TypeSymbol* referredType;
     AliasGroupSymbol* group;
 };
 

@@ -23,12 +23,10 @@ public:
     TemplateParameterSymbol* GetTemplateParam(Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    void Expand(Context* context) override;
 private:
     TemplateParamGroupSymbol* readOnlyTemplateParamGroup;
     TemplateParameterSymbol* templateParameterSymbol;
     SymbolId templateParamId;
-    bool expanded;
 };
 
 } // namespace otava::symbols

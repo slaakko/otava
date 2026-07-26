@@ -130,14 +130,19 @@ class Context;
 class FunctionSymbol;
 class ClassTypeSymbol;
 class NamespaceSymbol;
+class TypeSymbol;
 
-std::uint32_t symbolIdShift = 32 - 7;
-std::uint32_t symbolIndexMask = 0xFFFFFFFFu >> 7;
+std::uint64_t projectIdShift = 32;
+std::uint64_t symbolIdShift = 32 - 7;
+std::uint64_t symbolIndexMask = 0xFFFFFFFFu >> 7;
 std::uint8_t symbolKindMask = 0x7Fu;
 
-constexpr SymbolId MakeSymbolId(SymbolKind kind, Index index)
+constexpr SymbolId MakeSymbolId(ProjectId projectId, SymbolKind kind, Index index)
 {
-    return SymbolId((std::uint32_t(ToUnderlying(kind)) << symbolIdShift) | (ToUnderlying(index) & symbolIndexMask));
+    return SymbolId(
+        (std::uint64_t(ToUnderlying(projectId)) << projectIdShift) |
+        (std::uint64_t(ToUnderlying(kind)) << symbolIdShift) |
+        (ToUnderlying(index) & symbolIndexMask));
 }
 
 constexpr SymbolKind GetSymbolKind(SymbolId symbolId)
@@ -184,6 +189,7 @@ public:
     inline SymbolId Id() const noexcept { return id; }
     inline StringOffset NameOffset() const noexcept { return nameOffset; }
     std::string Name() const;
+    const char* NameCStr() const noexcept { return name; }
     virtual SymbolId IrId() const noexcept { return Id(); }
     virtual std::string SimpleName(Context* context) { return Name(); }
     void SetName(const std::string& name_);
@@ -276,7 +282,6 @@ public:
     inline const soul::ast::FullSpan& GetFullSpan() const noexcept { return fullSpan; }
     virtual std::string IrName(Context* context) const;
     virtual int PtrIndex() const noexcept { return -1; }
-    virtual void Expand(Context* context);
     void AddModuleSymbolId(const ModuleSymbolId& moduleSymbolId);
     inline const std::vector<ModuleSymbolId>& ModuleSymbolIds() const noexcept { return moduleSymbolIds; }
     inline std::int64_t AstNodeId() const noexcept { return astNodeId; }

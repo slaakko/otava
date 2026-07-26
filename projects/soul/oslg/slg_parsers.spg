@@ -1,0 +1,17 @@
+project soul.slg.parsers;
+parser <expression_file.parser>;
+parser <lexer_file.parser>;
+parser <keyword_file.parser>;
+parser <slg_file.parser>;
+parser <token_file.parser>;
+tokens <../token/soul.cpp.op.token>;
+tokens <../token/soul.cpp.token>;
+tokens <../token/soul.punctuation.token>;
+tokens <../token/soul.tool.token>;
+extern parser <../common/common.parser>;
+extern parser <../cpp/declaration.parser>;
+extern parser <../cpp/declarator.parser>;
+extern parser <../cpp/expression.parser>;
+extern parser <../cpp/identifier.parser>;
+extern parser <../cpp/literal.parser>;
+extern parser <../cpp/statement.parser>;

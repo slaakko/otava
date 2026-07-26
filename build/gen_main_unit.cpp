@@ -102,10 +102,11 @@ std::string GenerateMainWrapper(otava::symbols::Context* context, int numParams)
         declarator, nullptr, functionBody));
     otava::symbols::InstantiationScope instantiationScope(context->GetModule(), context->GetSymbolTable()->CurrentScope());
     otava::symbols::Instantiator instantiator(context, &instantiationScope);
-    context->PushSetFlag(otava::symbols::ContextFlags::saveDeclarations | otava::symbols::ContextFlags::dontBind | otava::symbols::ContextFlags::generateMainWrapper);
+    otava::symbols::FlagSetter flagSetter(context, 
+        otava::symbols::ContextFlags::saveDeclarations | otava::symbols::ContextFlags::dontBind | otava::symbols::ContextFlags::generateMainWrapper);
     instantiator.SetFunctionNode(mainWrapperFn.get());
     mainWrapperFn->Accept(instantiator);
-    context->PopFlags();
+    flagSetter.Reset();
     otava::symbols::FunctionSymbol* mainWrapperFnSymbol = instantiator.GetSpecialization();
     if (mainWrapperFnSymbol && mainWrapperFnSymbol->IsFunctionDefinitionSymbol())
     {
@@ -129,7 +130,7 @@ std::string GenerateMainUnit(otava::symbols::ModuleMapper& moduleMapper, const s
 {
     otava::symbols::Module* std = moduleMapper.GetModule("std", config, optLevel, configurations, parentContext);
     otava::symbols::Module main("main");
-    main.SetId(moduleMapper.GetNextModuleId());
+    main.SetId(moduleMapper.MakeModuleId("main"));
     moduleMapper.MapModule(&main);
     main.AddImportedModuleName(std->Name());
     otava::symbols::Emitter emitter;
@@ -138,6 +139,7 @@ std::string GenerateMainUnit(otava::symbols::ModuleMapper& moduleMapper, const s
     context.SetEmitter(&emitter);
     context.SetCurrentProject(project);
     context.SetModule(&main);
+    context.SetCompileUnitModule(&main);
     main.Init(&context);
     //main.Import(std, moduleMapper, config, optLevel, configurations, parentContext); TODO?
     //std::unique_ptr<otava::symbols::SymbolTable> symbolTable(new otava::symbols::SymbolTable(&main, false));

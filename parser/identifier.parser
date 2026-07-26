@@ -126,7 +126,7 @@ parser IdentifierParser
                 otava::symbols::Symbol* symbol = otava::symbols::ResolveTypeIdentifier(identifier->Str(), lexer.GetFullSpan(pos), context);
                 if (symbol && (symbol->IsTypeSymbol() || symbol->IsClassGroupSymbol() || symbol->IsAliasGroupSymbol()))
                 {
-                    context->GetSymbolTable()->MapNode(identifier.get(), symbol);
+                    context->GetSymbolTable()->MapNode(identifier.get(), symbol, context);
                     return identifier.release();
                 }
                 else

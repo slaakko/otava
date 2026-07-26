@@ -1,0 +1,3 @@
+project clear;
+target=program;
+source <main.cpp>;

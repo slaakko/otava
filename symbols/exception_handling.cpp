@@ -294,12 +294,12 @@ FunctionDefinitionSymbol* MakeInvokeFn(BoundFunctionCallNode* fnCall, Scope* par
         new otava::ast::FunctionDefinitionNode(fullSpan.span, -1, nullptr, invokeDeclSpecifiers, invokeDeclarator, nullptr,
             new otava::ast::FunctionBodyNode(fullSpan.span, -1, invokeBlock)));
     InstantiationScope invokeInstantiationScope(context->GetModule(), context->GetBoundFunction()->GetFunctionDefinitionSymbol()->Parent(context)->GetScope());
-    invokeInstantiationScope.PushParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
+    ParentScopeAdder parentScopeAdder(&invokeInstantiationScope, context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
     ScopePtr instantiationScopePtr(&invokeInstantiationScope, context);
     Instantiator invokeInstantiator(context, &invokeInstantiationScope);
     invokeInstantiator.SetFunctionNode(invokeFnNode.get());
     context->PushParentFn(parentFn);
-    context->PushSetFlag(ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind | ContextFlags::invoke);
+    FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind | ContextFlags::invoke);
     invokeFnNode->Accept(invokeInstantiator);
     int invokeFnScopeCount = invokeInstantiator.ScopeCount();
     FunctionDefinitionSymbol* invokeFnSymbol = static_cast<FunctionDefinitionSymbol*>(invokeInstantiator.GetSpecialization());
@@ -308,15 +308,12 @@ FunctionDefinitionSymbol* MakeInvokeFn(BoundFunctionCallNode* fnCall, Scope* par
     invokeFnSymbol->SetParentFnScope(parentFnScope);
     BoundFunctionNode* boundFunction = new BoundFunctionNode(invokeFnSymbol, fullSpan);
     context->PushBoundFunction(boundFunction);
-    context->PushSetFlag(ContextFlags::makeChildFn);
+    FlagSetter childFnFlagSetter(context, ContextFlags::makeChildFn);
     invokeFnSymbol->SetResultVarName(context->ResultVarName());
     invokeFnSymbol = BindFunction(invokeFnNode.get(), invokeFnSymbol, context);
     otava::symbols::EndFunctionDefinition(invokeFnNode.get(), invokeFnScopeCount, context);
-    context->PopFlags();
-    context->PopFlags();
     instantiationScopePtr.Reset();
     context->PopParentFn();
-    invokeInstantiationScope.PopParentScope();
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
     invokeFnSymbol->SetFnDefNode(invokeFnNode.release());
     if (boundFunction->HasTemporaryDestructorCalls())
@@ -356,11 +353,11 @@ FunctionDefinitionSymbol* MakeCleanupFn(Cleanup& cleanup, Scope* parentFnScope, 
     std::unique_ptr<otava::ast::FunctionDefinitionNode> cleanupFnNode(new otava::ast::FunctionDefinitionNode(fullSpan.span, -1, nullptr, cleanupDeclSpecifiers,
         cleanupDeclarator, nullptr, new otava::ast::FunctionBodyNode(fullSpan.span, -1, cleanupBlock)));
     InstantiationScope cleanupInstantiationScope(context->GetModule(), context->GetBoundFunction()->GetFunctionDefinitionSymbol()->Parent(context)->GetScope());
-    cleanupInstantiationScope.PushParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
+    ParentScopeAdder parentScopeAdder(&cleanupInstantiationScope, context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
     ScopePtr cleanupInstantiationScopePtr(&cleanupInstantiationScope, context);
     Instantiator cleanupInstantiator(context, &cleanupInstantiationScope);
     cleanupInstantiator.SetFunctionNode(cleanupFnNode.get());
-    context->PushSetFlag(ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    FlagSetter instantiateFlagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
     cleanupFnNode->Accept(cleanupInstantiator);
     int cleanupFnScopeCount = cleanupInstantiator.ScopeCount();
     FunctionDefinitionSymbol* cleanupFnSymbol = static_cast<FunctionDefinitionSymbol*>(cleanupInstantiator.GetSpecialization());
@@ -368,14 +365,11 @@ FunctionDefinitionSymbol* MakeCleanupFn(Cleanup& cleanup, Scope* parentFnScope, 
     cleanupFnSymbol->SetParentFn(parentFn);
     cleanupFnSymbol->SetParentFnScope(parentFnScope);
     context->PushBoundFunction(new BoundFunctionNode(cleanupFnSymbol, fullSpan));
-    context->PushSetFlag(ContextFlags::makeChildFn);
+    FlagSetter makeChildFnFlagSetter(context, ContextFlags::makeChildFn);
     cleanupFnSymbol->SetResultVarName(context->ResultVarName());
     cleanupFnSymbol = BindFunction(cleanupFnNode.get(), cleanupFnSymbol, context);
     otava::symbols::EndFunctionDefinition(cleanupFnNode.get(), cleanupFnScopeCount, context);
-    context->PopFlags();
-    context->PopFlags();
     cleanupInstantiationScopePtr.Reset();
-    cleanupInstantiationScope.PopParentScope();
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
     cleanupFnSymbol->SetFnDefNode(cleanupFnNode.release());
     cleanup.ResetChanged();
@@ -410,6 +404,10 @@ BoundInvokeNode* InvokeAndCleanupGenerator::MakeInvokeAndCleanup(BoundFunctionCa
         append("__intrinsic_get_frame_ptr()").append(")");
     std::unique_ptr<otava::ast::Node> invokeCallNode = ParseExpression(invokeCallText, context);
     std::unique_ptr<BoundExpressionNode> invokeCall(BindExpression(invokeCallNode.get(), context));
+    if (!invokeCall)
+    {
+        ThrowException("could not bind invoke expression", fnCall->GetFullSpan(), context);
+    }
     boundInvoke->SetInvokeCall(invokeCall.release());
     if (hasResult)
     {

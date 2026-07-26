@@ -17,6 +17,7 @@ import otava.symbols.expr_parser;
 import otava.symbols.stmt_parser;
 import otava.symbols.decl_specifier_seq_parser;
 import otava.symbols.exception;
+import otava.optimizer;
 import soul.lexer.file_map;
 import util.init_done;
 import util.path;
@@ -52,8 +53,10 @@ void PrintHelp()
     std::cout << "  Set compile debugging on." << "\n";
     std::cout << "--out=FILENAME | -o=FILENAME" << "\n";
     std::cout << "  Write compile debug output to file FILENAME." << "\n";
-    std::cout << "--opt-fn=FN | -f=FN" << "\n";
-    std::cout << "  Write optimization stages for function FN to --ort-out file." << "\n";
+    //std::cout << "--opt-fn=FN | -f=FN" << "\n";
+    //std::cout << "  Write optimization stages for function FN to --ort-out file." << "\n";
+    std::cout << "--time | -t" << "\n";
+    std::cout << "  Print compilation time." << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -81,6 +84,7 @@ int main(int argc, const char** argv)
         bool symbolXml = false;
         bool all = false;
         int optLevel = -1;
+        bool time = false;
         std::ofstream outFileStream;
         std::ostream* outFile = nullptr;
         for (int i = 1; i < argc; ++i)
@@ -109,10 +113,6 @@ int main(int argc, const char** argv)
                         {
                             outFileStream.open(components[1]);
                             outFile = &outFileStream;
-                        }
-                        else if (components[0] == "--opt-fn")
-                        {
-                            //otava::optimizer::SetOptFn(components[1]);
                         }
                         else
                         {
@@ -169,6 +169,10 @@ int main(int argc, const char** argv)
                     {
                         debug = true;
                     }
+                    else if (arg == "--time")
+                    {
+                        time = true;
+                    }
                     else
                     {
                         otava::symbols::SetExceptionThrown();
@@ -199,10 +203,6 @@ int main(int argc, const char** argv)
                         {
                             outFileStream.open(components[1]);
                             outFile = &outFileStream;
-                        }
-                        else if (components[0] == "-f")
-                        {
-                            //otava::optimizer::SetOptFn(components[1]);
                         }
                         else
                         {
@@ -273,6 +273,11 @@ int main(int argc, const char** argv)
                             debug = true;
                             break;
                         }
+                        case 't':
+                        {
+                            time = true;
+                            break;
+                        }
                         default:
                         {
                             otava::symbols::SetExceptionThrown();
@@ -294,8 +299,9 @@ int main(int argc, const char** argv)
         }
         if (optLevel != -1)
         {
-            //otava::optimizer::Optimizer::Instance().SetOptimizations(std::to_string(optLevel));
+            otava::optimizer::Optimizer::Instance().SetOptimizations(std::to_string(optLevel));
         }
+        std::chrono::time_point start = std::chrono::steady_clock::now();
         for (const auto& file : files)
         {
             if (verbose)
@@ -390,6 +396,17 @@ int main(int argc, const char** argv)
                 otava::symbols::SetExceptionThrown();
                 throw std::runtime_error("file '" + file + "' has invalid extension: not .project or .solution");
             }
+        }
+        std::chrono::time_point end = std::chrono::steady_clock::now();
+        if (time)
+        {
+            std::chrono::duration elapsed = end - start;
+            std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
+            std::cout << "compilation time: " << (ns / 1000 / 1000 / 1000 / 60).count() << ":" << std::setw(2) << std::setfill('0') << 
+                ((ns / 1000 / 1000 / 1000) % 60).count() << "." << std::setw(3) << std::setfill('0') <<
+                ((ns / 1000 / 1000) % 1000).count() << "." << std::setw(3) << std::setfill('0') <<
+                ((ns / 1000) % 1000).count() << "." << std::setw(3) << std::setfill('0') <<
+                (ns % 1000).count();
         }
     }
     catch (const std::exception& ex)

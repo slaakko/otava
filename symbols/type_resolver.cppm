@@ -17,7 +17,7 @@ class TypeSymbol;
 
 enum class TypeResolverFlags : std::int32_t
 {
-    none = 0, dontInstantiate = 1 << 0, dontThrow = 1 << 1
+    none = 0, dontInstantiate = 1 << 0, dontThrow = 1 << 1, dontLookImports = 1 << 2, createTypeSymbol = 1 << 3
 };
 
 constexpr TypeResolverFlags operator|(TypeResolverFlags left, TypeResolverFlags right) noexcept

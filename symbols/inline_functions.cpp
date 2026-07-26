@@ -51,7 +51,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
     module->ReadAstNode();
     bool prevInternallyMapped = context->GetModule()->GetNodeIdFactory()->IsInternallyMapped(); 
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(true);
-    otava::ast::Node* node = context->GetSymbolTable()->GetNodeNothrow(fn);
+    otava::ast::Node* node = context->GetSymbolTable()->GetNodeNothrow(fn, context);
     if (!node)
     {
         node = module->GetAstNode(fn->AstNodeId());
@@ -74,14 +74,13 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
     {
         otava::ast::FunctionDefinitionNode* functionDefinitionNode = static_cast<otava::ast::FunctionDefinitionNode*>(node);
         InstantiationScope instantiationScope(context->GetModule(), fn->Parent(context)->GetScope());
-        //instantiationScope.PushParentScope(context->GetSymbolTable()->GetNamespaceScope(U"std", sourcePos, context));
-        instantiationScope.PushParentScope(context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
+        ParentScopeAdder parentScopeAdder(&instantiationScope, context->GetSymbolTable()->CurrentScope()->GetNamespaceScope(context));
         ScopePtr instantiationScopePtr(&instantiationScope, context);
         Instantiator instantiator(context, &instantiationScope);
         FunctionSymbol* inlineFn = nullptr;
         try
         {
-            context->PushSetFlag(ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+            FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
             instantiator.SetFunctionNode(functionDefinitionNode);
             functionDefinitionNode->Accept(instantiator);
             inlineFn = instantiator.GetSpecialization();
@@ -99,7 +98,6 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
                 context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
                 functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
                 inlineFn = functionDefinition;
-                context->PopFlags();
                 if (functionDefinition->IsBound())
                 {
                     context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
@@ -123,8 +121,6 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);
             return fn;
         }
-        //instantiationScope.PopParentScope();
-        instantiationScope.PopParentScope();
         context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped); 
         return inlineFn;
     }

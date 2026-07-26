@@ -27,23 +27,23 @@ void SpecializationKey::Write(Writer& writer)
 
 void SpecializationKey::Read(Reader& reader)
 {
-    typeSymbolId = SymbolId(reader.CurrentReader().ReadUInt());
+    typeSymbolId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         templateArgumentIds.push_back(symbolId);
     }
 }
 
 size_t SpecializationKeyHash::operator()(const SpecializationKey& key) const noexcept
 {
-    size_t hashCode = std::hash<std::uint32_t>()(ToUnderlying(key.typeSymbolId));
+    size_t hashCode = std::hash<std::uint64_t>()(ToUnderlying(key.typeSymbolId));
     Cardinality count = Cardinality(key.templateArgumentIds.size());
     for (Index i = Index(0); i < Index(count); ++i)
     {
         SymbolId argId = key.templateArgumentIds[ToUnderlying(i)];
-        size_t argHashCode = std::hash<std::uint32_t>()(ToUnderlying(argId));
+        size_t argHashCode = std::hash<std::uint64_t>()(ToUnderlying(argId));
         hashCode ^= (argHashCode << ToUnderlying(i + Index(1))) | (argHashCode >> ToUnderlying(Index(count) - i + Index(1)));
     }
     return hashCode;

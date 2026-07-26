@@ -1114,7 +1114,7 @@ soul::parser::Match IdentifierParser<LexerT>::TypeIdentifierChecked(LexerT& lexe
             otava::symbols::Symbol *symbol = otava::symbols::ResolveTypeIdentifier(identifier->Str(), lexer.GetFullSpan(pos), context);
             if (symbol && (symbol->IsTypeSymbol() || symbol->IsClassGroupSymbol() || symbol->IsAliasGroupSymbol()))
             {
-                context->GetSymbolTable()->MapNode(identifier.get(), symbol);
+                context->GetSymbolTable()->MapNode(identifier.get(), symbol, context);
                 {
                     #ifdef SOUL_PARSER_DEBUG_SUPPORT
                     if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "TypeIdentifierChecked");

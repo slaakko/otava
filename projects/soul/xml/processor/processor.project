@@ -1,0 +1,15 @@
+project soul.xml.processor;
+target=library;
+reference <../../../util/util.project>;
+reference <../../ast/ast.project>;
+reference <../../lexer/lexer.project>;
+reference <../dom/dom.project>;
+interface <attribute.cppm>;
+source <attribute.cpp>;
+interface <content_handler.cppm>;
+source <content_handler.cpp>;
+interface <entity.cppm>;
+source <entity.cpp>;
+interface <processor.cppm>;
+interface <xml_processor.cppm>;
+source <xml_processor.cpp>;

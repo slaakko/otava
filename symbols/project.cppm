@@ -5,6 +5,7 @@
 
 export module otava.symbols.project;
 
+import otava.symbols.id;
 import std;
 
 export namespace otava::symbols {
@@ -14,6 +15,7 @@ class SymbolsProject
 public:
     virtual ~SymbolsProject();
     virtual bool HasDefine(const std::string& symbol) const noexcept = 0;
+    virtual ProjectId GetProjectId() const noexcept = 0;
 };
 
 } // otava::symbols

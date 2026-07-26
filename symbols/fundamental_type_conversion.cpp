@@ -340,8 +340,8 @@ void FundamentalTypeBooleanConversion::Write(Writer& writer)
 void FundamentalTypeBooleanConversion::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    paramTypeId = SymbolId(reader.CurrentReader().ReadUInt());
-    argTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    paramTypeId = SymbolId(reader.CurrentReader().ReadULong());
+    argTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void FundamentalTypeBooleanConversion::Resolve(Context* context)

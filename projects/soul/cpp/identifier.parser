@@ -1,0 +1,30 @@
+export module soul.cpp.identifier.parser;
+
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.lex.slg;
+[implementation]import soul.lex.spg;
+
+parser CppIdentifierParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+    lexer soul::lex::spg::SpgLexer<char32_t>;
+
+    CppIdentifier : std::string
+        ::= ID{ return util::ToUtf8(lexer.GetToken(pos).ToString()); }
+        ;
+
+    QualifiedCppId(var std::string str) : std::string
+        ::= 
+        (
+            (COLON_COLON{ str.append("::"); })? 
+            ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); } 
+            (COLON_COLON ID{ str.append("::").append(util::ToUtf8(lexer.GetToken(pos).ToString())); })*
+        )
+        {
+            return str;
+        }
+        ;
+}

@@ -18,7 +18,6 @@ public:
     NamespaceSymbol(Module* module_, SymbolId id_);
     NamespaceSymbol(Module* module_, SymbolId id_, const std::string& name_);
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
-    void Expand(Context* context) override;
 private:
     bool expanded;
 };

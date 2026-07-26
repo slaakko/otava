@@ -17,21 +17,21 @@ class VariableGroupSymbol : public Symbol
 public:
     VariableGroupSymbol(Module* module_, SymbolId id_);
     VariableGroupSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    ~VariableGroupSymbol();
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
     Symbol* GetSingleSymbol(Context* context) override;
     void AddVariable(VariableSymbol* variableSymbol);
+    void ResetVariables();
     VariableSymbol* GetVariable(int arity, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     const std::vector<VariableSymbol*>& Variables(Context* context);
-    void Expand(Context* context) override;
     bool IsEmpty() const noexcept;
 private:
     std::vector<VariableSymbol*> variables;
     std::vector<SymbolId> variableIds;
     bool variablesFetched;
-    bool expanded;
-    VariableGroupSymbol* readOnlyVariableGroup;
+    std::string groupName;
     void GetVariables(Context* context);
 };
 

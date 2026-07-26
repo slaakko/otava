@@ -115,7 +115,7 @@ FunctionSymbol::FunctionSymbol(Module* module_, SymbolId id_) :
     conversionKind(ConversionKind::implicitConversion), conversionParamType(nullptr), conversionArgType(nullptr), conversionDistance(0),
     memFnParamsConstructed(false), vtabIndex(-1), returnValueParam(nullptr), returnValueParamId(zeroSymbolId), 
     conversionParamTypeId(zeroSymbolId), conversionArgTypeId(zeroSymbolId), destructor(nullptr), nextTemporaryId(0), classParsingMap(nullptr), 
-    parametersFetched(false), destructing(false)
+    parametersFetched(false), destructing(false), specializationFetched(false)
 {
     GetScope()->SetKind(ScopeKind::functionScope);
     GetModule()->AddFunction(this);
@@ -126,7 +126,8 @@ FunctionSymbol::FunctionSymbol(Module* module_, SymbolId id_, const std::string&
     linkage(Linkage::cpp_linkage), group(nullptr), index(0), functionKind(FunctionKind::function), returnType(nullptr), returnTypeId(zeroSymbolId),
     conversionKind(ConversionKind::implicitConversion), conversionParamType(nullptr), conversionArgType(nullptr), conversionDistance(0),
     memFnParamsConstructed(false), vtabIndex(-1), returnValueParam(nullptr), returnValueParamId(zeroSymbolId), conversionParamTypeId(zeroSymbolId),
-    conversionArgTypeId(zeroSymbolId), destructor(nullptr), nextTemporaryId(0), classParsingMap(nullptr), parametersFetched(false), destructing(false)
+    conversionArgTypeId(zeroSymbolId), destructor(nullptr), nextTemporaryId(0), classParsingMap(nullptr), parametersFetched(false), destructing(false),
+    specializationFetched(false)
 {
     GetScope()->SetKind(ScopeKind::functionScope);
     GetModule()->AddFunction(this);
@@ -257,20 +258,42 @@ bool FunctionSymbol::IsDestructor() const noexcept
     return GroupName() == "@destructor";
 }
 
-bool FunctionSymbol::HasForwardDeclarationType(Context* context) const 
+bool FunctionSymbol::RemoveForwardDeclarationTypes(Context* context) 
 {
     for (ParameterSymbol* parameter : MemFnParameters(context))
     {
         TypeSymbol* baseType = parameter->GetType(context)->GetBaseType(context);
-        if (baseType->HasForwardClassDeclarationSymbol(context)) return true;
+        if (baseType->HasForwardClassDeclarationSymbol(context))
+        {
+            TypeSymbol* finalType = baseType->FinalType(GetFullSpan(), context);
+            if (finalType->HasForwardClassDeclarationSymbol(context))
+            {
+                return false;
+            }
+            else
+            {
+                parameter->SetType(context->GetSymbolTable()->MakeCompoundType(finalType, parameter->GetType(context)->GetDerivations(), context), context);
+            }
+        }
     }
     TypeSymbol* returnType = ReturnType(context);
     if (returnType)
     {
         TypeSymbol* baseType = returnType->GetBaseType(context);
-        if (baseType->HasForwardClassDeclarationSymbol(context)) return true;
+        if (baseType->HasForwardClassDeclarationSymbol(context))
+        {
+            TypeSymbol* finalType = baseType->FinalType(GetFullSpan(), context);
+            if (finalType->HasForwardClassDeclarationSymbol(context))
+            {
+                return false;
+            }
+            else
+            {
+                SetReturnType(context->GetSymbolTable()->MakeCompoundType(finalType, returnType->GetDerivations(), context), context);
+            }
+        }
     }
-    return false;
+    return true;
 }
 
 void FunctionSymbol::SetConversionParamType(TypeSymbol* conversionParamType_) noexcept
@@ -624,11 +647,27 @@ bool FunctionSymbol::IsTemplate(Context* context) const noexcept
 void FunctionSymbol::SetSpecialization(const std::vector<TypeSymbol*>& specialization_)
 {
     specialization = specialization_;
+    if (!specialization.empty())
+    {
+        SetHasSpecialization();
+    }
 }
 
-const std::vector<TypeSymbol*>& FunctionSymbol::Specialization()
+const std::vector<TypeSymbol*>& FunctionSymbol::Specialization(Context* context) const
 {
-    // todo specialization ids
+    if (IsReadOnly() && !specializationFetched)
+    {
+        specializationFetched = true;
+        for (SymbolId specializationId : specializationIds)
+        {
+            TypeSymbol* type = GetModule()->GetSymbolTable()->GetTypeSymbol(specializationId, context);
+            if (!type)
+            {
+                ThrowException("type id " + std::to_string(ToUnderlying(specializationId)) + " not found from module '" + GetModule()->Name() + "'");
+            }
+            specialization.push_back(type);
+        }
+    }
     return specialization;
 }
 
@@ -762,7 +801,7 @@ void FunctionSymbol::Write(Writer& writer)
     {
         writer.GetBinaryStreamWriter().Write(fixedIrName);
     }
-    if (IsSpecialization())
+    if (HasSpecialization())
     {
         Cardinality specializationCount = Cardinality(specialization.size());
         writer.GetBinaryStreamWriter().Write(ToUnderlying(specializationCount));
@@ -800,36 +839,36 @@ void FunctionSymbol::Read(Reader& reader)
     Cardinality parameterCount = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(parameterCount); ++i)
     {
-        SymbolId parameterId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId parameterId = SymbolId(reader.CurrentReader().ReadULong());
         parameterIds.push_back(parameterId);
     }
-    returnTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    returnTypeId = SymbolId(reader.CurrentReader().ReadULong());
     if (ReturnsClass())
     {
-        returnValueParamId = SymbolId(reader.CurrentReader().ReadUInt());
+        returnValueParamId = SymbolId(reader.CurrentReader().ReadULong());
     }
     if (GetFlag(FunctionSymbolFlags::fixedIrName))
     {
         fixedIrName = reader.CurrentReader().ReadString();
     }
-    if (IsSpecialization())
+    if (HasSpecialization())
     {
         Cardinality specializationCount = Cardinality(reader.CurrentReader().ReadUInt());
         for (Index i = Index(0); i < Index(specializationCount); ++i)
         {
-            SymbolId specilizationId = SymbolId(reader.CurrentReader().ReadUInt());
+            SymbolId specilizationId = SymbolId(reader.CurrentReader().ReadULong());
             specializationIds.push_back(specilizationId);
         }
     }
     if (IsConversion())
     {
         conversionKind = ConversionKind(reader.CurrentReader().ReadByte());
-        conversionParamTypeId = SymbolId(reader.CurrentReader().ReadUInt());
-        conversionArgTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+        conversionParamTypeId = SymbolId(reader.CurrentReader().ReadULong());
+        conversionArgTypeId = SymbolId(reader.CurrentReader().ReadULong());
         conversionDistance = reader.CurrentReader().ReadInt();
     }
     vtabIndex = reader.CurrentReader().ReadInt();
-    groupId = SymbolId(reader.CurrentReader().ReadUInt());
+    groupId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void FunctionSymbol::SetFixedIrName(const std::string& fixedIrName_)
@@ -897,7 +936,7 @@ std::string FunctionSymbol::IrName(Context* context) const
             }
         }
         std::string fullName = FullName(context);
-        if (!specialization.empty())
+        if (!Specialization(context).empty())
         {
             int n = specialization.size();
             for (int i = 0; i < n; ++i)
@@ -1187,6 +1226,57 @@ void FunctionSymbol::RemoveClass(ClassTypeSymbol* cls)
     if (!destructing)
     {
         classes.erase(std::remove(classes.begin(), classes.end(), cls), classes.end());
+    }
+}
+
+void FunctionSymbol::ReplaceIncompleteTypes(FunctionDefinitionSymbol* definition, Context* context)
+{
+    if (Arity() != definition->Arity())
+    {
+        ThrowException("arity of declaration '" + FullName(context) + "' differs from arity of definition '" + definition->FullName(context) + "'");
+    }
+    int index = 0;
+    for (ParameterSymbol* parameter : Parameters(context))
+    {
+        if (parameter->GetType(context)->GetBaseType(context)->IsForwardClassDeclarationSymbol())
+        {
+            TypeSymbol* type = definition->Parameters(context)[index]->GetType(context);
+            parameter->SetType(type, context);
+        }
+        ++index;
+    }
+    ParameterSymbol* thisParam = ThisParam(context);
+    if (thisParam && thisParam->GetType(context)->GetBaseType(context)->IsForwardClassDeclarationSymbol())
+    {
+        ParameterSymbol* defThisParam = definition->ThisParam(context);
+        if (!defThisParam)
+        {
+            ThrowException("this paramater of function '" + FullName(context) + "' differs from this parameter of definition '" + definition->FullName(context) + "'");
+        }
+        TypeSymbol* type = defThisParam->GetType(context);
+        thisParam->SetType(type, context);
+    }
+    TypeSymbol* returnType = ReturnType(context);
+    if (returnType && returnType->GetBaseType(context)->IsForwardClassDeclarationSymbol())
+    {
+        TypeSymbol* defRetType = definition->ReturnType(context);
+        if (!defRetType)
+        {
+            ThrowException("return type of function'" + FullName(context) + "' differs from this return type of definition '" + definition->FullName(context) + "'");
+        }
+        SetReturnType(defRetType, context);
+    }
+    ParameterSymbol* returnValueParam = ReturnValueParam(context);
+    if (returnValueParam && returnValueParam->GetType(context)->GetBaseType(context)->IsForwardClassDeclarationSymbol())
+    {
+        ParameterSymbol* defReturnValueParam = definition->ReturnValueParam(context);
+        if (!defReturnValueParam)
+        {
+            ThrowException("return value parameter of function'" + FullName(context) + 
+                "' differs from the return value parameter of definition '" + definition->FullName(context) + "'");
+        }
+        TypeSymbol* defRetValParamType = defReturnValueParam->GetType(context);
+        returnValueParam->SetType(defRetValParamType, context);
     }
 }
 
@@ -1594,8 +1684,8 @@ void FunctionDefinitionSymbol::Write(Writer& writer)
 void FunctionDefinitionSymbol::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    declarationId = SymbolId(reader.CurrentReader().ReadUInt()); 
-    parentFnId = SymbolId(reader.CurrentReader().ReadUInt());
+    declarationId = SymbolId(reader.CurrentReader().ReadULong()); 
+    parentFnId = SymbolId(reader.CurrentReader().ReadULong());
     defIndex = reader.CurrentReader().ReadInt();
 }
 
@@ -1694,7 +1784,7 @@ void ExplicitlyInstantiatedFunctionDefinitionSymbol::Read(Reader& reader)
 {
     FunctionDefinitionSymbol::Read(reader);
     irName = reader.CurrentReader().ReadString();
-    functionDefinitionId = SymbolId(reader.CurrentReader().ReadUInt());
+    functionDefinitionId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 otava::intermediate::Type* ExplicitlyInstantiatedFunctionDefinitionSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan,
@@ -1743,12 +1833,12 @@ bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* conte
                 rightTemplateDeclaration->TemplateParameters(context)[ToUnderlying(i)], context)) return false;
         }
     }
-    int leftsn = left->Specialization().size();
-    int rightsn = right->Specialization().size();
+    int leftsn = left->Specialization(context).size();
+    int rightsn = right->Specialization(context).size();
     if (leftsn != rightsn) return false;
     for (int i = 0; i < leftsn; ++i)
     {
-        if (!TypesEqual(left->Specialization()[i], right->Specialization()[i], context)) return false;
+        if (!TypesEqual(left->Specialization(context)[i], right->Specialization(context)[i], context)) return false;
     }
     if (left->MemFnArity(context) != right->MemFnArity(context)) return false;
     Cardinality n = left->MemFnArity(context);

@@ -106,6 +106,13 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
             }
         }
     }
+    if (context && context->GetFlag(ContextFlags::matchFullNames))
+    {
+        if (left->FullName(context) == right->FullName(context))
+        {
+            return true;
+        }
+    }
     return false;
 }
 

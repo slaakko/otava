@@ -1,0 +1,11 @@
+project cpp.parsers;
+parser <declaration.parser>;
+parser <declarator.parser>;
+parser <expression.parser>;
+parser <identifier.parser>;
+parser <literal.parser>;
+parser <statement.parser>;
+tokens <../token/soul.cpp.op.token>;
+tokens <../token/soul.cpp.token>;
+tokens <../token/soul.punctuation.token>;
+tokens <../token/soul.tool.token>;

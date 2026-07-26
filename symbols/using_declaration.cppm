@@ -12,6 +12,6 @@ export namespace otava::symbols {
 
 class Context;
 
-void AddUsingDeclaration(otava::ast::Node* node, Context* context);
+bool AddUsingDeclaration(otava::ast::Node* node, Context* context);
 
 } // namespace otava::symbols

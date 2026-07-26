@@ -515,7 +515,7 @@ void FundamentalTypeDefaultCtor::Write(Writer& writer)
 void FundamentalTypeDefaultCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    typeId = SymbolId(reader.CurrentReader().ReadUInt());
+    typeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void FundamentalTypeDefaultCtor::Resolve(Context* context)

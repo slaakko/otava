@@ -188,18 +188,18 @@ void ModuleHeader::Read(Reader& reader)
 
 Module::Module(util::FileMapping* fileMapping_) :
     kind(ModuleKind::none), stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""), symbolIndexMap(this), symbolTable(this, true),
-    evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1), 
-    index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false), 
+    evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1),
+    index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false),
     namespaceIdsRead(false), destructing(false)
 {
     Read();
 }
 
 Module::Module(const std::string& name_) :
-    kind(ModuleKind::none), stringTable(this), nameOffset(stringTable.AddString(name_)), name(stringTable.CharPtr(nameOffset)), 
+    kind(ModuleKind::none), stringTable(this), nameOffset(stringTable.AddString(name_)), name(stringTable.CharPtr(nameOffset)),
     interfaceUnitNameOffset(), interfaceUnitName(""),
-    symbolIndexMap(this), symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false), 
-    importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), 
+    symbolIndexMap(this), symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false),
+    importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false),
     importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), destructing(false)
 {
 }
@@ -214,6 +214,10 @@ Module::~Module()
     for (Scope* scope : scopes)
     {
         scope->ResetModule();
+    }
+    for (Symbol* symbol : symbols)
+    {
+        symbol->ResetModule();
     }
 }
 
@@ -243,15 +247,33 @@ void Module::RemoveScope(Scope* scope)
     }
 }
 
+void Module::AddSymbol(Symbol* symbol)
+{
+    symbols.push_back(symbol);
+}
+
+void Module::RemoveSymbol(Symbol* symbol)
+{
+    if (!destructing)
+    {
+        symbols.erase(std::remove(symbols.begin(), symbols.end(), symbol), symbols.end());
+    }
+}
+
 void Module::Init(Context* context)
 {
     symbolTable.Init(context);
     evaluationContext.Init(context);
 }
 
-std::string Module::Name() 
+std::string Module::Name()
 {
     return stringTable.GetString(nameOffset);
+}
+
+void Module::SetFilePath(const std::string& filePath_)
+{
+    filePath = filePath_;
 }
 
 std::string Module::InterfaceUnitName()
@@ -266,6 +288,11 @@ std::string Module::InterfaceUnitName()
 void Module::SetInterfaceUnitName(const std::string& interfaceUnitName)
 {
     interfaceUnitNameOffset = stringTable.AddString(interfaceUnitName);
+}
+
+void Module::SetId(ModuleId id_) noexcept
+{ 
+    id = id_; 
 }
 
 void Module::AddExportedModuleName(const std::string& exportModuleName)
@@ -298,16 +325,22 @@ std::vector<Module*> Module::ImportedModules(Context* context)
     {
         std::string interfaceUnitName = InterfaceUnitName();
         Module* interfaceUnit = context->GetModule(interfaceUnitName);
-        if (std::find(importedModules.begin(), importedModules.end(), interfaceUnit) == importedModules.end())
+        if (interfaceUnit != this)
         {
-            importedModules.push_back(interfaceUnit);
-        }
-        std::vector<Module*> interfaceUnitImports = interfaceUnit->ImportedModules(context);
-        for (Module* importedModule : interfaceUnitImports)
-        {
-            if (std::find(importedModules.begin(), importedModules.end(), importedModule) == importedModules.end())
+            if (std::find(importedModules.begin(), importedModules.end(), interfaceUnit) == importedModules.end())
             {
-                importedModules.push_back(importedModule);
+                importedModules.push_back(interfaceUnit);
+            }
+            std::vector<Module*> interfaceUnitImports = interfaceUnit->ImportedModules(context);
+            for (Module* importedModule : interfaceUnitImports)
+            {
+                if (importedModule != this)
+                {
+                    if (std::find(importedModules.begin(), importedModules.end(), importedModule) == importedModules.end())
+                    {
+                        importedModules.push_back(importedModule);
+                    }
+                }
             }
         }
     }
@@ -470,7 +503,7 @@ void Module::ReadImportedSymbols()
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         ModuleId moduleId = ModuleId(reader.CurrentReader().ReadUInt());
         GetSymbolTable()->MapImportedSymbolId(symbolId, moduleId);
     }
@@ -598,7 +631,7 @@ void Module::ReadNamespaceIdTable(Reader& reader)
     Cardinality n = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(n); ++i)
     {
-        SymbolId namespaceId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId namespaceId = SymbolId(reader.CurrentReader().ReadULong());
         namespaceIds.push_back(namespaceId);
     }
 }
@@ -633,7 +666,7 @@ void Module::Read()
     symbolIndexMap.Read(reader);
 }
 
-ModuleMapper::ModuleMapper() : moduleCount(Cardinality(0)), nextModuleId(ModuleId(1))
+ModuleMapper::ModuleMapper()
 {
     roots.push_back(util::GetFullPath(util::Path::Combine(util::OtavaRoot(), "std")));
 }
@@ -709,6 +742,69 @@ std::string ModuleMapper::GetProjectFilePath(const std::string& moduleName) cons
     return std::string();
 }
 
+ModuleId ModuleMapper::MakeModuleId(const std::string& moduleName) noexcept
+{
+    ModuleId moduleId = ModuleId(std::hash<std::string>()(moduleName) & 0xFFFFFFFFu);
+    while (moduleIdMap.find(moduleId) != moduleIdMap.end())
+    {
+        ++moduleId;
+    }
+    return moduleId;
+}
+
+void ModuleMapper::AddBuiltModule(Module* module)
+{
+    builtModules.push_back(std::unique_ptr<Module>(module));
+}
+
+struct ByName
+{
+    bool operator()(const std::pair<std::string, ModuleId>& left, const std::pair<std::string, ModuleId>& right) const noexcept
+    {
+        return left.first < right.first;
+    }
+};
+
+void ModuleMapper::PrintModules()
+{
+    std::vector<std::pair<std::string, ModuleId>> m;
+    for (const auto& module : modules)
+    {
+        m.push_back(std::make_pair(module->Name(), module->Id()));
+    }
+    for (const auto& module : builtModules)
+    {
+        m.push_back(std::make_pair(module->Name(), module->Id()));
+    }
+    std::sort(m.begin(), m.end(), ByName());
+    m.erase(std::unique(m.begin(), m.end()), m.end());
+    for (const auto& p : m)
+    {
+        std::cout << p.first << " : " << ToUnderlying(p.second) << "\n";
+    }
+}
+
+ProjectId ModuleMapper::MakeProjectId(const std::string& projectName)
+{
+    ProjectId projectId = ProjectId(std::hash<std::string>()(projectName) & 0xFFFFFFFFu);
+    while (projectIds.find(projectId) != projectIds.end())
+    {
+        ++projectId;
+    }
+    projectIds.insert(projectId);
+    return projectId;
+}
+
+void ModuleMapper::AddProjectId(const std::string& projectName, ProjectId projectId)
+{
+    if (projectIds.find(projectId) != projectIds.end())
+    {
+        otava::symbols::ThrowException("project id " + std::to_string(otava::symbols::ToUnderlying(projectId)) + " not unique: please change the name of the project '" +
+            projectName);
+    }
+    projectIds.insert(projectId);
+}
+
 ModulePtr::ModulePtr(Module* module_, Context* context_) noexcept : module(module_), context(context_)
 {
     prevModule = context->GetModule();
@@ -721,7 +817,19 @@ ModulePtr::ModulePtr(Module* module_, Context* context_) noexcept : module(modul
 
 ModulePtr::~ModulePtr()
 {
-    context->SetModule(prevModule);
+    if (context)
+    {
+        context->SetModule(prevModule);
+    }
+}
+
+void ModulePtr::Reset()
+{
+    if (context)
+    {
+        context->SetModule(prevModule);
+        context = nullptr;
+    }
 }
 
 } // namespace otava::symbols

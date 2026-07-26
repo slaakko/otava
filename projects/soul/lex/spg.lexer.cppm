@@ -11,7 +11,7 @@ import soul.lexer.classmap;
 import soul.lexer.keyword;
 import soul.ast.slg;
 import soul.ast.common;
-import util;
+import util.binary_resource_ptr;
 import soul.cpp.token;
 import soul.cpp.op.token;
 import soul.punctuation.token;

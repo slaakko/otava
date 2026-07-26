@@ -21,7 +21,7 @@ ArrayTypeKey::ArrayTypeKey(TypeSymbol* elementType, std::int64_t size_) : elemen
 
 size_t ArrayTypeKeyHash::operator()(const ArrayTypeKey& key) const noexcept
 {
-    size_t elementTypeHash = std::hash<std::uint32_t>()(ToUnderlying(key.elementTypeId));
+    size_t elementTypeHash = std::hash<std::uint64_t>()(ToUnderlying(key.elementTypeId));
     size_t sizeHash = std::hash<std::int64_t>()(key.size);
     return elementTypeHash ^ sizeHash;
 }
@@ -66,7 +66,7 @@ void ArrayTypeSymbol::Read(Reader& reader)
 {
     TypeSymbol::Read(reader);
     bound = reader.CurrentReader().ReadBool();
-    elementTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    elementTypeId = SymbolId(reader.CurrentReader().ReadULong());
     size = reader.CurrentReader().ReadLong();
 }
 
@@ -113,7 +113,7 @@ void ArrayTypeSymbol::Bind(const soul::ast::FullSpan& fullSpan, Context* context
     endGroup->AddFunction(arrayTypeEnd);
 }
 
-TypeSymbol* ArrayTypeSymbol::ElementType(Context* context) const 
+TypeSymbol* ArrayTypeSymbol::ElementType(Context* context) 
 {
     if (elementType)
     {
@@ -180,7 +180,7 @@ void ArrayTypeDefaultCtor::Write(Writer& writer)
 void ArrayTypeDefaultCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeDefaultCtor::Resolve(Context* context)
@@ -252,7 +252,7 @@ void ArrayTypeCopyCtor::Write(Writer& writer)
 void ArrayTypeCopyCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeCopyCtor::Resolve(Context* context)
@@ -325,7 +325,7 @@ void ArrayTypeMoveCtor::Write(Writer& writer)
 void ArrayTypeMoveCtor::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeMoveCtor::Resolve(Context* context)
@@ -398,7 +398,7 @@ void ArrayTypeCopyAssignment::Write(Writer& writer)
 void ArrayTypeCopyAssignment::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeCopyAssignment::Resolve(Context* context)
@@ -473,7 +473,7 @@ void ArrayTypeMoveAssignment::Write(Writer& writer)
 void ArrayTypeMoveAssignment::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeMoveAssignment::Resolve(Context* context)
@@ -545,7 +545,7 @@ void ArrayTypeBegin::Write(Writer& writer)
 void ArrayTypeBegin::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeBegin::Resolve(Context* context)
@@ -595,7 +595,7 @@ void ArrayTypeEnd::Write(Writer& writer)
 void ArrayTypeEnd::Read(Reader& reader)
 {
     FunctionSymbol::Read(reader);
-    arrayTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    arrayTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ArrayTypeEnd::Resolve(Context* context)

@@ -170,16 +170,22 @@ Symbol::Symbol(Module* module_, SymbolId id_) :
     module(module_), id(id_), flags(SymbolFlags::readOnly), nameOffset(StringOffset(0)), name(""),
     kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1)
 {
+    module->AddSymbol(this);
 }
 
 Symbol::Symbol(Module* module_, SymbolId id_, const std::string& name_) : 
     module(module_), id(id_), flags(SymbolFlags::project), nameOffset(module->GetStringTable()->AddString(name_)), name(module->GetStringTable()->CharPtr(nameOffset)),
     kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1)
 {
+    module->AddSymbol(this);
 }
 
 Symbol::~Symbol()
 {
+    if (module)
+    {
+        module->RemoveSymbol(this);
+    }
 }
 
 void* Symbol::IrObject(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -653,7 +659,7 @@ void Symbol::Read(Reader& reader)
     nameOffset = StringOffset(reader.CurrentReader().ReadUInt());
     name = GetModule()->GetStringTable()->CharPtr(nameOffset);
     flags = SymbolFlags(reader.CurrentReader().ReadByte());
-    parentId = SymbolId(reader.CurrentReader().ReadUInt());
+    parentId = SymbolId(reader.CurrentReader().ReadULong());
     astNodeId = reader.CurrentReader().ReadLong();
     fullSpan = reader.ReadFullSpan();
     declarationFlags = DeclarationFlags(reader.CurrentReader().ReadInt());
@@ -662,10 +668,6 @@ void Symbol::Read(Reader& reader)
 std::string Symbol::IrName(Context* context) const
 {
     return Name();
-}
-
-void Symbol::Expand(Context* context)
-{
 }
 
 void Symbol::AddModuleSymbolId(const ModuleSymbolId& moduleSymbolId)

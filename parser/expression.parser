@@ -377,15 +377,7 @@ parser ExpressionParser
                 { 
                     otava::ast::Node* r = right;
                     span.Union(r->GetSpan());
-                    if (otava::symbols::MultiplicativeRightIdOperandNotFound(op.get(), r, lexer.GetFullSpan(pos), context))
-                    {
-                        notFound = true;
-                        pass = false;
-                    }
-                    else
-                    {
-                        expr.reset(new otava::ast::BinaryExprNode(span, lexer.File(), op, expr.release(), r)); 
-                    }
+                    expr.reset(new otava::ast::BinaryExprNode(span, lexer.File(), op, expr.release(), r)); 
                 }
             )*
         )

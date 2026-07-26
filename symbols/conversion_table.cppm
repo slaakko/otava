@@ -20,16 +20,16 @@ class Reader;
 struct ConversionTableEntry
 {
     ConversionTableEntry() noexcept : paramTypeId(ToUnderlying(zeroSymbolId)), argTypeId(ToUnderlying(zeroSymbolId)) {}
-    ConversionTableEntry(std::uint32_t paramTypeId_, std::uint32_t argTypeId_) noexcept : paramTypeId(paramTypeId_), argTypeId(argTypeId_) {}
-    std::uint32_t paramTypeId;
-    std::uint32_t argTypeId;
+    ConversionTableEntry(std::uint64_t paramTypeId_, std::uint64_t argTypeId_) noexcept : paramTypeId(paramTypeId_), argTypeId(argTypeId_) {}
+    std::uint64_t paramTypeId;
+    std::uint64_t argTypeId;
 };
 
 struct ConversionTableEntryHash
 {
     inline size_t operator()(const ConversionTableEntry& entry) const noexcept
     {
-        size_t hashCode = std::hash<std::uint32_t>()(entry.paramTypeId) ^ std::hash<std::uint32_t>()(entry.argTypeId);
+        size_t hashCode = std::hash<std::uint64_t>()(entry.paramTypeId) ^ std::hash<std::uint64_t>()(entry.argTypeId);
         return hashCode;
     }
 };
@@ -52,7 +52,7 @@ public:
     void Read(Reader& reader);
 private:
     Module* module;
-    std::unordered_map<ConversionTableEntry, std::uint32_t, ConversionTableEntryHash, ConversionTableEntryEqual> conversionMap;
+    std::unordered_map<ConversionTableEntry, std::uint64_t, ConversionTableEntryHash, ConversionTableEntryEqual> conversionMap;
     bool read;
     void Read();
 };

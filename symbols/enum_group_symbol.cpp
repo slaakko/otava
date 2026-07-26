@@ -71,7 +71,7 @@ void EnumGroupSymbol::Write(Writer& writer)
 void EnumGroupSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
-    enumTypeId = SymbolId(reader.CurrentReader().ReadUInt());
+    enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 bool EnumGroupSymbol::IsExportSymbol(Context* context) const noexcept
@@ -81,10 +81,6 @@ bool EnumGroupSymbol::IsExportSymbol(Context* context) const noexcept
 
 void EnumGroupSymbol::Expand(Context* context)
 {
-    if (Name() == "ResourceFlags")
-    {
-        int x = 0;
-    }
     if (expanded) return;
     expanded = true;
     for (const auto& moduleSymbolId : ModuleSymbolIds())

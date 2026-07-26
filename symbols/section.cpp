@@ -207,7 +207,7 @@ void Section::AddEntry(Symbol* symbol, const SectionEntry& entry)
     entryMap[symbol->Id()] = entry;
 }
 
-void Section::MapSymbol(Symbol* symbol)
+void Section::MapSymbol(Symbol* symbol, Context* context)
 {
     symbolMap[symbol->Id()] = symbol;
 }
@@ -232,7 +232,7 @@ Symbol* Section::GetSymbol(SymbolId symbolId, Context* context)
             symbol->Read(reader);
             symbol->SetReadOnly();
             reader.PopCurrentReader();
-            symbolMap[symbol->Id()] = symbol;
+            MapSymbol(symbol, context);
             symbols.push_back(std::unique_ptr<Symbol>(symbol));
             return symbol;
         }
@@ -245,8 +245,23 @@ Symbol* Section::GetSymbol(SymbolId symbolId, Context* context)
                 Symbol* symbol = module->GetSymbolTable()->GetSymbol(symbolId, context);
                 if (symbol)
                 {
-                    symbolMap[symbol->Id()] = symbol;
+                    MapSymbol(symbol, context);
                     return symbol;
+                }
+                else
+                {
+                    if (!context->HasException())
+                    {
+                        context->SetException(MakeException("symbol id " + std::to_string(ToUnderlying(symbolId)) + " not found from module id " +
+                            std::to_string(ToUnderlying(module->Id())) + " (" + module->Name() + ")"));
+                    }
+                }
+            }
+            else
+            {
+                if (!context->HasException())
+                {
+                    context->SetException(MakeException("module id " + std::to_string(ToUnderlying(moduleId)) + " not found"));
                 }
             }
         }
@@ -264,7 +279,7 @@ void Section::ReadEntries()
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < Index(count); ++i)
     {
-        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadUInt());
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         SectionEntry entry;
         entry.Read(reader);
         entryMap[symbolId] = entry;

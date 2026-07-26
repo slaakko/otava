@@ -79,9 +79,8 @@ FunctionSymbol* ClassTemplateSpecializationConversion::Get(
 {
     if (context->GetFlag(ContextFlags::matchClassTemplateSpecializationConversion))
     {
-        context->PushResetFlag(ContextFlags::matchClassTemplateSpecializationConversion);
+        FlagResetter flagResetter(context, ContextFlags::matchClassTemplateSpecializationConversion);
         bool found = FindClassTemplateSpecializationMatch(argType, paramType, arg, functionMatch, fullSpan, context);
-        context->PopFlags();
         if (found)
         {
             return new IdentityConversion(argType, context);
@@ -313,8 +312,8 @@ void DynamicPtrCast::GenerateCode(Emitter& emitter, std::vector<BoundExpressionN
     otava::intermediate::FunctionType* fnType = static_cast<otava::intermediate::FunctionType*>(emitter.MakeFunctionType(emitter.GetBoolType(), paramTypes));
     otava::intermediate::Function* fn = emitter.GetOrInsertFunction("ort_is_same_or_has_base", fnType);
     std::vector<otava::intermediate::Value*> arguments;
-    arguments.push_back(emitter.EmitUInt(ToUnderlying(derived)));
-    arguments.push_back(emitter.EmitUInt(ToUnderlying(base)));
+    arguments.push_back(emitter.EmitULong(ToUnderlying(derived)));
+    arguments.push_back(emitter.EmitULong(ToUnderlying(base)));
     otava::intermediate::Value* test = emitter.EmitCall(fn, arguments);
     otava::intermediate::BasicBlock* trueBlock = emitter.CreateBasicBlock();
     otava::intermediate::BasicBlock* falseBlock = emitter.CreateBasicBlock();
@@ -799,6 +798,7 @@ FunctionSymbol* ArrayToPtrArgumentConversion::Get(TypeSymbol* paramType, TypeSym
                     {
                         argumentMatch.preConversionFlags = OperationFlags::addr;
                     }
+                    functionMatch.templateParameterMap = tempFunctionMatch.templateParameterMap;
                     return new ArrayToPtrConversion(arrayType, context);
                 }
                 else if (FindClassTemplateMatch(elementType, paramType, arg, tempFunctionMatch, fullSpan, context))
@@ -807,6 +807,7 @@ FunctionSymbol* ArrayToPtrArgumentConversion::Get(TypeSymbol* paramType, TypeSym
                     {
                         argumentMatch.preConversionFlags = OperationFlags::addr;
                     }
+                    functionMatch.templateParameterMap = tempFunctionMatch.templateParameterMap;
                     return new ArrayToPtrConversion(arrayType, context);
                 }
                 else if (FindClassTemplateSpecializationMatch(elementType, paramType, arg, tempFunctionMatch, fullSpan, context))
@@ -815,6 +816,7 @@ FunctionSymbol* ArrayToPtrArgumentConversion::Get(TypeSymbol* paramType, TypeSym
                     {
                         argumentMatch.preConversionFlags = OperationFlags::addr;
                     }
+                    functionMatch.templateParameterMap = tempFunctionMatch.templateParameterMap;
                     return new ArrayToPtrConversion(arrayType, context);
                 }
             }
