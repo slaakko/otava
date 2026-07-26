@@ -286,6 +286,12 @@ std::unique_ptr<Symbol> Scope::RemoveSymbol(Symbol* symbol)
     throw std::runtime_error("could not remove symbol");
 }
 
+const std::vector<Scope*>& Scope::ParentScopes(Context* context)
+{
+    static std::vector<Scope*> parentScopes;
+    return  parentScopes;
+}
+
 void Scope::AddParentScope(Scope* parentScope_)
 {
     SetExceptionThrown();
@@ -466,7 +472,7 @@ void Scope::RemoveContainerScope(Scope* containerScope)
 }
 
 ContainerScope::ContainerScope(Module* module_) noexcept : 
-    Scope(module_), parentScopes(), usingDeclarationScope(nullptr), containerSymbol(nullptr), parentScopePushed(false), destructing(false)
+    Scope(module_), parentScopes(), usingDeclarationScope(nullptr), containerSymbol(nullptr), parentScopePushed(false), destructing(false), parentScopesComputed(false)
 {
 }
 
@@ -484,8 +490,12 @@ ContainerScope::~ContainerScope()
     }
 }
 
-std::vector<Scope*> ContainerScope::ParentScopes(Context* context) 
+const std::vector<Scope*>& ContainerScope::ParentScopes(Context* context) 
 {
+    if (parentScopesComputed)
+    {
+        return parentScopes;
+    }
     Symbol* parent = containerSymbol->Parent(context);
     if (parent)
     {
@@ -499,6 +509,7 @@ std::vector<Scope*> ContainerScope::ParentScopes(Context* context)
             pscopes.push_back(pscope);
         }
     }
+    parentScopesComputed = true;
     return parentScopes;
 }
 
@@ -526,6 +537,7 @@ void ContainerScope::AddParentScope(Scope* parentScope)
         if (std::find(parentScopes.begin(), parentScopes.end(), parentScope) == parentScopes.end())
         {
             parentScopes.push_back(parentScope);
+            parentScopesComputed = false;
         }
     }
 }
@@ -537,6 +549,7 @@ void ContainerScope::RemoveParentScope(Scope* parentScope)
         pscope->RemoveParentScope(parentScope);
     }
     parentScopes.erase(std::remove(parentScopes.begin(), parentScopes.end(), parentScope), parentScopes.end());
+    parentScopesComputed = false;
 }
 
 void ContainerScope::PushParentScope(Scope* parentScope)
@@ -545,6 +558,7 @@ void ContainerScope::PushParentScope(Scope* parentScope)
     {
         parentScopePushed = true;
         parentScopes.push_back(parentScope);
+        parentScopesComputed = false;
     }
 }
 
@@ -554,12 +568,14 @@ void ContainerScope::PopParentScope()
     {
         parentScopePushed = false;
         parentScopes.pop_back();
+        parentScopesComputed = false;
     }
 }
 
 void ContainerScope::ClearParentScopes()
 {
     parentScopes.clear();
+    parentScopesComputed = false;
 }
 
 void ContainerScope::AddInstantiationScope(InstantiationScope* instantiationScope)

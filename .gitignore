@@ -33,6 +33,7 @@ CLASSMAP.debug.txt
 *.ast.xml
 setup.package.bin
 setup.package.index.xml
+diagnostics
 bootstrap
 lib
 trace

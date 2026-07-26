@@ -22,6 +22,7 @@ import soul.lexer.file_map;
 import util.init_done;
 import util.path;
 import util.text_util;
+import util.time;
 
 std::string Version()
 {
@@ -402,11 +403,7 @@ int main(int argc, const char** argv)
         {
             std::chrono::duration elapsed = end - start;
             std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
-            std::cout << "compilation time: " << (ns / 1000 / 1000 / 1000 / 60).count() << ":" << std::setw(2) << std::setfill('0') << 
-                ((ns / 1000 / 1000 / 1000) % 60).count() << "." << std::setw(3) << std::setfill('0') <<
-                ((ns / 1000 / 1000) % 1000).count() << "." << std::setw(3) << std::setfill('0') <<
-                ((ns / 1000) % 1000).count() << "." << std::setw(3) << std::setfill('0') <<
-                (ns % 1000).count();
+            std::cout << "compilation time: " << util::DurationStr(ns) << "\n";
         }
     }
     catch (const std::exception& ex)

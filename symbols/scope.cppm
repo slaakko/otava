@@ -136,7 +136,7 @@ public:
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context);
     virtual void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual std::unique_ptr<Symbol> RemoveSymbol(Symbol* symbol);
-    virtual std::vector<Scope*> ParentScopes(Context* context) { return std::vector<Scope*>(); }
+    virtual const std::vector<Scope*>& ParentScopes(Context* context);
     virtual void AddParentScope(Scope* parentScope_);
     virtual void RemoveParentScope(Scope* parentScope);
     virtual void PushParentScope(Scope* parentScope);
@@ -176,7 +176,7 @@ class ContainerScope : public Scope
 public:
     ContainerScope(Module* module_) noexcept;
     ~ContainerScope();
-    std::vector<Scope*> ParentScopes(Context* context) override;
+    const std::vector<Scope*>& ParentScopes(Context* context) override;
     std::vector<Scope*> BaseScopes(Context* context);
     void AddParentScope(Scope* parentScope) override;
     void RemoveParentScope(Scope* parentScope) override;
@@ -221,6 +221,7 @@ private:
     bool parentScopePushed;
     bool destructing;
     std::vector<InstantiationScope*> instantiationScopes;
+    mutable bool parentScopesComputed;
 };
 
 class UsingDeclarationScope : public Scope
