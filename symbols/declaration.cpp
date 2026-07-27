@@ -1340,6 +1340,7 @@ void GenerateDynamicInitialization(VariableSymbol* variable, BoundExpressionNode
     }
     Exception ex;
     std::vector<TypeSymbol*> templateArgs;
+    FlagSetter flagSetter(context, ContextFlags::dontSearchOperationRepository);
     std::unique_ptr<BoundFunctionCallNode> constructorCall = ResolveOverload(
         context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context, ex);
     if (constructorCall)

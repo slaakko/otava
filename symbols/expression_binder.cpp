@@ -2568,10 +2568,6 @@ void ExpressionBinder::Visit(otava::ast::InvokeExprNode& node)
             flagSetter.Reset(context, ContextFlags::suppress_warning);
         }
         context->PushNodeId(node.Id());
-        if (groupName == "EvaluateToXMLInfoDocument")
-        {
-            int x = 0;
-        }
         std::unique_ptr<BoundFunctionCallNode> functionCall = ResolveOverload(subjectScope, groupName, templateArgs, args, fullSpan, context, ex1,
             resolutionFlags);
         context->PopNodeId();

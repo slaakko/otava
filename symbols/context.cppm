@@ -88,6 +88,7 @@ enum class ContextFlags : std::int64_t
     dontLookImports = static_cast<std::int64_t>(1) << 58,
     matchFullNames = static_cast<std::int64_t>(1) << 59,
     rejectIncompleteTypes = static_cast<std::int64_t>(1) << 60,
+    dontSearchOperationRepository = static_cast<std::int64_t>(1) << 61,
     sticky = noWarnings | expected
 };
 

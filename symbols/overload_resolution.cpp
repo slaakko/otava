@@ -1370,7 +1370,11 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         }
     }
     FlagSetter ignoreFlagSetter(context, ContextFlags::ignoreClassTemplateSpecializations);
-    FunctionSymbol* operation = context->GetOperationRepository()->GetOperation(groupName, args, fullSpan, context);
+    FunctionSymbol* operation = nullptr;
+    if (!context->GetFlag(ContextFlags::dontSearchOperationRepository))
+    {
+        operation = context->GetOperationRepository()->GetOperation(groupName, args, fullSpan, context);
+    }
     if (operation)
     {
         ignoreFlagSetter.Reset();
@@ -1419,7 +1423,11 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
     if (!bestMatch)
     {
         context->ResetFlag(ContextFlags::ignoreClassTemplateSpecializations);
-        FunctionSymbol* operation = context->GetOperationRepository()->GetOperation(groupName, args, fullSpan, context);
+        FunctionSymbol* operation = nullptr;
+        if (!context->GetFlag(ContextFlags::dontSearchOperationRepository))
+        {
+            operation = context->GetOperationRepository()->GetOperation(groupName, args, fullSpan, context);
+        }
         if (operation)
         {
             viableFunctions.clear();
@@ -1438,6 +1446,7 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
     }
     context->ResetFlag(ContextFlags::noPtrOps);
     context->ResetFlag(ContextFlags::skipFirstPtrToBooleanConversion);
+    context->ResetFlag(ContextFlags::dontSearchOperationRepository);
     functionMatch = *bestMatch;
     bool instantiate = (flags & OverloadResolutionFlags::dontInstantiate) == OverloadResolutionFlags::none;
     if (instantiate)
