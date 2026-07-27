@@ -1,0 +1,39 @@
+expressions soul.tool.expr
+{
+    ws = "[\n\r\t ]";
+    newline = "\r\n|\n|\r";
+    line_comment = "//[^\n\r]*{newline}";
+    block_comment_begin = "/\*";
+    block_comment_end = "\*/";
+    block_comment = "{block_comment_begin}([^*]|\*[^/])*{block_comment_end}";
+    comment = "{line_comment}|{block_comment}";
+    separators = "({ws}|{comment})+";
+    id = "{unicode_id_start}{unicode_id_cont}*";
+    dec_digit="[0-9]";
+    octal_digit="[0-7]";
+    hex_digit="[0-9a-fA-F]";
+    hex4 = "{hex_digit}{hex_digit}{hex_digit}{hex_digit}";
+    hex8 = "{hex4}{hex4}";
+    octal_literal = "0{octal_digit}*";
+    decimal_literal = "[1-9]{dec_digit}*";
+    hex_literal = "(0x|0X){hex_digit}+";
+    unsigned_suffix = "u|U";
+    long_long_suffix = "ll|LL";
+    long_suffix = "l|L";
+    integer_suffix = "{unsigned_suffix}({long_long_suffix}|{long_suffix})?";
+    integer_literal = "({octal_literal}|{decimal_literal}|{hex_literal}){integer_suffix}?";
+    fraction = "{dec_digit}*\.{dec_digit}+|{dec_digit}+\.";
+    sign = "\+|-";
+    exponent = "(e|E){sign}?{dec_digit}+";
+    floating_suffix="f|F|l|L";
+    floating_literal = "({fraction}{exponent}?|{dec_digit}+{exponent}){floating_suffix}?";
+    escape = "\\((x|X){hex_digit}+|(d|D){dec_digit}+|{octal_digit}+|u{hex4}|U{hex8}|(a|b|f|n|r|t|v|.))";
+    cchar = "[^'\\\n\r]|{escape}";
+    narrow_char_literal = "'{cchar}+'";
+    universal_char_literal = "(u|U)'{cchar}+'";
+    wide_char_literal = "L'{cchar}+'";
+    char_literal = "{narrow_char_literal}|{universal_char_literal}|{wide_char_literal}";
+    schar = "[^\"\\\n\r]|{escape}";
+    encoding_prefix = "u8|u|U|L";
+    string_literal = "{encoding_prefix}?\"{schar}*\"";
+}

@@ -11,16 +11,16 @@ import util.binary_stream_writer;
 
 export namespace otava::symbols {
 
-enum class class_id : std::uint32_t {};
+enum class class_id : std::uint64_t {};
 
 enum class class_key : std::uint8_t
 {
     cls = 0, strct = 1, uni = 2
 };
 
-constexpr std::uint32_t to_underlying(class_id cid)
+constexpr std::uint64_t to_underlying(class_id cid)
 {
-    return std::uint32_t(cid);
+    return std::uint64_t(cid);
 }
 
 class class_info

@@ -1,0 +1,3 @@
+project dynamic_cast;
+target=program;
+source <main.cpp>;

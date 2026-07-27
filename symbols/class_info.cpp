@@ -41,7 +41,7 @@ void class_info::read(util::BinaryStreamReader& reader)
 
 void class_info::write(util::BinaryStreamWriter& writer)
 {
-    std::uint32_t cid = to_underlying(id);
+    std::uint64_t cid = to_underlying(id);
     writer.Write(cid);
     writer.Write(static_cast<std::uint8_t>(key));
     writer.Write(name);
