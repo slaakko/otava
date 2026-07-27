@@ -1299,7 +1299,7 @@ FunctionSymbol* ArgumentConversionTable::GetArgumentConversion(TypeSymbol* param
                 FunctionSymbol* conversionFunction = classTemplate->GetConversionFunction(paramType, context);
                 if (conversionFunction)
                 {
-                    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+                    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
                     FunctionSymbol* instantiatedConversionFunction = InstantiateMemFnOfClassTemplate(
                         conversionFunction, specialization, templateParameterMap, fullSpan, context);
                     return instantiatedConversionFunction;

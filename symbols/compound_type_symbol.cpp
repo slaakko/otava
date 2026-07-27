@@ -252,8 +252,9 @@ TypeSymbol* CompoundTypeSymbol::Unify(TypeSymbol* argType, Context* context)
     return context->GetSymbolTable()->MakeCompoundType(newBaseType, UnifyDerivations(derivations, argType->GetDerivations()), context);
 }
 
-TypeSymbol* CompoundTypeSymbol::UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>,
-    TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context)
+TypeSymbol* CompoundTypeSymbol::UnifyTemplateArgumentType(
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+    const soul::ast::FullSpan& fullSpan, Context* context)
 {
     TypeSymbol* newBaseType = baseType->UnifyTemplateArgumentType(templateParameterMap, fullSpan, context);
     return context->GetSymbolTable()->MakeCompoundType(newBaseType, GetDerivations(), context);

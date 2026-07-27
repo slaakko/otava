@@ -171,7 +171,7 @@ void ClassTemplateSpecializationSymbol::AddInstantiatedVirtualFunctionSpecializa
 }
 
 TypeSymbol* ClassTemplateSpecializationSymbol::UnifyTemplateArgumentType(
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap, 
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap, 
     const soul::ast::FullSpan& fullSpan, Context* context) noexcept
 {
     std::vector<Symbol*> targetTemplateArguments;
@@ -449,7 +449,7 @@ void InstantiateVirtualFunctions(ClassTemplateSpecializationSymbol* specializati
     }
     for (FunctionSymbol* virtualMemFn : virtualFunctions)
     {
-        std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+        std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
         FunctionSymbol* instance = InstantiateMemFnOfClassTemplate(virtualMemFn, specialization, templateParameterMap, fullSpan, context);
         specialization->AddInstantiatedVirtualFunctionSpecialization(instance);
     }
@@ -503,7 +503,7 @@ void InstantiateDestructor(ClassTemplateSpecializationSymbol* specialization, co
         if (destructorFn)
         {
             destructorFn->SetNoExcept();
-            std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+            std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
             FunctionSymbol* instantiatedDestructor = InstantiateMemFnOfClassTemplate(destructorFn, specialization,
                 templateParameterMap, fullSpan, context);
             instantiatedDestructor->SetNoExcept();
@@ -717,7 +717,7 @@ ClassTemplateSpecializationSymbol* GetClassTemplateSpecializationArgType(TypeSym
 }
 
 FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemplateSpecializationSymbol* classTemplateSpecialization,
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& 
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>&
     templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     std::string memFnName = memFn->Name();

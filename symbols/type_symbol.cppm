@@ -81,8 +81,9 @@ public:
     virtual Derivations GetDerivations() const noexcept { return Derivations::none; }
     virtual TypeSymbol* RemoveDerivations(Derivations sourceDerivations, Context* context);
     virtual TypeSymbol* Unify(TypeSymbol* argType, Context* context);
-    virtual TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, 
-        TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context);
+    virtual TypeSymbol* UnifyTemplateArgumentType(
+        const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+        const soul::ast::FullSpan& fullSpan, Context* context);
 private:
     bool destructing;
 };

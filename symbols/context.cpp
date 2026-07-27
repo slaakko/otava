@@ -378,7 +378,7 @@ void Context::PopParentStatementIndex()
     parentStatementIndexStack.pop();
 }
 
-void Context::PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>* templateParamMap)
+void Context::PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* templateParamMap)
 {
     templateParameterMapStack.push(templateParameterMap);
     templateParameterMap = templateParamMap;

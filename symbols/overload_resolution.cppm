@@ -67,7 +67,7 @@ struct FunctionMatch
     int numConversions;
     int numQualifyingConversions;
     bool scopeMatches;
-    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
     ClassTemplateSpecializationSymbol* specialization;
     std::vector<std::unique_ptr<BoundExpressionNode>> defaultArgs;
 };

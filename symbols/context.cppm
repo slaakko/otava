@@ -218,9 +218,9 @@ public:
     void AddTemporaryAliasType(AliasTypeSymbol* temporaryAliasType);
     inline const std::vector<AliasTypeSymbol*>& TemporaryAliasTypes() const noexcept { return temporaryAliasTypes; }
     void ClearTemporaryAliasTypes();
-    void PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>* templateParamMap);
+    void PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* templateParamMap);
     void PopTemplateParameterMap();
-    inline std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>* TemplateParameterMap() const noexcept
+    inline std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* TemplateParameterMap() const noexcept
     { 
         return templateParameterMap; 
     }
@@ -343,8 +343,8 @@ private:
     otava::intermediate::Value* ptr;
     TypeSymbol* argType;
     TypeSymbol* paramType;
-    std::stack<std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>*> templateParameterMapStack;
-    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>* templateParameterMap;
+    std::stack<std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>*> templateParameterMapStack;
+    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* templateParameterMap;
     std::vector<StatementBinder*> statementBinders;
     StatementBinder* statementBinder;
     std::string resultVariableName;

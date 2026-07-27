@@ -8,6 +8,7 @@ export module otava.symbols.compound_type_symbol;
 import otava.symbols.derivations;
 import otava.symbols.id;
 import otava.symbols.type_symbol;
+import otava.symbols.template_param_compare;
 import std;
 
 export namespace otava::symbols {
@@ -60,8 +61,7 @@ public:
     void ResolveBaseType(Context* context);
     std::string FullName(Context* context) const override;
     TypeSymbol* Unify(TypeSymbol* argType, Context* context) override;
-    TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>,
-        TemplateParamEqual>& templateParameterMap,
+    TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
         const soul::ast::FullSpan& fullSpan, Context* context) override;
     bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     void Write(Writer& writer);

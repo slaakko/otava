@@ -14,6 +14,11 @@ bool TemplateParamLess::operator()(TemplateParameterSymbol* left, TemplateParame
     return left->GetIndex() < right->GetIndex();
 }
 
+size_t TemplateParamHash::operator()(TemplateParameterSymbol* p) const noexcept
+{
+    return std::hash<int>()(p->GetIndex());
+}
+
 bool TemplateParamEqual::operator()(TemplateParameterSymbol* left, TemplateParameterSymbol* right) const noexcept
 {
     return left->GetIndex() == right->GetIndex();

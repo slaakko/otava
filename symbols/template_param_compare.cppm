@@ -16,6 +16,11 @@ struct TemplateParamLess
     bool operator()(TemplateParameterSymbol* left, TemplateParameterSymbol* right) const noexcept;
 };
 
+struct TemplateParamHash
+{
+    size_t operator()(TemplateParameterSymbol* p) const noexcept;
+};
+
 struct TemplateParamEqual
 {
     bool operator()(TemplateParameterSymbol* left, TemplateParameterSymbol* right) const noexcept;

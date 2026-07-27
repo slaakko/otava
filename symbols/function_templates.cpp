@@ -76,8 +76,8 @@ void FunctionTemplateRepository::AddFunctionDefinition(const FunctionTemplateKey
     functionDefinitionNodes.push_back(std::unique_ptr<otava::ast::Node>(functionDefinitionNode));
 }
 
-FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap,
+FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate, 
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
     const soul::ast::FullSpan& fullSpan, Context* context)
 {
     std::string fname = functionTemplate->FullName(context);

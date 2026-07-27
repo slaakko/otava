@@ -1164,8 +1164,8 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
     return true;
 }
 
-void SetTemplateArgs(FunctionSymbol* viableFunction, std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& 
-    templateParameterMap, const std::vector<TypeSymbol*>& templateArgs, Context* context)
+void SetTemplateArgs(FunctionSymbol* viableFunction, std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+    const std::vector<TypeSymbol*>& templateArgs, Context* context)
 {
     if (viableFunction->IsTemplate(context))
     {

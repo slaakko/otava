@@ -202,8 +202,7 @@ Symbol* ClassGroupSymbol::GetSingleSymbol(Context* context)
     }
 }
 
-std::vector<Symbol*> MakeTemplateArgs(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, 
-    TemplateParamEqual>& templateParamMap)
+std::vector<Symbol*> MakeTemplateArgs(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParamMap)
 {
     std::vector<Symbol*> templateArgs;
     for (const auto& p : templateParamMap)

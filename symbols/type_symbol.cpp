@@ -40,8 +40,9 @@ TypeSymbol* TypeSymbol::Unify(TypeSymbol* argType, Context* context)
     return nullptr;
 }
 
-TypeSymbol* TypeSymbol::UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>,
-    TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context)
+TypeSymbol* TypeSymbol::UnifyTemplateArgumentType(
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap, 
+    const soul::ast::FullSpan& fullSpan, Context* context)
 {
     return nullptr;
 }

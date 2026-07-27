@@ -11,8 +11,8 @@ InstantiationQueue::InstantiationQueue()
 {
 }
 
-void InstantiationQueue::EnqueueInstantiationRequest(FunctionSymbol* function,
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap)
+void InstantiationQueue::EnqueueInstantiationRequest(FunctionSymbol* function, 
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap)
 {
     // TODO
 }

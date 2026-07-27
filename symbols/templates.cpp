@@ -94,8 +94,8 @@ TypeSymbol* TemplateParameterSymbol::Unify(TypeSymbol* argType, Context* context
     return argType;
 }
 
-TypeSymbol* TemplateParameterSymbol::UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>,
-    TemplateParamEqual>& templateParameterMap,
+TypeSymbol* TemplateParameterSymbol::UnifyTemplateArgumentType(
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
     const soul::ast::FullSpan& fullSpan, Context* context)
 {
     auto it = templateParameterMap.find(this);
@@ -479,7 +479,7 @@ void ExplicitInstantiationProcessor::Visit(otava::ast::ExplicitInstantiationNode
             for (const auto& memFnDefSymbolPair : classTemplate->MemFnDefSymbolMap())
             {
                 FunctionDefinitionSymbol* memFnDefSymbol = memFnDefSymbolPair.second;
-                std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+                std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
                 FunctionSymbol* instantiatedFunctionSymbol = InstantiateMemFnOfClassTemplate(
                     memFnDefSymbol, specialization, templateParameterMap, node.GetFullSpan(), context);
                 if (instantiatedFunctionSymbol->IsFunctionDefinitionSymbol())

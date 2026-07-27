@@ -786,7 +786,7 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
     }
     if (functionSymbol->IsExplicitSpecializationDeclaration(context))
     {
-        std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+        std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
         InstantiateFunctionTemplate(functionSymbol, templateParameterMap, functionDeclarator->Node()->GetFullSpan(), context);
     }
     AddConvertingConstructorToConversionTable(functionSymbol, functionDeclarator->Node()->GetFullSpan(), context);
@@ -1195,7 +1195,7 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
         }
         if (functionDefinitionSymbol && functionDefinitionSymbol->IsExplicitSpecializationDefinitionSymbol(context))
         {
-            std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+            std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
             InstantiateFunctionTemplate(functionDefinitionSymbol, templateParameterMap, node->GetFullSpan(), context);
         }
     }

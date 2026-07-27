@@ -9,6 +9,7 @@ import std;
 import otava.symbols.ast_node_io;
 import otava.symbols.container_symbol;
 import otava.symbols.type_symbol;
+import otava.symbols.template_param_compare;
 import otava.ast.node;
 
 export namespace otava::symbols {
@@ -38,8 +39,8 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     TypeSymbol* Unify(TypeSymbol* argType, Context* context) override;
-    TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>,
-        TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+        const soul::ast::FullSpan& fullSpan, Context* context) override;
     bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
 private:
     AstNodeHeader astNodeHeader;

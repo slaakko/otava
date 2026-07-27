@@ -26,7 +26,7 @@ struct TemplateMatchInfo
     inline TemplateMatchInfo(TemplateMatchKind kind_, int matchValue_) noexcept : kind(kind_), matchValue(matchValue_) {}
     TemplateMatchKind kind;
     int matchValue;
-    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual> templateParameterMap;
+    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
     std::vector<Symbol*> templateArgs;
 };
 

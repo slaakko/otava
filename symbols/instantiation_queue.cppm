@@ -35,7 +35,7 @@ class InstantiationQueue
 public:
     InstantiationQueue();
     void EnqueueInstantiationRequest(FunctionSymbol* function, 
-        const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap);
+        const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap);
     std::vector<InstantiationRequest>* GetRequests(FunctionSymbol* functionTemplate);
 private:
     std::map<std::string, std::map<std::string, std::vector<InstantiationRequest>>> requestMap;

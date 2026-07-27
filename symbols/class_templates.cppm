@@ -6,6 +6,7 @@
 export module otava.symbols.class_templates;
 
 import otava.symbols.classes;
+import otava.symbols.template_param_compare;
 import otava.ast.node;
 import std;
 
@@ -33,8 +34,8 @@ public:
     const std::vector<Symbol*>& TemplateArguments(Context* context) const;
     void AddTemplateArgument(Symbol* templateArgument, Context* context);
     void AddInstantiatedVirtualFunctionSpecialization(FunctionSymbol* specialization);
-    TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, 
-        TemplateParamEqual>& templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context) noexcept override;
+    TypeSymbol* UnifyTemplateArgumentType(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+        const soul::ast::FullSpan& fullSpan, Context* context) noexcept override;
     bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     FunctionSymbol* GetMatchingVirtualFunctionSpecialization(FunctionSymbol* newcomer, Context* context) const noexcept;
     bool ContainsVirtualFunctionSpecialization(FunctionSymbol* specialization) const noexcept;
@@ -114,7 +115,7 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     const soul::ast::FullSpan& fullSpan, Context* context, bool createNew);
 FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn,
     ClassTemplateSpecializationSymbol* classTemplateSpecialization, 
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap,
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap, 
     const soul::ast::FullSpan& fullSpan, Context* context);
 CompoundTypeSymbol* GetCompoundSpecializationArgType(TypeSymbol* specialization, Index index, Context* context) noexcept;
 ClassTemplateSpecializationSymbol* GetClassTemplateSpecializationArgType(TypeSymbol* specialization, Index index, Context* context) noexcept;

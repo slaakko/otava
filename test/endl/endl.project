@@ -1,0 +1,3 @@
+project endl;
+target=program;
+source <main.cpp>;

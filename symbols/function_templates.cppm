@@ -49,8 +49,8 @@ private:
     std::vector<std::unique_ptr<otava::ast::Node>> functionDefinitionNodes;
 };
 
-FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, std::hash<TemplateParameterSymbol*>, TemplateParamEqual>& templateParameterMap, 
+FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate, 
+    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
     const soul::ast::FullSpan& fullSpan, Context* context);
 
 } // namespace otava::symbols
