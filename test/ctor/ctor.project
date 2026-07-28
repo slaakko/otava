@@ -1,0 +1,3 @@
+project ctor;
+target=library;
+source <ctor.cppm>;

@@ -121,7 +121,7 @@ public:
     FunctionSymbol* GetFunctionByIndex(std::int32_t functionIndex) const noexcept;
     void MapFunction(FunctionSymbol* function);
     void UnmapFunction(FunctionSymbol* function);
-    void SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol);
+    void SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol, Context* context);
     FunctionDefinitionSymbol* GetMemFnDefSymbol(int32_t defIndex) const noexcept;
     void ResetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol);
     inline const std::map<std::int32_t, FunctionDefinitionSymbol*>& MemFnDefSymbolMap() const noexcept { return memFnDefSymbolMap; }
@@ -198,7 +198,6 @@ private:
     mutable bool contentFetched;
     bool destructing;
     void GetContent(Context* context) const;
-    void ClearContent();
 };
 
 class ForwardClassDeclarationSymbol : public TypeSymbol

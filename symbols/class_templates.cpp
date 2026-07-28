@@ -792,16 +792,6 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
             }
         }
     }
-    if (memFn->IsFunctionDefinitionSymbol())
-    {
-        FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(memFn);
-        std::int32_t memFnDefIndex = memFnDefSymbol->DefIndex();
-        FunctionDefinitionSymbol* memFnSpecialization = classTemplateSpecialization->GetMemFnDefSymbol(memFnDefIndex);
-        if (memFnSpecialization)
-        {
-            return memFnSpecialization;
-        }
-    }
     bool prevInternallyMapped = context->GetModule()->GetNodeIdFactory()->IsInternallyMapped();
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(true);
     bool prevParseMemberFunction = context->GetFlag(ContextFlags::parseMemberFunction);

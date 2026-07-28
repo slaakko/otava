@@ -2430,6 +2430,10 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
 #ifdef DEBUG_FUNCTIONS
     std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif
+    if (functionDefinitionSymbol->FullName(context) == "std::pair<const int, std::set<int, std::less<int>>>::pair()")
+    {
+        int x = 0;
+    }
     functionDefinitionSymbol->SetBound();
     if (context->GetFlag(ContextFlags::debugMemory))
     {

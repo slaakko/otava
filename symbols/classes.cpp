@@ -398,8 +398,12 @@ void ClassTypeSymbol::UnmapFunction(FunctionSymbol* function)
     }
 }
 
-void ClassTypeSymbol::SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol)
+void ClassTypeSymbol::SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol, Context* context)
 {
+    if (GroupName(context) == "set")
+    {
+        int x = 0;
+    }
     if (memFnDefSymbol->DefIndex() == -1)
     {
         memFnDefSymbol->SetDefIndex(nextMemFnDefIndex++);
@@ -784,7 +788,7 @@ void ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
     if (symbol->IsFunctionDefinitionSymbol())
     {
         FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(symbol);
-        SetMemFnDefSymbol(memFnDefSymbol);
+        SetMemFnDefSymbol(memFnDefSymbol, context);
     }
 }
 
@@ -1046,19 +1050,6 @@ void ClassTypeSymbol::GetContent(Context* context) const
     {
         specialization = GetModule()->GetSymbolTable()->GetTypeSymbol(specializationId, context);
     }
-}
-
-void ClassTypeSymbol::ClearContent()
-{
-    objectLayout.clear();
-    baseClasses.clear();
-    memberVariables.clear();
-    staticMemberVariables.clear();
-    memberFunctions.clear();
-    objectLayout.clear();
-    conversionFunctions.clear();
-    vtab.clear();
-    contentFetched = false;
 }
 
 ForwardClassDeclarationSymbol::ForwardClassDeclarationSymbol(Module* module_, SymbolId id_) : 

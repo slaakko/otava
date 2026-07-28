@@ -323,9 +323,9 @@ private:
     std::map<int, Nfa*> nfaMap;
     int masterNfaIndex;
     Dfa dfa;
+    std::string dir;
     bool verbose;
     bool debug;
-    std::string dir;
 };
 
 class Visitor

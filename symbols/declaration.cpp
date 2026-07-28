@@ -766,6 +766,10 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
     ClassTypeSymbol* classType = functionSymbol->ParentClassType(context);
     if (classType)
     {
+        if (functionSymbol->GetFunctionKind() == FunctionKind::constructor)
+        {
+            classType->SetHasUserDefinedConstructor();
+        }
         std::int32_t functionIndex = 0;
         SpecialFunctionKind specialFunctionKind = functionSymbol->GetSpecialFunctionKind(context);
         if (specialFunctionKind != SpecialFunctionKind::none)
@@ -774,6 +778,12 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
             if (specialFunctionKind == SpecialFunctionKind::dtor)
             {
                 classType->SetHasUserDefinedDestructor();
+            }
+            else if (specialFunctionKind == SpecialFunctionKind::defaultCtor ||
+                specialFunctionKind == SpecialFunctionKind::copyCtor ||
+                specialFunctionKind == SpecialFunctionKind::moveCtor)
+            {
+                classType->SetHasUserDefinedConstructor();
             }
         }
         else
@@ -1178,7 +1188,7 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
                     functionDefinitionSymbol->SetDefIndex(context->MemFunDefSymbolIndex());
                     context->SetMemFunDefSymbolIndex(-1);
                 }
-                classType->SetMemFnDefSymbol(functionDefinitionSymbol);
+                classType->SetMemFnDefSymbol(functionDefinitionSymbol, context);
             }
         }
         for (int i = 0; i < scopes; ++i)
