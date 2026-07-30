@@ -757,11 +757,11 @@ void ModuleMapper::AddBuiltModule(Module* module)
     builtModules.push_back(std::unique_ptr<Module>(module));
 }
 
-struct ByName
+struct ById
 {
     bool operator()(const std::pair<std::string, ModuleId>& left, const std::pair<std::string, ModuleId>& right) const noexcept
     {
-        return left.first < right.first;
+        return left.second < right.second;
     }
 };
 
@@ -776,11 +776,11 @@ void ModuleMapper::PrintModules()
     {
         m.push_back(std::make_pair(module->Name(), module->Id()));
     }
-    std::sort(m.begin(), m.end(), ByName());
+    std::sort(m.begin(), m.end(), ById());
     m.erase(std::unique(m.begin(), m.end()), m.end());
     for (const auto& p : m)
     {
-        std::cout << p.first << " : " << ToUnderlying(p.second) << "\n";
+        std::cout << ToUnderlying(p.second) << ":" << p.first << "\n";
     }
 }
 

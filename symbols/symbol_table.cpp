@@ -2181,25 +2181,6 @@ AliasGroupSymbol* SymbolTable::GetAliasGroupSymbol(SymbolId id, Context* context
     return nullptr;
 }
 
-/*
-EnumGroupSymbol* SymbolTable::GetEnumGroupSymbol(SymbolId id, Context* context)
-{
-    Symbol* symbol = GetSymbol(id, context);
-    if (symbol)
-    {
-        if (symbol->IsEnumGroupSymbol())
-        {
-            return static_cast<EnumGroupSymbol*>(symbol);
-        }
-        else
-        {
-            ThrowException("enum group symbol expected");
-        }
-    }
-    return nullptr;
-}
-*/
-
 VariableGroupSymbol* SymbolTable::GetVariableGroupSymbol(SymbolId id, Context* context)
 {
     Symbol* symbol = GetSymbol(id, context);
