@@ -51,13 +51,13 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
     module->ReadAstNode();
     bool prevInternallyMapped = context->GetModule()->GetNodeIdFactory()->IsInternallyMapped(); 
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(true);
-    otava::ast::Node* node = context->GetSymbolTable()->GetNodeNothrow(fn, context);
+    otava::ast::Node* node = module->GetAstNode(fn->AstNodeId());
     if (!node)
     {
-        node = module->GetAstNode(fn->AstNodeId());
+        node = context->GetSymbolTable()->GetNodeNothrow(fn, context);
     }
     std::unique_ptr<otava::ast::Node> clonedNode;
-    if (node)
+    if (node && node->IsFunctionDefinitionNode())
     {
         clonedNode.reset(node->Clone());
         node = clonedNode.get();
@@ -98,6 +98,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
                 context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
                 functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
                 inlineFn = functionDefinition;
+                inlineFn->SetSkip();
                 if (functionDefinition->IsBound())
                 {
                     context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);

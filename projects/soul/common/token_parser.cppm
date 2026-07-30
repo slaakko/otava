@@ -1,4 +1,4 @@
-export module soul.common.token_parser;
+export module soul.common.token.parser;
 
 import std;
 import soul.lexer.token;

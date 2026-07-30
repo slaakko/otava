@@ -403,7 +403,7 @@ void VerifierVisitor::Visit(ProcedureCallInstruction& inst)
         Error("type check error: callee in function call has invalid type: function type or function pointer type expected: note: type is " + inst.Callee()->GetType()->Name(),
             inst.Span(), GetContext());
     }
-    inst.SetArgs(std::move(arguments));
+    //inst.SetArgs(std::move(arguments));
     arguments.clear();
     inst.AddToUses();
     inst.SetIndex(index++);
@@ -834,7 +834,7 @@ void VerifierVisitor::Visit(FunctionCallInstruction& inst)
             inst.Callee()->GetType()->Name(), inst.Span(), GetContext());
     }
     CheckValueInstruction(&inst);
-    inst.SetArgs(std::move(arguments));
+    //inst.SetArgs(std::move(arguments));
     arguments.clear();
     inst.AddToUses();
     inst.SetIndex(index++);

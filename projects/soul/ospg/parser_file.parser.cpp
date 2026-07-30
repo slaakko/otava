@@ -19,7 +19,7 @@ import soul.cpp.expression.parser;
 import soul.lex.spg;
 import soul.ast.cpp;
 import soul.spg.parsing_util;
-import soul.common.token_parser;
+import soul.common.token.parser;
 import soul.spg.error;
 
 namespace soul::spg::parser::file::parser {

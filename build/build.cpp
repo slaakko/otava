@@ -615,7 +615,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         if (configurations.find("release") != configurations.end())
         {
             libraryDirs.append(";").append(util::GetFullPath(util::Path::Combine(util::Path::Combine(
-                util::Path::Combine(util::OtavaRoot(), "std / bin"), config),
+                util::Path::Combine(util::OtavaRoot(), "std/bin"), config),
                 std::to_string(otava::symbols::GetOptLevel(optLevel, true)))));
         }
         else

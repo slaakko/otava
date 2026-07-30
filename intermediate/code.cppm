@@ -189,14 +189,11 @@ public:
     void Write(util::CodeFormatter& formatter) override;
     inline Value* Callee() const noexcept { return callee; }
     Function* CalleeFn() const noexcept;
-    inline const std::vector<Value*>& Args() const noexcept { return args; }
-    void SetArgs(std::vector<Value*>&& args_);
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
 private:
     Value* callee;
-    std::vector<Value*> args;
 };
 
 class RetInstruction : public Instruction
@@ -620,14 +617,11 @@ public:
     void Write(util::CodeFormatter& formatter) override;
     inline Value* Callee() const noexcept { return callee; }
     Function* CalleeFn() const noexcept;
-    inline const std::vector<Value*>& Args() const noexcept { return args; }
-    void SetArgs(std::vector<Value*>&& args_);
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
 private:
     Value* callee;
-    std::vector<Value*> args;
 };
 
 struct BlockValue

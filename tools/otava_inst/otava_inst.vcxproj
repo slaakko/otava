@@ -153,6 +153,9 @@
       <Project>{0d05902b-f49d-4304-8573-7c45a1b9486a}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\soul.rex\soul.rex.lexer.classmap.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

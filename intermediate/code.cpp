@@ -654,19 +654,8 @@ Value* ProcedureCallInstruction::Clone(CloneContext& cloneContext) const
     ProcedureCallInstruction* clone = new ProcedureCallInstruction(Span(), callee->Clone(cloneContext));
     clone->SetIndex(Index());
     clone->SetRegValueIndex(RegValueIndex());
-    std::vector<Value*> clonedArgs;
-    for (auto* arg : args)
-    {
-        clonedArgs.push_back(arg->Clone(cloneContext));
-    }
-    clone->SetArgs(std::move(clonedArgs));
     clone->AddToUses();
     return clone;
-}
-
-void ProcedureCallInstruction::SetArgs(std::vector<Value*>&& args_)
-{
-    args = std::move(args_);
 }
 
 Function* ProcedureCallInstruction::CalleeFn() const noexcept
@@ -682,28 +671,16 @@ Function* ProcedureCallInstruction::CalleeFn() const noexcept
 void ProcedureCallInstruction::AddToUses()
 {
     otava::intermediate::AddUser(this, callee);
-    for (auto* arg : args)
-    {
-        otava::intermediate::AddUser(this, arg);
-    }
 }
 
 void ProcedureCallInstruction::ReplaceValue(Value* use, Value* value)
 {
+    Function* c = CalleeFn();
     if (callee == use)
     {
         otava::intermediate::RemoveUser(this, callee);
         callee = value;
         otava::intermediate::AddUser(this, callee);
-    }
-    for (auto* arg : args)
-    {
-        if (arg == use)
-        {
-            otava::intermediate::RemoveUser(this, arg);
-            arg = value;
-            otava::intermediate::AddUser(this, arg);
-        }
     }
 }
 
@@ -711,10 +688,6 @@ std::vector<Instruction*> ProcedureCallInstruction::Uses() const
 {
     std::vector<Instruction*> uses;
     AddToUsesVec(uses, callee);
-    for (auto* arg : args)
-    {
-        AddToUsesVec(uses, arg);
-    }
     return uses;
 }
 
@@ -2030,19 +2003,8 @@ Value* FunctionCallInstruction::Clone(CloneContext& cloneContext) const
     clone->SetIndex(Index());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
-    std::vector<Value*> clonedArgs;
-    for (auto* arg : args)
-    {
-        clonedArgs.push_back(arg->Clone(cloneContext));
-    }
-    clone->SetArgs(std::move(clonedArgs));
     clone->AddToUses();
     return clone;
-}
-
-void FunctionCallInstruction::SetArgs(std::vector<Value*>&& args_)
-{
-    args = std::move(args_);
 }
 
 Function* FunctionCallInstruction::CalleeFn() const noexcept
@@ -2058,10 +2020,6 @@ Function* FunctionCallInstruction::CalleeFn() const noexcept
 void FunctionCallInstruction::AddToUses()
 {
     otava::intermediate::AddUser(this, callee);
-    for (auto* arg : args)
-    {
-        otava::intermediate::AddUser(this, arg);
-    }
 }
 
 void FunctionCallInstruction::ReplaceValue(Value* use, Value* value)
@@ -2071,15 +2029,6 @@ void FunctionCallInstruction::ReplaceValue(Value* use, Value* value)
         otava::intermediate::RemoveUser(this, callee);
         callee = value;
         otava::intermediate::AddUser(this, callee);
-    }
-    for (auto* arg : args)
-    {
-        if (arg == use)
-        {
-            otava::intermediate::RemoveUser(this, arg);
-            arg = value;
-            otava::intermediate::AddUser(this, arg);
-        }
     }
 }
 
@@ -2096,10 +2045,6 @@ std::vector<Instruction*> FunctionCallInstruction::Uses() const
 {
     std::vector<Instruction*> uses;
     AddToUsesVec(uses, callee);
-    for (auto* arg : args)
-    {
-        AddToUsesVec(uses, arg);
-    }
     return uses;
 }
 
@@ -2504,6 +2449,7 @@ Function* Function::Clone() const
         else
         {
             Error("mapped basic block not found", bb->Span(), code->GetContext());
+            return nullptr;
         }
         bb = bb->Next();
     }
@@ -2511,14 +2457,21 @@ Function* Function::Clone() const
     {
         Instruction* inst = instRegValuePair.first;
         RegValue* regValue = instRegValuePair.second;
-        Instruction* mappedInst = cloneContext.GetMappedInstruction(inst);
-        if (mappedInst)
+        if (inst)
         {
-            regValue->SetInst(mappedInst);
+            Instruction* mappedInst = cloneContext.GetMappedInstruction(inst);
+            if (mappedInst)
+            {
+                regValue->SetInst(mappedInst);
+            }
+            else
+            {
+                Error("mapped instruction not found", inst->Span(), code->GetContext());
+            }
         }
         else
         {
-            Error("mapped instruction not found", inst->Span(), code->GetContext());
+            Error("instruction is null", regValue->Span(), code->GetContext());
         }
     }
     return clone;

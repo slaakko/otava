@@ -55,33 +55,44 @@ void Optimize(otava::intermediate::IntermediateContext* context)
         otava::intermediate::Function* next = fn->Next();
         if (fn->IsDefined())
         {
-            if (HasOptimization(Optimizations::deadCodeElimination))
+            try
             {
-                DeadCodeElimination(fn);
+                if (fn->Name() == "move_assignment_FF6428BE72B757E90F37879C97F226B6C0EA210D")
+                {
+                    int x = 0;
+                }
+                if (HasOptimization(Optimizations::deadCodeElimination))
+                {
+                    DeadCodeElimination(fn);
+                }
+                if (HasOptimization(Optimizations::identity))
+                {
+                    OptimizeIdentityCalls(fn, context);
+                }
+                if (HasOptimization(Optimizations::inlining))
+                {
+                    Inline(fn, context);
+                }
+                if (HasOptimization(Optimizations::moveLocalsToEntryBlock))
+                {
+                    MoveLocalsToEntryBlock(fn);
+                }
+                if (HasOptimization(Optimizations::arithmetic))
+                {
+                    OptimizeArithmetics(fn, context);
+                }
+                if (HasOptimization(Optimizations::jump))
+                {
+                    OptimizeJumps(fn);
+                }
+                if (HasOptimization(Optimizations::deadCodeElimination))
+                {
+                    DeadCodeElimination(fn);
+                }
             }
-            if (HasOptimization(Optimizations::identity))
+            catch (const std::exception& ex)
             {
-                OptimizeIdentityCalls(fn, context);
-            }
-            if (HasOptimization(Optimizations::inlining))
-            {
-                Inline(fn, context);
-            }
-            if (HasOptimization(Optimizations::moveLocalsToEntryBlock))
-            {
-                MoveLocalsToEntryBlock(fn);
-            }
-            if (HasOptimization(Optimizations::arithmetic))
-            {
-                OptimizeArithmetics(fn, context);
-            }
-            if (HasOptimization(Optimizations::jump))
-            {
-                OptimizeJumps(fn);
-            }
-            if (HasOptimization(Optimizations::deadCodeElimination))
-            {
-                DeadCodeElimination(fn);
+                std::cout << "optimization of function '" << fn->Name() << "' failed: " << ex.what() << "\n";
             }
         }
         fn = next;

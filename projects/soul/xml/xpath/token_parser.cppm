@@ -4,7 +4,7 @@ import std;
 import util.unicode;
 import soul.lexer.token;
 import soul.lexer.base;
-import soul.common.token_parser;
+import soul.common.token.parser;
 
 export namespace soul::xml::xpath::token::parser {
 

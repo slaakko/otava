@@ -191,6 +191,12 @@ void MergeBasicBlocks(otava::intermediate::Function* fn, otava::intermediate::Fu
 void Inline(otava::intermediate::Function* fn, otava::intermediate::Instruction* callInst, otava::intermediate::ArgInstruction* firstArg,
     otava::intermediate::Function* callee, otava::intermediate::IntermediateContext* context)
 {
+    if (callee->Name() == "fn_swap_497DB5434387D61A4F850BAECFE0E1BC31877B33")
+    {
+        util::CodeFormatter formatter(std::cout);
+        callee->Write(formatter);
+        int x = 0;
+    }
     std::unique_ptr<otava::intermediate::Function> clonedCallee(callee->Clone());
     ReplaceParamsWithArgs(callInst, firstArg, clonedCallee.get(), callee, context);
     MergeBasicBlocks(fn, clonedCallee.get(), callInst, context);

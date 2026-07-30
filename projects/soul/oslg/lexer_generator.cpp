@@ -11,7 +11,7 @@ import soul.slg.classmap;
 import soul.slg.file_parsers;
 import soul.slg.token.generator;
 import soul.slg.regular.expression.parser;
-import soul.slg.code.modifier;
+import soul.slg.code_modifier;
 import soul.lexer;
 import soul.ast.re;
 import soul.ast.cpp;
