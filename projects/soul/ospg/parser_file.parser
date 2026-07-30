@@ -14,7 +14,7 @@ export module soul.spg.parser.file.parser;
 [implementation]import soul.lex.spg;
 [implementation]import soul.ast.cpp;
 [implementation]import soul.spg.parsing_util;
-[implementation]import soul.common.token_parser;
+[implementation]import soul.common.token.parser;
 [implementation]import soul.spg.error;
 
 parser ParserFileParser
