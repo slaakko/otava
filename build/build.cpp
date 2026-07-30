@@ -376,7 +376,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         }
         projectReference->SetOutputFilePath(outputFilePath);
         projectReference->SetFileMap(project->GetFileMap());
-        project->AddReferencedProject(projectReference.release());
+        project->AddReferencedProject(std::move(projectReference));
     }
     if ((flags & BuildFlags::rebuild) == BuildFlags::none)
     {
@@ -773,7 +773,7 @@ void ProjectClosure(soul::lexer::FileMap& fileMap, Project* project, Solution* s
         Project* reference = referencedProject.get();
         if (project->Name() != "std" && reference->Name() == "std") continue;
         reference->SetFileMap(&fileMap);
-        project->AddReferencedProject(referencedProject.release());
+        project->AddReferencedProject(std::move(referencedProject));
         ProjectClosure(fileMap, reference, solution, projectFilePaths);
     }
     solution->AddProject(project, false);

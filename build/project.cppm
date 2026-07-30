@@ -54,7 +54,7 @@ public:
     inline const std::vector<std::string>& ResourceFilePaths() const { return resourceFilePaths; }
     void AddReferenceFilePath(const std::string& referenceFilePath);
     inline const std::vector<std::string>& ReferenceFilePaths() const { return referenceFilePaths; }
-    void AddReferencedProject(Project* referencedProject);
+    void AddReferencedProject(std::unique_ptr<Project>&& referencedProject);
     inline const std::vector<std::unique_ptr<Project>>& ReferencedProjects() const { return referencedProjects; }
     inline soul::lexer::FileMap* GetFileMap() { return fileMap; }
     void SetModule(std::int32_t fileId, std::unique_ptr<otava::symbols::Module>&& m);

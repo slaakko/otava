@@ -141,12 +141,17 @@ void Project::AddResourceFilePath(const std::string& resourceFilePath)
 
 void Project::AddReferenceFilePath(const std::string& referenceFilePath)
 {
-    referenceFilePaths.push_back(referenceFilePath);
+    std::string rp = util::GetFullPath(util::Path::Combine(root, referenceFilePath));
+    referenceFilePaths.push_back(rp);
 }
 
-void Project::AddReferencedProject(Project* referencedProject)
+void Project::AddReferencedProject(std::unique_ptr<Project>&& referencedProject)
 {
-    referencedProjects.push_back(std::unique_ptr<Project>(referencedProject));
+    for (const auto& project : referencedProjects)
+    {
+        if (project->Name() == referencedProject->Name()) return;
+    }
+    referencedProjects.push_back(std::move(referencedProject));
 }
 
 const std::string& Project::GetModuleSourceFilePath(std::int32_t fileId) const
