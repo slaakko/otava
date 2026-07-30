@@ -198,7 +198,7 @@ void SectionEntry::Read(Reader& reader)
     length = Length(reader.CurrentReader().ReadUInt());
 }
 
-Section::Section(Module* module_, SectionKind kind_) : module(module_), kind(kind_), headerRead(false), entriesRead(false), readOnly(false)
+Section::Section(Module* module_, SectionKind kind_) : module(module_), kind(kind_), entriesRead(false), readOnly(false)
 {
 }
 
