@@ -56,7 +56,7 @@ ModuleHeader::ModuleHeader() :
     compoundTypeMapOffset(FileOffset(0)), compoundTypeMapLength(Length(0)), aliasTypeTemplateMapOffset(FileOffset(0)), aliasTypeTemplateMapLength(Length(0)),
     classTemplateSpecializationMapOffset(FileOffset()), classTemplateSpecializationMapLength(Length(0)), explicitInstantiationMapOffset(FileOffset(0)), 
     explicitInstantiationMapLength(Length(0)), functionTypeMapOffset(FileOffset(0)), functionTypeMapLength(Length(0)), 
-    astNodeHeaderOffset(FileOffset(0)), astNodeHeaderLength(Length(0))
+    astNodeHeaderOffset(FileOffset(0)), astNodeHeaderLength(Length(0)), incompleteClassIdOffset(FileOffset(0)), incompleteClassIdLength(Length(0))
 {
     sectionHeaders.resize(SectionKind::max - SectionKind::first);
 }
@@ -118,6 +118,8 @@ void ModuleHeader::Write(Writer& writer)
     binaryStreamWriter.Write(ToUnderlying(functionTypeMapLength));
     binaryStreamWriter.Write(ToUnderlying(astNodeHeaderOffset));
     binaryStreamWriter.Write(ToUnderlying(astNodeHeaderLength));
+    binaryStreamWriter.Write(ToUnderlying(incompleteClassIdOffset));
+    binaryStreamWriter.Write(ToUnderlying(incompleteClassIdLength));
     FileOffset end = FileOffset(writer.Position());
     length = end - start;
     writer.Seek(ToUnderlying(start));
@@ -183,6 +185,8 @@ void ModuleHeader::Read(Reader& reader)
     functionTypeMapLength = Length(reader.CurrentReader().ReadUInt());
     astNodeHeaderOffset = FileOffset(reader.CurrentReader().ReadUInt());
     astNodeHeaderLength = Length(reader.CurrentReader().ReadUInt());
+    incompleteClassIdOffset = FileOffset(reader.CurrentReader().ReadUInt());
+    incompleteClassIdLength = Length(reader.CurrentReader().ReadUInt());
     reader.PopCurrentReader();
 }
 
@@ -190,7 +194,7 @@ Module::Module(util::FileMapping* fileMapping_) :
     kind(ModuleKind::none), stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""), symbolIndexMap(this), symbolTable(this, true),
     evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1),
     index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false),
-    namespaceIdsRead(false), destructing(false)
+    namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false)
 {
     Read();
 }
@@ -200,7 +204,7 @@ Module::Module(const std::string& name_) :
     interfaceUnitNameOffset(), interfaceUnitName(""),
     symbolIndexMap(this), symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false),
     importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false),
-    importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), destructing(false)
+    importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false)
 {
 }
 
@@ -264,6 +268,14 @@ void Module::Init(Context* context)
 {
     symbolTable.Init(context);
     evaluationContext.Init(context);
+}
+
+void Module::AddIncompleteClassId(SymbolId classId)
+{
+    if (std::find(incompleteClassIds.begin(), incompleteClassIds.end(), classId) == incompleteClassIds.end())
+    {
+        incompleteClassIds.push_back(classId);
+    }
 }
 
 std::string Module::Name()
@@ -470,6 +482,10 @@ void Module::Write(Writer& writer)
     otava::symbols::WriteNode(writer, astNode.get(), astNodeHeader);
     Length astNodeHeaderLength = Length(writer.Position() - ToUnderlying(header.astNodeHeaderOffset));
     header.astNodeHeaderLength = astNodeHeaderLength;
+    header.incompleteClassIdOffset = FileOffset(writer.Position());
+    WriteIncompleteClassIdTable(writer);
+    Length incompleteClassIdLength = Length(writer.Position() - ToUnderlying(header.incompleteClassIdOffset));
+    header.incompleteClassIdLength = incompleteClassIdLength;
     FileOffset end = FileOffset(writer.Position());
     writer.Seek(ToUnderlying(start));
     header.Write(writer);
@@ -633,6 +649,36 @@ void Module::ReadNamespaceIdTable(Reader& reader)
     {
         SymbolId namespaceId = SymbolId(reader.CurrentReader().ReadULong());
         namespaceIds.push_back(namespaceId);
+    }
+}
+
+void Module::WriteIncompleteClassIdTable(Writer& writer)
+{
+    Cardinality n = Cardinality(incompleteClassIds.size());
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(n));
+    for (Index i = Index(0); i < Index(n); ++i)
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(incompleteClassIds[ToUnderlying(i)]));
+    }
+}
+
+void Module::ReadIncompleteClassIdTable()
+{
+    if (incompleteClassIdsRead) return;
+    incompleteClassIdsRead = true;
+    Reader reader(GetFileMapping());
+    reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(header.incompleteClassIdOffset)), header.incompleteClassIdLength);
+    ReadIncompleteClassIdTable(reader);
+    reader.PopCurrentReader();
+}
+
+void Module::ReadIncompleteClassIdTable(Reader& reader)
+{
+    Cardinality n = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < Index(n); ++i)
+    {
+        SymbolId classId = SymbolId(reader.CurrentReader().ReadULong());
+        incompleteClassIds.push_back(classId);
     }
 }
 

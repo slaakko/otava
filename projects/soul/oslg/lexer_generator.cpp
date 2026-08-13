@@ -491,7 +491,12 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("export module " + moduleName + ";");
     interfaceFormatter.WriteLine();
     interfaceFormatter.WriteLine("import std;");
-    interfaceFormatter.WriteLine("import soul.lexer;");
+    interfaceFormatter.WriteLine("import soul.lexer.cls;");
+    interfaceFormatter.WriteLine("import soul.lexer.base;");
+    interfaceFormatter.WriteLine("import soul.lexer.lexeme;");
+    interfaceFormatter.WriteLine("import soul.lexer.token;");
+    interfaceFormatter.WriteLine("import soul.lexer.classmap;");
+    interfaceFormatter.WriteLine("import soul.lexer.keyword;");
     interfaceFormatter.WriteLine("import soul.ast.slg;");
     interfaceFormatter.WriteLine("import soul.ast.common;");
     interfaceFormatter.WriteLine("import util.binary_resource_ptr;");

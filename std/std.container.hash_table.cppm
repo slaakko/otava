@@ -7,6 +7,7 @@ import std.functional;
 import std.iterator;
 import std.new_delete_op;
 import std.container.vector;
+import std.hash;
 
 export namespace std::detail {
 
@@ -96,7 +97,7 @@ public:
     using hash_fn = Hash;
     using key_equal = Compare;
     using size_type = size_t;
-    using self = hash_table<key_type, value_type, key_of_function, hash_fn, key_equal>;
+    using self = hash_table<Key, Value, KeyOfValue, Hash, Compare>;
     using iterator = hash_table_iterator<value_type, self>;
     using const_iterator = hash_table_iterator<value_type, self>;
     using bucket_ptr = std::detail::bucket<value_type>*;

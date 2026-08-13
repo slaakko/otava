@@ -305,4 +305,9 @@ void Section::Write(Writer& writer)
     header->entryMapLength = Length(end - start);
 }
 
+void Section::MapCompletedIncompleteClass(ClassTypeSymbol* completedIncompleteClass, Context* context)
+{
+    MapSymbol(completedIncompleteClass, context);
+}
+
 } // namespace otava::symbols

@@ -919,6 +919,11 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
     {
         return;
     }
+    std::set<const otava::symbols::Symbol*> s;
+    if (functionDefinition->IsTemplateParameterInstantiation(&context, s))
+    {
+        return;
+    }
     if (functionDefinition->ContainsGotosOrLabels())
     {
         BuildGotoTargetMap(node.Body(), &context);
@@ -1244,7 +1249,10 @@ void CodeGenerator::Visit(otava::symbols::BoundIfStatementNode& node)
         emitter->SetCurrentBasicBlock(falseBlock);
         prevWasTerminator = false;
         node.ElseStatement()->Accept(*this);
-        emitter->EmitJump(nextBlock);
+        if (!node.ElseStatement()->EndsWithTerminator())
+        {
+            emitter->EmitJump(nextBlock);
+        }
         emitter->SetCurrentBasicBlock(nextBlock);
     }
     else

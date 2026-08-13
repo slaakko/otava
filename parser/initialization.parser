@@ -31,9 +31,9 @@ parser InitializationParser
         ::= 
         (
             BraceOrEqualInitializer(context):braceOrEqualInit{ initializer.reset(braceOrEqualInit); }
-        |   LPAREN{ exprListNode.reset(new otava::ast::ExpressionListNode(lexer.GetSpan(pos), lexer.File())); exprListNode->SetLParenSpan(lexer.GetSpan(pos)); } 
+        |   LPAREN{ exprListNode.reset(new otava::ast::ExpressionListNode(lexer.GetSpan(pos), lexer.File())); } 
             ExpressionList(context, exprListNode.get()):expressionList 
-            RPAREN{ exprListNode->SetRParenSpan(lexer.GetSpan(pos)); initializer.reset(exprListNode.release()); }
+            RPAREN{ initializer.reset(exprListNode.release()); }
         )
         {
             return initializer.release();

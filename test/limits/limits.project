@@ -1,0 +1,3 @@
+project limits;
+target=program;
+source <main.cpp>;

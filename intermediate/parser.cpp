@@ -9,6 +9,7 @@ import otava.intermediate.context;
 import otava.intermediate.lexer;
 import otava.intermediate.parser.rules;
 import otava.intermediate.parser;
+import soul.lexer;
 import util.file_stream;
 import util.unicode;
 

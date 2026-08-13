@@ -306,6 +306,8 @@ void DeclaratorProcessor::Visit(otava::ast::InitDeclaratorNode& node)
     if (node.Right())
     {
         context->SetDeclaredInitializerType(declaration.type);
+        context->GetEvaluationContext()->ResetEvaluationMaps();
+        EvaluationMapSetter setter(context);
         Value* value = Evaluate(node.Right(), context);
         declaration.value = value;
         declaration.initializer = node.Right();

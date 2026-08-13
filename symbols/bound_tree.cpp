@@ -439,19 +439,25 @@ otava::intermediate::Value* BoundCompileUnitNode::CreateBoundGlobalVariable(Vari
     return irVariable;
 }
 
-void BoundCompileUnitNode::AddDynamicInitialization(BoundExpressionNode* dynamicInitialization, BoundExpressionNode* atExitCall,
-    const soul::ast::FullSpan& fullSpan, Context* context)
+BoundFunctionNode* BoundCompileUnitNode::GetOrInsertCompileUnitInitializationFunction(const soul::ast::FullSpan& fullSpan, Context* context)
 {
     if (!compileUnitInitializationFunction)
     {
-        FunctionDefinitionSymbol* compileUnitInitializationFunctionSymbol = new FunctionDefinitionSymbol(context->GetModule(), 
+        FunctionDefinitionSymbol* compileUnitInitializationFunctionSymbol = new FunctionDefinitionSymbol(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::functionDefinitionSymbol), "__dynamic_init__" + id);
         compileUnitInitializationFunctionSymbol->SetGenerated();
         context->GetSymbolTable()->GlobalNs()->AddSymbol(compileUnitInitializationFunctionSymbol, fullSpan, context);
         compileUnitInitializationFunction = new BoundFunctionNode(compileUnitInitializationFunctionSymbol, fullSpan);
         compileUnitInitializationFunction->SetBody(new BoundCompoundStatementNode(fullSpan));
     }
-    BoundCompoundStatementNode* body = compileUnitInitializationFunction->Body();
+    return compileUnitInitializationFunction;
+}
+
+void BoundCompileUnitNode::AddDynamicInitialization(BoundExpressionNode* dynamicInitialization, BoundExpressionNode* atExitCall,
+    const soul::ast::FullSpan& fullSpan, Context* context)
+{
+    BoundFunctionNode* initFn = GetOrInsertCompileUnitInitializationFunction(fullSpan, context);
+    BoundCompoundStatementNode* body = initFn->Body();
     BoundExpressionStatementNode* initExprStmt = new BoundExpressionStatementNode(fullSpan);
     initExprStmt->SetExpr(dynamicInitialization, fullSpan, context);
     body->AddStatement(initExprStmt);
@@ -1707,6 +1713,18 @@ void BoundVariableNode::ModifyTypes(const soul::ast::FullSpan& fullSpan, Context
     }
 }
 
+Value* BoundVariableNode::ToValue(Context* context)
+{
+    if (variable->GetValue(context))
+    {
+        return variable->GetValue(context);
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
 BoundParentVariableNode::BoundParentVariableNode(VariableSymbol* variable_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* referredType_) noexcept :
     BoundExpressionNode(BoundNodeKind::boundParentVariableNode, fullSpan_, referredType_), variable(variable_), level(0)
 {
@@ -2077,6 +2095,11 @@ BoundExpressionNode* BoundEnumConstant::Clone() const
     }
     clone->SetFlags(Flags());
     return clone;
+}
+
+Value* BoundEnumConstant::ToValue(Context* context)
+{
+    return enumConstant->GetValue(context);
 }
 
 BoundFunctionGroupNode::BoundFunctionGroupNode(FunctionGroupSymbol* functionGroupSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :

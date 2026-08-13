@@ -5,7 +5,7 @@
 
 export module otava.symbols.ir_value_stack;
 
-import otava.intermediate.data;
+import otava.intermediate.value;
 import std;
 
 export namespace otava::symbols {

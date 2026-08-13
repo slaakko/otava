@@ -94,6 +94,7 @@ public:
     ClassTypeSymbol(Module* module__, SymbolId id_);
     ClassTypeSymbol(Module* module__, SymbolId id_, const std::string& name_);
     ~ClassTypeSymbol();
+    std::string FullName(Context* context) const override;
     inline void SetClassKind(ClassKind classKind_) noexcept { classKind = classKind_; }
     inline ClassKind GetClassKind() const noexcept { return classKind; }
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
@@ -113,8 +114,9 @@ public:
     inline void SetVTabInitialized() noexcept { SetFlag(ClassTypeSymbolFlags::vtabInitialized); }
     Cardinality Arity(Context* context) noexcept;
     bool IsComplete(std::set<const TypeSymbol*>& visited, const TypeSymbol*& incompleteType, Context* context) const override;
-    TypeSymbol* Specialization(Context* context);
+    TypeSymbol* Specialization(Context* context) const;
     void SetSpecialization(TypeSymbol* specialization_, Context* context) noexcept;
+    bool IsExplicitSpecialization(Context* context) const noexcept;
     inline int Level() const noexcept { return level; }
     inline void SetLevel(int level_) noexcept { level = level_; }
     std::int32_t NextFunctionIndex() noexcept;
@@ -131,7 +133,7 @@ public:
     virtual std::string GroupName(Context* context);
     virtual ClassGroupSymbol* Group(Context* context) const;
     inline void SetGroup(ClassGroupSymbol* group_) noexcept { group = group_; }
-    bool IsPolymorphic(Context* context) const noexcept override;
+    bool IsPolymorphic(Context* context) const override;
     void MakeVTab(Context* context, const soul::ast::FullSpan& fullSpan);
     void InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear);
     const std::vector<FunctionSymbol*>& VTab() const noexcept { return vtab; }
@@ -155,6 +157,7 @@ public:
     bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     inline const std::vector<TypeSymbol*>& ObjectLayout() const noexcept { return objectLayout; }
     void MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Context* context);
+    bool IsObjectLayoutComplete(Context* context) const noexcept;
     FunctionSymbol* CopyCtor() const noexcept { return copyCtor; }
     void GenerateCopyCtor(const soul::ast::FullSpan& fullSpan, Context* context);
     void ResetCopyCtor() noexcept { copyCtor = nullptr; }
@@ -260,6 +263,7 @@ BoundFunctionCallNode* MakeDestructorCall(ClassTypeSymbol* cls, BoundExpressionN
 void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* constructTemporary, BoundExpressionNode* arg, Context* context);
 void ThrowMemberDeclarationParsingError(const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
 void ThrowStatementParsingError(const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
+void CompleteIncompleteClasses(Context* context);
 
 struct ClassLess
 {

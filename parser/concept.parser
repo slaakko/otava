@@ -125,32 +125,26 @@ parser ConceptParser
         }
         ;
 
-    RequirementParameterList(otava::symbols::Context* context, var std::unique_ptr<otava::ast::ParameterListNode> node, 
-        var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+    RequirementParameterList(otava::symbols::Context* context, var std::unique_ptr<otava::ast::ParameterListNode> node) : otava::ast::Node*
         ::=
         (
-            LPAREN{ lpSpan = lexer.GetSpan(pos); node.reset(new otava::ast::ParameterListNode(lpSpan, lexer.File())); } 
+            LPAREN{ node.reset(new otava::ast::ParameterListNode(lexer.GetSpan(pos), lexer.File())); } 
             ParameterDeclarationClause(context, node.get()):paramDeclClause 
-            RPAREN{ rpSpan = lexer.GetSpan(pos); }
+            RPAREN
         )
         {
-            node->SetLParenSpan(lpSpan);
-            node->SetRParenSpan(rpSpan);
             return node.release();
         }
         ;
 
-    RequirementBody(otava::symbols::Context* context, var std::unique_ptr<otava::ast::RequirementBodyNode> node, 
-        var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : otava::ast::Node*
+    RequirementBody(otava::symbols::Context* context, var std::unique_ptr<otava::ast::RequirementBodyNode> node) : otava::ast::Node*
         ::= 
         (
-            LBRACE{ lbSpan = lexer.GetSpan(pos); node.reset(new otava::ast::RequirementBodyNode(lbSpan, lexer.File())); }
+            LBRACE{ node.reset(new otava::ast::RequirementBodyNode(lexer.GetSpan(pos), lexer.File())); }
             RequirementSeq(context, node.get()):requirementSeq
-            RBRACE{ rbSpan = lexer.GetSpan(pos); }
+            RBRACE
         )
         {
-            node->SetLBraceSpan(lbSpan);
-            node->SetRBraceSpan(rbSpan);
             return node.release();
         }
         ;
@@ -184,18 +178,18 @@ parser ConceptParser
         }
         ;
 
-    CompoundRequirement(otava::symbols::Context* context, var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : otava::ast::Node*
+    CompoundRequirement(otava::symbols::Context* context) : otava::ast::Node*
         ::= 
         (
-            LBRACE{ lbSpan = lexer.GetSpan(pos); }
+            LBRACE
             Expression(context):expr 
-            RBRACE{ rbSpan = lexer.GetSpan(pos); }
+            RBRACE
             Noexcept:noexcept_? 
             ReturnTypeRequirement(context):returnTypeRequirement?
             Semicolon:semicolon
         )
         {
-            return new otava::ast::CompoundRequirementNode(lbSpan, lexer.File(), expr, noexcept_, returnTypeRequirement, semicolon, lbSpan, rbSpan);
+            return new otava::ast::CompoundRequirementNode(lexer.GetSpan(pos), lexer.File(), expr, noexcept_, returnTypeRequirement, semicolon);
         }
         ;
 
@@ -220,7 +214,7 @@ parser ConceptParser
         ;
 
     TypeConstraint(otava::symbols::Context* context, var std::unique_ptr<otava::ast::TypeConstraintNode> node, var std::unique_ptr<otava::ast::Node> conceptName, 
-        var soul::ast::Span span, var soul::ast::Span laSpan, var soul::ast::Span raSpan) : otava::ast::Node*
+        var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             (
@@ -233,14 +227,12 @@ parser ConceptParser
                 }
             )
             (
-                LANGLE{ laSpan = lexer.GetSpan(pos); ++vars->langleCount; context->PushSetFlag(otava::symbols::ContextFlags::parsingTemplateId); node->SetHasTemplateArgumentList(); }
+                LANGLE{ ++vars->langleCount; context->PushSetFlag(otava::symbols::ContextFlags::parsingTemplateId); node->SetHasTemplateArgumentList(); }
                 TemplateArgumentList(context, node.get()):templateArgs?
-                RANGLE{ raSpan = lexer.GetSpan(pos); --vars->langleCount; context->PopFlags(); } / { --vars->langleCount; context->PopFlags(); }
+                RANGLE{ --vars->langleCount; context->PopFlags(); } / { --vars->langleCount; context->PopFlags(); }
             )?
         )
         {
-            node->SetLAngleSpan(laSpan);
-            node->SetRAngleSpan(raSpan);
             return node.release();
         }
     ;

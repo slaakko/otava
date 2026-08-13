@@ -140,6 +140,16 @@ ClassTypeSymbol::~ClassTypeSymbol()
     }
 }
 
+std::string ClassTypeSymbol::FullName(Context* context) const
+{
+    TypeSymbol* specialization = Specialization(context);
+    if (specialization)
+    {
+        return specialization->FullName(context);
+    }
+    return TypeSymbol::FullName(context);
+}
+
 bool ClassTypeSymbol::IsTemplate(Context* context) const noexcept
 {
     return ParentTemplateDeclaration(context) != nullptr;
@@ -212,15 +222,27 @@ ClassGroupSymbol* ClassTypeSymbol::Group(Context* context) const
 
 Cardinality ClassTypeSymbol::Arity(Context* context) noexcept
 {
-    TemplateDeclarationSymbol* templateDeclaration = ParentTemplateDeclaration(context);
-    if (templateDeclaration)
+    if (IsExplicitSpecialization(context))
     {
-        return templateDeclaration->Arity();
+        TypeSymbol* specialization = Specialization(context);
+        if (specialization)
+        {
+            if (specialization->IsClassTemplateSpecializationSymbol())
+            {
+                ClassTemplateSpecializationSymbol* sp = static_cast<ClassTemplateSpecializationSymbol*>(specialization);
+                return Cardinality(sp->TemplateArguments(context).size());
+            }
+        }
     }
     else
     {
-        return Cardinality(0);
+        TemplateDeclarationSymbol* templateDeclaration = ParentTemplateDeclaration(context);
+        if (templateDeclaration)
+        {
+            return templateDeclaration->Arity();
+        }
     }
+    return Cardinality(0);
 }
 
 bool ClassTypeSymbol::IsComplete(std::set<const TypeSymbol*>& visited, const TypeSymbol*& incompleteType, Context* context) const 
@@ -239,7 +261,7 @@ bool ClassTypeSymbol::IsComplete(std::set<const TypeSymbol*>& visited, const Typ
     return true;
 }
 
-TypeSymbol* ClassTypeSymbol::Specialization(Context* context) 
+TypeSymbol* ClassTypeSymbol::Specialization(Context* context) const
 {
     if (specialization)
     {
@@ -271,7 +293,20 @@ void ClassTypeSymbol::SetSpecialization(TypeSymbol* specialization_, Context* co
 */
 }
 
-bool ClassTypeSymbol::IsPolymorphic(Context* context) const noexcept
+bool ClassTypeSymbol::IsExplicitSpecialization(Context* context) const noexcept
+{
+    TemplateDeclarationSymbol* parentTemplateDeclaration = ParentTemplateDeclaration(context);
+    if (parentTemplateDeclaration)
+    {
+        if (parentTemplateDeclaration->Arity() == Cardinality(0))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ClassTypeSymbol::IsPolymorphic(Context* context) const 
 {
     for (ClassTypeSymbol* baseClass : BaseClasses(context))
     {
@@ -284,16 +319,32 @@ bool ClassTypeSymbol::IsPolymorphic(Context* context) const noexcept
     return false;
 }
 
+bool ClassTypeSymbol::IsObjectLayoutComplete(Context* context) const noexcept
+{
+    for (TypeSymbol* type : objectLayout)
+    {
+        if (type->GetBaseType(context)->IsForwardClassDeclarationSymbol()) return false;
+    }
+    return true;
+}
+
 void ClassTypeSymbol::MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    if (ObjectLayoutComputed())
+    if (context->GetFlag(ContextFlags::makeFinalLayout))
     {
-        for (VariableSymbol* memberVar : MemberVariables(context))
+        ResetObjectLayoutComputed();
+    }
+    else
+    {
+        if (ObjectLayoutComputed())
         {
-            if (memberVar->LayoutIndex() == -1)
+            for (VariableSymbol* memberVar : MemberVariables(context))
             {
-                ResetObjectLayoutComputed();
-                break;
+                if (memberVar->LayoutIndex() == -1)
+                {
+                    ResetObjectLayoutComputed();
+                    break;
+                }
             }
         }
     }
@@ -326,11 +377,11 @@ void ClassTypeSymbol::MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Cont
         memberVar->SetLayoutIndex(layoutIndex);
         TypeSymbol* memberVarType = memberVar->GetType(context)->FinalType(fullSpan, context);
         memberVar->SetDeclaredType(memberVarType, context);
-        if (memberVarType->IsForwardClassDeclarationSymbol())
-        {
-            ThrowException("could not make object layout: incomplete types not allowed", fullSpan, context);
-        }
         objectLayout.push_back(memberVarType);
+        if (memberVarType->GetBaseType(context)->IsForwardClassDeclarationSymbol())
+        {
+            context->GetModule()->AddIncompleteClassId(Id());
+        }
     }
 }
 
@@ -400,10 +451,6 @@ void ClassTypeSymbol::UnmapFunction(FunctionSymbol* function)
 
 void ClassTypeSymbol::SetMemFnDefSymbol(FunctionDefinitionSymbol* memFnDefSymbol, Context* context)
 {
-    if (GroupName(context) == "set")
-    {
-        int x = 0;
-    }
     if (memFnDefSymbol->DefIndex() == -1)
     {
         memFnDefSymbol->SetDefIndex(nextMemFnDefIndex++);
@@ -1286,6 +1333,27 @@ void ThrowStatementParsingError(const soul::ast::FullSpan& fullSpan, otava::symb
         ThrowException("error parsing statement: " + std::string(ex.what()), fullSpan, context);
     }
     ThrowException("statement parsing error", fullSpan, context);
+}
+
+void CompleteIncompleteClasses(Context* context)
+{
+    if (context->GetModule()->Kind() != otava::symbols::ModuleKind::implementationModule) return;
+    std::string interfaceUnitName = context->GetModule()->InterfaceUnitName();
+    otava::symbols::Module* module = context->GetModule(interfaceUnitName);
+    if (!module || context->GetModule() == module) return;
+    module->ReadIncompleteClassIdTable();
+    otava::symbols::Cardinality n = otava::symbols::Cardinality(module->IncompleteClassIds().size());
+    for (otava::symbols::Index index = otava::symbols::Index(0); index < otava::symbols::Index(n); ++index)
+    {
+        otava::symbols::SymbolId classId = module->IncompleteClassIds()[otava::symbols::ToUnderlying(index)];
+        otava::symbols::ClassTypeSymbol* cls = module->GetSymbolTable()->GetClassTypeSymbol(classId, context);
+        otava::symbols::FlagSetter finalFlagSetter(context, otava::symbols::ContextFlags::makeFinalLayout);
+        cls->MakeObjectLayout(soul::ast::FullSpan(), context);
+        if (cls->IsObjectLayoutComplete(context))
+        {
+            module->GetSymbolTable()->AddCompletedIncompleteClass(cls, context);
+        }
+    }
 }
 
 class ClassResolver : public otava::ast::DefaultVisitor

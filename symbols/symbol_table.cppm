@@ -106,6 +106,7 @@ public:
     void BeginClass(const std::string& name, ClassKind classKind, TypeSymbol* spcialiation, otava::ast::Node* node, Context* context);
     void AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::FullSpan& fullSpan, Context* context);
     void EndClass(Context* context);
+    void AddCompletedIncompleteClass(ClassTypeSymbol* completedIncompleteClass, Context* context);
     void AddForwardClassDeclaration(const std::string& name, ClassKind classKind, TypeSymbol* specialization, otava::ast::Node* node, Context* context);
     void AddFriend(const std::string& name, otava::ast::Node* node, Context* context);
     void BeginEnumeratedType(const std::string& name, EnumTypeKind kind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context);

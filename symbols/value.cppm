@@ -6,7 +6,7 @@
 export module otava.symbols.value;
 
 import otava.symbols.symbol;
-import otava.intermediate.data;
+import otava.intermediate.value;
 import util.unicode;
 import std;
 
@@ -46,6 +46,8 @@ public:
     inline bool IsSymbolValue() const noexcept { return GetValueKind() == ValueKind::symbolValue; }
     inline bool IsInvokeValue() const noexcept { return GetValueKind() == ValueKind::invokeValue; }
     inline bool IsArrayValue() const noexcept { return GetValueKind() == ValueKind::arrayValue; }
+    virtual bool IsSerializableValue() const noexcept { return true; }
+    virtual bool IsComplete() const noexcept { return true; }
     virtual Value* Convert(ValueKind kind, Context* context) = 0;
     virtual BoolValue* ToBoolValue(Context* context) = 0;
     virtual otava::intermediate::Value* IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context);
@@ -62,6 +64,9 @@ private:
     TypeSymbol* type;
     SymbolId typeId;
 };
+
+bool ValuesEqual(Value* left, Value* right, Context* context);
+bool ValueLess(Value* left, Value* right, Context* context);
 
 class BoolValue : public Value
 {
@@ -166,6 +171,7 @@ public:
     otava::intermediate::Value* IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    bool IsComplete() const noexcept override { return false; }
 private:
     Symbol* symbol;
     SymbolId symbolId;
@@ -175,15 +181,19 @@ class InvokeValue : public Value
 {
 public:
     InvokeValue(Module* module_, SymbolId id_);
-    InvokeValue(Module* module_, Value* subject_, Context* context);
+    InvokeValue(Module* module_, Value* subject_, const std::vector<Value*>& arguments_, Context* context);
     Value* Convert(ValueKind kind, Context* context) override;
     BoolValue* ToBoolValue(Context* context) override;
     Value* Subject(Context* context);
+    const std::vector<Value*>& Arguments() const { return arguments; }
     std::string Val() const override { return subject->Val(); }
+    otava::intermediate::Value* IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    bool IsComplete() const noexcept override { return false; }
 private:
     Value* subject;
+    std::vector<Value*> arguments;
     SymbolId subjectId;
 };
 
@@ -245,6 +255,58 @@ private:
     std::vector<SymbolId> fieldValueIds;
 };
 
+class FunctionGroupValue : public Value
+{
+public:
+    FunctionGroupValue(Module* module_, SymbolId symbolId_, FunctionGroupSymbol* functionGroup_, FunctionSymbol* fn_);
+    Value* Convert(ValueKind kind, Context* context) override { return nullptr; }
+    BoolValue* ToBoolValue(Context* context) override { return nullptr; }
+    std::string Val() const override { return std::string(); }
+    inline FunctionGroupSymbol* GetFunctionGroup() const noexcept { return functionGroup; }
+    inline FunctionSymbol* Fn() const noexcept { return fn; }
+    bool IsSerializableValue() const noexcept override { return false; }
+    bool IsComplete() const noexcept override { return false; }
+private:
+    FunctionGroupSymbol* functionGroup;
+    FunctionSymbol* fn;
+};
+
+class TypeValue : public Value
+{
+public:
+    TypeValue(Module* module_, SymbolId symbolId_, TypeSymbol* type_);
+    Value* Convert(ValueKind kind, Context* context) override { return nullptr; }
+    BoolValue* ToBoolValue(Context* context) override { return nullptr; }
+    std::string Val() const override { return std::string(); }
+    inline TypeSymbol* GetType() const noexcept { return type; }
+    bool IsSerializableValue() const noexcept override { return false; }
+    bool IsComplete() const noexcept override { return false; }
+private:
+    TypeSymbol* type;
+};
+
+class EvaluationStack
+{
+public:
+    EvaluationStack();
+    inline void Push(Value* value) { stack.push(value); }
+    Value* Pop();
+private:
+    std::stack<Value*> stack;
+};
+
+class EvaluationMap
+{
+public:
+    EvaluationMap(EvaluationMap* parentMap_);
+    Value* GetValue(const std::string& symbol) const noexcept;
+    void SetValue(const std::string& symbol, Value* value);
+    inline EvaluationMap* ParentMap() const noexcept { return parentMap; }
+private:
+    std::unordered_map<std::string, Value*> map;
+    EvaluationMap* parentMap;
+};
+
 class EvaluationContext
 {
 public:
@@ -261,11 +323,19 @@ public:
     StringValue* GetStringValue(const std::string& value, TypeSymbol* type, Context* context);
     CharValue* GetCharValue(char32_t value, TypeSymbol* type, Context* context);
     SymbolValue* GetSymbolValue(Symbol* symbol, Context* context);
-    InvokeValue* GetInvokeValue(Value* subject, Context* context);
+    InvokeValue* GetInvokeValue(Value* subject, const std::vector<Value*>& arguments, Context* context);
     ArrayValue* GetArrayValue(TypeSymbol* type, Context* context);
     StructureValue* GetStructureValue(TypeSymbol* type, Context* context);
+    FunctionGroupValue* GetFunctionGroupValue(Module* module, SymbolId symbolId, FunctionGroupSymbol* functionGroup, FunctionSymbol* fn, Context* context);
+    TypeValue* GetTypeValue(Module* module, SymbolId symbolId, TypeSymbol* type, Context* context);
     void AddValue(Value* value);
     Value* GetValue(SymbolId valueId);
+    void ResetEvaluationStack();
+    inline EvaluationStack* GetEvaluationStack() const { return evaluationStack.get(); }
+    void ResetEvaluationMaps();
+    inline EvaluationMap* CurrentEvaluationMap() const { return currentEvaluationMap.get(); }
+    void PushEvaluationMap();
+    void PopEvaluationMap();
 private:
     void MapValue(Value* value);
     bool initialized;
@@ -282,7 +352,9 @@ private:
     std::map<Value*, InvokeValue*> invokeMap;
     std::vector<std::unique_ptr<Value>> values;
     std::unordered_map<SymbolId, Value*> valueMap;
+    std::unique_ptr<EvaluationStack> evaluationStack;
+    std::vector<std::unique_ptr<EvaluationMap>> evaluationMapStack;
+    std::unique_ptr<EvaluationMap> currentEvaluationMap;
 };
 
 } // namespace otava::symbols
-

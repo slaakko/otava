@@ -30,6 +30,7 @@ import otava.symbols.namespaces;
 import otava.symbols.templates;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
+import otava.symbols.template_param_group_symbol;
 
 namespace otava::symbols {
 
@@ -62,12 +63,6 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     {
         return new ClassGroupSymbol(module, symbolId);
     }
-    /*
-    case SymbolKind::enumGroupSymbol:
-    {
-        return new EnumGroupSymbol(module, symbolId);
-    }
-    */
     case SymbolKind::boolValueSymbol:
     {
         return new BoolValue(module, symbolId);
@@ -436,6 +431,10 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     case SymbolKind::intrinsicGetRbp:
     {
         return new GetFramePtrIntrinsic(module, symbolId);
+    }
+    case SymbolKind::templateParamGroupSymbol:
+    {
+        return new TemplateParamGroupSymbol(module, symbolId);
     }
     }
     ThrowException("symbol factory: could not make symbol for symbol kind '" + SymbolKindStr(kind) + "': invalid kind");

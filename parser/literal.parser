@@ -64,17 +64,16 @@ parser LiteralParser
         ::= ID{ return otava::parser::token::ParseIdentifier(lexer.GetSpan(pos), lexer.File(), lexer.FileName(), lexer.GetToken(pos)); }
         ;
 
-    LiteralOperatorId(otava::symbols::Context* context, var soul::ast::Span span, 
-        var soul::ast::Span stringLitPos, var soul::ast::Span idPos, var std::int64_t idp) : otava::ast::Node*
+    LiteralOperatorId(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span idPos, var std::int64_t idp) : otava::ast::Node*
         ::= 
         (
             OPERATOR{ span = lexer.GetSpan(pos); } 
-            STRING_LITERAL{ stringLitPos = lexer.GetSpan(pos); pass = lexer.GetToken(pos).ToString() == U""; } 
+            STRING_LITERAL{ pass = lexer.GetToken(pos).ToString() == U""; } 
             ID{ idPos = lexer.GetSpan(pos); idp = pos; }
         )
         {
             return new otava::ast::LiteralOperatorIdNode(span, lexer.File(), 
-                otava::parser::token::ParseIdentifier(idPos, lexer.File(), lexer.FileName(), lexer.GetToken(idp)), stringLitPos);
+                otava::parser::token::ParseIdentifier(idPos, lexer.File(), lexer.FileName(), lexer.GetToken(idp)));
         }
         ;
 

@@ -10,29 +10,9 @@ import otava.ast.error;
 
 namespace otava::ast {
 
-//  Reader::Reader(const std::string& fileName) : 
-    //fileStream(new util::FileStream(fileName, util::OpenMode::binary | util::OpenMode::read)), 
-    //bufferedStream(new util::BufferedStream(*fileStream)), 
-    //binaryStreamReader(new util::BinaryStreamReader(*bufferedStream)),
-    //readerPtr(binaryStreamReader.get()),
-    //nodeMap(nullptr),
-    //fileIndex(-1)
-//{
-//}
-
 Reader::Reader(util::MemoryReader* readerPtr_) : readerPtr(readerPtr_), nodeMap(nullptr), fileIndex(-1)
 {
 }
-
-/*
-soul::ast::Span Reader::ReadSpan()
-{
-    int len = readerPtr->ReadULEB128UInt();
-    if (len == 0) return soul::ast::Span();
-    int pos = readerPtr->ReadULEB128UInt();
-    return soul::ast::Span(pos, len);
-}
-*/
 
 NodeKind Reader::ReadNodeKind()
 {
@@ -59,9 +39,7 @@ Node* Reader::ReadNode()
     }
     else
     {
-        //soul::ast::Span span = ReadSpan();
-        Node* node = CreateNode(kind, soul::ast::Span(), -1);
-        //Node* node = CreateNode(kind, span, fileIndex);
+        Node* node = MakeNode(kind, soul::ast::Span(), -1);
         node->SetId(-1);
         node->Read(*this);
         if (node->InternalId() == -1)
@@ -72,6 +50,16 @@ Node* Reader::ReadNode()
         nodeMap->AddNode(node);
         return node;
     }
+}
+
+void Reader::SetNodeMap(NodeMap* nodeMap_) noexcept 
+{ 
+    nodeMap = nodeMap_; 
+}
+
+NodeMap* Reader::GetNodeMap() const noexcept 
+{ 
+    return nodeMap; 
 }
 
 } // namespace otava::ast

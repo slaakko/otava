@@ -120,6 +120,12 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
     else
     {
         Module* module = functionTemplate->GetModule();
+        if (functionTemplate->IsFunctionDefinitionSymbol() && module->Kind() == ModuleKind::implementationModule)
+        {
+            FunctionDefinitionSymbol* fnDefSymbol = static_cast<FunctionDefinitionSymbol*>(functionTemplate);
+            functionTemplate = fnDefSymbol->Declaration();
+            module = functionTemplate->GetModule();
+        }
         module->ReadAstNode();
         std::int64_t astNodeId = functionTemplate->AstNodeId();
         node = module->GetAstNode(astNodeId);

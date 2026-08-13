@@ -257,22 +257,25 @@ std::string ClassTemplateSpecializationSymbol::FullName(Context* context) const
     std::string specializationName;
     ClassTypeSymbol* classTemplate = ClassTemplate(context);
     specializationName.append(classTemplate->FullName(context));
-    specializationName.append(1, '<');
-    const std::vector<Symbol*>& templateArgs = TemplateArguments(context);
-    bool first = true;
-    for (Symbol* templateArg : templateArgs)
+    if (!classTemplate->IsExplicitSpecialization(context))
     {
-        if (first)
+        specializationName.append(1, '<');
+        const std::vector<Symbol*>& templateArgs = TemplateArguments(context);
+        bool first = true;
+        for (Symbol* templateArg : templateArgs)
         {
-            first = false;
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                specializationName.append(", ");
+            }
+            specializationName.append(templateArg->FullName(context));
         }
-        else
-        {
-            specializationName.append(", ");
-        }
-        specializationName.append(templateArg->FullName(context));
+        specializationName.append(1, '>');
     }
-    specializationName.append(1, '>');
     return specializationName;
 }
 
@@ -470,14 +473,14 @@ TemplateModulePtr::~TemplateModulePtr()
     context->PopTemplateModule();
 }
 
-TemplateScopePtr::TemplateScopePtr(Context* context_, Scope* nsScope) noexcept : context(context_)
+TemplateScopePtr::TemplateScopePtr(Context* context_, Scope* scope) noexcept : context(context_)
 {
-    context->PushTemplateNsScope(nsScope);
+    context->PushTemplateScope(scope);
 }
 
 TemplateScopePtr::~TemplateScopePtr()
 {
-    context->PopTemplateNsScope();
+    context->PopTemplateScope();
 }
 
 void InstantiateDestructor(ClassTemplateSpecializationSymbol* specialization, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -540,6 +543,10 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     ClassTemplateSpecializationSymbol* specialization = context->GetSymbolTable()->MakeClassTemplateSpecialization(
         classTemplate, templateArgs, fullSpan, context, createNew);
     Cardinality m = Cardinality(templateArgs.size());
+    if (classTemplate->IsExplicitSpecialization(context))
+    {
+        m = Cardinality(0);
+    }
     bool wasInstantiated = specialization->Instantiated();
     if (wasInstantiated && arity == m)
     {
@@ -578,6 +585,10 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     specialization->SetInstantiated();
     context->GetBoundCompileUnit()->AddBoundNodeForClass(specialization, fullSpan, context); 
     Cardinality argCount = Cardinality(templateArgs.size());
+    if (classTemplate->IsExplicitSpecialization(context))
+    {
+        argCount = Cardinality(0);
+    }
     if (argCount > arity)
     {
         ThrowException("otava.symbols.class_templates: wrong number of template args for instantiating class template '" + classTemplate->Name() + "'", fullSpan, context);
@@ -634,7 +645,15 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
                     ClassTemplateSpecializationSymbol* specializationArgType = GetClassTemplateSpecializationArgType(specialization, i, context);
                     if (!specializationArgType)
                     {
-                        ThrowException("otava.symbols.templates: specialization argument type not resolved", fullSpan, context);
+                        TypeSymbol* spArgType = GetSpecializationArgType(specialization, i, context);
+                        if (spArgType)
+                        {
+                            templateArg = spArgType;
+                        }
+                        else
+                        {
+                            ThrowException("otava.symbols.templates: specialization argument type not resolved", fullSpan, context);
+                        }
                     }
                 }
             }
@@ -710,6 +729,23 @@ ClassTemplateSpecializationSymbol* GetClassTemplateSpecializationArgType(TypeSym
             {
                 ClassTemplateSpecializationSymbol* specializationArgType = static_cast<ClassTemplateSpecializationSymbol*>(specializationArg);
                 return specializationArgType;
+            }
+        }
+    }
+    return nullptr;
+}
+
+TypeSymbol* GetSpecializationArgType(TypeSymbol* specialization, Index index, Context* context)
+{
+    if (specialization->IsClassTemplateSpecializationSymbol())
+    {
+        ClassTemplateSpecializationSymbol* specializationSymbol = static_cast<ClassTemplateSpecializationSymbol*>(specialization);
+        if (index >= Index(0) && index < Index(specializationSymbol->TemplateArguments(context).size()))
+        {
+            Symbol* specializationArg = specializationSymbol->TemplateArguments(context)[ToUnderlying(index)];
+            if (specializationArg->IsTypeSymbol())
+            {
+                return static_cast<TypeSymbol*>(specializationArg);
             }
         }
     }

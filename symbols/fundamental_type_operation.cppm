@@ -12,7 +12,7 @@ import otava.symbols.function_symbol;
 import otava.symbols.variable_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
-import otava.intermediate.data;
+import otava.intermediate.value;
 
 export namespace otava::symbols {
 
@@ -114,12 +114,14 @@ struct FundamentalTypeEqual
 {
     static const char* GroupName();
     static otava::intermediate::Value* Generate(Emitter& emitter, otava::intermediate::Value* left, otava::intermediate::Value* right);
+    static bool Compare(Value* left, Value* right, Context* context) noexcept { return ValuesEqual(left, right, context); }
 };
 
 struct FundamentalTypeLess
 {
     static const char* GroupName();
     static otava::intermediate::Value* Generate(Emitter& emitter, otava::intermediate::Value* left, otava::intermediate::Value* right);
+    static bool Compare(Value* left, Value* right, Context* context) noexcept { return ValueLess(left, right, context); }
 };
 
 template<class Op>
@@ -242,6 +244,7 @@ public:
         AddSymbol(rightParam, soul::ast::FullSpan(), context);
         SetReturnType(boolType, context);
         SetNoExcept();
+        SetCompileTimeFn();
     }
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override
@@ -251,6 +254,13 @@ public:
         args[1]->Load(emitter, OperationFlags::none, fullSpan, context);
         otava::intermediate::Value* right = emitter.Stack().Pop();
         emitter.Stack().Push(Op::Generate(emitter, left, right));
+    }
+    void Evaluate(Context* context) override
+    {
+        Value* right = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+        Value* left = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+        bool result = Op::Compare(left, right, context);
+        context->GetEvaluationContext()->GetEvaluationStack()->Push(context->GetEvaluationContext()->GetBoolValue(result));
     }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
 };
@@ -448,6 +458,7 @@ public:
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
+    void Evaluate(Context* context) override;
 private:
     TypeSymbol* type;
     SymbolId typeId;

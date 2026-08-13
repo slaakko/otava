@@ -82,10 +82,10 @@ parser TemplateParser
         ;
 
     TemplateParameterList(otava::symbols::Context* context, var int index, var std::unique_ptr<otava::ast::Node> templateParameterNode, 
-        var std::unique_ptr<otava::ast::TemplateParameterListNode> node, var soul::ast::Span laSpan, var soul::ast::Span raSpan) : otava::ast::Node*
+        var std::unique_ptr<otava::ast::TemplateParameterListNode> node) : otava::ast::Node*
         ::= 
         (
-            LANGLE{ soul::ast::Span span = lexer.GetSpan(pos); node.reset(new otava::ast::TemplateParameterListNode(span, lexer.File())); laSpan = span; } 
+            LANGLE{ soul::ast::Span span = lexer.GetSpan(pos); node.reset(new otava::ast::TemplateParameterListNode(span, lexer.File())); } 
             TemplateParameter(context):first
             { 
                 templateParameterNode.reset(first); 
@@ -103,11 +103,9 @@ parser TemplateParser
                     index = index + 1; 
                 }
             )*
-            RANGLE{ raSpan = lexer.GetSpan(pos); }
+            RANGLE
         )
         {
-            node->SetLAngleSpan(laSpan);
-            node->SetRAngleSpan(raSpan);
             return node.release();
         }
         ;
@@ -177,7 +175,7 @@ parser TemplateParser
         ;
 
     TemplateId(otava::symbols::Context* context, var std::unique_ptr<otava::ast::TemplateIdNode> node, var std::unique_ptr<otava::ast::Node> templateName, 
-        var soul::ast::Span span, var soul::ast::Span laSpan, var soul::ast::Span raSpan) : otava::ast::Node*
+        var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             (
@@ -186,7 +184,6 @@ parser TemplateParser
                 )
                 LANGLE
                 { 
-                    laSpan = lexer.GetSpan(pos); 
                     ++vars->langleCount; 
                     context->PushSetFlag(otava::symbols::ContextFlags::parsingTemplateId); 
                     node.reset(new otava::ast::TemplateIdNode(span, lexer.File(), templateName.release())); 
@@ -194,7 +191,6 @@ parser TemplateParser
                 TemplateArgumentList(context, node.get()):templateArgs?
                 RANGLE
                 { 
-                    raSpan = lexer.GetSpan(pos); 
                     --vars->langleCount; 
                     context->PopFlags(); 
                 }
@@ -205,22 +201,18 @@ parser TemplateParser
                 }
             )
             {
-                node->SetLAngleSpan(laSpan);
-                node->SetRAngleSpan(raSpan);
                 return node.release();
             }
         )
         |   SimpleTemplateId(context):simpleTemplateId{ return simpleTemplateId; }
         ;
 
-    SimpleTemplateId(otava::symbols::Context* context, var std::unique_ptr<otava::ast::TemplateIdNode> node, var soul::ast::Span span, 
-        var soul::ast::Span laSpan, var soul::ast::Span raSpan) : otava::ast::Node*
+    SimpleTemplateId(otava::symbols::Context* context, var std::unique_ptr<otava::ast::TemplateIdNode> node, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             TemplateName(context):templateName{ span = lexer.GetSpan(pos); }
             LANGLE
             { 
-                laSpan = lexer.GetSpan(pos); 
                 ++vars->langleCount; 
                 context->PushSetFlag(otava::symbols::ContextFlags::parsingTemplateId); 
                 context->ResetRejectTemplateId();
@@ -229,7 +221,6 @@ parser TemplateParser
             TemplateArgumentList(context, node.get()):templateArgs?
             RANGLE
             { 
-                raSpan = lexer.GetSpan(pos); 
                 --vars->langleCount; 
                 context->PopFlags(); 
             }
@@ -246,8 +237,6 @@ parser TemplateParser
             }
             else
             {
-                node->SetLAngleSpan(laSpan);
-                node->SetRAngleSpan(raSpan);
                 return node.release();
             }
         }
@@ -286,21 +275,20 @@ parser TemplateParser
         ::= &(RANGLE | COMMA | ELLIPSIS)
         ;
 
-    DeductionGuide(otava::symbols::Context* context, var std::unique_ptr<otava::ast::ParameterListNode> params, 
-        var soul::ast::Span span, var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+    DeductionGuide(otava::symbols::Context* context, var std::unique_ptr<otava::ast::ParameterListNode> params, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             (ExplicitSpecifier(context):explicitSpecifier{ span = lexer.GetSpan(pos); })?
             TemplateName(context):templateName{ if (!span.IsValid()) span = lexer.GetSpan(pos); }
-            LPAREN{ lpSpan = lexer.GetSpan(pos); params.reset(new otava::ast::ParameterListNode(lexer.GetSpan(pos), lexer.File())); }
+            LPAREN{ params.reset(new otava::ast::ParameterListNode(lexer.GetSpan(pos), lexer.File())); }
             ParameterDeclarationClause(context, params.get()):paramDeclarationClause
-            RPAREN{ rpSpan = lexer.GetSpan(pos); }
+            RPAREN
             Arrow:arrow 
             SimpleTemplateId(context):templateId
             Semicolon:semicolon
         )
         {
-            return new otava::ast::DeductionGuideNode(span, lexer.File(), templateName, params.release(), arrow, templateId, explicitSpecifier, semicolon, lpSpan, rpSpan);
+            return new otava::ast::DeductionGuideNode(span, lexer.File(), templateName, params.release(), arrow, templateId, explicitSpecifier, semicolon);
         }
         ;
 
@@ -322,14 +310,14 @@ parser TemplateParser
         }
         ;
 
-    ExplicitSpecialization(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span laSpan, var soul::ast::Span raSpan,
+    ExplicitSpecialization(otava::symbols::Context* context, var soul::ast::Span span,
         var std::unique_ptr<otava::ast::TemplateHeadNode> templateHeadNode) : 
         otava::ast::Node*
         ::= 
         (
             Template:tmp{ span = lexer.GetSpan(pos); }
-            LANGLE{ laSpan = lexer.GetSpan(pos); }
-            RANGLE{ raSpan = lexer.GetSpan(pos); }
+            LANGLE
+            RANGLE
             empty
             {
                 templateHeadNode.reset(new otava::ast::TemplateHeadNode(lexer.GetSpan(pos), lexer.File()));
@@ -340,7 +328,7 @@ parser TemplateParser
         )
         {
             otava::symbols::EndTemplateDeclaration(templateHeadNode.get(), context); 
-            return new otava::ast::ExplicitSpecializationNode(span, lexer.File(), tmp, templateHeadNode.release(), declaration, laSpan, raSpan);
+            return new otava::ast::ExplicitSpecializationNode(span, lexer.File(), tmp, templateHeadNode.release(), declaration);
         }
         ;
 

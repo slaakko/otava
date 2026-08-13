@@ -11,6 +11,11 @@ MemoryWriter::MemoryWriter(std::uint8_t* ptr_, std::int64_t count_) noexcept : p
 {
 }
 
+void MemoryWriter::Write(bool x)
+{
+    Write(static_cast<std::uint8_t>(x));
+}
+
 void MemoryWriter::Write(std::uint8_t x)
 {
     if (pos - ptr >= count)

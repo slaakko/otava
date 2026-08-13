@@ -413,13 +413,11 @@ void Node::Clear()
 void Node::Write(Writer& writer)
 {
     writer.GetBinaryStreamWriter().Write(id);
-    //writer.Write(span);
 }
 
 void Node::Read(Reader& reader)
 {
     id = reader.GetMemoryReader().ReadLong();
-    //span = reader.ReadSpan();
 }
 
 CompoundNode::CompoundNode(NodeKind kind_, const soul::ast::Span& span_, int fileIndex_) noexcept : Node(kind_, span_, fileIndex_)
@@ -987,7 +985,7 @@ void NodeFactoryCollection::Register(NodeKind kind, AbstractNodeFactory* factory
     factories[static_cast<std::uint16_t>(kind)] = std::unique_ptr<AbstractNodeFactory>(factory);
 }
 
-Node* CreateNode(NodeKind nodeKind, const soul::ast::Span& span, int fileIndex)
+Node* MakeNode(NodeKind nodeKind, const soul::ast::Span& span, int fileIndex)
 {
     return NodeFactoryCollection::Instance().CreateNode(nodeKind, span, fileIndex);
 }

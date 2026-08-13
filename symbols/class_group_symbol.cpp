@@ -111,6 +111,34 @@ int Match(Symbol* templateArg, TypeSymbol* specialization, Index index, Template
             }
         }
     }
+    else if (templateArg->IsTypeSymbol())
+    {
+        TypeSymbol* taType = static_cast<TypeSymbol*>(templateArg);
+        if (specialization->IsClassTemplateSpecializationSymbol())
+        {
+            ClassTemplateSpecializationSymbol* sp = static_cast<ClassTemplateSpecializationSymbol*>(specialization);
+            ClassTypeSymbol* ct = sp->ClassTemplate(context);
+            TemplateParameterSymbol* tps = nullptr;
+            if (ct->Parent(context)->IsTemplateDeclarationSymbol())
+            {
+                TemplateDeclarationSymbol* tds = static_cast<TemplateDeclarationSymbol*>(ct->Parent(context));
+                tps = tds->TemplateParameters(context).front();
+            }
+            if (sp->TemplateArguments(context).size() == 1)
+            {
+                Symbol* spArg = sp->TemplateArguments(context).front();
+                if (spArg->IsTypeSymbol())
+                {
+                    if (TypesEqual(taType, static_cast<TypeSymbol*>(spArg), context))
+                    {
+                        info.templateParameterMap[tps] = taType;
+                        info.kind = TemplateMatchKind::explicitSpecialization;
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
     return -1;
 }
 
@@ -224,8 +252,7 @@ const std::vector<ClassTypeSymbol*>& ClassGroupSymbol::Classes(Context* context)
         {
             Scope* globalNsScope = module->GetSymbolTable()->GetGlobalNs(context)->GetScope();
             Scope* containerScope = EnterScope(globalNsScope, containerNames, GetFullSpan(), context);
-            Symbol* s = containerScope->Lookup(
-                Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::thisScope, GetFullSpan(), context, LookupFlags::dontResolveSingle);
+            Symbol* s = containerScope->Lookup(Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::allScopes, GetFullSpan(), context, LookupFlags::dontResolveSingle);
             if (s && s->IsClassGroupSymbol())
             {
                 ClassGroupSymbol* group = static_cast<ClassGroupSymbol*>(s);

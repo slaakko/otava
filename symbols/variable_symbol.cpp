@@ -300,7 +300,6 @@ TypeSymbol* ParameterSymbol::GetType(Context* context)
             if (context->HasException())
             {
                 Exception ex = context->ReleaseException();
-                context->GetModuleMapper()->PrintModules();
                 ThrowException("type id " + 
                     std::to_string(ToUnderlying(typeId)) + " of parameter '" + Name() + "' not found: " + std::string(ex.what()), GetFullSpan(), context);
             }

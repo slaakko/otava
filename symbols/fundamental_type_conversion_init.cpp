@@ -354,7 +354,7 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 2, ConversionKind::explicitConversion, char16Type, char32Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeTruncateConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 2, ConversionKind::explicitConversion, char16Type, wcharType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 2, ConversionKind::implicitConversion, char16Type, wcharType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, char16Type, shortIntType, context), fullSpan, context);
@@ -412,7 +412,7 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, char32Type, wcharType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, char32Type, wcharType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, char32Type, shortIntType, context), 
@@ -466,14 +466,14 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, wcharType, char8Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, wcharType, char16Type, context), 
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, char16Type, context), 
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, char32Type, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 1, ConversionKind::implicitConversion, wcharType, char32Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, wcharType, shortIntType, context), 
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, shortIntType, context), 
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
@@ -481,16 +481,16 @@ void AddFundamentalTypeConversionsToSymboTable(
             context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, intType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 1, ConversionKind::explicitConversion, wcharType, intType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, unsignedIntType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 1, ConversionKind::explicitConversion, wcharType, unsignedIntType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, longIntType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 1, ConversionKind::explicitConversion, wcharType, longIntType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, wcharType, unsignedLongIntType, context), 
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 1, ConversionKind::explicitConversion, wcharType, unsignedLongIntType, context),
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeTruncateConversion(context->GetModule(),
@@ -531,7 +531,7 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 2, ConversionKind::explicitConversion, shortIntType, char32Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeTruncateConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 2, ConversionKind::explicitConversion, shortIntType, wcharType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 2, ConversionKind::implicitConversion, shortIntType, wcharType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, shortIntType, unsignedShortIntType, 
@@ -592,7 +592,7 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeTruncateConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeTruncate), 2, ConversionKind::explicitConversion, unsignedShortIntType, wcharType, context), 
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 2, ConversionKind::implicitConversion, unsignedShortIntType, wcharType, context), 
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
@@ -653,7 +653,7 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, intType, char32Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, intType, wcharType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, intType, wcharType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeSignExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeSignExtension), 1, ConversionKind::implicitConversion, intType, shortIntType,
@@ -712,7 +712,7 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, unsignedIntType, wcharType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedIntType, wcharType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedIntType, shortIntType,
@@ -774,7 +774,7 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, longIntType, char32Type, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, longIntType, wcharType, context), fullSpan, context);
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, longIntType, wcharType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeSignExtendConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeSignExtension), 1, ConversionKind::implicitConversion, longIntType, shortIntType,
@@ -835,7 +835,7 @@ void AddFundamentalTypeConversionsToSymboTable(
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),
-            context->GetNextSymbolId(SymbolKind::fundamentalTypeBitcast), 1, ConversionKind::implicitConversion, unsignedLongIntType, wcharType, context), 
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeZeroExtension), 1, ConversionKind::implicitConversion, unsignedLongIntType, wcharType, context), 
         fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeZeroExtendConversion(context->GetModule(),

@@ -504,6 +504,7 @@ FundamentalTypeDefaultCtor::FundamentalTypeDefaultCtor(Module* module_, SymbolId
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetNoExcept();
+    SetCompileTimeFn();
 }
 
 void FundamentalTypeDefaultCtor::Write(Writer& writer)
@@ -528,6 +529,12 @@ void FundamentalTypeDefaultCtor::Resolve(Context* context)
             ThrowException("type id " + std::to_string(ToUnderlying(typeId)) + " not found from module '" + GetModule()->Name() + "'");
         }
     }
+}
+
+void FundamentalTypeDefaultCtor::Evaluate(Context* context)
+{
+    Resolve(context);
+    context->GetEvaluationContext()->GetEvaluationStack()->Push(type->DefaultValue(context));
 }
 
 void FundamentalTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
@@ -562,6 +569,7 @@ FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_, 
     thatParam->SetType(type, context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
+    SetCompileTimeFn();
 }
 
 void FundamentalTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,

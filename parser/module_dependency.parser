@@ -96,7 +96,7 @@ parser ModuleDependencyParser
             ImportDeclaration(context):imprt
         )
         {
-            return new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, imprt, soul::ast::Span(), soul::ast::Span());
+            return new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, imprt);
         }
         ;
 }

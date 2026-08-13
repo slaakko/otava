@@ -43,7 +43,8 @@ Context::Context() :
     totalFunctionsCompiled(0), functionCallsInlined(0), functionsInlined(0), invokes(0), unresolvedInvokes(0), argIndex(0),
     boundFunctionSerial(0), trySerial(0), invokeSerial(0), cleanupSerial(0), resultSerial(0), labelSerial(0), ehReturnFromSerial(0), childControlResultSerial(0),
     conditionVariableSerial(0), streamInitVarSerial(0), instantiationQueue(nullptr), switchCondType(nullptr), declaredInitializerType(nullptr),
-    parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateNsScope(nullptr), hasException(false)
+    parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateScope(nullptr), hasException(false), initializer(nullptr), 
+    incompleteClassesCompleted(false)
 {
 }
 
@@ -555,16 +556,16 @@ void Context::PopTemplateModule()
     templateModuleStack.pop();
 }
 
-void Context::PushTemplateNsScope(Scope* templateNsScope_)
+void Context::PushTemplateScope(Scope* templateScope_)
 {
-    templateNsScopeStack.push(templateNsScope);
-    templateNsScope = templateNsScope_;
+    templateScopeStack.push(templateScope);
+    templateScope = templateScope_;
 }
 
-void Context::PopTemplateNsScope()
+void Context::PopTemplateScope()
 {
-    templateNsScope = templateNsScopeStack.top();
-    templateNsScopeStack.pop();
+    templateScope = templateScopeStack.top();
+    templateScopeStack.pop();
 }
 
 void Context::SetException(Exception&& exception_)

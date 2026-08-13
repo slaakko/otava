@@ -220,16 +220,20 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
     {
         containerNames = GetContainerNames(currentScope->GetSymbol(), context);
     }
-    Scope* templateNsScope = context->GetTemplateNsScope();
-    if (templateNsScope)
+    Scope* templateScope = context->GetTemplateScope();
+    if (templateScope)
     {
-        Symbol* symbol = templateNsScope->GetSymbol();
+        Symbol* symbol = templateScope->GetSymbol();
         containerNames = GetContainerNames(symbol, context);
     }
     std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
     Module* templateModule = context->GetTemplateModule();
     if (templateModule)
     {
+        if (std::find(importedModules.begin(), importedModules.end(), templateModule) == importedModules.end())
+        {
+            importedModules.push_back(templateModule);
+        }
         std::vector<Module*> templateModules = templateModule->ImportExportModules(context);
         for (Module* importedModule : templateModules)
         {

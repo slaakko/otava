@@ -73,6 +73,8 @@ public:
     inline bool ContainsLocalVariableWithDestructor() const noexcept { return GetFlag(FunctionSymbolFlags::containsLocalVariableWithDestructor); }
     inline bool Skip() const noexcept { return GetFlag(FunctionSymbolFlags::skip); }
     inline void SetSkip() noexcept { SetFlag(FunctionSymbolFlags::skip); }
+    inline bool IsCompileTimeFn() const { return GetFlag(FunctionSymbolFlags::compileTimeFn); }
+    inline void SetCompileTimeFn() { SetFlag(FunctionSymbolFlags::compileTimeFn); }
     virtual bool IsConst() const noexcept;
     virtual bool IsVirtual() const noexcept;
     virtual bool IsPure() const noexcept;
@@ -126,6 +128,7 @@ public:
     const std::vector<TypeSymbol*>& Specialization(Context* context) const;
     virtual bool IsMemberFunction(Context* context) const noexcept;
     bool IsTemplate(Context* context) const noexcept;
+    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const noexcept override;
     Cardinality TemplateArity(Context* context) const noexcept;
     bool IsMemFnOfClassTemplate(Context* context) const noexcept;
     bool IsExplicitSpecializationDefinitionSymbol(Context* context) const noexcept;
@@ -158,6 +161,7 @@ public:
     void RemoveClass(ClassTypeSymbol* cls);
     inline const std::vector<ClassTypeSymbol*>& Classes() const noexcept { return classes; }
     void ReplaceIncompleteTypes(FunctionDefinitionSymbol* definition, Context* context);
+    virtual void Evaluate(Context* context);
 private:
     FunctionSymbolFlags flags;
     FunctionQualifiers qualifiers;

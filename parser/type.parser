@@ -305,22 +305,21 @@ parser TypeParser
             }
         ;
 
-    DeclTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : 
+    DeclTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span) : 
         otava::ast::Node*
         ::= 
         (
             DECLTYPE{ span = lexer.GetSpan(pos); } 
-            LPAREN{ lpSpan = lexer.GetSpan(pos); } 
+            LPAREN
             Expression(context):expr 
-            RPAREN{ rpSpan = lexer.GetSpan(pos); }
+            RPAREN
         )
         {
-            return new otava::ast::DeclTypeSpecifierNode(span, lexer.File(), expr, lpSpan, rpSpan);
+            return new otava::ast::DeclTypeSpecifierNode(span, lexer.File(), expr);
         }
         ;
 
-    PlaceholderTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span dtPos, var soul::ast::Span autoPos, 
-        var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+    PlaceholderTypeSpecifier(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             (TypeConstraint(context):typeConstraint{ span = lexer.GetSpan(pos); })? 
@@ -328,20 +327,19 @@ parser TypeParser
                 AUTO
                 { 
                     if (!span.IsValid()) span = lexer.GetSpan(pos);
-                    autoPos = lexer.GetSpan(pos);
-                    return new otava::ast::PlaceholderTypeSpecifierNode(span, lexer.File(), typeConstraint, dtPos, autoPos, lpSpan, rpSpan);
+                    return new otava::ast::PlaceholderTypeSpecifierNode(span, lexer.File(), typeConstraint, false);
                 } 
             )
             |
             (
                 (
-                    DECLTYPE{ dtPos = lexer.GetSpan(pos); if (!span.IsValid()) span = lexer.GetSpan(pos); } 
-                    LPAREN{ lpSpan = lexer.GetSpan(pos); } 
-                    AUTO{ autoPos = lexer.GetSpan(pos); } 
-                    RPAREN{ rpSpan = lexer.GetSpan(pos); }
+                    DECLTYPE{ soul::ast::Span dtPos = lexer.GetSpan(pos); if (!span.IsValid()) span = lexer.GetSpan(pos); } 
+                    LPAREN
+                    AUTO
+                    RPAREN
                 )
                 {
-                    return new otava::ast::PlaceholderTypeSpecifierNode(span, lexer.File(), typeConstraint, dtPos, autoPos, lpSpan, rpSpan);
+                    return new otava::ast::PlaceholderTypeSpecifierNode(span, lexer.File(), typeConstraint, true);
                 }
             )
         )

@@ -115,7 +115,7 @@ enum class SymbolKind : std::uint8_t
     defaultBool, defaultSByte, defaultByte, defaultShort, defaultUShort, defaultInt, defaultUInt, defaultLong, defaultULong, defaultFloat, defaultDouble,
     defaultChar, defaultChar16, defaultChar32,
     functionGroupTypeSymbol, classGroupTypeSymbol, aliasGroupTypeSymbol, templateParamGroupSymbol, friendSymbol, namespaceTypeSymbol,
-    intrinsicGetRbp,
+    intrinsicGetRbp, functionGroupValueSymbol, typeValueSymbol,
     max
 };
 
@@ -231,7 +231,6 @@ public:
     inline bool IsForwardClassDeclarationSymbol() const noexcept { return kind == SymbolKind::forwardClassDeclarationSymbol; }
     inline bool IsConceptGroupSymbol() const noexcept { return kind == SymbolKind::conceptGroupSymbol; }
     inline bool IsConceptSymbol() const noexcept { return kind == SymbolKind::conceptSymbol; }
-    //inline bool IsEnumGroupSymbol() const noexcept { return kind == SymbolKind::enumGroupSymbol; }
     inline bool IsEnumeratedTypeSymbol() const noexcept { return kind == SymbolKind::enumTypeSymbol; }
     inline bool IsForwardEnumDeclarationSymbol() const noexcept { return kind == SymbolKind::forwardEnumDeclarationSymbol; }
     inline bool IsEnumConstantSymbol() const noexcept { return kind == SymbolKind::enumConstantSymbol; }
@@ -261,7 +260,9 @@ public:
     inline bool IsClassGroupTypeSymbol() const noexcept { return kind == SymbolKind::classGroupTypeSymbol; }
     inline bool IsAliasGroupTypeSymbol() const noexcept { return kind == SymbolKind::aliasGroupTypeSymbol; }
     inline bool IsNestedTypeSymbol() const noexcept { return kind == SymbolKind::nestedTypeSymbol; }
-    inline bool IsDependentTypeSymbol()  const noexcept { return kind == SymbolKind::dependentTypeSymbol; }
+    inline bool IsDependentTypeSymbol() const noexcept { return kind == SymbolKind::dependentTypeSymbol; }
+    inline bool IsFunctionGroupValue() const noexcept { return kind == SymbolKind::functionGroupValueSymbol; }
+    inline bool IsTypeValue() const noexcept { return kind == SymbolKind::typeValueSymbol; }
     virtual bool IsCharTypeSymbol() const noexcept { return false; }
     virtual bool IsChar8TypeSymbol() const noexcept { return false; }
     virtual bool IsChar16TypeSymbol() const noexcept { return false; }

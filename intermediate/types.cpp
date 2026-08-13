@@ -7,16 +7,39 @@ module otava.intermediate.types;
 
 import otava.intermediate.context;
 import otava.intermediate.error;
+import otava.intermediate.metadata;
 import otava.intermediate.visitor;
 import util.align;
 
 namespace otava::intermediate {
+
+TypeRef::TypeRef() noexcept : span(), id(-1), type(nullptr)
+{
+}
+
+TypeRef::TypeRef(const soul::ast::Span& span_, std::int32_t id_) noexcept : span(span_), id(id_), type(nullptr)
+{
+}
+
+void TypeRef::SetType(Type* type_) noexcept
+{
+    type = type_;
+}
+
+Type* TypeRef::GetType() const noexcept
+{
+    return type;
+}
 
 Type::Type(const soul::ast::Span& span_, TypeKind kind_, std::int32_t id_) noexcept : span(span_), kind(kind_), id(id_), defaultValue(nullptr)
 {
 }
 
 Type::~Type()
+{
+}
+
+void Type::Accept(Visitor& visitor)
 {
 }
 
@@ -199,6 +222,21 @@ void Type::WriteDeclaration(util::CodeFormatter& formatter)
     formatter.Write(" = type ");
 }
 
+Value* Type::DefaultValue() noexcept 
+{ 
+    return defaultValue; 
+}
+
+void Type::SetDefaultValue(Value* defaultValue_) noexcept 
+{ 
+    defaultValue = defaultValue_; 
+}
+
+Value* Type::MakeDefaultValue(IntermediateContext& context) const
+{ 
+    return nullptr; 
+}
+
 TypeRef Type::GetTypeRef()
 {
     TypeRef typeRef = MakeTypeRef(Span(), id, GetPointerCount(id));
@@ -313,14 +351,6 @@ Value* DoubleType::MakeDefaultValue(IntermediateContext& context) const
     return context.GetDoubleValue(0.0);
 }
 
-TypeRef::TypeRef() noexcept : span(), id(-1), type(nullptr)
-{
-}
-
-TypeRef::TypeRef(const soul::ast::Span& span_, std::int32_t id_) noexcept : span(span_), id(id_), type(nullptr)
-{
-}
-
 StructureType::StructureType(const soul::ast::Span& span_, std::int32_t typeId_, const std::vector<TypeRef>& fieldTypeRefs_) :
     Type(span_, TypeKind::structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false), size(0),
     metadataRef(nullptr)
@@ -422,7 +452,7 @@ void StructureType::ResolveComment()
                 if (metadataItem->IsMetadataString())
                 {
                     MetadataString* metadataString = static_cast<MetadataString*>(metadataItem);
-                    SetComment(metadataString->Value());
+                    SetComment(metadataString->GetValue());
                 }
             }
         }
@@ -490,6 +520,16 @@ Value* StructureType::MakeDefaultValue(IntermediateContext& context) const
 void StructureType::SetComment(const std::string& comment_)
 {
     comment = comment_;
+}
+
+void StructureType::SetMetadataRef(MetadataRef* metadataRef_) noexcept
+{
+    metadataRef = metadataRef_;
+}
+
+MetadataRef* StructureType::GetMetadataRef() const noexcept
+{
+    return metadataRef;
 }
 
 FwdDeclaredStructureType::FwdDeclaredStructureType(std::uint64_t id_, std::int32_t typeId_) noexcept :
@@ -728,6 +768,16 @@ void Types::Init()
     doubleType.SetDefaultValue(context->GetDoubleValue(0.0));
 }
 
+IntermediateContext* Types::GetContext() const noexcept 
+{ 
+    return context; 
+}
+
+void Types::SetContext(IntermediateContext* context_) noexcept 
+{ 
+    context = context_; 
+}
+
 void Types::AddStructureType(const soul::ast::Span& span, std::int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* mdRef)
 {
     StructureType* structureType = new StructureType(span, typeId, fieldTypeRefs);
@@ -962,7 +1012,7 @@ void Types::ResolveForwardReferences(std::uint64_t id, StructureType* structureT
             {
                 dependentType->ReplaceForwardReference(fwdType, structureType, context);
             }
-            fwdDeclarationMap.erase(id);
+            fwdDeclarationMap.erase(it);
         }
     }
 }
@@ -1019,7 +1069,7 @@ void Types::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("types");
     formatter.WriteLine("{");
     formatter.IncIndent();
-    for (const auto& type : declaredTypes)
+    for (auto* type : declaredTypes)
     {
         type->WriteDeclaration(formatter);
         formatter.WriteLine();

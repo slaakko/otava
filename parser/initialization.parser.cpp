@@ -83,7 +83,6 @@ soul::parser::Match InitializationParser<LexerT>::Initializer(LexerT& lexer, ota
                                 if (match.hit)
                                 {
                                     exprListNode.reset(new otava::ast::ExpressionListNode(lexer.GetSpan(pos), lexer.File()));
-                                    exprListNode->SetLParenSpan(lexer.GetSpan(pos));
                                 }
                                 *parentMatch6 = match;
                             }
@@ -118,7 +117,6 @@ soul::parser::Match InitializationParser<LexerT>::Initializer(LexerT& lexer, ota
                                 }
                                 if (match.hit)
                                 {
-                                    exprListNode->SetRParenSpan(lexer.GetSpan(pos));
                                     initializer.reset(exprListNode.release());
                                 }
                                 *parentMatch9 = match;

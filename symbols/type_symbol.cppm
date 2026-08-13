@@ -18,6 +18,7 @@ export namespace otava::symbols {
 
 class Emitter;
 class TemplateParameterSymbol;
+class Value;
 
 class TypeSymbol : public ContainerSymbol
 {
@@ -57,7 +58,7 @@ public:
     virtual bool IsNullPtrType() const noexcept { return false; }
     virtual bool IsVoidPtrType() const noexcept { return false; }
     virtual bool IsIntegralType() const noexcept { return false; }
-    virtual bool IsPolymorphic(Context* context) const noexcept { return false; }
+    virtual bool IsPolymorphic(Context* context) const { return false; }
     virtual bool IsFunctionType() const noexcept { return false; }
     virtual bool IsBasicStringCharType(Context* context) noexcept { return false; }
     virtual bool IsBasicStringChar16Type(Context* context) noexcept { return false; }
@@ -84,6 +85,7 @@ public:
     virtual TypeSymbol* UnifyTemplateArgumentType(
         const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
         const soul::ast::FullSpan& fullSpan, Context* context);
+    virtual Value* DefaultValue(Context* context) { return nullptr; }
 private:
     bool destructing;
 };

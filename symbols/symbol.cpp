@@ -46,7 +46,6 @@ std::string SymbolKindStr(SymbolKind kind)
     case SymbolKind::functionGroupSymbol: return "functionGroup";
     case SymbolKind::variableGroupSymbol: return "variableGroup";
     case SymbolKind::aliasGroupSymbol: return "aliasGroup";
-    //case SymbolKind::enumGroupSymbol: return "enumGroup";
     case SymbolKind::boolValueSymbol: return "boolValue";
     case SymbolKind::integerValueSymbol: return "integerValue";
     case SymbolKind::floatingValueSymbol: return "floatingValue";
@@ -162,6 +161,8 @@ std::string SymbolKindStr(SymbolKind kind)
     case SymbolKind::friendSymbol: return "friend";
     case SymbolKind::namespaceTypeSymbol: return "namespaceType";
     case SymbolKind::intrinsicGetRbp: return "intrinsicGetRbp";
+    case SymbolKind::functionGroupValueSymbol: return "functionGroupValue";
+    case SymbolKind::typeValueSymbol: return "typeValue";
     }
     return "<symbol>";
 }
@@ -448,6 +449,8 @@ bool Symbol::IsValueSymbol() const noexcept
     case SymbolKind::invokeValueSymbol:
     case SymbolKind::arrayValueSymbol:
     case SymbolKind::structureValueSymbol:
+    case SymbolKind::functionGroupValueSymbol:
+    case SymbolKind::typeValueSymbol:
     {
         return true;
     }
@@ -471,12 +474,6 @@ SymbolGroupKind Symbol::GetSymbolGroupKind() const noexcept
     {
         return SymbolGroupKind::classSymbolGroup;
     }
-/*
-    case SymbolKind::enumGroupSymbol:
-    {
-        return SymbolGroupKind::enumSymbolGroup;
-    }
-*/
     case SymbolKind::templateParameterSymbol:
     case SymbolKind::templateParamGroupSymbol:
     case SymbolKind::boundTemplateParameterSymbol:
@@ -623,6 +620,8 @@ bool Symbol::CanInstall() const noexcept
     case SymbolKind::variableSymbol:
     case SymbolKind::intrinsicGetRbp:
     case SymbolKind::templateParameterSymbol:
+    case SymbolKind::functionGroupValueSymbol:
+    case SymbolKind::typeValueSymbol:
     {
         return false;
     }

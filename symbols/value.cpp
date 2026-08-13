@@ -8,8 +8,10 @@ module otava.symbols.value;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
+import otava.symbols.modules;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.type_compare;
 import util.text_util;
 
 namespace otava::symbols {
@@ -93,7 +95,6 @@ Value::Value(Module* module_, SymbolId id_, const std::string& rep_) : Symbol(mo
 otava::intermediate::Value* Value::IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     ThrowException("cannot evaluate statically", fullSpan, context);
-    return nullptr;
 }
 
 ValueKind Value::GetValueKind() const noexcept
@@ -156,7 +157,7 @@ TypeSymbol* Value::GetType(Context* context)
 void Value::SetType(TypeSymbol* type_, Context* context) noexcept
 {
     type = type_;
-    if (type->GetModule() != GetModule())
+    if (type && type->GetModule() != GetModule())
     {
         GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
     }
@@ -181,6 +182,94 @@ void Value::Read(Reader& reader)
     typeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
+bool ValuesEqual(Value* left, Value* right, Context* context)
+{
+    if (!TypesEqual(left->GetType(context), right->GetType(context), context)) return false;
+    ValueKind valueKind = left->GetValueKind();
+    switch (valueKind)
+    {
+        case ValueKind::boolValue: 
+        {
+            BoolValue* leftBool = static_cast<BoolValue*>(left);
+            BoolValue* rightBool = static_cast<BoolValue*>(right);
+            return leftBool->GetValue() == rightBool->GetValue();
+        }
+        case ValueKind::integerValue:
+        {
+            IntegerValue* leftInteger = static_cast<IntegerValue*>(left);
+            IntegerValue* rightInteger = static_cast<IntegerValue*>(right);
+            return leftInteger->GetValue() == rightInteger->GetValue();
+        }
+        case ValueKind::floatingValue:
+        {
+            FloatingValue* leftFloating = static_cast<FloatingValue*>(left);
+            FloatingValue* rightFloating = static_cast<FloatingValue*>(right);
+            return leftFloating->GetValue() == rightFloating->GetValue();
+        }
+        case ValueKind::nullPtrValue:
+        {
+            return true;
+        }
+        case ValueKind::stringValue:
+        {
+            StringValue* leftString = static_cast<StringValue*>(left);
+            StringValue* rightString = static_cast<StringValue*>(right);
+            return leftString->GetValue() == rightString->GetValue();
+        }
+        case ValueKind::charValue:
+        {
+            CharValue* leftChar = static_cast<CharValue*>(left);
+            CharValue* rightChar = static_cast<CharValue*>(right);
+            return leftChar->GetValue() == rightChar->GetValue();
+        }
+    }
+    return false;
+}
+
+bool ValueLess(Value* left, Value* right, Context* context)
+{
+    if (!TypesEqual(left->GetType(context), right->GetType(context), context)) return false;
+    ValueKind valueKind = left->GetValueKind();
+    switch (valueKind)
+    {
+    case ValueKind::boolValue:
+    {
+        BoolValue* leftBool = static_cast<BoolValue*>(left);
+        BoolValue* rightBool = static_cast<BoolValue*>(right);
+        return leftBool->GetValue() && !rightBool->GetValue();
+    }
+    case ValueKind::integerValue:
+    {
+        IntegerValue* leftInteger = static_cast<IntegerValue*>(left);
+        IntegerValue* rightInteger = static_cast<IntegerValue*>(right);
+        return leftInteger->GetValue() < rightInteger->GetValue();
+    }
+    case ValueKind::floatingValue:
+    {
+        FloatingValue* leftFloating = static_cast<FloatingValue*>(left);
+        FloatingValue* rightFloating = static_cast<FloatingValue*>(right);
+        return leftFloating->GetValue() < rightFloating->GetValue();
+    }
+    case ValueKind::nullPtrValue:
+    {
+        return true;
+    }
+    case ValueKind::stringValue:
+    {
+        StringValue* leftString = static_cast<StringValue*>(left);
+        StringValue* rightString = static_cast<StringValue*>(right);
+        return leftString->GetValue() < rightString->GetValue();
+    }
+    case ValueKind::charValue:
+    {
+        CharValue* leftChar = static_cast<CharValue*>(left);
+        CharValue* rightChar = static_cast<CharValue*>(right);
+        return leftChar->GetValue() < rightChar->GetValue();
+    }
+    }
+    return false;
+}
+
 BoolValue::BoolValue(Module* module_, SymbolId id_) : Value(module_, id_)
 {
 }
@@ -188,6 +277,8 @@ BoolValue::BoolValue(Module* module_, SymbolId id_) : Value(module_, id_)
 BoolValue::BoolValue(Module* module_, bool value_, const std::string& rep_, Context* context) : 
     Value(module_, context->GetNextSymbolId(SymbolKind::boolValueSymbol), rep_), value(value_)
 {
+    TypeSymbol* type = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context);
+    SetType(type, context);
 }
 
 Value* BoolValue::Convert(ValueKind kind, Context* context)
@@ -233,6 +324,8 @@ IntegerValue::IntegerValue(Module* module_, SymbolId id_) : Value(module_, id_)
 IntegerValue::IntegerValue(Module* module_, std::int64_t value_, const std::string& rep_, Context* context) : 
     Value(module_, context->GetNextSymbolId(SymbolKind::integerValueSymbol), rep_), value(value_)
 {
+    TypeSymbol* type = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::longLongIntType, context);
+    SetType(type, context);
 }
 
 Value* IntegerValue::Convert(ValueKind kind, Context* context)
@@ -280,6 +373,8 @@ FloatingValue::FloatingValue(Module* module_, SymbolId id_) : Value(module_, id_
 FloatingValue::FloatingValue(Module* module_, double value_, const std::string& rep_, Context* context) :
     Value(module_, context->GetNextSymbolId(SymbolKind::floatingValueSymbol), rep_), value(value_)
 {
+    TypeSymbol* type = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::doubleType, context);
+    SetType(type, context);
 }
 
 BoolValue* FloatingValue::ToBoolValue(Context* context)
@@ -327,6 +422,8 @@ NullPtrValue::NullPtrValue(Module* module_, SymbolId id_) : Value(module_, id_)
 NullPtrValue::NullPtrValue(Module* module_, Context* context) :
     Value(module_, context->GetNextSymbolId(SymbolKind::nullPtrValueSymbol), "nullptr")
 {
+    TypeSymbol* type = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::nullPtrType, context);
+    SetType(type, context);
 }
 
 BoolValue* NullPtrValue::ToBoolValue(Context* context)
@@ -408,6 +505,8 @@ CharValue::CharValue(Module* module_, SymbolId id_) : Value(module_, id_)
 CharValue::CharValue(Module* module_, char32_t value_, Context* context) :
     Value(module_, context->GetNextSymbolId(SymbolKind::charValueSymbol), util::HexEscape(util::ToUtf8(std::u32string(1, value_)))), value(value_)
 {
+    TypeSymbol* type = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::char32Type, context);
+    SetType(type, context);
 }
 
 BoolValue* CharValue::ToBoolValue(Context* context)
@@ -445,6 +544,21 @@ SymbolValue::SymbolValue(Module* module_, SymbolId id_) : Value(module_, id_)
 SymbolValue::SymbolValue(Module* module_, Symbol* symbol_, Context* context) :
     Value(module_, context->GetNextSymbolId(SymbolKind::symbolValueSymbol), symbol_->Name()), symbol(symbol_), symbolId(zeroSymbolId)
 {
+    if (symbol->IsTypeSymbol())
+    {
+        TypeSymbol* type = static_cast<TypeSymbol*>(symbol);
+        SetType(type, context);
+    }
+    else if (symbol->IsVariableSymbol())
+    {
+        VariableSymbol* vs = static_cast<VariableSymbol*>(symbol);
+        SetType(vs->GetType(context), context);
+    }
+    else if (symbol->IsParameterSymbol())
+    {
+        ParameterSymbol* ps = static_cast<ParameterSymbol*>(symbol);
+        SetType(ps->GetType(context), context);
+    }
 }
 
 Symbol* SymbolValue::GetSymbol(Context* context)
@@ -531,8 +645,8 @@ InvokeValue::InvokeValue(Module* module_, SymbolId id_) : Value(module_, id_)
 {
 }
 
-InvokeValue::InvokeValue(Module* module_, Value* subject_, Context* context) :
-    Value(module_, context->GetNextSymbolId(SymbolKind::invokeValueSymbol), subject_->Name()), subject(subject_), subjectId(zeroSymbolId)
+InvokeValue::InvokeValue(Module* module_, Value* subject_, const std::vector<Value*>& arguments_, Context* context) :
+    Value(module_, context->GetNextSymbolId(SymbolKind::invokeValueSymbol), subject_->Name()), subject(subject_), subjectId(zeroSymbolId), arguments(arguments_)
 {
 }
 
@@ -557,6 +671,20 @@ Value* InvokeValue::Convert(ValueKind kind, Context* context)
 BoolValue* InvokeValue::ToBoolValue(Context* context)
 {
     return context->GetEvaluationContext()->GetBoolValue(false);
+}
+
+otava::intermediate::Value* InvokeValue::IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
+{
+    if (subject->IsSymbolValue() && arguments.size() == 1)
+    {
+        otava::intermediate::Value* conversionValue = emitter.EmitConversionValue(subject->GetType(context)->IrType(emitter, fullSpan, context), 
+            arguments.front()->IrValue(emitter, fullSpan, context));
+        return conversionValue;
+    }
+    else
+    {
+        return Value::IrValue(emitter, fullSpan, context);
+    }
 }
 
 void InvokeValue::Write(Writer& writer)
@@ -827,8 +955,82 @@ otava::intermediate::Value* StructureValue::IrValue(Emitter& emitter, const soul
     return emitter.EmitStructureValue(fields, structureType);
 }
 
-EvaluationContext::EvaluationContext(Module* module_, bool readOnly_) : module(module_), initialized(false), readOnly(readOnly_)
+FunctionGroupValue::FunctionGroupValue(Module* module_, SymbolId symbolId_, FunctionGroupSymbol* functionGroup_, FunctionSymbol* fn_) :
+    Value(module_, symbolId_), functionGroup(functionGroup_), fn(fn_)
 {
+}
+
+TypeValue::TypeValue(Module* module_, SymbolId symbolId_, TypeSymbol* type_) : Value(module_, symbolId_), type(type_)
+{
+}
+
+EvaluationStack::EvaluationStack()
+{
+}
+
+Value* EvaluationStack::Pop()
+{
+    if (stack.empty())
+    {
+        ThrowException("evaluation stack is empty");
+    }
+    Value* top = stack.top();
+    stack.pop();
+    return top;
+}
+
+EvaluationMap::EvaluationMap(EvaluationMap* parentMap_) : parentMap(parentMap_)
+{
+}
+
+Value* EvaluationMap::GetValue(const std::string& symbol) const noexcept
+{
+    auto it = map.find(symbol);
+    if (it != map.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void EvaluationMap::SetValue(const std::string& symbol, Value* value)
+{
+    map[symbol] = value;
+}
+
+EvaluationContext::EvaluationContext(Module* module_, bool readOnly_) : module(module_), initialized(false), readOnly(readOnly_), currentEvaluationMap(nullptr)
+{
+}
+
+void EvaluationContext::ResetEvaluationStack()
+{
+    evaluationStack.reset(new EvaluationStack());
+}
+
+void EvaluationContext::ResetEvaluationMaps()
+{
+    evaluationMapStack.clear();
+    currentEvaluationMap = nullptr;
+}
+
+void EvaluationContext::PushEvaluationMap()
+{
+    EvaluationMap* evaluationMap = new EvaluationMap(currentEvaluationMap.get());
+    evaluationMapStack.push_back(std::unique_ptr<EvaluationMap>(currentEvaluationMap.release()));
+    currentEvaluationMap.reset(evaluationMap);
+}
+
+void EvaluationContext::PopEvaluationMap()
+{
+    if (evaluationMapStack.empty())
+    {
+        ThrowException("evaluation map stack is empty");
+    }
+    currentEvaluationMap.reset(evaluationMapStack.back().release());
+    evaluationMapStack.pop_back();
 }
 
 void EvaluationContext::Init(Context* context)
@@ -852,7 +1054,10 @@ void EvaluationContext::Write(Writer& writer, Context* context)
     nullPtrValue->Write(writer);
     for (const auto& value : values)
     {
-        writer.Write(value.get());
+        if (value->IsSerializableValue())
+        {
+            writer.Write(value.get());
+        }
     }
 }
 
@@ -884,7 +1089,7 @@ IntegerValue* EvaluationContext::GetIntegerValue(std::int64_t value, const std::
     else
     {
         IntegerValue* integerValue = new IntegerValue(GetModule(), value, rep, context);
-        integerValue->SetType(type, context);
+        integerValue->SetType(type->PlainType(context), context);
         integerValueMap[std::make_pair(std::make_pair(value, rep), type)] = integerValue;
         values.push_back(std::unique_ptr<Value>(integerValue));
         MapValue(integerValue);
@@ -902,7 +1107,7 @@ FloatingValue* EvaluationContext::GetFloatingValue(double value, const std::stri
     else
     {
         FloatingValue* floatingValue = new FloatingValue(GetModule(), value, rep, context);
-        floatingValue->SetType(type, context);
+        floatingValue->SetType(type->PlainType(context), context);
         floatingValueMap[std::make_pair(std::make_pair(value, rep), type)] = floatingValue;
         values.push_back(std::unique_ptr<Value>(floatingValue));
         MapValue(floatingValue);
@@ -955,7 +1160,7 @@ CharValue* EvaluationContext::GetCharValue(char32_t value, TypeSymbol* type, Con
     else
     {
         CharValue* charValue = new CharValue(GetModule(), value, context);
-        charValue->SetType(type, context);
+        charValue->SetType(type->PlainType(context), context);
         charValueMap[std::make_pair(value, type)] = charValue;
         values.push_back(std::unique_ptr<Value>(charValue));
         MapValue(charValue);
@@ -980,7 +1185,7 @@ SymbolValue* EvaluationContext::GetSymbolValue(Symbol* symbol, Context* context)
     }
 }
 
-InvokeValue* EvaluationContext::GetInvokeValue(Value* subject, Context* context)
+InvokeValue* EvaluationContext::GetInvokeValue(Value* subject, const std::vector<Value*>& arguments, Context* context)
 {
     auto it = invokeMap.find(subject);
     if (it != invokeMap.cend())
@@ -989,7 +1194,7 @@ InvokeValue* EvaluationContext::GetInvokeValue(Value* subject, Context* context)
     }
     else
     {
-        InvokeValue* invokeValue = new InvokeValue(GetModule(), subject, context);
+        InvokeValue* invokeValue = new InvokeValue(GetModule(), subject, arguments, context);
         invokeMap[subject] = invokeValue;
         values.push_back(std::unique_ptr<Value>(invokeValue));
         MapValue(invokeValue);
@@ -1000,7 +1205,7 @@ InvokeValue* EvaluationContext::GetInvokeValue(Value* subject, Context* context)
 ArrayValue* EvaluationContext::GetArrayValue(TypeSymbol* type, Context* context)
 {
     ArrayValue* arrayValue = new ArrayValue(GetModule(), context);
-    arrayValue->SetType(type, context);
+    arrayValue->SetType(type->PlainType(context), context);
     values.push_back(std::unique_ptr<Value>(arrayValue));
     return arrayValue;
 }
@@ -1008,9 +1213,24 @@ ArrayValue* EvaluationContext::GetArrayValue(TypeSymbol* type, Context* context)
 StructureValue* EvaluationContext::GetStructureValue(TypeSymbol* type, Context* context)
 {
     StructureValue* structureValue = new StructureValue(GetModule(), context);
-    structureValue->SetType(type, context);
+    structureValue->SetType(type->PlainType(context), context);
     values.push_back(std::unique_ptr<Value>(structureValue));
     return structureValue;
+}
+
+FunctionGroupValue* EvaluationContext::GetFunctionGroupValue(Module* module, SymbolId symbolId, FunctionGroupSymbol* functionGroup, FunctionSymbol* fn, Context* context)
+{
+    FunctionGroupValue* functionGroupValue = new FunctionGroupValue(module, symbolId, functionGroup, fn);
+    values.push_back(std::unique_ptr<Value>(functionGroupValue));
+    return functionGroupValue;
+}
+
+TypeValue* EvaluationContext::GetTypeValue(Module* module, SymbolId symbolId, TypeSymbol* type, Context* context)
+{
+    TypeValue* typeValue = new TypeValue(module, symbolId, type);
+    typeValue->SetType(type, context);
+    values.push_back(std::unique_ptr<Value>(typeValue));
+    return typeValue;
 }
 
 void EvaluationContext::MapValue(Value* value)

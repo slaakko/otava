@@ -64,23 +64,19 @@ parser ClassParser
     using TypeParser.DeclTypeSpecifier;
     using TypeParser.TypeName;
 
-    ClassSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::ClassSpecifierNode> node, 
-        var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : otava::ast::Node*
+    ClassSpecifier(otava::symbols::Context* context, var soul::ast::Span span, var std::unique_ptr<otava::ast::ClassSpecifierNode> node) : otava::ast::Node*
         ::= 
         (
             ClassHead(context):classHead{ span = lexer.GetSpan(pos); } 
             LBRACE
             { 
-                lbSpan = lexer.GetSpan(pos); 
                 node.reset(new otava::ast::ClassSpecifierNode(span, lexer.File(), classHead)); 
                 otava::symbols::BeginClass(node.get(), context); 
             } 
             MemberSpecification(context, node.get()):memberSpec? 
-            RBRACE{ rbSpan = lexer.GetSpan(pos); }
+            RBRACE
         )
         {
-            node->SetLBraceSpan(lbSpan);
-            node->SetRBraceSpan(rbSpan);
             otava::symbols::EndClass(node.get(), context);
             return node.release();
         }
@@ -203,12 +199,12 @@ parser ClassParser
         }
         ;
 
-    ClassOrDeclType(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span tmpSpan) : otava::ast::Node*
+    ClassOrDeclType(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
         ::= NestedNameSpecifier(context):nns{ span = lexer.GetSpan(pos); } 
-            Template:tmp{ tmpSpan = span; } 
+            Template:tmp
             SimpleTemplateId(context):simpleTemplateId
             { 
-                return new otava::ast::QualifiedIdNode(span, lexer.File(), nns, new otava::ast::PrefixNode(tmpSpan, lexer.File(), tmp, simpleTemplateId)); 
+                return new otava::ast::QualifiedIdNode(span, lexer.File(), nns, new otava::ast::PrefixNode(span, lexer.File(), tmp, simpleTemplateId)); 
             }
         |   NestedNameSpecifier(context):nns2{ span = lexer.GetSpan(pos); } 
             Identifier(context):id
@@ -220,14 +216,13 @@ parser ClassParser
         ;
 
     MemberSpecification(otava::symbols::Context* context, otava::ast::Node* container, var std::unique_ptr<otava::ast::Node> accessSpecifierNode, 
-        var soul::ast::Span span, var soul::ast::Span colonSpan)
+        var soul::ast::Span span)
         ::= 
         (   AccessSpecifier:accessSpecifier{ span = lexer.GetSpan(pos); accessSpecifierNode.reset(accessSpecifier); } 
             COLON
             { 
-                colonSpan = lexer.GetSpan(pos); 
                 otava::symbols::SetCurrentAccess(accessSpecifierNode.get(), context);
-                container->AddNode(new otava::ast::BeginAccessGroupNode(span, lexer.File(), accessSpecifierNode.release(), colonSpan)); 
+                container->AddNode(new otava::ast::BeginAccessGroupNode(span, lexer.File(), accessSpecifierNode.release())); 
             }
         |   MemberDeclarationReset(context):memberDeclaration{ container->AddNode(memberDeclaration); }
         )+
@@ -453,9 +448,9 @@ parser ClassParser
         ::= 
         (   MemberInitializerId(context):id{ span = lexer.GetSpan(pos); }
             (
-                LPAREN{ exprListNode.reset(new otava::ast::ExpressionListNode(span, lexer.File())); exprListNode->SetLParenSpan(span); } 
+                LPAREN{ exprListNode.reset(new otava::ast::ExpressionListNode(span, lexer.File())); } 
                 ExpressionList(context, exprListNode.get()):expressionList?
-                RPAREN{ exprListNode->SetRParenSpan(span); node.reset(exprListNode.release()); }
+                RPAREN{ node.reset(exprListNode.release()); }
             |   BracedInitList(context):bracedInitList{ node.reset(bracedInitList); }
             )
         )
@@ -469,14 +464,14 @@ parser ClassParser
         |   Identifier(context):identifier{ return identifier; }
         ;
 
-    PureSpecifier(var soul::ast::Span span, var soul::ast::Span zeroSpan) : otava::ast::Node*
+    PureSpecifier(var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             ASSIGN{ span = lexer.GetSpan(pos); } 
-            INTEGER_LITERAL{ zeroSpan = lexer.GetSpan(pos); std::u32string value = lexer.GetToken(pos).ToString(); pass = value == U"0"; }
+            INTEGER_LITERAL{ std::u32string value = lexer.GetToken(pos).ToString(); pass = value == U"0"; }
         )
         {
-            return new otava::ast::PureSpecifierNode(span, lexer.File(), zeroSpan);
+            return new otava::ast::PureSpecifierNode(span, lexer.File());
         }
         ;
 

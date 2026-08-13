@@ -58,27 +58,26 @@ parser ModuleParser
         }
         ;
 
-    ExportDeclaration(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> node, var soul::ast::Span span,
-        var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : otava::ast::Node*
+    ExportDeclaration(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> node, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
             ExportKeyword(context):exprt{ span = lexer.GetSpan(pos); }
             (
                 (
-                    LBRACE{ lbSpan = lexer.GetSpan(pos); }
+                    LBRACE
                     DeclarationSeq(context):declarations?
-                    RBRACE{ rbSpan = lexer.GetSpan(pos); }
+                    RBRACE
                 )
                 {
-                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, declarations, lbSpan, rbSpan));
+                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, declarations));
                 }
             |   ImportDeclaration(context):imprt
                 {
-                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, imprt, soul::ast::Span(), soul::ast::Span()));
+                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, imprt));
                 }
             |   Declaration(context):declaration
                 {
-                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, declaration, soul::ast::Span(), soul::ast::Span()));
+                    node.reset(new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt, declaration));
                 }
             )
             {

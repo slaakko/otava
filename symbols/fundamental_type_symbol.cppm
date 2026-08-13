@@ -56,8 +56,9 @@ public:
     bool IsChar32TypeSymbol() const noexcept override { return fundamentalTypeKind == FundamentalTypeKind::char32Type; }
     int Rank(Context* context) override { return otava::symbols::Rank(fundamentalTypeKind); }
     bool IsSignedIntegerType() const noexcept override { return otava::symbols::IsSignedIntegerType(fundamentalTypeKind);; }
-    bool IsUnsignedIntegerType() const noexcept override { return otava::symbols::IsUnsignedIntegerType(fundamentalTypeKind);; }
+    bool IsUnsignedIntegerType() const noexcept override { return otava::symbols::IsUnsignedIntegerType(fundamentalTypeKind); }
     otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    Value* DefaultValue(Context* context) override;
 private:
     FundamentalTypeKind fundamentalTypeKind;
 };

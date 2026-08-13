@@ -600,7 +600,7 @@ soul::parser::Match ModuleDependencyParser<LexerT>::ExportImportDeclaration(Lexe
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ExportImportDeclaration");
                 #endif
-                return soul::parser::Match(true, new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt.release(), imprt.release(), soul::ast::Span(), soul::ast::Span()));
+                return soul::parser::Match(true, new otava::ast::ExportDeclarationNode(span, lexer.File(), exprt.release(), imprt.release()));
             }
         }
         *parentMatch0 = match;

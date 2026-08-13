@@ -553,12 +553,14 @@ void StatementBinder::Visit(otava::ast::MemberInitializerNode& node)
         initializerArgs.clear();
         if (memberVariableSymbol)
         {
-            BoundVariableNode* boundVariableNode = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
+            BoundVariableNode* boundVariableNode = new BoundVariableNode(memberVariableSymbol, fullSpan, 
+                memberVariableSymbol->GetReferredType(context)->DirectType(context)->FinalType(node.GetFullSpan(), context));
             ParameterSymbol* thisParam = context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ThisParam(context);
             BoundParameterNode* thisPtr = new BoundParameterNode(thisParam, fullSpan, thisParam->GetType(context));
             boundVariableNode->SetThisPtr(thisPtr);
             initializerArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(
-                new BoundDefaultInitNode(boundVariableNode, fullSpan), fullSpan, boundVariableNode->GetType()->AddPointer(context))));
+                new BoundDefaultInitNode(boundVariableNode, fullSpan), fullSpan, 
+                boundVariableNode->GetType()->DirectType(context)->FinalType(node.GetFullSpan(), context)->AddPointer(context))));
             index = memberVariableSymbol->GetIndex();
         }
     }
@@ -965,12 +967,12 @@ void StatementBinder::Visit(otava::ast::WhileStatementNode& node)
         ifBlock->AddNode(node.Statement()->Clone());
         ifBlock->AddNode(new otava::ast::GotoStatementNode(fullSpan.span, fullSpan.fileIndex,
             new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, label), nullptr,
-            nullptr, fullSpan.span));
+            nullptr));
         std::unique_ptr<otava::ast::IfStatementNode> ifStatement(new otava::ast::IfStatementNode(fullSpan.span, fullSpan.fileIndex, node.Condition()->Clone(),
-            ifBlock.release(), nullptr, nullptr, fullSpan.span, fullSpan.span, fullSpan.span, fullSpan.span, fullSpan.span));
+            ifBlock.release(), nullptr, nullptr));
         whileBlock->AddNode(ifStatement.release());
         std::unique_ptr<otava::ast::LabeledStatementNode> labeledStatement(new otava::ast::LabeledStatementNode(fullSpan.span, fullSpan.fileIndex,
-            new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, label), whileBlock.release(), nullptr, fullSpan.span));
+            new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, label), whileBlock.release(), nullptr));
         InstantiationScope instantiationScope(context->GetModule(), context->GetSymbolTable()->CurrentScope());
         Instantiator instantiator(context, &instantiationScope);
         FlagSetter flagSetter(context, ContextFlags::saveDeclarations | ContextFlags::dontBind);
@@ -1129,8 +1131,7 @@ void StatementBinder::Visit(otava::ast::RangeForStatementNode& node)
     forActionStmt->AddNode(forActionDeclarationStmt);
     forActionStmt->AddNode(node.Statement()->Clone());
     otava::ast::ForStatementNode* forStmt = new otava::ast::ForStatementNode(fullSpan.span, fullSpan.fileIndex,
-        forInitStmt, forCond, forLoopExpr, forActionStmt, nullptr, nullptr,
-        fullSpan.span, fullSpan.span, fullSpan.span);
+        forInitStmt, forCond, forLoopExpr, forActionStmt, nullptr, nullptr);
     forStmt->SetBlockId(rangeForBlockIds.forStatementId);
     rangeForCompound->AddNode(forStmt);
     InstantiationScope instantiationScope(context->GetModule(), context->GetSymbolTable()->CurrentScope());
@@ -1818,8 +1819,7 @@ void StatementBinder::Visit(otava::ast::ExceptionDeclarationNode& node)
         std::unique_ptr<otava::ast::Node>  endCatchStmt = ParseStatement("ort_end_catch();", context);
         completeCatchBlock->AddNode(endCatchStmt.release());
         otava::ast::IfStatementNode* ifStmt = new otava::ast::IfStatementNode(fullSpan.span, fullSpan.fileIndex,
-            beginCatchNode.release(), completeCatchBlock.release(), elseBlock.release(), nullptr, fullSpan.span, fullSpan.span,
-            fullSpan.span, fullSpan.span, fullSpan.span);
+            beginCatchNode.release(), completeCatchBlock.release(), elseBlock.release(), nullptr);
         ifStmt->SetBlockId(context->NextBlockId());
         if (lastElse)
         {
@@ -2137,7 +2137,7 @@ void FunctionStaticDeclarationExtractor::Visit(otava::ast::ArrayDeclaratorNode& 
     {
         dimension = node.Dimension()->Clone();
     }
-    declaratorNode = new otava::ast::ArrayDeclaratorNode(node.GetSpan(), node.FileIndex(), declaratorNode, dimension, node.GetSpan(), node.GetSpan());
+    declaratorNode = new otava::ast::ArrayDeclaratorNode(node.GetSpan(), node.FileIndex(), declaratorNode, dimension);
 }
 
 void FunctionStaticDeclarationExtractor::Visit(otava::ast::InitDeclaratorNode& node)
@@ -2344,10 +2344,10 @@ void StatementBinder::BindStaticLocalVariable(VariableSymbol* variable, otava::a
             span, fileIndex, setInitializedToTrueExpr, nullptr, nullptr));
         compound2->AddNode(setInitializedToTrueStmt.release());
         std::unique_ptr<otava::ast::IfStatementNode> innerIf(new otava::ast::IfStatementNode(
-            span, fileIndex, inititalizedCond->Clone(), compound2.release(), nullptr, nullptr, span, span, span, span, span));
+            span, fileIndex, inititalizedCond->Clone(), compound2.release(), nullptr, nullptr));
         compound1->AddNode(innerIf.release());
         std::unique_ptr<otava::ast::IfStatementNode> ifStmt(new otava::ast::IfStatementNode(
-            span, fileIndex, inititalizedCond->Clone(), compound1.release(), nullptr, nullptr, span, span, span, span, span));
+            span, fileIndex, inititalizedCond->Clone(), compound1.release(), nullptr, nullptr));
         InstantiationScope instantiationScope(context->GetModule(), context->GetSymbolTable()->CurrentScope());
         Instantiator instantiator(context, &instantiationScope);
         FlagSetter flagSetter(context, ContextFlags::saveDeclarations | ContextFlags::dontBind);
@@ -2399,6 +2399,11 @@ std::unique_ptr<BoundStatementNode> BindStatement(otava::ast::Node* statementNod
 
 FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode, FunctionDefinitionSymbol* functionDefinitionSymbol, Context* context)
 {
+    if (!context->IncompleteClassesCompleted())
+    {
+        context->SetIncompleterClassesCompleted();
+        otava::symbols::CompleteIncompleteClasses(context);
+    }
     TraceInfo* traceInfo = context->GetTraceInfo();
     if (traceInfo)
     {
@@ -2430,7 +2435,7 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
 #ifdef DEBUG_FUNCTIONS
     std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif
-    if (functionDefinitionSymbol->FullName(context) == "std::pair<const int, std::set<int, std::less<int>>>::pair()")
+    if (functionDefinitionSymbol->GroupName() == "AddGlobalVariable")
     {
         int x = 0;
     }

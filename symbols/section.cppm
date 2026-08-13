@@ -60,6 +60,7 @@ public:
     void MapSymbol(Symbol* symbol, Context* context);
     void AddEntry(Symbol* symbol, const SectionEntry& entry);
     void Write(Writer& writer);
+    void MapCompletedIncompleteClass(ClassTypeSymbol* completedIncompleteClass, Context* context);
 private:
     Module* module;
     SectionKind kind;

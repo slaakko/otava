@@ -644,6 +644,18 @@ bool FunctionSymbol::IsTemplate(Context* context) const noexcept
     return ParentTemplateDeclaration(context) != nullptr && !IsSpecialization();
 }
 
+bool FunctionSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const noexcept
+{
+    if (visited.find(this) != visited.end()) return false;
+    visited.insert(this);
+    const std::vector<ParameterSymbol*>& memFnParams = MemFnParameters(context);
+    for (ParameterSymbol* param : memFnParams)
+    {
+        if (param->GetType(context)->IsTemplateParameterInstantiation(context, visited)) return true;
+    }
+    return false;
+}
+
 void FunctionSymbol::SetSpecialization(const std::vector<TypeSymbol*>& specialization_)
 {
     specialization = specialization_;
@@ -831,7 +843,7 @@ void FunctionSymbol::Write(Writer& writer)
 void FunctionSymbol::Read(Reader& reader)
 {
     ContainerSymbol::Read(reader);
-    flags = FunctionSymbolFlags(reader.CurrentReader().ReadUShort());
+    flags = FunctionSymbolFlags(reader.CurrentReader().ReadUInt());
     qualifiers = FunctionQualifiers(reader.CurrentReader().ReadUShort());
     linkage = Linkage(reader.CurrentReader().ReadByte());
     index = reader.CurrentReader().ReadInt();
@@ -1278,6 +1290,10 @@ void FunctionSymbol::ReplaceIncompleteTypes(FunctionDefinitionSymbol* definition
         TypeSymbol* defRetValParamType = defReturnValueParam->GetType(context);
         returnValueParam->SetType(defRetValParamType, context);
     }
+}
+
+void FunctionSymbol::Evaluate(Context* context)
+{
 }
 
 FunctionDefinitionSymbol::FunctionDefinitionSymbol(Module* module_, SymbolId id_) : 

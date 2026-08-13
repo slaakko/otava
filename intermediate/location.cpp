@@ -97,7 +97,7 @@ FrameLocation Frame::GetFrameLocation(int index, const soul::ast::Span& span, In
 FrameLocation Frame::GetParentFrameLocation(const soul::ast::Span& span, IntermediateContext* context) const
 {
     FrameLocation parentFrameLocation(otava::assembly::RegisterGroupKind::rsi, 0, 8, 8);
-    return  parentFrameLocation;
+    return parentFrameLocation;
 }
 
 std::int64_t Frame::Size() const noexcept

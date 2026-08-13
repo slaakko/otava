@@ -537,6 +537,12 @@ void SymbolTable::EndClass(Context* context)
     EndScope(context);
 }
 
+void SymbolTable::AddCompletedIncompleteClass(ClassTypeSymbol* completedIncompleteClass, Context* context)
+{
+    Section* section = GetSection(completedIncompleteClass);
+    section->MapCompletedIncompleteClass(completedIncompleteClass, context);
+}
+
 void SymbolTable::AddForwardClassDeclaration(const std::string& name, ClassKind classKind, TypeSymbol* specialization, otava::ast::Node* node, Context* context)
 {
     soul::ast::FullSpan fullSpan = node->GetFullSpan();
@@ -979,7 +985,7 @@ TypeSymbol* SymbolTable::MakeCompoundType(TypeSymbol* baseType, Derivations deri
     compoundTypeSymbol->SetBaseType(baseType);
     compoundTypeSymbol->SetDerivations(drv);
     SetIrId(compoundTypeSymbol, context);
-    GlobalNs()->GetScope()->AddSymbol(compoundTypeSymbol, soul::ast::FullSpan(), context);
+    GetGlobalNs(context)->GetScope()->AddSymbol(compoundTypeSymbol, soul::ast::FullSpan(), context);
     return compoundTypeSymbol;
 }
 

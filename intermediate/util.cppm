@@ -5,8 +5,10 @@
 
 export module otava.intermediate.util;
 
+import otava.intermediate.value;
 import otava.intermediate.code;
 import otava.intermediate.data;
+import otava.intermediate.value;
 import std;
 
 export namespace otava::intermediate {

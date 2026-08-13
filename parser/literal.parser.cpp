@@ -678,7 +678,6 @@ soul::parser::Match LiteralParser<LexerT>::LiteralOperatorId(LexerT& lexer, otav
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 2723703907904651268);
     soul::ast::Span span = soul::ast::Span();
-    soul::ast::Span stringLitPos = soul::ast::Span();
     soul::ast::Span idPos = soul::ast::Span();
     std::int64_t idp = std::int64_t();
     soul::parser::Match match(false);
@@ -730,7 +729,6 @@ soul::parser::Match LiteralParser<LexerT>::LiteralOperatorId(LexerT& lexer, otav
                             }
                             if (match.hit)
                             {
-                                stringLitPos = lexer.GetSpan(pos);
                                 pass = lexer.GetToken(pos).ToString() == U"";
                             }
                             if (match.hit && !pass)
@@ -779,7 +777,7 @@ soul::parser::Match LiteralParser<LexerT>::LiteralOperatorId(LexerT& lexer, otav
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "LiteralOperatorId");
                 #endif
-                return soul::parser::Match(true, new otava::ast::LiteralOperatorIdNode(span, lexer.File(), otava::parser::token::ParseIdentifier(idPos, lexer.File(), lexer.FileName(), lexer.GetToken(idp)), stringLitPos));
+                return soul::parser::Match(true, new otava::ast::LiteralOperatorIdNode(span, lexer.File(), otava::parser::token::ParseIdentifier(idPos, lexer.File(), lexer.FileName(), lexer.GetToken(idp))));
             }
         }
         *parentMatch0 = match;

@@ -6,12 +6,11 @@
 export module otava.assembly.data;
 
 import otava.assembly.declaration;
+import otava.assembly.instruction;
 import util.code_formatter;
 import std;
 
 export namespace otava::assembly {
-
-class Instruction;
 
 class Data
 {

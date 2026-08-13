@@ -6,7 +6,7 @@
 export module otava.symbols.bound_tree;
 
 import otava.intermediate.code;
-import otava.intermediate.data;
+import otava.intermediate.value;
 import soul.ast.span;
 import otava.ast.node;
 import std;
@@ -202,6 +202,7 @@ public:
     void SetDestructTemporariesNode(BoundDestructTemporariesNode* destructTemporariesNode_) noexcept;
     inline BoundDestructTemporariesNode* DestructTemporariesNode() const noexcept { return destructTemporariesNode; }
     void DestructTemporaries(Emitter& emitter, Context* context);
+    virtual Value* ToValue(Context* context) { return nullptr; }
 private:
     BoundExpressionFlags flags;
     TypeSymbol* type;
@@ -234,6 +235,7 @@ public:
     inline ClassTemplateRepository* GetClassTemplateRepository() const { return classTemplateRepository.get(); }
     inline InlineFunctionRepository* GetInlineFunctionRepository() const { return inlineFunctionRepository.get(); }
     inline BoundFunctionNode* GetCompileUnitInitializationFunction() { return compileUnitInitializationFunction; }
+    BoundFunctionNode* GetOrInsertCompileUnitInitializationFunction(const soul::ast::FullSpan& fullSpan, Context* context);
     void AddDynamicInitialization(BoundExpressionNode* dynamicInitialization, BoundExpressionNode* atExitCall, const soul::ast::FullSpan& fullSpan, Context* context);
     void Accept(BoundTreeVisitor& visitor) override;
     void AddBoundNode(std::unique_ptr<BoundNode>&& node, Context* context);
@@ -731,6 +733,7 @@ public:
     void SetValue(Value* value_) noexcept { value = value_; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
+    Value* ToValue(Context* context) override { return value; }
 private:
     Value* value;
 };
@@ -744,6 +747,7 @@ public:
     inline Value* GetValue() const noexcept { return value; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
+    Value* ToValue(Context* context) override { return value; }
 private:
     Value* value;
     otava::intermediate::Value* irValue;
@@ -765,6 +769,7 @@ public:
     bool IsLvalueExpression(Context* context) const noexcept override { return true; }
     BoundExpressionNode* Clone() const override;
     void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context) override;
+    Value* ToValue(Context* context) override;
 private:
     VariableSymbol* variable;
     std::unique_ptr<BoundExpressionNode> thisPtr;
@@ -836,6 +841,7 @@ public:
     EnumConstantSymbol* EnumConstant() const noexcept { return enumConstant; }
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
+    Value* ToValue(Context* context) override;
 private:
     EnumConstantSymbol* enumConstant;
 };

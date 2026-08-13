@@ -1,0 +1,225 @@
+import std;
+
+/*
+enum class StringOffset : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(StringOffset offset) noexcept { return std::uint32_t(offset); }
+
+constexpr StringOffset operator+(StringOffset offset, std::uint32_t operand) noexcept
+{
+    return StringOffset(ToUnderlying(offset) + operand);
+}
+
+constexpr StringOffset notFoundOffset = StringOffset(0xFFFFFFFF);
+
+constexpr StringOffset& operator+=(StringOffset& x, std::uint32_t y) noexcept
+{
+    x = x + y;
+    return x;
+}
+
+
+enum class SymbolId : std::uint64_t {};
+
+constexpr SymbolId zeroSymbolId = SymbolId(0);
+
+constexpr std::uint64_t ToUnderlying(SymbolId id) noexcept { return std::uint64_t(id); }
+
+enum class Length : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(Length length)  noexcept { return std::uint32_t(length); }
+
+constexpr Length operator+(Length x, Length y) noexcept
+{
+    return Length(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr Length& operator+=(Length& x, Length y) noexcept
+{
+    x = x + y;
+    return x;
+}
+
+constexpr Length operator*(Length x, Length y) noexcept
+{
+    return Length(ToUnderlying(x) * ToUnderlying(y));
+}
+
+enum class FileOffset : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(FileOffset fileOffset) noexcept { return std::uint32_t(fileOffset); }
+
+constexpr Length operator-(FileOffset x, FileOffset y) noexcept
+{
+    return Length(ToUnderlying(x) - ToUnderlying(y));
+}
+
+*/
+
+enum class Cardinality : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(Cardinality cardinality) noexcept { return std::uint32_t(cardinality); }
+
+constexpr Cardinality operator+(Cardinality x, Cardinality y) noexcept
+{
+    return Cardinality(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr Cardinality operator-(Cardinality x, Cardinality y) noexcept
+{
+    return Cardinality(ToUnderlying(x) - ToUnderlying(y));
+}
+
+constexpr Cardinality& operator+=(Cardinality& x, Cardinality y) noexcept
+{
+    x = x + y;
+    return x;
+}
+
+constexpr Cardinality& operator++(Cardinality& c) noexcept
+{
+    c = c + Cardinality(1);
+    return c;
+}
+
+constexpr Cardinality operator++(Cardinality& c, int) noexcept
+{
+    Cardinality result(c);
+    c = c + Cardinality(1);
+    return result;
+}
+
+constexpr Cardinality& operator--(Cardinality& c) noexcept
+{
+    c = c - Cardinality(1);
+    return c;
+}
+
+constexpr Cardinality operator--(Cardinality& c, int) noexcept
+{
+    Cardinality result(c);
+    c = c - Cardinality(1);
+    return result;
+}
+
+/*
+
+enum class Index : std::int32_t {};
+
+constexpr std::int32_t ToUnderlying(Index index) noexcept { return std::int32_t(index); }
+
+constexpr Index operator+(Index x, Index y) noexcept
+{
+    return Index(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr Index operator-(Index x, Index y) noexcept
+{
+    return Index(ToUnderlying(x) - ToUnderlying(y));
+}
+
+constexpr Index& operator++(Index& x) noexcept
+{
+    x = x + Index(1);
+    return x;
+}
+
+constexpr Index operator++(Index& x, int) noexcept
+{
+    Index result(x);
+    x = x + Index(1);
+    return result;
+}
+
+constexpr Index& operator--(Index& x) noexcept
+{
+    x = x - Index(1);
+    return x;
+}
+
+constexpr Index operator--(Index& x, int) noexcept
+{
+    Index result(x);
+    x = x - Index(1);
+    return result;
+}
+
+enum class ModuleId : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(ModuleId moduleId) noexcept { return std::uint32_t(moduleId); }
+
+constexpr ModuleId zeroModuleId = ModuleId(0);
+
+constexpr ModuleId operator+(ModuleId x, ModuleId y) noexcept
+{
+    return ModuleId(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr ModuleId operator+(ModuleId x, Cardinality y) noexcept
+{
+    return ModuleId(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr ModuleId& operator++(ModuleId& x) noexcept
+{
+    x = x + ModuleId(1);
+    return x;
+}
+
+constexpr ModuleId operator++(ModuleId& x, int) noexcept
+{
+    ModuleId result(x);
+    x = x + ModuleId(1);
+    return result;
+}
+
+struct ModuleSymbolId
+{
+    inline ModuleSymbolId() noexcept : moduleId(zeroModuleId), symbolId(zeroSymbolId) {}
+    inline ModuleSymbolId(ModuleId moduleId_, SymbolId symbolId_) noexcept : moduleId(moduleId_), symbolId(symbolId_) {}
+    ModuleId moduleId;
+    SymbolId symbolId;
+};
+
+enum class ProjectId : std::uint32_t {};
+
+constexpr std::uint32_t ToUnderlying(ProjectId projectId) noexcept { return std::uint32_t(projectId); }
+
+constexpr ProjectId operator+(ProjectId x, ProjectId y) noexcept
+{
+    return ProjectId(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr ProjectId operator+(ProjectId x, Cardinality y) noexcept
+{
+    return ProjectId(ToUnderlying(x) + ToUnderlying(y));
+}
+
+constexpr ProjectId& operator++(ProjectId& x) noexcept
+{
+    x = x + ProjectId(1);
+    return x;
+}
+
+constexpr ProjectId operator++(ProjectId& x, int) noexcept
+{
+    ProjectId result(x);
+    x = x + ProjectId(1);
+    return result;
+}
+
+*/
+
+constexpr std::uint32_t foo()
+{
+    Cardinality c(1);
+    Cardinality d(2);
+    Cardinality e = c + d;
+    ++e;
+    return ToUnderlying(e);
+}
+
+int main()
+{
+    std::cout << foo() << "\n";
+}

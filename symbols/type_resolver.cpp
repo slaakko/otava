@@ -613,16 +613,20 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
         {
             containerNames = GetContainerNames(currentScope->GetSymbol(), context);
         }
-        Scope* templateNsScope = context->GetTemplateNsScope();
-        if (templateNsScope)
+        Scope* templateScope = context->GetTemplateScope();
+        if (templateScope)
         {
-            Symbol* symbol = templateNsScope->GetSymbol();
+            Symbol* symbol = templateScope->GetSymbol();
             containerNames = GetContainerNames(symbol, context);
         }
         std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
         Module* templateModule = context->GetTemplateModule();
         if (templateModule)
         {
+            if (std::find(importedModules.begin(), importedModules.end(), templateModule) == importedModules.end())
+            {
+                importedModules.push_back(templateModule);
+            }
             std::vector<Module*> templateModules = templateModule->ImportExportModules(context);
             for (Module* module : templateModules)
             {
@@ -762,16 +766,20 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
     {
         containerNames = GetContainerNames(currentScope->GetSymbol(), context);
     }
-    Scope* templateNsScope = context->GetTemplateNsScope();
-    if (templateNsScope)
+    Scope* templateScope = context->GetTemplateScope();
+    if (templateScope)
     {
-        Symbol* symbol = templateNsScope->GetSymbol();
+        Symbol* symbol = templateScope->GetSymbol();
         containerNames = GetContainerNames(symbol, context);
     }
     std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
     Module* templateModule = context->GetTemplateModule();
     if (templateModule)
     {
+        if (std::find(importedModules.begin(), importedModules.end(), templateModule) == importedModules.end())
+        {
+            importedModules.push_back(templateModule);
+        }
         std::vector<Module*> templateModules = templateModule->ImportExportModules(context);
         for (Module* module : templateModules)
         {
@@ -818,10 +826,11 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
             ThrowException("template name '" + node.TemplateName()->Str() + "' not resolved", node.GetFullSpan(), context);
         }
     }
+    ClassTypeSymbol* classTemplate = nullptr;
     TemplateDeclarationSymbol* templateDeclaration = nullptr;
     if (typeSymbol->IsClassTypeSymbol())
     {
-        ClassTypeSymbol* classTemplate = static_cast<ClassTypeSymbol*>(typeSymbol);
+        classTemplate = static_cast<ClassTypeSymbol*>(typeSymbol);
         templateDeclaration = classTemplate->ParentTemplateDeclaration(context);
     }
     std::vector<Symbol*> templateArgs;
@@ -877,12 +886,12 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
                 failed = true;
                 if (!context->HasException())
                 {
-                    context->SetException(MakeException("template argument'" + std::to_string(ToUnderlying(i)) + " of type '" +
+                    context->SetException(MakeException("template argument " + std::to_string(ToUnderlying(i)) + " of type '" +
                         typeSymbol->FullName(context) + "' not resolved", fullSpan, context));
                 }
                 return;
             }
-            ThrowException("template argument'" + std::to_string(ToUnderlying(i)) + " of type '" + 
+            ThrowException("template argument " + std::to_string(ToUnderlying(i)) + " of type '" + 
                 typeSymbol->FullName(context) + "' not resolved", fullSpan, context);
         }
     }

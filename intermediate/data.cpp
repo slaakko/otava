@@ -18,6 +18,16 @@ CloneContext::CloneContext() : context(nullptr), currentFunction(nullptr)
 {
 }
 
+void CloneContext::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
+}
+
+IntermediateContext* CloneContext::GetContext() const noexcept
+{
+    return context;
+}
+
 void CloneContext::MapInstruction(Instruction* inst, Instruction* clone)
 {
     instMap[inst] = clone;
@@ -57,507 +67,6 @@ BasicBlock* CloneContext::GetMappedBasicBlock(BasicBlock* bb) const noexcept
 void CloneContext::MapBasicBlock(BasicBlock* bb, BasicBlock* clone)
 {
     bbMap[bb] = clone;
-}
-
-const char* valueKindStr[]
-{
-    "boolValue", "sbyteValue", "byteValue", "shortValue", "ushortValue", "intValue", "uintValue", "longValue", "ulongValue", "floatValue", "doubleValue", "nullValue",
-    "addressValue",
-    "arrayValue", "structureValue", "stringValue", "stringArrayValue", "conversionValue", "clsIdValue", "symbolValue",
-    "globalVariable",
-    "regValue",
-    "instruction"
-};
-
-Value::Value(const soul::ast::Span& span_, ValueKind kind_, Type* type_) noexcept : span(span_), kind(kind_), type(type_)
-{
-}
-
-Value::~Value()
-{
-}
-
-void Value::Accept(Visitor& visitor)
-{
-}
-
-bool Value::IsTrue() const noexcept
-{
-    return kind == ValueKind::boolValue && static_cast<const BoolValue*>(this)->GetValue() == true;
-}
-
-bool Value::IsFalse() const noexcept
-{
-    return kind == ValueKind::boolValue && static_cast<const BoolValue*>(this)->GetValue() == false;
-}
-
-bool Value::IsIntegerValue() const noexcept
-{
-    switch (kind)
-    {
-    case ValueKind::sbyteValue:
-    case ValueKind::byteValue:
-    case ValueKind::shortValue:
-    case ValueKind::ushortValue:
-    case ValueKind::intValue:
-    case ValueKind::uintValue:
-    case ValueKind::longValue:
-    case ValueKind::ulongValue:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
-    }
-}
-
-bool Value::IsFloatingPointValue() const noexcept
-{
-    return kind == ValueKind::floatValue || kind == ValueKind::doubleValue;
-}
-
-std::int64_t Value::GetIntegerValue() const noexcept
-{
-    switch (kind)
-    {
-    case ValueKind::sbyteValue:
-    {
-        const SByteValue* sbyteValue = static_cast<const SByteValue*>(this);
-        return sbyteValue->GetValue();
-    }
-    case ValueKind::byteValue:
-    {
-        const ByteValue* byteValue = static_cast<const ByteValue*>(this);
-        return byteValue->GetValue();
-    }
-    case ValueKind::shortValue:
-    {
-        const ShortValue* shortValue = static_cast<const ShortValue*>(this);
-        return shortValue->GetValue();
-    }
-    case ValueKind::ushortValue:
-    {
-        const UShortValue* ushortValue = static_cast<const UShortValue*>(this);
-        return ushortValue->GetValue();
-    }
-    case ValueKind::intValue:
-    {
-        const IntValue* intValue = static_cast<const IntValue*>(this);
-        return intValue->GetValue();
-    }
-    case ValueKind::uintValue:
-    {
-        const UIntValue* uintValue = static_cast<const UIntValue*>(this);
-        return uintValue->GetValue();
-    }
-    case ValueKind::longValue:
-    {
-        const LongValue* longValue = static_cast<const LongValue*>(this);
-        return longValue->GetValue();
-    }
-    case ValueKind::ulongValue:
-    {
-        const ULongValue* ulongValue = static_cast<const ULongValue*>(this);
-        return static_cast<std::int64_t>(ulongValue->GetValue());
-    }
-    default:
-    {
-        return -1;
-    }
-    }
-}
-
-std::string Value::KindStr() const
-{
-    return valueKindStr[static_cast<int>(kind)];
-}
-
-Instruction* Value::GetInstruction() const noexcept
-{
-    if (IsRegValue())
-    {
-        const RegValue* regValue = static_cast<const RegValue*>(this);
-        return regValue->Inst();
-    }
-    return nullptr;
-}
-
-BoolValue::BoolValue(bool value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::boolValue, type_), value(value_)
-{
-}
-
-void BoolValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string BoolValue::ToString() const
-{
-    return value ? "true" : "false";
-}
-
-SByteValue::SByteValue(std::int8_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::sbyteValue, type_), value(value_)
-{
-}
-
-void SByteValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string SByteValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* SByteValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int8_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* SByteValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int8_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-ByteValue::ByteValue(std::uint8_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::byteValue, type_), value(value_)
-{
-}
-
-void ByteValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string ByteValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* ByteValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint8_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* ByteValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint8_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-ShortValue::ShortValue(std::int16_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::shortValue, type_), value(value_)
-{
-}
-
-void ShortValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string ShortValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* ShortValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int16_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* ShortValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int16_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-UShortValue::UShortValue(std::uint16_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::ushortValue, type_), value(value_)
-{
-}
-
-void UShortValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string UShortValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* UShortValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint16_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* UShortValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint16_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-IntValue::IntValue(std::int32_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::intValue, type_), value(value_)
-{
-}
-
-void IntValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string IntValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* IntValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int32_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* IntValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int32_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-UIntValue::UIntValue(std::uint32_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::uintValue, type_), value(value_)
-{
-}
-
-void UIntValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string UIntValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* UIntValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint32_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* UIntValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint32_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-LongValue::LongValue(std::int64_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::longValue, type_), value(value_)
-{
-}
-
-void LongValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string LongValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* LongValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int64_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* LongValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::int64_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-ULongValue::ULongValue(std::uint64_t value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::ulongValue, type_), value(value_)
-{
-}
-
-void ULongValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string ULongValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-Value* ULongValue::Log2(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint64_t>(shift), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-Value* ULongValue::ModPowerOfTwo(IntermediateContext* context) const
-{
-    if (value > 0)
-    {
-        int shift = 0;
-        if (IsPowerOfTwo(static_cast<std::uint64_t>(value), shift))
-        {
-            return context->GetData().MakeValue(static_cast<std::uint64_t>(value - 1), context->GetTypes());
-        }
-    }
-    return nullptr;
-}
-
-FloatValue::FloatValue(float value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::floatValue, type_), value(value_)
-{
-}
-
-void FloatValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string FloatValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-DoubleValue::DoubleValue(double value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::doubleValue, type_), value(value_)
-{
-}
-
-void DoubleValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string DoubleValue::ToString() const
-{
-    return std::to_string(value);
-}
-
-NullValue::NullValue(Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::nullValue, type_)
-{
-}
-
-void NullValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-std::string NullValue::ToString() const
-{
-    return "null";
 }
 
 AddressValue::AddressValue(const soul::ast::Span& span_, const std::string& id_, Type* type) noexcept :
@@ -810,15 +319,30 @@ Data::Data() noexcept : context(nullptr), nextStringValueId(0)
 {
 }
 
+IntermediateContext* Data::GetContext() const noexcept
+{
+    return context;
+}
+
+void Data::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
+}
+
+GlobalVariable* Data::DoAddGlobalVariable(const soul::ast::Span& span, Type* type, const std::string& variableName, Value* initializer, IntermediateContext* context)
+{
+    GlobalVariable* globalVariable = new GlobalVariable(span, type, variableName, initializer);
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(globalVariable));
+    globalVariableMap[variableName] = globalVariable;
+    globalVariables.push_back(globalVariable);
+    return globalVariable;
+}
+
 GlobalVariable* Data::AddGlobalVariable(const soul::ast::Span& span, Type* type, const std::string& variableName, Value* initializer, IntermediateContext* context)
 {
     try
     {
-        GlobalVariable* globalVariable = new GlobalVariable(span, type, variableName, initializer);
-        values.push_back(std::unique_ptr<Value>(globalVariable));
-        globalVariableMap[variableName] = globalVariable;
-        globalVariables.push_back(globalVariable);
-        return globalVariable;
+        return DoAddGlobalVariable(span, type, variableName, initializer, context);
     }
     catch (const std::exception& ex)
     {
@@ -990,7 +514,7 @@ Value* Data::GetNullValue(Type* type)
     {
         NullValue* nullValue = new NullValue(type);
         nullValueMap[type] = nullValue;
-        values.push_back(std::unique_ptr<Value>(nullValue));
+        values.push_back(std::unique_ptr<otava::intermediate::Value>(nullValue));
         return nullValue;
     }
 }
@@ -998,84 +522,84 @@ Value* Data::GetNullValue(Type* type)
 Value* Data::MakeValue(std::int8_t value, const Types& types)
 {
     SByteValue* constantValue = new SByteValue(value, types.Get(sbyteTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::uint8_t value, const Types& types)
 {
     ByteValue* constantValue = new ByteValue(value, types.Get(byteTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::int16_t value, const Types& types)
 {
     ShortValue* constantValue = new ShortValue(value, types.Get(shortTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::uint16_t value, const Types& types)
 {
     UShortValue* constantValue = new UShortValue(value, types.Get(ushortTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::int32_t value, const Types& types)
 {
     IntValue* constantValue = new IntValue(value, types.Get(intTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::uint32_t value, const Types& types)
 {
     UIntValue* constantValue = new UIntValue(value, types.Get(uintTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::int64_t value, const Types& types)
 {
     LongValue* constantValue = new LongValue(value, types.Get(longTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(std::uint64_t value, const Types& types)
 {
     ULongValue* constantValue = new ULongValue(value, types.Get(ulongTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(float value, const Types& types)
 {
     FloatValue* constantValue = new FloatValue(value, types.Get(floatTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeValue(double value, const Types& types)
 {
     DoubleValue* constantValue = new DoubleValue(value, types.Get(doubleTypeId));
-    values.push_back(std::unique_ptr<Value>(constantValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(constantValue));
     return constantValue;
 }
 
 Value* Data::MakeArrayValue(const soul::ast::Span& span, const std::vector<Value*>& elements, ArrayType* arrayType)
 {
     ArrayValue* arrayValue = new ArrayValue(span, elements, arrayType);
-    values.push_back(std::unique_ptr<Value>(arrayValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(arrayValue));
     return arrayValue;
 }
 
 Value* Data::MakeStructureValue(const soul::ast::Span& span, const std::vector<Value*>& fieldValues, StructureType* structureType)
 {
     StructureValue* structureValue = new StructureValue(span, fieldValues, structureType);
-    values.push_back(std::unique_ptr<Value>(structureValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(structureValue));
     return structureValue;
 }
 
@@ -1132,21 +656,21 @@ Value* Data::MakeStringValue(const soul::ast::Span& span, const std::string& val
         }
     }
     StringValue* stringValue = new StringValue(span, s);
-    values.push_back(std::unique_ptr<Value>(stringValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(stringValue));
     return stringValue;
 }
 
 Value* Data::MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements)
 {
     StringArrayValue* stringArrayValue = new StringArrayValue(span, prefix, elements);
-    values.push_back(std::unique_ptr<Value>(stringArrayValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(stringArrayValue));
     return stringArrayValue;
 }
 
 Value* Data::MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from)
 {
     ConversionValue* conversionValue = new ConversionValue(span, type, from);
-    values.push_back(std::unique_ptr<Value>(conversionValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(conversionValue));
     return conversionValue;
 }
 
@@ -1154,14 +678,14 @@ Value* Data::MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::
 {
     std::string typeId = clsIdStr.substr(6, clsIdStr.length() - 6 - 1);
     ClsIdValue* clsIdValue = new ClsIdValue(span, type, typeId);
-    values.push_back(std::unique_ptr<Value>(clsIdValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(clsIdValue));
     return clsIdValue;
 }
 
 Value* Data::MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol)
 {
     SymbolValue* symbolValue = new SymbolValue(span, type, symbol);
-    values.push_back(std::unique_ptr<Value>(symbolValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(symbolValue));
     return symbolValue;
 }
 
@@ -1270,6 +794,7 @@ Value* Data::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const s
     default:
     {
         Error("error making literal: invalid numeric value", span, context);
+        break;
     }
     }
     return nullptr;
@@ -1282,7 +807,7 @@ Value* Data::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const s
     {
         ResolveAddressValue(addressValue);
     }
-    values.push_back(std::unique_ptr<Value>(addressValue));
+    values.push_back(std::unique_ptr<otava::intermediate::Value>(addressValue));
     addressValues.push_back(addressValue);
     return addressValue;
 }
@@ -1329,7 +854,7 @@ void Data::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("data");
     formatter.WriteLine("{");
     formatter.IncIndent();
-    for (const auto& globalVariable : globalVariables)
+    for (auto* globalVariable : globalVariables)
     {
         globalVariable->Write(formatter);
         formatter.WriteLine();

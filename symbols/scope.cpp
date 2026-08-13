@@ -457,6 +457,11 @@ Scope* Scope::SymbolScope(Context* context) noexcept
     return this;
 }
 
+Scope* Scope::SpecializationScope(Context* context) 
+{
+    return this;
+}
+
 void Scope::AddContainerScope(Scope* containerScope)
 {
     if (std::find(containerScopes.begin(), containerScopes.end(), containerScope) == containerScopes.end())
@@ -667,6 +672,20 @@ void ContainerScope::SetContainerSymbol(ContainerSymbol* containerSymbol_) noexc
     containerSymbol = containerSymbol_;
 }
 
+Scope* ContainerScope::SpecializationScope(Context* context) 
+{
+    if (containerSymbol->IsClassTemplateSpecializationSymbol())
+    {
+        ClassTemplateSpecializationSymbol* sp = static_cast<ClassTemplateSpecializationSymbol*>(containerSymbol);
+        if (sp->ClassTemplate(context)->IsExplicitSpecialization(context))
+        {
+            ClassTypeSymbol* ct = sp->ClassTemplate(context);
+            return ct->GetScope();
+        }
+    }
+    return this;
+}
+
 ClassTemplateSpecializationSymbol* ContainerScope::GetClassTemplateSpecialization(std::set<Scope*>& visited) const
 {
     if (containerSymbol->IsClassTemplateSpecializationSymbol())
@@ -792,7 +811,7 @@ void ContainerScope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSp
     }
     if (IsReadOnly())
     {
-        context->GetModule()->GetSymbolTable()->GlobalNs()->AddSymbol(symbol, fullSpan, context);
+        context->GetModule()->GetSymbolTable()->GetGlobalNs(context)->AddSymbol(symbol, fullSpan, context);
         symbol->SetParent(containerSymbol);
     }
     else
@@ -890,25 +909,6 @@ AliasGroupSymbol* ContainerScope::GetOrInsertAliasGroup(const std::string& name,
     AddSymbol(aliasGroupSymbol, fullSpan, context);
     return aliasGroupSymbol;
 }
-
-/*
-EnumGroupSymbol* ContainerScope::GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
-{
-    Symbol* symbol = Scope::Lookup(name, 
-        SymbolGroupKind::enumSymbolGroup, ScopeLookup::thisScope, fullSpan, context, LookupFlags::dontResolveSingle);
-    if (symbol)
-    {
-        if (symbol->Kind() == SymbolKind::enumGroupSymbol)
-        {
-            EnumGroupSymbol* enumGroupSymbol = static_cast<EnumGroupSymbol*>(symbol);
-            return enumGroupSymbol;
-        }
-    }
-    EnumGroupSymbol* enumGroupSymbol = new EnumGroupSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::enumGroupSymbol), name);
-    AddSymbol(enumGroupSymbol, fullSpan, context);
-    return enumGroupSymbol;
-}
-*/
 
 TemplateParamGroupSymbol* ContainerScope::GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {

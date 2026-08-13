@@ -117,9 +117,19 @@ Metadata::Metadata() noexcept : context(nullptr), trueItem(), falseItem()
 {
 }
 
+IntermediateContext* Metadata::GetContext() const noexcept
+{
+    return context;
+}
+
+void Metadata::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
+}
+
 MetadataStruct* Metadata::CreateMetadataStruct()
 {
-    return AddMetadataStruct(soul::ast::Span(), metadataNodes.size());
+    return AddMetadataStruct(soul::ast::Span(), std::int32_t(metadataNodes.size()));
 }
 
 MetadataStruct* Metadata::GetMetadataStruct(std::int32_t id) const

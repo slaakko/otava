@@ -16,7 +16,7 @@ export namespace otava::intermediate {
 class Value;
 class IntermediateContext;
 class Types;
-class TypeRef;
+class Type;
 class Visitor;
 class ArrayType;
 class StructureType;
@@ -64,7 +64,7 @@ constexpr std::int32_t MakeTypeId(std::int32_t baseTypeId, std::int32_t pointerC
     }
     else
     {
-        return MakePointerTypeId(baseTypeId, pointerCount);
+        return MakePointerTypeId(baseTypeId, std::int8_t(pointerCount));
     }
 }
 
@@ -83,12 +83,32 @@ enum class TypeKind : int
     fundamentalType, structureType, fwdDeclaredStructureType, arrayType, functionType, pointerType
 };
 
+class TypeRef
+{
+public:
+    TypeRef() noexcept;
+    TypeRef(const soul::ast::Span& span_, std::int32_t id_) noexcept;
+    inline const soul::ast::Span& Span() const noexcept { return span; }
+    inline std::int32_t Id() const noexcept { return id; }
+    void SetType(Type* type_) noexcept;
+    Type* GetType() const noexcept;
+private:
+    soul::ast::Span span;
+    std::int32_t id;
+    Type* type;
+};
+
+inline TypeRef MakeTypeRef(const soul::ast::Span& span, std::int32_t baseTypeId, std::int32_t pointerCount) noexcept
+{
+    return TypeRef(span, MakeTypeId(baseTypeId, pointerCount));
+}
+
 class Type
 {
 public:
     Type(const soul::ast::Span& span_, TypeKind kind_, std::int32_t id_) noexcept;
     virtual ~Type();
-    virtual void Accept(Visitor& visitor) {}
+    virtual void Accept(Visitor& visitor);
     virtual std::int64_t Size() const noexcept = 0;
     virtual std::int64_t Alignment() const noexcept = 0;
     virtual otava::assembly::OpCode DataOpCode() const noexcept { return otava::assembly::OpCode::DB; }
@@ -110,7 +130,6 @@ public:
     Type* RemovePointer(const soul::ast::Span& span, IntermediateContext* context) const;
     inline bool IsFwdDeclaredStructureType() const noexcept { return kind == TypeKind::fwdDeclaredStructureType; }
     virtual void ReplaceForwardReference(FwdDeclaredStructureType* fwdDeclaredType, StructureType* structureType, IntermediateContext* context);
-    inline std::int32_t NextTypeId() noexcept { return nextTypeId++; }
     virtual std::string Name() const = 0;
     inline bool IsStructureType() const noexcept { return kind == TypeKind::structureType; }
     StructureType* GetStructurePointeeType(const soul::ast::Span& span, IntermediateContext* context) const;
@@ -125,9 +144,9 @@ public:
     inline std::int32_t Id() const noexcept { return id; }
     void Write(util::CodeFormatter& formatter);
     virtual void WriteDeclaration(util::CodeFormatter& formatter);
-    inline Value* DefaultValue() noexcept { return defaultValue; }
-    inline void SetDefaultValue(Value* defaultValue_) noexcept { defaultValue = defaultValue_; }
-    virtual Value* MakeDefaultValue(IntermediateContext& context) const { return nullptr; }
+    Value* DefaultValue() noexcept;
+    void SetDefaultValue(Value* defaultValue_) noexcept;
+    virtual Value* MakeDefaultValue(IntermediateContext& context) const;
     TypeRef GetTypeRef();
     virtual Type* BaseType() const noexcept { return const_cast<Type*>(this); }
     virtual void IncCount() noexcept;
@@ -136,7 +155,6 @@ private:
     TypeKind kind;
     std::int32_t id;
     Value* defaultValue;
-    std::int32_t nextTypeId;
 };
 
 class VoidType : public Type
@@ -266,26 +284,6 @@ public:
     Value* MakeDefaultValue(IntermediateContext& context) const override;
 };
 
-class TypeRef
-{
-public:
-    TypeRef() noexcept;
-    TypeRef(const soul::ast::Span& span_, std::int32_t id_) noexcept;
-    inline const soul::ast::Span& Span() const noexcept { return span; }
-    inline std::int32_t Id() const noexcept { return id; }
-    inline void SetType(Type* type_) noexcept { type = type_; }
-    inline Type* GetType() const noexcept { return type; }
-private:
-    soul::ast::Span span;
-    std::int32_t id;
-    Type* type;
-};
-
-inline TypeRef MakeTypeRef(const soul::ast::Span& span, std::int32_t baseTypeId, std::int32_t pointerCount) noexcept
-{
-    return TypeRef(span, MakeTypeId(baseTypeId, pointerCount));
-}
-
 class StructureType : public Type
 {
 public:
@@ -306,8 +304,8 @@ public:
     Value* MakeDefaultValue(IntermediateContext& context) const override;
     inline const std::string& Comment() const noexcept { return comment; }
     void SetComment(const std::string& comment_);
-    inline void SetMetadataRef(MetadataRef* metadataRef_) noexcept { metadataRef = metadataRef_; }
-    inline MetadataRef* GetMetadataRef() const noexcept { return metadataRef; }
+    void SetMetadataRef(MetadataRef* metadataRef_) noexcept;
+    MetadataRef* GetMetadataRef() const noexcept;
     void ResolveComment();
 private:
     void ComputeSizeAndOffsets() const;
@@ -406,8 +404,8 @@ public:
     Types(const Types&) = delete;
     void Init();
     Types& operator=(const Types&) = delete;
-    inline IntermediateContext* GetContext() const noexcept { return context; }
-    inline void SetContext(IntermediateContext* context_) noexcept { context = context_; }
+    IntermediateContext* GetContext() const noexcept;
+    void SetContext(IntermediateContext* context_) noexcept;
     void AddStructureType(const soul::ast::Span& span, std::int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* mdRef);
     void AddArrayType(const soul::ast::Span& span, std::int32_t typeId, std::int64_t size, const TypeRef& elementTypeRef);
     void AddFunctionType(const soul::ast::Span& span, std::int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs);
@@ -451,8 +449,8 @@ private:
     std::map<std::vector<std::int32_t>, StructureType*> structureTypeMap;
     std::map<std::pair<std::int64_t, std::int32_t>, ArrayType*> arrayTypeMap;
     std::map<std::pair<std::int32_t, std::vector<std::int32_t>>, FunctionType*> functionTypeMap;
-    std::unordered_map<std::uint64_t, FwdDeclaredStructureType*> fwdDeclaredStructureTypes;
-    std::unordered_map<std::uint64_t, std::vector<Type*>> fwdDeclarationMap;
+    std::map<std::uint64_t, FwdDeclaredStructureType*> fwdDeclaredStructureTypes;
+    std::map<std::uint64_t, std::vector<Type*>> fwdDeclarationMap;
     VoidType voidType;
     BoolType boolType;
     SByteType sbyteType;
@@ -465,7 +463,7 @@ private:
     ULongType ulongType;
     FloatType floatType;
     DoubleType doubleType;
-    int32_t nextTypeId;
+    std::int32_t nextTypeId;
 };
 
 } // otava::intermediate

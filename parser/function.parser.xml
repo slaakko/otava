@@ -372,9 +372,7 @@
                                                  <action first="{NEW}">
                                                   <token first="{NEW}" name="NEW"/>
                                                  </action>
-                                                 <action first="{LBRACKET}">
-                                                  <token first="{LBRACKET}" name="LBRACKET"/>
-                                                 </action>
+                                                 <token first="{LBRACKET}" name="LBRACKET"/>
                                                 </sequence>
                                                 <action first="{RBRACKET}">
                                                  <token first="{RBRACKET}" name="RBRACKET"/>
@@ -389,9 +387,7 @@
                                                 <action first="{DELETE}">
                                                  <token first="{DELETE}" name="DELETE"/>
                                                 </action>
-                                                <action first="{LBRACKET}">
-                                                 <token first="{LBRACKET}" name="LBRACKET"/>
-                                                </action>
+                                                <token first="{LBRACKET}" name="LBRACKET"/>
                                                </sequence>
                                                <action first="{RBRACKET}">
                                                 <token first="{RBRACKET}" name="RBRACKET"/>

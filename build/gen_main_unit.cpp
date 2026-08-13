@@ -75,7 +75,7 @@ std::string GenerateMainWrapper(otava::symbols::Context* context, int numParams)
         new otava::ast::SemicolonNode(soul::ast::Span(), -1));
     body->AddNode(globalDoneStmt);
     otava::ast::IdentifierNode* retValVarId = new otava::ast::IdentifierNode(soul::ast::Span(), -1, "@retval");
-    otava::ast::ReturnStatementNode* returnRetValStmt = new otava::ast::ReturnStatementNode(soul::ast::Span(), -1, retValVarId, nullptr, nullptr, soul::ast::Span());
+    otava::ast::ReturnStatementNode* returnRetValStmt = new otava::ast::ReturnStatementNode(soul::ast::Span(), -1, retValVarId, nullptr, nullptr);
     body->AddNode(returnRetValStmt);
     otava::ast::FunctionBodyNode* functionBody = new otava::ast::FunctionBodyNode(soul::ast::Span(), -1, body);
     otava::ast::ParameterListNode* parameters = new otava::ast::ParameterListNode(soul::ast::Span(), -1);

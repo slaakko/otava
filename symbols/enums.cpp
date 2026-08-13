@@ -111,6 +111,16 @@ int EnumeratedTypeSymbol::Rank(Context* context)
     return underlyingType ? underlyingType->Rank(context) : -1; 
 }
 
+Value* EnumeratedTypeSymbol::DefaultValue(Context* context) 
+{
+    TypeSymbol* ut = UnderlyingType(context);
+    if (!ut)
+    {
+        ut = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::intType, context);
+    }
+    return ut->DefaultValue(context);
+}
+
 ForwardEnumDeclarationSymbol::ForwardEnumDeclarationSymbol(Module* module_, SymbolId id_) : 
     TypeSymbol(module_, id_), enumTypeSymbol(nullptr)
 {
@@ -208,6 +218,7 @@ EnumTypeDefaultCtor::EnumTypeDefaultCtor(Module* module_, SymbolId id_, Enumerat
     thisParam->SetType(enumType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetNoExcept();
+    SetCompileTimeFn();
 }
 
 void EnumTypeDefaultCtor::Write(Writer& writer)
@@ -250,6 +261,12 @@ void EnumTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpres
     }
 }
 
+void EnumTypeDefaultCtor::Evaluate(Context* context)
+{
+    Resolve(context);
+    context->GetEvaluationContext()->GetEvaluationStack()->Push(enumType->DefaultValue(context));
+}
+
 EnumTypeCopyCtor::EnumTypeCopyCtor(Module* module_, SymbolId id_) :
     FunctionSymbol(module_, id_), enumType(nullptr), enumTypeId(zeroSymbolId)
 {
@@ -267,6 +284,7 @@ EnumTypeCopyCtor::EnumTypeCopyCtor(Module* module_, SymbolId id_, EnumeratedType
     thatParam->SetType(enumType, context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
+    SetCompileTimeFn();
 }
 
 void EnumTypeCopyCtor::Write(Writer& writer)
@@ -438,6 +456,7 @@ EnumTypeEqual::EnumTypeEqual(Module* module_, SymbolId id_, EnumeratedTypeSymbol
     AddSymbol(rightParam, soul::ast::FullSpan(), context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context), context);
     SetNoExcept();
+    SetCompileTimeFn();
 }
 
 void EnumTypeEqual::Write(Writer& writer)
@@ -462,6 +481,14 @@ void EnumTypeEqual::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNo
     emitter.Stack().Push(emitter.EmitEqual(left, right));
 }
 
+void EnumTypeEqual::Evaluate(Context* context)
+{
+    Value* right = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+    Value* left = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+    bool result = ValuesEqual(left, right, context);
+    context->GetEvaluationContext()->GetEvaluationStack()->Push(context->GetEvaluationContext()->GetBoolValue(result));
+}
+
 EnumTypeLess::EnumTypeLess(Module* module_, SymbolId id_) :
     FunctionSymbol(module_, id_), enumType(nullptr), enumTypeId(zeroSymbolId)
 {
@@ -480,6 +507,7 @@ EnumTypeLess::EnumTypeLess(Module* module_, SymbolId id_, EnumeratedTypeSymbol* 
     AddSymbol(rightParam, soul::ast::FullSpan(), context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context), context);
     SetNoExcept();
+    SetCompileTimeFn();
 }
 
 void EnumTypeLess::Write(Writer& writer)
@@ -502,6 +530,14 @@ void EnumTypeLess::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNod
     args[1]->Load(emitter, OperationFlags::none, fullSpan, context);
     otava::intermediate::Value* right = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.EmitLess(left, right));
+}
+
+void EnumTypeLess::Evaluate(Context* context)
+{
+    Value* right = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+    Value* left = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+    bool result = ValueLess(left, right, context);
+    context->GetEvaluationContext()->GetEvaluationStack()->Push(context->GetEvaluationContext()->GetBoolValue(result));
 }
 
 class EnumCreator : public otava::ast::DefaultVisitor

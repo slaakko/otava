@@ -1,0 +1,9 @@
+solution otava.compiler;
+project <../util/util.project>;
+project <../soul/ast/ast.project>;
+project <../soul/lexer/lexer.project>;
+project <../soul/parser/parser.project>;
+project <../soul/xml/dom/dom.project>;
+project <assembly/assembly.project>;
+project <intermediate/intermediate.project>;
+project <ast/ast.project>;

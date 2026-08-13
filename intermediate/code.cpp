@@ -1,10 +1,13 @@
 module otava.intermediate.code;
 
 import otava.intermediate.context;
+import otava.intermediate.data;
+import otava.intermediate.metadata;
 import otava.intermediate.visitor;
 import otava.intermediate.error;
 import otava.intermediate.util;
-import util;
+import util.code_formatter;
+import util.text_util;
 
 namespace otava::intermediate {
 
@@ -99,7 +102,8 @@ void AddToUsesVec(std::vector<Instruction*>& uses, Value* value)
 }
 
 Instruction::Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_) noexcept :
-    Value(span_, ValueKind::instruction, type_), opCode(opCode_), metadataRef(nullptr), index(-1), regValueIndex(-1), assemblyInstruction(nullptr)
+    Value(span_, ValueKind::instruction, type_), opCode(opCode_), metadataRef(nullptr), 
+    index(-1), regValueIndex(-1), assemblyInstruction(nullptr)
 {
 }
 
@@ -113,6 +117,16 @@ void Instruction::Check()
             throw std::runtime_error("invalid instruction");
         }
     }
+}
+
+void Instruction::SetMetadataRef(MetadataRef* metadataRef_) noexcept
+{
+    metadataRef = metadataRef_;
+}
+
+MetadataRef* Instruction::GetMetadataRef() const noexcept
+{
+    return metadataRef;
 }
 
 std::string Instruction::Name() const
@@ -2136,7 +2150,7 @@ void BasicBlock::CloneInstructions(CloneContext& cloneContext, BasicBlock* to)
         Value* clonedValue = inst->Clone(cloneContext);
         Instruction* clonedInst = static_cast<Instruction*>(clonedValue);
         cloneContext.MapInstruction(inst, clonedInst);
-        to->AddInstruction(clonedInst);
+        to->DoAddInstruction(clonedInst);
         inst = inst->Next();
     }
 }
@@ -2187,7 +2201,7 @@ bool BasicBlock::ContainsOnlyNops() noexcept
     return true;
 }
 
-void BasicBlock::AddInstruction(Instruction* instruction, bool mapInstruction)
+void BasicBlock::DoAddInstruction(Instruction* instruction, bool mapInstruction)
 {
     instructions.AddChild(instruction);
     Function* fn = Parent();
@@ -2202,9 +2216,9 @@ void BasicBlock::AddInstruction(Instruction* instruction, bool mapInstruction)
     fn->SetNextRegNumber(nextRegNumber);
 }
 
-void BasicBlock::AddInstruction(Instruction* instruction)
+void BasicBlock::DoAddInstruction(Instruction* instruction)
 {
-    AddInstruction(instruction, true);
+    DoAddInstruction(instruction, true);
 }
 
 std::unique_ptr<Instruction> BasicBlock::RemoveInstruction(Instruction* instruction)
@@ -2268,7 +2282,7 @@ BasicBlock* BasicBlock::SplitAfter(Instruction* instruction)
             valueInst->Result()->SetReg(valueInst->RegValueIndex());
             fn->MapRegValue(valueInst->Result());
         }
-        nbb->AddInstruction(removedInst.release(), false);
+        nbb->DoAddInstruction(removedInst.release(), false);
         instruction = next;
     }
     /*
@@ -2397,7 +2411,7 @@ void Function::CreateEntry(IntermediateContext* context)
         RegValue* regValue = new RegValue(Span(), paramTypeRef.GetType(), nextRegNumber++);
         Instruction* paramInst = new ParamInstruction(Span(), regValue);
         context->AddLineInfo(paramInst);
-        entryBlock->AddInstruction(paramInst);
+        entryBlock->DoAddInstruction(paramInst);
         params.push_back(paramInst);
     }
 }
@@ -2790,6 +2804,16 @@ void Function::SetComment(const std::string& comment_)
     comment = comment_;
 }
 
+void Function::SetMetadataRef(MetadataRef* metadataRef_) noexcept
+{
+    metadataRef = metadataRef_;
+}
+
+MetadataRef* Function::GetMetadataRef() const noexcept
+{
+    return metadataRef;
+}
+
 std::string Function::ResolveFullName() const
 {
     std::string fullName;
@@ -2804,7 +2828,7 @@ std::string Function::ResolveFullName() const
                 if (metadataItem->IsMetadataString())
                 {
                     MetadataString* metadataString = static_cast<MetadataString*>(metadataItem);
-                    fullName = metadataString->Value();
+                    fullName = metadataString->GetValue();
                 }
             }
             MetadataItem* parentNameItem = metadataStruct->GetItem("parentName");
@@ -2813,7 +2837,7 @@ std::string Function::ResolveFullName() const
                 if (parentNameItem->IsMetadataString())
                 {
                     MetadataString* metadataString = static_cast<MetadataString*>(parentNameItem);
-                    fullName.append(", parentFn=").append(metadataString->Value());
+                    fullName.append(", parentFn=").append(metadataString->GetValue());
                 }
             }
         }
@@ -2899,6 +2923,16 @@ void Function::Write(util::CodeFormatter& formatter)
 
 Code::Code() noexcept : context(nullptr), currentFunction(nullptr), functions(this), totalFunctions(0)
 {
+}
+
+IntermediateContext* Code::GetContext() const noexcept
+{
+    return context;
+}
+
+void Code::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
 }
 
 void Code::SetCurrentFunction(Function* function) noexcept

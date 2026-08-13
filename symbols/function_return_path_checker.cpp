@@ -7,6 +7,7 @@ module otava.symbols.function_return_path_checker;
 
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.expression_binder;
 import otava.symbols.evaluator;
 import otava.symbols.value;
 import otava.ast.statement;
@@ -220,7 +221,7 @@ void FunctionReturnPathChecker::Visit(otava::ast::CompoundStatementNode& node)
                 return;
             }
         }
-        ThrowException("not all control paths terminate in return statement or throw expression", node.GetFullSpan(), context);
+        PrintWarning("not all control paths terminate in return statement or throw expression", node.GetFullSpan(), context);
     }
 }
 

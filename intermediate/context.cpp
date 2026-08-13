@@ -5,14 +5,14 @@
 
 module otava.intermediate.context;
 
-import otava.intermediate.compile_unit;
 import otava.intermediate.error;
 import otava.intermediate.lexer;
+import util.unicode;
 
 namespace otava::intermediate {
 
 IntermediateContext::IntermediateContext() :
-    compileUnit(), inlineDepth(4), maxArithmeticOptimizationCount(8),
+    compileUnit(), inlineDepth(4), maxArithmeticOptimizationCount(8), inlinedFunctionCalls(0),
     flags(ContextFlags::none), functionsInlined(0), totalFunctions(0), currentBasicBlock(nullptr), currentLineNumber(0), lexer(nullptr), fileId(-1),
     assemblyContext(), debugOutputStream(nullptr)
 {
@@ -22,6 +22,121 @@ IntermediateContext::IntermediateContext() :
     data.SetContext(this);
     code.SetContext(this);
     metadata.SetContext(this);
+}
+
+Value* IntermediateContext::GetTrueValue() 
+{ 
+    return data.GetTrueValue(types); 
+}
+
+Value* IntermediateContext::GetFalseValue() 
+{ 
+    return data.GetFalseValue(types); 
+}
+
+Value* IntermediateContext::GetSByteValue(std::int8_t value)
+{
+    return data.GetSByteValue(value, types);
+}
+
+Value* IntermediateContext::GetByteValue(std::uint8_t value)
+{
+    return data.GetByteValue(value, types);
+}
+
+Value* IntermediateContext::GetShortValue(std::int16_t value)
+{
+    return data.GetShortValue(value, types);
+}
+
+Value* IntermediateContext::GetUShortValue(std::uint16_t value)
+{
+    return data.GetUShortValue(value, types);
+}
+
+Value* IntermediateContext::GetIntValue(std::int32_t value)
+{
+    return data.GetIntValue(value, types);
+}
+
+Value* IntermediateContext::GetUIntValue(std::uint32_t value)
+{
+    return data.GetUIntValue(value, types);
+}
+
+Value* IntermediateContext::GetLongValue(std::int64_t value)
+{
+    return data.GetLongValue(value, types);
+}
+
+Value* IntermediateContext::GetULongValue(std::uint64_t value)
+{
+    return data.GetULongValue(value, types);
+}
+
+Value* IntermediateContext::GetIntegerValue(Type* type, std::int64_t value)
+{
+    return data.GetIntegerValue(type, value, types);
+}
+
+Value* IntermediateContext::GetFloatValue(float value)
+{
+    return data.GetFloatValue(value, types);
+}
+
+Value* IntermediateContext::GetDoubleValue(double value)
+{
+    return data.GetDoubleValue(value, types);
+}
+
+Value* IntermediateContext::GetFloatingValue(Type* type, double value)
+{
+    return data.GetFloatingValue(type, value, types);
+}
+
+Value* IntermediateContext::MakeArrayValue(const soul::ast::Span& span, const std::vector<Value*>& elements, ArrayType* arrayType)
+{
+    return data.MakeArrayValue(span, elements, arrayType);
+}
+
+Value* IntermediateContext::MakeStructureValue(const soul::ast::Span& span, const std::vector<Value*>& fieldValues, StructureType* structureType)
+{
+    return data.MakeStructureValue(span, fieldValues, structureType);
+}
+
+Value* IntermediateContext::MakeStringValue(const soul::ast::Span& span, const std::string& value, bool crop)
+{
+    return data.MakeStringValue(span, value, crop);
+}
+
+Value* IntermediateContext::MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements)
+{
+    return data.MakeStringArrayValue(span, prefix, elements);
+}
+
+Value* IntermediateContext::MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from)
+{
+    return data.MakeConversionValue(span, type, from);
+}
+
+Value* IntermediateContext::MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr)
+{
+    return data.MakeClsIdValue(span, type, clsIdStr);
+}
+
+Value* IntermediateContext::MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol)
+{
+    return data.MakeSymbolValue(span, type, symbol);
+}
+
+Value* IntermediateContext::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue)
+{
+    return data.MakeIntegerLiteral(span, type, strValue, types);
+}
+
+Value* IntermediateContext::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, bool resolve)
+{
+    return data.MakeAddressLiteral(span, type, id, resolve);
 }
 
 void IntermediateContext::SetFilePath(const std::string& filePath_)
@@ -173,7 +288,7 @@ Instruction* IntermediateContext::CreateNot(Value* arg)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -184,7 +299,7 @@ Instruction* IntermediateContext::CreateNeg(Value* arg)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -195,7 +310,7 @@ Instruction* IntermediateContext::CreateAdd(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -206,7 +321,7 @@ Instruction* IntermediateContext::CreateSub(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -217,7 +332,7 @@ Instruction* IntermediateContext::CreateMul(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -228,7 +343,7 @@ Instruction* IntermediateContext::CreateDiv(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -239,7 +354,7 @@ Instruction* IntermediateContext::CreateMod(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -250,7 +365,7 @@ Instruction* IntermediateContext::CreateAnd(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -261,7 +376,7 @@ Instruction* IntermediateContext::CreateOr(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -272,7 +387,7 @@ Instruction* IntermediateContext::CreateXor(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -283,7 +398,7 @@ Instruction* IntermediateContext::CreateShl(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -294,7 +409,7 @@ Instruction* IntermediateContext::CreateShr(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -305,7 +420,7 @@ Instruction* IntermediateContext::CreateEqual(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -316,7 +431,7 @@ Instruction* IntermediateContext::CreateLess(Value* left, Value* right)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -327,7 +442,7 @@ Instruction* IntermediateContext::CreateSignExtend(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -338,7 +453,7 @@ Instruction* IntermediateContext::CreateZeroExtend(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -349,7 +464,7 @@ Instruction* IntermediateContext::CreateFloatingPointExtend(Value* arg, Type* de
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -360,7 +475,7 @@ Instruction* IntermediateContext::CreateTruncate(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -371,7 +486,7 @@ Instruction* IntermediateContext::CreateBitcast(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -382,7 +497,7 @@ Instruction* IntermediateContext::CreateIntToFloat(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -393,7 +508,7 @@ Instruction* IntermediateContext::CreateFloatToInt(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -404,7 +519,7 @@ Instruction* IntermediateContext::CreateIntToPtr(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -415,7 +530,7 @@ Instruction* IntermediateContext::CreatePtrToInt(Value* arg, Type* destType)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -426,7 +541,7 @@ Instruction* IntermediateContext::CreateParam(Type* type)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -438,7 +553,7 @@ Instruction* IntermediateContext::CreateLocal(Type* type)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -449,7 +564,7 @@ Instruction* IntermediateContext::CreateLocalInEntryBlock(Type* type)
     Instruction* inst = new LocalInstruction(soul::ast::Span(), MakeRegValue(ptrType), type);
     AddLineInfo(inst);
     BasicBlock* entryBlock = code.CurrentFunction()->GetBasicBlock(0);
-    entryBlock->AddInstruction(inst);
+    entryBlock->DoAddInstruction(inst);
     return inst;
 }
 
@@ -460,7 +575,7 @@ Instruction* IntermediateContext::CreatePLocal(Type* type, int level)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -471,7 +586,7 @@ Instruction* IntermediateContext::CreateLoad(Value* ptr)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -482,7 +597,7 @@ Instruction* IntermediateContext::CreateStore(Value* value, Value* ptr)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -493,7 +608,7 @@ Instruction* IntermediateContext::CreateArg(Value* arg)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -504,7 +619,7 @@ Instruction* IntermediateContext::CreateElemAddr(Value* ptr, Value* index, Type*
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -515,7 +630,7 @@ Instruction* IntermediateContext::CreatePtrOffset(Value* ptr, Value* offset)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -526,7 +641,7 @@ Instruction* IntermediateContext::CreatePtrDiff(Value* leftPtr, Value* rightPtr)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -549,7 +664,7 @@ Instruction* IntermediateContext::CreateCall(Value* callee)
             AddLineInfo(inst);
             if (currentBasicBlock)
             {
-                currentBasicBlock->AddInstruction(inst);
+                currentBasicBlock->DoAddInstruction(inst);
             }
             return inst;
         }
@@ -559,7 +674,7 @@ Instruction* IntermediateContext::CreateCall(Value* callee)
             AddLineInfo(inst);
             if (currentBasicBlock)
             {
-                currentBasicBlock->AddInstruction(inst);
+                currentBasicBlock->DoAddInstruction(inst);
             }
             return inst;
         }
@@ -577,7 +692,7 @@ Instruction* IntermediateContext::CreateRet(Value* value)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -589,7 +704,7 @@ Instruction* IntermediateContext::CreateJump(BasicBlock* dest)
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -602,7 +717,7 @@ Instruction* IntermediateContext::CreateBranch(Value* cond, BasicBlock* trueDest
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -613,7 +728,7 @@ SwitchInstruction* IntermediateContext::CreateSwitch(Value* cond, BasicBlock* de
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -624,7 +739,7 @@ Instruction* IntermediateContext::CreateNop()
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }
@@ -635,7 +750,7 @@ Instruction* IntermediateContext::CreateGetRbp()
     AddLineInfo(inst);
     if (currentBasicBlock)
     {
-        currentBasicBlock->AddInstruction(inst);
+        currentBasicBlock->DoAddInstruction(inst);
     }
     return inst;
 }

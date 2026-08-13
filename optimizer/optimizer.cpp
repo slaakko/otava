@@ -57,10 +57,6 @@ void Optimize(otava::intermediate::IntermediateContext* context)
         {
             try
             {
-                if (fn->Name() == "move_assignment_FF6428BE72B757E90F37879C97F226B6C0EA210D")
-                {
-                    int x = 0;
-                }
                 if (HasOptimization(Optimizations::deadCodeElimination))
                 {
                     DeadCodeElimination(fn);

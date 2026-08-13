@@ -126,6 +126,7 @@ public:
     inline bool IsTemplateDeclarationScope() const noexcept { return kind == ScopeKind::templateDeclarationScope; }
     virtual Scope* GroupScope(Context* context) noexcept;
     virtual Scope* SymbolScope(Context* context) noexcept;
+    virtual Scope* SpecializationScope(Context* context);
     virtual std::string FullName(Context* context) const = 0;
     virtual bool IsContainerScope() const noexcept { return false; }
     virtual Scope* GetClassScope(Context* context) const noexcept { return nullptr; }
@@ -188,6 +189,7 @@ public:
     Scope* GetNamespaceScope(Context* context) const noexcept override;
     void AddBaseScope(Scope* baseScope, const soul::ast::FullSpan& fullSpan, Context* context) override;
     Symbol* GetSymbol() noexcept override;
+    Scope* SpecializationScope(Context* context) override;
     ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const override;
     inline ContainerSymbol* GetContainerSymbol() const noexcept { return containerSymbol; }
     void SetContainerSymbol(ContainerSymbol* containerSymbol_) noexcept;

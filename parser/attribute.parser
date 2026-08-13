@@ -45,17 +45,15 @@ parser AttributeParser
         ;
 
     AttributeSpecifier(otava::symbols::Context* context, var soul::ast::Span span, 
-        var soul::ast::Span lbSpan1, var soul::ast::Span lbSpan2,
-        var soul::ast::Span rbSpan1, var soul::ast::Span rbSpan2,
         var std::unique_ptr<otava::ast::AttributeSpecifierNode> attributeSpecifierNode) : otava::ast::Node*
         ::= 
         (
-            LBRACKET{ lbSpan1 = lexer.GetSpan(pos); span = lbSpan1; }
-            LBRACKET{ lbSpan2 = lexer.GetSpan(pos); span = lbSpan2; attributeSpecifierNode.reset(new otava::ast::AttributeSpecifierNode(span, lexer.File())); } 
+            LBRACKET{ span = lexer.GetSpan(pos); }
+            LBRACKET{ span = lexer.GetSpan(pos); attributeSpecifierNode.reset(new otava::ast::AttributeSpecifierNode(span, lexer.File())); } 
             (AttributeUsingPrefix(context):usingPrefix{ attributeSpecifierNode->SetUsingPrefix(usingPrefix); })? 
             AttributeList(context, attributeSpecifierNode.get()):attributeList
-            RBRACKET{ rbSpan1 = lexer.GetSpan(pos); } 
-            RBRACKET{ rbSpan2 = lexer.GetSpan(pos); attributeSpecifierNode->SetBracketSpans(lbSpan1, lbSpan2, rbSpan1, rbSpan2); return attributeSpecifierNode.release(); } 
+            RBRACKET
+            RBRACKET{ return attributeSpecifierNode.release(); } 
         |   AlignmentSpecifier(context):alignmentSpecifier{ return alignmentSpecifier; }
         )
         ;
@@ -78,13 +76,13 @@ parser AttributeParser
         )
         ;
 
-    AttributeUsingPrefix(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span colonSpan) : otava::ast::Node*
+    AttributeUsingPrefix(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
-            USING{ span = lexer.GetSpan(pos); } AttributeNamespace(context):ns COLON{ colonSpan = lexer.GetSpan(pos); }
+            USING{ span = lexer.GetSpan(pos); } AttributeNamespace(context):ns COLON
         )
         {
-            return new otava::ast::AttributeUsingPrefixNode(span, lexer.File(), ns, colonSpan);
+            return new otava::ast::AttributeUsingPrefixNode(span, lexer.File(), ns);
         }
         ;
 
@@ -117,13 +115,13 @@ parser AttributeParser
         }
         ;
 
-    AttributeArgumentClause(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+    AttributeArgumentClause(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (
-            LPAREN{ lpSpan = lexer.GetSpan(pos); } BalancedTokenSeq(context):balancedTokenSeq? RPAREN{ rpSpan = lexer.GetSpan(pos); } 
+            LPAREN{ span = lexer.GetSpan(pos); } BalancedTokenSeq(context):balancedTokenSeq? RPAREN
         )
         {
-            return new otava::ast::AttributeArgumentsNode(span, lexer.File(), balancedTokenSeq, lpSpan, rpSpan);
+            return new otava::ast::AttributeArgumentsNode(span, lexer.File(), balancedTokenSeq);
         }
         ;
 
@@ -161,19 +159,18 @@ parser AttributeParser
         }
         ;
 
-    AlignmentSpecifier(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> alignment, var soul::ast::Span span, 
-        var soul::ast::Span lpSpan, var soul::ast::Span rpSpan) : otava::ast::Node*
+    AlignmentSpecifier(otava::symbols::Context* context, var std::unique_ptr<otava::ast::Node> alignment, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (   ALIGNAS{ span = lexer.GetSpan(pos); } 
-            LPAREN{ lpSpan = lexer.GetSpan(pos); }
+            LPAREN
             (   TypeId(context):typeId{ alignment.reset(typeId); } 
             |   ConstantExpression(context):constantExpr{ alignment.reset(constantExpr); }
             )
             Ellipsis:ellipsis?
-            RPAREN{ rpSpan = lexer.GetSpan(pos); }
+            RPAREN
         )
         {
-            return new otava::ast::AlignmentSpecifierNode(span, lexer.File(), alignment.release(), ellipsis, lpSpan, rpSpan);
+            return new otava::ast::AlignmentSpecifierNode(span, lexer.File(), alignment.release(), ellipsis);
         }
         ;
 }

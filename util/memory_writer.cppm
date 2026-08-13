@@ -14,6 +14,7 @@ class MemoryWriter
 {
 public:
     MemoryWriter(std::uint8_t* ptr_, std::int64_t count_) noexcept;
+    void Write(bool x);
     void Write(std::uint8_t x);
     void Write(std::int8_t x);
     void Write(std::uint16_t x);

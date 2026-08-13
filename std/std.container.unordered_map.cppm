@@ -6,6 +6,7 @@ import std.utilities.pair;
 import std.utilities.unique_ptr;
 import std.container.hash_table;
 import std.container.vector;
+import std.hash;
 
 export namespace std {
 

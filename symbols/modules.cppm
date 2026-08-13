@@ -69,6 +69,8 @@ struct ModuleHeader
     Length functionTypeMapLength;
     FileOffset astNodeHeaderOffset;
     Length astNodeHeaderLength;
+    FileOffset incompleteClassIdOffset;
+    Length incompleteClassIdLength;
 };
 
 enum class ModuleKind : std::uint8_t
@@ -128,6 +130,8 @@ public:
     inline Length GetFunctionTypeMapLength() const noexcept { return header.functionTypeMapLength; }
     inline FileOffset GetAstNodeHeaderOffset() const noexcept { return header.astNodeHeaderOffset; }
     inline Length GetAstNodeHeaderLength() const noexcept { return header.astNodeHeaderLength; }
+    inline FileOffset GetIncompleteClassIdOffset() const noexcept { return header.incompleteClassIdOffset; }
+    inline Length GetIncompleteClassIdLength() const noexcept { return header.incompleteClassIdLength; }
     inline std::int32_t FileId() const noexcept { return fileId; }
     inline void SetFileId(std::int32_t fileId_) noexcept { fileId = fileId_; }
     inline ModuleId Id() const noexcept { return id; }
@@ -169,6 +173,11 @@ public:
     void ReadNamespaceIdTable();
     void ReadNamespaceIdTable(Reader& reader);
     const std::vector<SymbolId>& NamespaceIds();
+    void WriteIncompleteClassIdTable(Writer& writer);
+    void ReadIncompleteClassIdTable();
+    void ReadIncompleteClassIdTable(Reader& reader);
+    const std::vector<SymbolId>& IncompleteClassIds() const { return incompleteClassIds; }
+    void AddIncompleteClassId(SymbolId classId);
 private:
     ModuleKind kind;
     ModuleId id;
@@ -202,7 +211,9 @@ private:
     std::vector<Scope*> scopes;
     std::vector<Symbol*> symbols;
     std::vector<SymbolId> namespaceIds;
+    std::vector<SymbolId> incompleteClassIds;
     bool namespaceIdsRead;
+    bool incompleteClassIdsRead;
     bool destructing;
     void Read();
     void GetAllExportedModules(std::vector<Module*>& targetExportedModules, Context* context);

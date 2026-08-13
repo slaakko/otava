@@ -1,0 +1,3 @@
+project id;
+target=program;
+source <id.cpp>;

@@ -240,15 +240,15 @@ parser FunctionParser
         ::= OPERATOR{ return new otava::ast::OperatorNode(lexer.GetSpan(pos), lexer.File()); }
         ;
 
-    Operator(otava::symbols::Context* context, var soul::ast::Span span, var soul::ast::Span lbSpan, var soul::ast::Span rbSpan) : otava::ast::Node*
+    Operator(otava::symbols::Context* context, var soul::ast::Span span) : otava::ast::Node*
         ::= 
         (   NEW{ span = lexer.GetSpan(pos); } 
-            LBRACKET{ lbSpan = lexer.GetSpan(pos); } 
-            RBRACKET{ rbSpan = lexer.GetSpan(pos); return new otava::ast::NewArrayOpNode(span, lexer.File(), lbSpan, rbSpan); }
+            LBRACKET
+            RBRACKET{ return new otava::ast::NewArrayOpNode(span, lexer.File()); }
         |   NEW{ return new otava::ast::NewOpNode(lexer.GetSpan(pos), lexer.File()); }
         |   DELETE{ span = lexer.GetSpan(pos); } 
-            LBRACKET{ lbSpan = span; } 
-            RBRACKET{ rbSpan = span; return new otava::ast::DeleteArrayOpNode(span, lexer.File(), lbSpan, rbSpan); }
+            LBRACKET
+            RBRACKET{ return new otava::ast::DeleteArrayOpNode(span, lexer.File()); }
         |   DELETE{ return new otava::ast::DeleteOpNode(lexer.GetSpan(pos), lexer.File()); }
         |   CO_AWAIT{ return new otava::ast::CoAwaitOpNode(lexer.GetSpan(pos), lexer.File()); }
         |   LPAREN{ span = lexer.GetSpan(pos); } 

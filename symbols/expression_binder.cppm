@@ -19,6 +19,16 @@ class Scope;
 class StatementBinder;
 class VariableSymbol;
 
+class OperatorGroupNameMap
+{
+public:
+    static OperatorGroupNameMap& Instance();
+    std::string GetGroupName(otava::ast::NodeKind nodeKind, const soul::ast::FullSpan& fullSpan, Context* context);
+private:
+    OperatorGroupNameMap();
+    std::map<otava::ast::NodeKind, std::string> operatorGroupNameMap;
+};
+
 otava::ast::Node* MakeTypeNameNodes(const soul::ast::FullSpan& fullSpan, const std::string& fullTypeName);
 std::pair<VariableSymbol*, int> GetParentTemporary(std::int64_t nodeId, Context* context);
 

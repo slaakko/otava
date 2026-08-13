@@ -14,17 +14,17 @@ enum class OpenMode : int
     binary = 1 << 3
 };
 
-inline constexpr OpenMode operator|(OpenMode left, OpenMode right) noexcept
+inline OpenMode operator|(OpenMode left, OpenMode right) noexcept
 {
     return OpenMode(int(left) | int(right));
 }
 
-inline constexpr OpenMode operator&(OpenMode left, OpenMode right) noexcept
+inline OpenMode operator&(OpenMode left, OpenMode right) noexcept
 {
     return OpenMode(int(left) & int(right));
 }
 
-inline constexpr OpenMode operator~(OpenMode mode) noexcept
+inline OpenMode operator~(OpenMode mode) noexcept
 {
     return OpenMode(~int(mode));
 }

@@ -103,7 +103,7 @@ private:
 class TemplateScopePtr
 {
 public:
-    TemplateScopePtr(Context* context_, Scope* nsScope) noexcept;
+    TemplateScopePtr(Context* context_, Scope* scope) noexcept;
     ~TemplateScopePtr();
 private:
     Context* context;
@@ -119,6 +119,7 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn,
     const soul::ast::FullSpan& fullSpan, Context* context);
 CompoundTypeSymbol* GetCompoundSpecializationArgType(TypeSymbol* specialization, Index index, Context* context) noexcept;
 ClassTemplateSpecializationSymbol* GetClassTemplateSpecializationArgType(TypeSymbol* specialization, Index index, Context* context) noexcept;
+TypeSymbol* GetSpecializationArgType(TypeSymbol* specialization, Index index, Context* context);
 void InstantiateDestructor(ClassTemplateSpecializationSymbol* specialization, const soul::ast::FullSpan& fullSpan, Context* context);
 
 } // namespace otava::symbol

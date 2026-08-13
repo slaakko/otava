@@ -284,6 +284,45 @@ otava::intermediate::Type* FundamentalTypeSymbol::IrType(Emitter& emitter, const
     return nullptr;
 }
 
+Value* FundamentalTypeSymbol::DefaultValue(Context* context) 
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::charType:
+    case FundamentalTypeKind::unsignedCharType:
+    case FundamentalTypeKind::char8Type:
+    case FundamentalTypeKind::signedCharType:
+    case FundamentalTypeKind::char16Type:
+    case FundamentalTypeKind::wcharType:
+    case FundamentalTypeKind::char32Type:
+    {
+        return context->GetEvaluationContext()->GetCharValue(char32_t(0), static_cast<TypeSymbol*>(const_cast<FundamentalTypeSymbol*>(this)), context);
+    }
+    case FundamentalTypeKind::shortIntType:
+    case FundamentalTypeKind::unsignedShortIntType:
+    case FundamentalTypeKind::intType:
+    case FundamentalTypeKind::longIntType:
+    case FundamentalTypeKind::unsignedIntType:
+    case FundamentalTypeKind::unsignedLongIntType:
+    case FundamentalTypeKind::longLongIntType:
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        return context->GetEvaluationContext()->GetIntegerValue(0, "0", static_cast<TypeSymbol*>(const_cast<FundamentalTypeSymbol*>(this)), context);
+    }
+    case FundamentalTypeKind::boolType:
+    {
+        return context->GetEvaluationContext()->GetBoolValue(false);
+    }
+    case FundamentalTypeKind::floatType:
+    case FundamentalTypeKind::doubleType:
+    {
+        return context->GetEvaluationContext()->GetFloatingValue(0.0, "0.0", static_cast<TypeSymbol*>(const_cast<FundamentalTypeSymbol*>(this)), context);
+    }
+    }
+    return nullptr;
+}
+
+
 TypeSymbol* GetFundamentalType(DeclarationFlags fundamentalTypeFlags, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     FundamentalTypeKind fundamentalTypeKind = FundamentalTypeFlagMapper::Instance().GetFundamentalTypeKind(fundamentalTypeFlags);

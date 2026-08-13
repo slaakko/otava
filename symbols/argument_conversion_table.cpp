@@ -890,7 +890,7 @@ FunctionSymbol* EnumTypeToUnderlyingTypeArgumentConversion::Get(TypeSymbol* para
 class UnderlyingTypeToEnumTypeConversion : public FunctionSymbol
 {
 public:
-    UnderlyingTypeToEnumTypeConversion(EnumeratedTypeSymbol* enumType_, TypeSymbol* underlyingType_, Context* context);
+    UnderlyingTypeToEnumTypeConversion(EnumeratedTypeSymbol* enumType_, TypeSymbol* underlyingType_, FunctionSymbol* conversion_, Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     TypeSymbol* ConversionParamType() const noexcept override { return enumType; }
@@ -900,10 +900,13 @@ public:
 private:
     EnumeratedTypeSymbol* enumType;
     TypeSymbol* underlyingType;
+    FunctionSymbol* conversion;
 };
 
-UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(EnumeratedTypeSymbol* enumType_, TypeSymbol* underlyingType_, Context* context) :
-    FunctionSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::functionSymbol), "@conversion"), enumType(enumType_), underlyingType(underlyingType_)
+UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(EnumeratedTypeSymbol* enumType_, TypeSymbol* underlyingType_, FunctionSymbol* conversion_, 
+    Context* context) :
+    FunctionSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::functionSymbol), "@conversion"), enumType(enumType_), underlyingType(underlyingType_),
+    conversion(conversion_)
 {
     SetConversion();
     SetAccess(Access::public_);
@@ -918,6 +921,7 @@ UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(Enumerate
 void UnderlyingTypeToEnumTypeConversion::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
     const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
 {
+    conversion->GenerateCode(emitter, args, flags, fullSpan, context);
     otava::intermediate::Value* value = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.EmitBitcast(value, enumType->IrType(emitter, fullSpan, context)));
 }
@@ -943,7 +947,17 @@ FunctionSymbol* UnderlyingTypeEnumTypeToArgumentConversion::Get(TypeSymbol* para
         underlyingType = underlyingType->DirectType(context)->FinalType(fullSpan, context);
         if (TypesEqual(argType, underlyingType, context))
         {
-            return new UnderlyingTypeToEnumTypeConversion(enumType, underlyingType, context);
+            FunctionSymbol* conversion = new IdentityConversion(underlyingType, context);
+            return new UnderlyingTypeToEnumTypeConversion(enumType, underlyingType, conversion, context);
+        }
+        else
+        {
+            FunctionSymbol* conversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
+                underlyingType, argType, fullSpan, context);
+            if (conversion)
+            {
+                return new UnderlyingTypeToEnumTypeConversion(enumType, underlyingType, conversion, context);
+            }
         }
     }
     return nullptr;

@@ -43,6 +43,7 @@ public:
     inline bool IsBound() const noexcept { return bound; }
     inline void SetBound() noexcept { bound = true; }
     int Rank(Context* context) override;
+    Value* DefaultValue(Context* context) override;
 private:
     TypeSymbol* underlyingType;
     SymbolId underlyingTypeId;
@@ -96,6 +97,7 @@ public:
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
+    void Evaluate(Context* context) override;
 private:
     EnumeratedTypeSymbol* enumType;
     SymbolId enumTypeId;
@@ -175,6 +177,7 @@ public:
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
+    void Evaluate(Context* context) override;
 private:
     EnumeratedTypeSymbol* enumType;
     SymbolId enumTypeId;
@@ -190,6 +193,7 @@ public:
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
+    void Evaluate(Context* context) override;
 private:
     EnumeratedTypeSymbol* enumType;
     SymbolId enumTypeId;

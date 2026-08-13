@@ -11,9 +11,14 @@ import otava.intermediate.data;
 import otava.intermediate.code;
 import otava.intermediate.metadata;
 import otava.assembly.context;
+import otava.assembly.data;
+import otava.assembly.declaration;
+import otava.assembly.reg;
+import otava.assembly.file;
+import otava.assembly.function;
+import otava.assembly.macro;
 import soul.lexer;
 import soul.ast.span;
-import util;
 import std;
 
 export namespace otava::intermediate {
@@ -63,49 +68,31 @@ public:
     inline void ResolveData() { data.ResolveAddressValues(); }
     void ResolveType(TypeRef& typeRef);
     inline Value* GetBoolValue(bool value) { if (value) return GetTrueValue(); else return GetFalseValue(); }
-    Value* GetTrueValue() { return data.GetTrueValue(types); }
-    Value* GetFalseValue() { return data.GetFalseValue(types); }
+    Value* GetTrueValue();
+    Value* GetFalseValue();
     Value* GetBooleanLiteral(const soul::ast::Span& span, Type* type, bool value);
-    inline Value* GetSByteValue(std::int8_t value) { return data.GetSByteValue(value, types); }
-    inline Value* GetByteValue(std::uint8_t value) { return data.GetByteValue(value, types); }
-    inline Value* GetShortValue(std::int16_t value) { return data.GetShortValue(value, types); }
-    Value* GetUShortValue(std::uint16_t value) { return data.GetUShortValue(value, types); }
-    inline Value* GetIntValue(std::int32_t value) { return data.GetIntValue(value, types); }
-    Value* GetUIntValue(std::uint32_t value) { return data.GetUIntValue(value, types); }
-    Value* GetLongValue(std::int64_t value) { return data.GetLongValue(value, types); }
-    Value* GetULongValue(std::uint64_t value) { return data.GetULongValue(value, types); }
-    Value* GetIntegerValue(Type* type, std::int64_t value) { return data.GetIntegerValue(type, value, types); }
-    inline Value* GetFloatValue(float value) { return data.GetFloatValue(value, types); }
-    inline Value* GetDoubleValue(double value) { return data.GetDoubleValue(value, types); }
-    Value* GetFloatingValue(Type* type, double value) { return data.GetFloatingValue(type, value, types); }
+    Value* GetSByteValue(std::int8_t value);
+    Value* GetByteValue(std::uint8_t value);
+    Value* GetShortValue(std::int16_t value);
+    Value* GetUShortValue(std::uint16_t value);
+    Value* GetIntValue(std::int32_t value);
+    Value* GetUIntValue(std::uint32_t value);
+    Value* GetLongValue(std::int64_t value);
+    Value* GetULongValue(std::uint64_t value);
+    Value* GetIntegerValue(Type* type, std::int64_t value);
+    Value* GetFloatValue(float value);
+    Value* GetDoubleValue(double value);
+    Value* GetFloatingValue(Type* type, double value);
     Value* GetNullValue(const soul::ast::Span& span, Type* type);
-    Value* MakeArrayValue(const soul::ast::Span& span, const std::vector<Value*>& elements, ArrayType* arrayType)
-    {
-        return data.MakeArrayValue(span, elements, arrayType);
-    }
-    Value* MakeStructureValue(const soul::ast::Span& span, const std::vector<Value*>& fieldValues, StructureType* structureType)
-    {
-        return data.MakeStructureValue(span, fieldValues, structureType);
-    }
-    Value* MakeStringValue(const soul::ast::Span& span, const std::string& value, bool crop)
-    {
-        return data.MakeStringValue(span, value, crop);
-    }
-    Value* MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements)
-    {
-        return data.MakeStringArrayValue(span, prefix, elements);
-    }
-    inline Value* MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from) { return data.MakeConversionValue(span, type, from); }
-    inline Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr) { return data.MakeClsIdValue(span, type, clsIdStr); }
-    inline Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol) { return data.MakeSymbolValue(span, type, symbol); }
-    inline Value* MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue)
-    {
-        return data.MakeIntegerLiteral(span, type, strValue, types);
-    }
-    inline Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, bool resolve)
-    {
-        return data.MakeAddressLiteral(span, type, id, resolve);
-    }
+    Value* MakeArrayValue(const soul::ast::Span& span, const std::vector<Value*>& elements, ArrayType* arrayType);
+    Value* MakeStructureValue(const soul::ast::Span& span, const std::vector<Value*>& fieldValues, StructureType* structureType);
+    Value* MakeStringValue(const soul::ast::Span& span, const std::string& value, bool crop);
+    Value* MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements);
+    Value* MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from);
+    Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr);
+    Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol);
+    Value* MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue);
+    Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, bool resolve);
     inline Type* GetVoidType() noexcept { return types.GetVoidType(); }
     inline Type* GetBoolType() noexcept { return types.GetBoolType(); }
     inline Type* GetSByteType() noexcept { return types.GetSByteType(); }

@@ -1099,11 +1099,16 @@ int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast:
                 ++parameterIndex;
             }
             definition->AddDefinitionToGroup(context);
+            if (definition->GroupName() == "GetTypeRef")
+            {
+                int x = 0;
+            }
             TypeSymbol* returnType = MapType(definition, declaration.type, context);
             definition->SetReturnType(returnType, context);
             if (fnDeclaration)
             {
                 fnDeclaration->ReplaceIncompleteTypes(definition, context);
+                fnDeclarationReturnType = fnDeclaration->ReturnType(context);
             }
             if (fnDeclarationReturnType && returnType && !TypesEqual(fnDeclarationReturnType, returnType, context))
             {

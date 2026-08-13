@@ -71,9 +71,7 @@
         </group>
        </kleene>
       </sequence>
-      <action first="{RANGLE}">
-       <token first="{RANGLE}" name="RANGLE"/>
-      </action>
+      <token first="{RANGLE}" name="RANGLE"/>
      </sequence>
     </group>
    </action>
@@ -362,9 +360,7 @@
           </sequence>
           <nonterminal first="{#, ALIGNAS, AUTO, BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, CLASS, CONST, CONSTEVAL, CONSTEXPR, CONSTINIT, DECLTYPE, DOUBLE, ENUM, EXPLICIT, EXTERN, FLOAT, FRIEND, INLINE, INT, LONG, MUTABLE, OPERATOR, SHORT, SIGNED, STATIC, STRUCT, TEMPLATE, THREAD_LOCAL, TYPEDEF, TYPENAME, UNION, UNSIGNED, VIRTUAL, VOID, VOLATILE, WCHAR_T, ID, COLON_COLON, COMMA, ASSIGN, AMP_AMP, AMP, LANGLE, STAR, LPAREN, TILDE, LBRACKET, ARROW, ELLIPSIS}" ruleName="ParameterDeclarationClause"/>
          </sequence>
-         <action first="{RPAREN}">
-          <token first="{RPAREN}" name="RPAREN"/>
-         </action>
+         <token first="{RPAREN}" name="RPAREN"/>
         </sequence>
         <nonterminal first="{ARROW}" ruleName="Arrow"/>
        </sequence>
@@ -411,13 +407,9 @@
          <action first="{TEMPLATE}">
           <nonterminal first="{TEMPLATE}" ruleName="Template"/>
          </action>
-         <action first="{LANGLE}">
-          <token first="{LANGLE}" name="LANGLE"/>
-         </action>
+         <token first="{LANGLE}" name="LANGLE"/>
         </sequence>
-        <action first="{RANGLE}">
-         <token first="{RANGLE}" name="RANGLE"/>
-        </action>
+        <token first="{RANGLE}" name="RANGLE"/>
        </sequence>
        <action first="{#}">
         <empty first="{#}"/>

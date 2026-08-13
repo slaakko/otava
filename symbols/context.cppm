@@ -14,7 +14,7 @@ import otava.symbols.scope;
 import otava.symbols.symbol;
 import otava.symbols.symbol_index_map;
 import otava.symbols.template_param_compare;
-import otava.intermediate.data;
+import otava.intermediate.value;
 import soul.lexer.base;
 import soul.lexer.file_map;
 import soul.ast.span;
@@ -24,87 +24,89 @@ import std;
 
 export namespace otava::symbols {
 
-enum class ContextFlags : std::int64_t
+enum class ContextFlags : std::uint64_t
 {
-    none = static_cast<std::int64_t>(0),
-    hasDefiningTypeSpecifier = static_cast<std::int64_t>(1) << 0,
-    friendSpecifier = static_cast<std::int64_t>(1) << 1,
-    parsingParameters = static_cast<std::int64_t>(1) << 2,
-    parsingConceptDefinition = static_cast<std::int64_t>(1) << 3,
-    parsingTemplateId = static_cast<std::int64_t>(1) << 4,
-    assumeType = static_cast<std::int64_t>(1) << 5,
-    parseSavedMemberFunctionBody = static_cast<std::int64_t>(1) << 6,
-    parsingTemplateDeclaration = static_cast<std::int64_t>(1) << 7,
-    parseMemberFunction = static_cast<std::int64_t>(1) << 8,
-    retMemberDeclSpecifiers = static_cast<std::int64_t>(1) << 9,
-    addClassScope = static_cast<std::int64_t>(1) << 10,
-    saveDeclarations = static_cast<std::int64_t>(1) << 11,
-    linkageDeclaration = static_cast<std::int64_t>(1) << 12,
-    instantiateFunctionTemplate = static_cast<std::int64_t>(1) << 13,
-    instantiateAliasTypeTemplate = static_cast<std::int64_t>(1) << 14,
-    instantiateMemFnOfClassTemplate = static_cast<std::int64_t>(1) << 15,
-    instantiateInlineFunction = static_cast<std::int64_t>(1) << 16,
-    dontBind = static_cast<std::int64_t>(1) << 17,
-    parseSavedCtorInitializer = static_cast<std::int64_t>(1) << 18,
-    skipFunctionDefinitions = static_cast<std::int64_t>(1) << 19,
-    returnRef = static_cast<std::int64_t>(1) << 20,
-    virtualSeen = static_cast<std::int64_t>(1) << 21,
-    ignoreClassTemplateSpecializations = static_cast<std::int64_t>(1) << 22,
-    generateMainWrapper = static_cast<std::int64_t>(1) << 23,
-    noDynamicInit = static_cast<std::int64_t>(1) << 24,
-    requireForwardResolved = static_cast<std::int64_t>(1) << 25,
-    noPtrOps = static_cast<std::int64_t>(1) << 26,
-    reinterpretCast = static_cast<std::int64_t>(1) << 27,
-    derefAfterConv = static_cast<std::int64_t>(1) << 28,
-    generatingVTab = static_cast<std::int64_t>(1) << 29,
-    resolveNestedTypes = static_cast<std::int64_t>(1) << 30,
-    release = static_cast<std::int64_t>(1) << 31,
-    suppress_warning = static_cast<std::int64_t>(1) << 32,
-    resolveDependentTypes = static_cast<std::int64_t>(1) << 33,
-    processingAliasDeclation = static_cast<std::int64_t>(1) << 34,
-    leaveBoundFunction = static_cast<std::int64_t>(1) << 35,
-    skipFirstPtrToBooleanConversion = static_cast<std::int64_t>(1) << 36,
-    matchClassGroup = static_cast<std::int64_t>(1) << 37,
-    skipNonstaticMemberFunctions = static_cast<std::int64_t>(1) << 38,
-    skipInvokeChecking = static_cast<std::int64_t>(1) << 39,
-    dontProcess = static_cast<std::int64_t>(1) << 40,
-    makeChildFn = static_cast<std::int64_t>(1) << 41,
-    invoke = static_cast<std::int64_t>(1) << 42,
-    tryCatch = static_cast<std::int64_t>(1) << 43,
-    makeCompileUnitInitFn = static_cast<std::int64_t>(1) << 44,
-    cast = static_cast<std::int64_t>(1) << 45,
-    expected = static_cast<std::int64_t>(1) << 46,
-    lookupOnlyFromMemberScope = static_cast<std::int64_t>(1) << 47,
-    setParentBlockIds = static_cast<std::int64_t>(1) << 48,
-    matchClassTemplateSpecializationConversion = static_cast<std::int64_t>(1) << 49,
-    noWarnings = static_cast<std::int64_t>(1) << 50,
-    debug = static_cast<std::int64_t>(1) << 51,
-    debugMemory = static_cast<std::int64_t>(1) << 52,
-    acquireTemporaryDestructorCalls = static_cast<std::int64_t>(1) << 53,
-    skipMapIo = static_cast<std::int64_t>(1) << 54,
-    dontThrow = static_cast<std::int64_t>(1) << 55,
-    qualifiedScope = static_cast<std::int64_t>(1) << 56,
-    emptyDestructor = static_cast<std::int64_t>(1) << 57,
-    dontLookImports = static_cast<std::int64_t>(1) << 58,
-    matchFullNames = static_cast<std::int64_t>(1) << 59,
-    rejectIncompleteTypes = static_cast<std::int64_t>(1) << 60,
-    dontSearchOperationRepository = static_cast<std::int64_t>(1) << 61,
+    none = static_cast<std::uint64_t>(0),
+    hasDefiningTypeSpecifier = static_cast<std::uint64_t>(1) << 0,
+    friendSpecifier = static_cast<std::uint64_t>(1) << 1,
+    parsingParameters = static_cast<std::uint64_t>(1) << 2,
+    parsingConceptDefinition = static_cast<std::uint64_t>(1) << 3,
+    parsingTemplateId = static_cast<std::uint64_t>(1) << 4,
+    assumeType = static_cast<std::uint64_t>(1) << 5,
+    parseSavedMemberFunctionBody = static_cast<std::uint64_t>(1) << 6,
+    parsingTemplateDeclaration = static_cast<std::uint64_t>(1) << 7,
+    parseMemberFunction = static_cast<std::uint64_t>(1) << 8,
+    retMemberDeclSpecifiers = static_cast<std::uint64_t>(1) << 9,
+    addClassScope = static_cast<std::uint64_t>(1) << 10,
+    saveDeclarations = static_cast<std::uint64_t>(1) << 11,
+    linkageDeclaration = static_cast<std::uint64_t>(1) << 12,
+    instantiateFunctionTemplate = static_cast<std::uint64_t>(1) << 13,
+    instantiateAliasTypeTemplate = static_cast<std::uint64_t>(1) << 14,
+    instantiateMemFnOfClassTemplate = static_cast<std::uint64_t>(1) << 15,
+    instantiateInlineFunction = static_cast<std::uint64_t>(1) << 16,
+    dontBind = static_cast<std::uint64_t>(1) << 17,
+    parseSavedCtorInitializer = static_cast<std::uint64_t>(1) << 18,
+    skipFunctionDefinitions = static_cast<std::uint64_t>(1) << 19,
+    returnRef = static_cast<std::uint64_t>(1) << 20,
+    virtualSeen = static_cast<std::uint64_t>(1) << 21,
+    ignoreClassTemplateSpecializations = static_cast<std::uint64_t>(1) << 22,
+    generateMainWrapper = static_cast<std::uint64_t>(1) << 23,
+    noDynamicInit = static_cast<std::uint64_t>(1) << 24,
+    requireForwardResolved = static_cast<std::uint64_t>(1) << 25,
+    noPtrOps = static_cast<std::uint64_t>(1) << 26,
+    reinterpretCast = static_cast<std::uint64_t>(1) << 27,
+    derefAfterConv = static_cast<std::uint64_t>(1) << 28,
+    generatingVTab = static_cast<std::uint64_t>(1) << 29,
+    resolveNestedTypes = static_cast<std::uint64_t>(1) << 30,
+    release = static_cast<std::uint64_t>(1) << 31,
+    suppress_warning = static_cast<std::uint64_t>(1) << 32,
+    resolveDependentTypes = static_cast<std::uint64_t>(1) << 33,
+    processingAliasDeclation = static_cast<std::uint64_t>(1) << 34,
+    leaveBoundFunction = static_cast<std::uint64_t>(1) << 35,
+    skipFirstPtrToBooleanConversion = static_cast<std::uint64_t>(1) << 36,
+    matchClassGroup = static_cast<std::uint64_t>(1) << 37,
+    skipNonstaticMemberFunctions = static_cast<std::uint64_t>(1) << 38,
+    skipInvokeChecking = static_cast<std::uint64_t>(1) << 39,
+    dontProcess = static_cast<std::uint64_t>(1) << 40,
+    makeChildFn = static_cast<std::uint64_t>(1) << 41,
+    invoke = static_cast<std::uint64_t>(1) << 42,
+    tryCatch = static_cast<std::uint64_t>(1) << 43,
+    makeCompileUnitInitFn = static_cast<std::uint64_t>(1) << 44,
+    cast = static_cast<std::uint64_t>(1) << 45,
+    expected = static_cast<std::uint64_t>(1) << 46,
+    lookupOnlyFromMemberScope = static_cast<std::uint64_t>(1) << 47,
+    setParentBlockIds = static_cast<std::uint64_t>(1) << 48,
+    matchClassTemplateSpecializationConversion = static_cast<std::uint64_t>(1) << 49,
+    noWarnings = static_cast<std::uint64_t>(1) << 50,
+    debug = static_cast<std::uint64_t>(1) << 51,
+    debugMemory = static_cast<std::uint64_t>(1) << 52,
+    acquireTemporaryDestructorCalls = static_cast<std::uint64_t>(1) << 53,
+    skipMapIo = static_cast<std::uint64_t>(1) << 54,
+    dontThrow = static_cast<std::uint64_t>(1) << 55,
+    qualifiedScope = static_cast<std::uint64_t>(1) << 56,
+    emptyDestructor = static_cast<std::uint64_t>(1) << 57,
+    dontLookImports = static_cast<std::uint64_t>(1) << 58,
+    matchFullNames = static_cast<std::uint64_t>(1) << 59,
+    rejectIncompleteTypes = static_cast<std::uint64_t>(1) << 60,
+    dontSearchOperationRepository = static_cast<std::uint64_t>(1) << 61,
+    setValue = static_cast<std::uint64_t>(1) << 62,
+    makeFinalLayout = static_cast<std::uint64_t>(1) << 63,
     sticky = noWarnings | expected
 };
 
 constexpr ContextFlags operator|(ContextFlags left, ContextFlags right) noexcept
 {
-    return ContextFlags(std::int64_t(left) | std::int64_t(right));
+    return ContextFlags(std::uint64_t(left) | std::uint64_t(right));
 }
 
 constexpr ContextFlags operator&(ContextFlags left, ContextFlags right) noexcept
 {
-    return ContextFlags(std::int64_t(left) & std::int64_t(right));
+    return ContextFlags(std::uint64_t(left) & std::uint64_t(right));
 }
 
 constexpr ContextFlags operator~(ContextFlags flags) noexcept
 {
-    return ContextFlags(~std::int64_t(flags));
+    return ContextFlags(~std::uint64_t(flags));
 }
 
 int GetOptLevel(int level, bool release) noexcept;
@@ -151,7 +153,7 @@ public:
     inline void SetTraceInfo(TraceInfo* traceInfo_) noexcept { traceInfo = traceInfo_; }
     inline void SetEmitter(Emitter* emitter_) noexcept { emitter = emitter_; }
     inline SymbolIndexMap* GetSymbolIndexMap() const noexcept { return moduleMapper->GetSymbolIndexMap(); }
-    inline SymbolId GetNextSymbolId(SymbolKind symbolKind) noexcept
+    inline SymbolId GetNextSymbolId(SymbolKind symbolKind) 
     { 
         return MakeSymbolId(currentProject->GetProjectId(), symbolKind, GetSymbolIndexMap()->GetNextIndex(symbolKind));
     }
@@ -300,13 +302,17 @@ public:
     void PushTemplateModule(Module* templateModule_);
     void PopTemplateModule();
     inline Module* GetTemplateModule() const noexcept { return templateModule; }
-    void PushTemplateNsScope(Scope* classTemplateNsScope_);
-    void PopTemplateNsScope();
-    inline Scope* GetTemplateNsScope() const noexcept { return templateNsScope; }
+    void PushTemplateScope(Scope* classTemplateScope_);
+    void PopTemplateScope();
+    inline Scope* GetTemplateScope() const noexcept { return templateScope; }
     inline bool HasException() const noexcept { return hasException; }
     inline void ResetException() noexcept { hasException = false; }
     void SetException(Exception&& exception_);
     Exception ReleaseException();
+    inline void SetInitializer(Value* initializer_) noexcept { initializer = initializer_; }
+    inline Value* Initializer() const noexcept { return initializer; }
+    inline bool IncompleteClassesCompleted() const noexcept { return incompleteClassesCompleted; }
+    inline void SetIncompleterClassesCompleted() { incompleteClassesCompleted = true; }
 private:
     Module* module;
     Module* compileUnitModule;
@@ -388,10 +394,12 @@ private:
     std::stack<Scope*> scopeStack;
     Module* templateModule;
     std::stack<Module*> templateModuleStack;
-    Scope* templateNsScope;
-    std::stack<Scope*> templateNsScopeStack;
+    Scope* templateScope;
+    std::stack<Scope*> templateScopeStack;
     bool hasException;
     Exception exception;
+    Value* initializer;
+    bool incompleteClassesCompleted;
 };
 
 class FlagSetter

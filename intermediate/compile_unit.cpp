@@ -5,6 +5,7 @@
 
 module otava.intermediate.compile_unit;
 
+import otava.intermediate.code;
 import otava.intermediate.context;
 import util.code_formatter;
 
@@ -12,6 +13,16 @@ namespace otava::intermediate {
 
 CompileUnit::CompileUnit() : context(nullptr), id(), metadataRef()
 {
+}
+
+IntermediateContext* CompileUnit::GetContext() const noexcept
+{
+    return context;
+}
+
+void CompileUnit::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
 }
 
 void CompileUnit::SetFilePath(const std::string& filePath_)
@@ -23,6 +34,11 @@ void CompileUnit::SetInfo(const std::string& id_, MetadataRef* metadataRef_)
 {
     id = id_;
     metadataRef = metadataRef_;
+}
+
+MetadataRef* CompileUnit::GetMetadataRef() const noexcept
+{
+    return metadataRef;
 }
 
 void CompileUnit::Write()
