@@ -43,8 +43,10 @@ public:
     void AddClass(ClassTypeSymbol* cls, Context* context);
     void AddForwardDeclaration(ForwardClassDeclarationSymbol* fwd);
     const std::vector<ClassTypeSymbol*>& Classes(Context* context) const;
+    const std::vector<ClassTypeSymbol*>& Classes(Symbol* parent, Context* context) const;
     const std::vector<ForwardClassDeclarationSymbol*>& ForwardDeclarations(Context* context) const;
     ClassTypeSymbol* GetClass(Cardinality arity, Context* context) const;
+    ClassTypeSymbol* GetClass(Cardinality arity, Symbol* parent, Context* context) const;
     ForwardClassDeclarationSymbol* GetForwardDeclaration(Cardinality arity, Context* context) const;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;

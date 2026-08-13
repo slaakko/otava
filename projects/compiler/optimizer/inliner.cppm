@@ -3,13 +3,14 @@
 // Distributed under the MIT license
 // =================================
 
-export module otava.optimizer.error;
+export module otava.optimizer.inliner;
 
 import std;
+import otava.intermediate.code;
+import otava.intermediate.context;
 
 export namespace otava::optimizer {
 
-bool ExceptionThrown();
-void SetExceptionThrown();
+void Inline(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context);
 
 } // otava::optimizer

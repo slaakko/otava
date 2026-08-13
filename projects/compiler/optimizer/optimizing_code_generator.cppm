@@ -16,6 +16,7 @@ import otava.intermediate.data;
 import otava.intermediate.metadata;
 import otava.intermediate.register_allocator;
 import otava.assembly.context;
+import otava.assembly.data;
 import otava.assembly.file;
 import otava.assembly.function;
 import otava.assembly.instruction;
@@ -25,10 +26,10 @@ import otava.assembly.declaration;
 import otava.assembly.data;
 import otava.assembly.macro;
 import otava.assembly.reg;
-import util.component;
-import util.code_formatter;
 import soul.lexer;
 import soul.ast.span;
+import util.component;
+import util.code_formatter;
 import std;
 
 export namespace otava::optimizer {

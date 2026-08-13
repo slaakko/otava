@@ -3,13 +3,13 @@
 // Distributed under the MIT license
 // =================================
 
-export module otava.optimizer.error;
+export module otava.optimizer.jumps;
 
 import std;
+import otava.intermediate.code;
 
 export namespace otava::optimizer {
 
-bool ExceptionThrown();
-void SetExceptionThrown();
+void OptimizeJumps(otava::intermediate::Function* fn);
 
 } // otava::optimizer

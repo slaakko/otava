@@ -242,17 +242,32 @@ std::vector<Symbol*> MakeTemplateArgs(const std::unordered_map<TemplateParameter
 
 const std::vector<ClassTypeSymbol*>& ClassGroupSymbol::Classes(Context* context) const
 {
+    return Classes(nullptr, context);
+}
+
+const std::vector<ClassTypeSymbol*>& ClassGroupSymbol::Classes(Symbol* parent, Context* context) const
+{
     if (!context->GetFlag(ContextFlags::dontLookImports))
     {
         Scope* currentSymbolScope = context->GetSymbolTable()->CurrentScope()->SymbolScope(context);
         Symbol* sym = currentSymbolScope->GetSymbol();
         std::vector<std::string> containerNames = GetContainerNames(sym, context);
+        std::vector<std::string> parentContainerNames;
+        if (parent)
+        {
+            parentContainerNames = GetContainerNames(parent, context);
+        }
         std::vector<Module*> modules = context->GetModule()->ImportExportModules(context);
         for (Module* module : modules)
         {
             Scope* globalNsScope = module->GetSymbolTable()->GetGlobalNs(context)->GetScope();
             Scope* containerScope = EnterScope(globalNsScope, containerNames, GetFullSpan(), context);
             Symbol* s = containerScope->Lookup(Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::allScopes, GetFullSpan(), context, LookupFlags::dontResolveSingle);
+            if (!s && !parentContainerNames.empty())
+            {
+                Scope* containerScope2 = EnterScope(globalNsScope, parentContainerNames, GetFullSpan(), context);
+                s = containerScope2->Lookup(Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::allScopes, GetFullSpan(), context, LookupFlags::dontResolveSingle);
+            }
             if (s && s->IsClassGroupSymbol())
             {
                 ClassGroupSymbol* group = static_cast<ClassGroupSymbol*>(s);
@@ -303,6 +318,19 @@ const std::vector<ForwardClassDeclarationSymbol*>& ClassGroupSymbol::ForwardDecl
 ClassTypeSymbol* ClassGroupSymbol::GetClass(Cardinality arity, Context* context) const
 {
     const std::vector<ClassTypeSymbol*>& classes = Classes(context);
+    for (ClassTypeSymbol* cls : classes)
+    {
+        if (cls->Arity(context) == arity)
+        {
+            return cls;
+        }
+    }
+    return nullptr;
+}
+
+ClassTypeSymbol* ClassGroupSymbol::GetClass(Cardinality arity, Symbol* parent, Context* context) const
+{
+    const std::vector<ClassTypeSymbol*>& classes = Classes(parent, context);
     for (ClassTypeSymbol* cls : classes)
     {
         if (cls->Arity(context) == arity)

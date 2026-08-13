@@ -1214,7 +1214,7 @@ TypeSymbol* ForwardClassDeclarationSymbol::FinalType(const soul::ast::FullSpan& 
         ClassGroupSymbol* group = Group(context);
         if (group)
         {
-            cls = group->GetClass(Arity(context), context);
+            cls = group->GetClass(Arity(context), Parent(context), context);
             if (cls)
             {
                 classTypeSymbol = cls;
