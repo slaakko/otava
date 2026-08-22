@@ -25,7 +25,7 @@ SymbolTable::SymbolTable(Module* module_, bool readOnly_) :
     module(module_), readOnly(readOnly_), globalNs(), currentScope(nullptr), currentAccess(Access::none), currentLinkage(Linkage::cpp_linkage),
     typenameConstraintSymbol(nullptr), classLevel(0), conversionTable(module), symbolIdVectorRead(false), fundamentalTypeMapRead(false), 
     compoundTypeMapRead(false), aliasTypeTemplateMapRead(false), classTemplateSpecializationMapRead(false), functionTypeMapRead(false), 
-    explicitInstantiationMapRead(false), arrayTypeMapRead(false)
+    explicitInstantiationMapRead(false), arrayTypeMapRead(false), topScopeIndex(0)
 {
     auto end = ToUnderlying(SectionKind::max);
     for (auto i = ToUnderlying(SectionKind::first); i != end; ++i)
@@ -62,6 +62,11 @@ Section* SymbolTable::GetSection(Symbol* forSymbol) const noexcept
 {
     SectionKind sectionKind = otava::symbols::GetSectionKind(forSymbol);
     return GetSection(sectionKind);
+}
+
+ConversionTable* SymbolTable::GetConversionTable() const noexcept
+{ 
+    return &(const_cast<SymbolTable*>(this)->conversionTable); 
 }
 
 NamespaceSymbol* SymbolTable::GetGlobalNs(Context* context)
@@ -242,13 +247,13 @@ Symbol* SymbolTable::LookupSymbol(Symbol* symbol, Context* context)
     {
         if (!scope) break;
         Symbol* lookupSymbol = components[i];
-        std::vector<Symbol*> symbols;
+        std::vector<Symbol*> symbolVec;
         std::set<const Scope*> visited;
         scope->Lookup(lookupSymbol->Name(), SymbolGroupKind::classSymbolGroup | SymbolGroupKind::namespaceSymbolGroup, 
-            ScopeLookup::thisScope, LookupFlags::none, symbols, visited, nullptr);
-        if (symbols.size() == 1)
+            ScopeLookup::thisScope, LookupFlags::none, symbolVec, visited, nullptr);
+        if (symbolVec.size() == 1)
         {
-            Symbol* found = symbols.front();
+            Symbol* found = symbolVec.front();
             if (i == 0)
             {
                 return found;
@@ -262,14 +267,14 @@ Symbol* SymbolTable::LookupSymbol(Symbol* symbol, Context* context)
 void SymbolTable::CollectViableFunctions(const std::vector<std::pair<Scope*, ScopeLookup>>& scopeLookups, const std::string& groupName,
     const std::vector<TypeSymbol*>& templateArgs, Cardinality arity, std::vector<FunctionSymbol*>& viableFunctions, Context* context)
 {
-    std::vector<Symbol*> symbols;
+    std::vector<Symbol*> symbolVec;
     std::set<const Scope*> visited;
     for (const auto& p : scopeLookups)
     {
         Scope* scope = p.first;
         std::string scopeName = scope->FullName(context);
         ScopeLookup lookup = p.second;
-        scope->Lookup(groupName, SymbolGroupKind::functionSymbolGroup, lookup, LookupFlags::dontResolveSingle | LookupFlags::all, symbols, visited, context);
+        scope->Lookup(groupName, SymbolGroupKind::functionSymbolGroup, lookup, LookupFlags::dontResolveSingle | LookupFlags::all, symbolVec, visited, context);
         Scope* scp = scope;
         Scope* classScope = scp->GetClassScope(context);
         if (classScope)
@@ -283,10 +288,10 @@ void SymbolTable::CollectViableFunctions(const std::vector<std::pair<Scope*, Sco
         }
         if (scp != scope)
         {
-            scp->Lookup(groupName, SymbolGroupKind::functionSymbolGroup, lookup, LookupFlags::dontResolveSingle | LookupFlags::all, symbols, visited, context);
+            scp->Lookup(groupName, SymbolGroupKind::functionSymbolGroup, lookup, LookupFlags::dontResolveSingle | LookupFlags::all, symbolVec, visited, context);
         }
     }
-    for (Symbol* symbol : symbols)
+    for (Symbol* symbol : symbolVec)
     {
         if (symbol->IsFunctionGroupSymbol())
         {
@@ -590,7 +595,7 @@ void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind
     EnumeratedTypeSymbol* enumTypeSymbol = new EnumeratedTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::enumTypeSymbol), name);
     enumTypeSymbol->SetAccess(CurrentAccess());
     enumTypeSymbol->SetEnumTypeKind(kind);
-    enumTypeSymbol->SetUnderlyingType(underlyingType);
+    enumTypeSymbol->SetUnderlyingType(underlyingType, context);
     enumTypeSymbol->SetFullSpan(fullSpan);
     currentScope->SymbolScope(context)->AddSymbol(enumTypeSymbol, fullSpan, context);
     MapNode(node, enumTypeSymbol, context);
@@ -929,6 +934,7 @@ void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* conte
     CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(), compoundTypeSymbol->GetDerivations());
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         auto it = importedModule->GetSymbolTable()->irCompoundTypeMap.find(irKey);
         if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
         {
@@ -1033,6 +1039,7 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         aliasTypeTemplateSpecialization = importedModule->GetSymbolTable()->GetAliasTypeTemplateSpecialization(aliasTypeTemplate, templateArguments, context);
         if (aliasTypeTemplateSpecialization)
         {
@@ -1091,6 +1098,7 @@ void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Con
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         auto it = importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.find(irKey);
         if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
         {
@@ -1144,6 +1152,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         classTemplateSpecialization = importedModule->GetSymbolTable()->GetClassTemplateSpecialization(classTemplate, templateArguments, context);
         if (classTemplateSpecialization)
         {
@@ -1195,6 +1204,7 @@ ExplicitInstantiationSymbol* SymbolTable::GetExplicitInstantiation(const Special
     {
         for (Module* importedModule : GetModule()->ImportExportModules(context))
         {
+            context->AddModule(importedModule);
             ExplicitInstantiationSymbol* explicitInstantiationSymbol = importedModule->GetSymbolTable()->GetExplicitInstantiation(key, context, level - 1);
             if (explicitInstantiationSymbol)
             {
@@ -1266,6 +1276,7 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         functionTypeSymbol = importedModule->GetSymbolTable()->GetFunctionTypeSymbol(key, context);
         if (functionTypeSymbol)
         {
@@ -1291,7 +1302,7 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(FunctionSymbol* function
     TypeSymbol* returnType = functionSymbol->ReturnType(context);
     std::vector<TypeSymbol*> parameterTypes;
     Cardinality n = Cardinality(functionSymbol->Parameters(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         TypeSymbol* parameterType = functionSymbol->Parameters(context)[ToUnderlying(i)]->GetType(context);
         if (parameterType)
@@ -1372,6 +1383,7 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, std::int64_
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         arrayTypeSymbol = importedModule->GetSymbolTable()->GetArrayType(elementType, size, context);
         if (arrayTypeSymbol)
         {
@@ -1564,14 +1576,14 @@ void SymbolTable::ReadFundamentalTypeMap(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetFundamentalTypeTableOffset())), module->GetFundamentalTypeTableLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         std::uint8_t kindByte = reader.CurrentReader().ReadByte();
         SymbolId id = SymbolId(reader.CurrentReader().ReadULong());
         MapFundamentalTypeId(FundamentalTypeKind(kindByte), id);
     }
     Cardinality argumentIdCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(argumentIdCount); ++i)
+    for (Index i = Index(0); i < ToIndex(argumentIdCount); ++i)
     {
         std::int64_t argumentId = reader.CurrentReader().ReadLong();
         argumentIds.push_back(argumentId);
@@ -1611,7 +1623,7 @@ void SymbolTable::ReadCompoundTypeMaps(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetCompoundTypeMapOffset())), module->GetCompoundTypeMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         CompoundTypeKey key;
         key.Read(reader);
@@ -1619,7 +1631,7 @@ void SymbolTable::ReadCompoundTypeMaps(Reader& reader)
         compoundTypeMap[key] = symbolId;
     }
     Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(irCount); ++i)
+    for (Index i = Index(0); i < ToIndex(irCount); ++i)
     {
         CompoundTypeKey key;
         key.Read(reader);
@@ -1653,7 +1665,7 @@ void SymbolTable::ReadAliasTypeTemplateMap(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetAliasTypeTemplateMapOffset())), module->GetAliasTypeTemplateMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SpecializationKey key;
         key.Read(reader);
@@ -1696,7 +1708,7 @@ void SymbolTable::ReadClassTemplateSpecializationMaps(Reader& reader)
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetClassTemplateSpecializationMapOffset())), 
         module->GetClassTemplateSpecializationMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SpecializationKey key;
         key.Read(reader);
@@ -1704,7 +1716,7 @@ void SymbolTable::ReadClassTemplateSpecializationMaps(Reader& reader)
         classTemplateSpecializationMap[key] = symbolId;
     }
     Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(irCount); ++i)
+    for (Index i = Index(0); i < ToIndex(irCount); ++i)
     {
         SpecializationKey key;
         key.Read(reader);
@@ -1739,7 +1751,7 @@ void SymbolTable::ReadExplicitInstantiationMap(Reader& reader)
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetExplicitInstantiationMapOffset())),
         module->GetExplicitInstantiationMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SpecializationKey key;
         key.Read(reader);
@@ -1773,7 +1785,7 @@ void SymbolTable::ReadFunctionTypeMap(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetFunctionTypeMapOffset())), module->GetFunctionTypeMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         FunctionTypeSymbolKey key;
         key.Read(reader);
@@ -1801,9 +1813,9 @@ ModuleId SymbolTable::GetModuleIdOfImportedSymbol(SymbolId symbolId) const
 
 void SymbolTable::WriteSymbolIdVector(Writer& writer)
 {
-    Cardinality count = Cardinality(symbols.size());
+    Cardinality count = Cardinality(symbolVec.size());
     writer.GetBinaryStreamWriter().Write(ToUnderlying(count));
-    for (const auto* symbol : symbols)
+    for (const auto* symbol : symbolVec)
     {
         writer.GetBinaryStreamWriter().Write(ToUnderlying(symbol->Id()));
     }
@@ -1825,9 +1837,10 @@ std::int64_t SymbolTable::GetArgumentId(int index)
     return argumentIds[index % maxArguments];
 }
 
-void SymbolTable::AddImportedSymbol(SymbolId symbolId, ModuleId moduleId)
+void SymbolTable::AddImportedSymbol(SymbolId symbolId, Module* module)
 {
-    addedImportedSymbolMap[symbolId] = moduleId;
+    addedImportedSymbolMap[symbolId] = module->Id();
+    GetModule()->AddImportedModule(module);
 }
 
 void SymbolTable::ReadSymbolIdVector()
@@ -1846,7 +1859,7 @@ void SymbolTable::ReadSymbolIdVector()
 void SymbolTable::ReadSymbolIdVector(Reader& reader)
 {
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         symbolIds.push_back(symbolId);
@@ -2257,7 +2270,7 @@ ForwardClassDeclarationSymbol* SymbolTable::GetForwardClassDeclarationSymbol(Sym
 
 void SymbolTable::AddSymbol(Symbol* symbol)
 {
-    symbols.push_back(symbol);
+    symbolVec.push_back(symbol);
 }
 
 void SymbolTable::MapSymbol(Symbol* symbol, Context* context)

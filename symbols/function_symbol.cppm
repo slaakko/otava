@@ -9,16 +9,20 @@ import std;
 import otava.symbols.bound_tree;
 import otava.symbols.container_symbol;
 import otava.symbols.function_kind;
+import otava.symbols.id;
 import otava.intermediate.types;
 import otava.ast.function;
+import soul.ast.span;
 
 export namespace otava::symbols {
 
 class ClassParsingMap;
 class ClassTypeSymbol;
+class Context;
 class Emitter;
 class BoundExpressionNode;
 class FunctionTypeSymbol;
+class Module;
 class ParameterSymbol;
 class TemplateDeclarationSymbol;
 class TypeSymbol;
@@ -75,6 +79,7 @@ public:
     inline void SetSkip() noexcept { SetFlag(FunctionSymbolFlags::skip); }
     inline bool IsCompileTimeFn() const { return GetFlag(FunctionSymbolFlags::compileTimeFn); }
     inline void SetCompileTimeFn() { SetFlag(FunctionSymbolFlags::compileTimeFn); }
+    inline bool HasIncompleteType() const noexcept { return GetFlag(FunctionSymbolFlags::hasIncompleteType); }
     virtual bool IsConst() const noexcept;
     virtual bool IsVirtual() const noexcept;
     virtual bool IsPure() const noexcept;
@@ -88,7 +93,7 @@ public:
     virtual bool IsStatic() const noexcept;
     virtual bool IsExplicit() const noexcept;
     bool IsDestructor() const noexcept;
-    bool RemoveForwardDeclarationTypes(Context* context);
+    bool RemoveForwardDeclarationTypes(Context* context, bool force);
     virtual bool IsPointerCopyAssignment() const noexcept { return false; }
     virtual ParameterSymbol* ThisParam(Context* context) const;
     virtual FunctionKind GetFunctionKind() const noexcept { return functionKind; }
@@ -128,7 +133,7 @@ public:
     const std::vector<TypeSymbol*>& Specialization(Context* context) const;
     virtual bool IsMemberFunction(Context* context) const noexcept;
     bool IsTemplate(Context* context) const noexcept;
-    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const noexcept override;
+    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     Cardinality TemplateArity(Context* context) const noexcept;
     bool IsMemFnOfClassTemplate(Context* context) const noexcept;
     bool IsExplicitSpecializationDefinitionSymbol(Context* context) const noexcept;
@@ -218,7 +223,7 @@ public:
     inline void SetParentFn(FunctionDefinitionSymbol* parentFn_) noexcept { parentFn = parentFn_; }
     inline Scope* ParentFnScope() const noexcept { return parentFnScope; }
     inline void SetParentFnScope(Scope* parentFnScope_) noexcept { parentFnScope = parentFnScope_; }
-    bool IsMemberFunction(Context* context) const noexcept;
+    bool IsMemberFunction(Context* context) const noexcept override;
     inline std::int32_t DefIndex() const noexcept { return defIndex; }
     inline void SetDefIndex(std::int32_t defIndex_) noexcept { defIndex = defIndex_; }
     FunctionKind GetFunctionKind() const noexcept override;
@@ -298,7 +303,9 @@ public:
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
 };
 
-bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context) noexcept;
+CompileUnitInitFn* MakeCompileUnitInitFn(Module* module, SymbolId id, const std::string& name);
+
+bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context);
 
 void PrintXml(FunctionSymbol* function, Context* context);
 

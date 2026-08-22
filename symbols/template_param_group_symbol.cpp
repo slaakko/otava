@@ -7,17 +7,18 @@ module otava.symbols.template_param_group_symbol;
 
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.symbol_table;
 import otava.symbols.templates;
 
 namespace otava::symbols {
 
 TemplateParamGroupSymbol::TemplateParamGroupSymbol(Module* module_, SymbolId id_) : 
-    Symbol(module_, id_), readOnlyTemplateParamGroup(nullptr), templateParameterSymbol(nullptr), templateParamId(zeroSymbolId)
+    Symbol(module_, id_), templateParameterSymbol(nullptr), templateParamId(zeroSymbolId)
 {
 }
 
 TemplateParamGroupSymbol::TemplateParamGroupSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    Symbol(module_, id_, name_), readOnlyTemplateParamGroup(nullptr), templateParameterSymbol(nullptr), templateParamId(zeroSymbolId)
+    Symbol(module_, id_, name_), templateParameterSymbol(nullptr), templateParamId(zeroSymbolId)
 {
 }
 

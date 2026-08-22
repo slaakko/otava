@@ -22,7 +22,6 @@ import otava.symbols.compound_type_symbol;
 import otava.symbols.conversion_table;
 import otava.symbols.derivations;
 import otava.symbols.enums;
-import otava.symbols.enum_group_symbol;
 import otava.symbols.namespaces;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
@@ -79,7 +78,7 @@ public:
     void Write(Writer& writer);
     Section* GetSection(SectionKind sectionKind) const noexcept;
     Section* GetSection(Symbol* forSymbol) const noexcept;
-    ConversionTable* GetConversionTable() const noexcept { return &(const_cast<SymbolTable*>(this)->conversionTable); }
+    ConversionTable* GetConversionTable() const noexcept;
     NamespaceSymbol* GlobalNs() const noexcept { return globalNs.get(); }
     NamespaceSymbol* GetGlobalNs(Context* context);
     void Init(Context* context);
@@ -209,7 +208,7 @@ public:
     TemplateParamGroupSymbol* GetTemplateParamGroupSymbol(SymbolId id, Context* context);
     ForwardClassDeclarationSymbol* GetForwardClassDeclarationSymbol(SymbolId id, Context* context);
     void AddSymbol(Symbol* symbol);
-    const std::vector<Symbol*>& Symbols() const { return symbols; }
+    const std::vector<Symbol*>& Symbols() const { return symbolVec; }
     inline Symbol* GetTypenameConstraintSymbol() noexcept { return typenameConstraintSymbol; }
     inline void SetTypenameConstraintSymbol(Symbol* typenameConstraintSymbol_) noexcept { typenameConstraintSymbol = typenameConstraintSymbol_; }
     void MapSymbol(Symbol* symbol, Context* context);
@@ -244,12 +243,12 @@ public:
     void ReadSymbolIdVector(Reader& reader);
     const std::vector<SymbolId>& GetSymbolIds();
     std::int64_t GetArgumentId(int index);
-    void AddImportedSymbol(SymbolId symbolId, ModuleId moduleId);
+    void AddImportedSymbol(SymbolId symbolId, Module* module);
     const std::unordered_map<SymbolId, ModuleId>& AddedImportedSymbolMap() const { return addedImportedSymbolMap; }
 private:
     Module* module;
     std::unique_ptr<NamespaceSymbol> globalNs;
-    std::vector<Symbol*> symbols;
+    std::vector<Symbol*> symbolVec;
     std::vector<SymbolId> symbolIds;
     bool symbolIdVectorRead;
     std::unordered_map<SymbolId, ModuleId> importedSymbolMap;

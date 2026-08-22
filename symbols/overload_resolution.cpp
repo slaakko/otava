@@ -6,13 +6,22 @@
 module otava.symbols.overload_resolution;
 
 import otava.symbols.argument_conversion_table;
+import otava.symbols.class_templates;
+import otava.symbols.classes;
 import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_templates;
 import otava.symbols.function_symbol;
+import otava.symbols.function_completion;
+import otava.symbols.fundamental_type_symbol;
+import otava.symbols.id;
 import otava.symbols.inline_functions;
+import otava.symbols.lookup;
+import otava.symbols.modules;
 import otava.symbols.operation_repository;
+import otava.symbols.scope;
+import otava.symbols.symbol;
 import otava.symbols.templates;
 import otava.symbols.type_symbol;
 import otava.symbols.type_compare;
@@ -80,7 +89,7 @@ FunctionMatch::FunctionMatch(FunctionSymbol* function_, Context* context_) noexc
 {
 }
 
-FunctionMatch& FunctionMatch::operator=(const FunctionMatch& that)
+FunctionMatch& FunctionMatch::operator=(const FunctionMatch& that) noexcept
 {
     function = that.function;
     context = that.context;
@@ -431,7 +440,8 @@ std::unique_ptr<BoundFunctionCallNode> CreateBoundFunctionCall(FunctionMatch& fu
         {
             std::vector<TypeSymbol*> templateArgs;
             std::vector<std::unique_ptr<BoundExpressionNode>> debugOpNewArgs;
-            debugOpNewArgs.push_back(std::unique_ptr<BoundExpressionNode>(boundFunctionCall.release()));
+            std::unique_ptr<BoundExpressionNode> bfc(boundFunctionCall.release());
+            debugOpNewArgs.push_back(std::move(bfc));
             otava::ast::StringLiteralNode fnAst(fullSpan.span, fullSpan.fileIndex, context->Function(), otava::ast::EncodingPrefix::none, std::string());
             std::unique_ptr<BoundExpressionNode> fn = BindExpression(&fnAst, context);
             debugOpNewArgs.push_back(std::move(fn));
@@ -461,7 +471,8 @@ std::unique_ptr<BoundFunctionCallNode> CreateBoundConversionFunctionCall(Functio
     {
         arg = new BoundAddressOfNode(arg, fullSpan, arg->GetType()->AddPointer(context));
     }
-    args.push_back(std::unique_ptr<BoundExpressionNode>(arg));
+    std::unique_ptr<BoundExpressionNode> a(arg);
+    args.push_back(std::move(a));
     return CreateBoundFunctionCall(functionMatch, args, fullSpan, ex, context);
 }
 
@@ -679,7 +690,7 @@ bool FindClassTemplateMatch(TypeSymbol* argType, TypeSymbol* paramType, BoundExp
         ClassTemplateSpecializationSymbol* sourceClassTemplateSpecialization = static_cast<ClassTemplateSpecializationSymbol*>(argType->GetBaseType(context));
         Cardinality m = Cardinality(sourceClassTemplateSpecialization->TemplateArguments(context).size());
         n = std::min(arity, m);
-        for (Index i = Index(0); i < Index(n); ++i)
+        for (Index i = Index(0); i < ToIndex(n); ++i)
         {
             TypeSymbol* sourceArgumentType = nullptr;
             Symbol* sourceArgumentSymbol = sourceClassTemplateSpecialization->TemplateArguments(context)[ToUnderlying(i)];
@@ -725,7 +736,7 @@ bool FindClassTemplateMatch(TypeSymbol* argType, TypeSymbol* paramType, BoundExp
     }
     functionMatch.argumentMatches.resize(ToUnderlying(numArgumentMatches));
     std::vector<Symbol*> targetTemplateArguments;
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         Symbol* targetArgumentSymbol = paramTemplateDeclaration->TemplateParameters(context)[ToUnderlying(i)];
         TypeSymbol* targetArgumentType = nullptr;
@@ -853,7 +864,7 @@ bool FindClassTemplateSpecializationMatch(TypeSymbol* argType, TypeSymbol* param
         Cardinality m = Cardinality(sourceClassTemplateSpecialization->TemplateArguments(context).size());
         if (n != m) return false;
         sourceTemplateArguments = sourceClassTemplateSpecialization->TemplateArguments(context);
-        for (Index i = Index(0); i < Index(n); ++i)
+        for (Index i = Index(0); i < ToIndex(n); ++i)
         {
             Symbol* sourceArgumentSymbol = sourceClassTemplateSpecialization->TemplateArguments(context)[ToUnderlying(i)];
             TypeSymbol* sourceArgumentType = nullptr;
@@ -894,7 +905,7 @@ bool FindClassTemplateSpecializationMatch(TypeSymbol* argType, TypeSymbol* param
         }
         functionMatch.argumentMatches.resize(ToUnderlying(numArgumentMatches));
         std::vector<Symbol*> targetTemplateArguments;
-        for (Index i = Index(0); i < Index(n); ++i)
+        for (Index i = Index(0); i < ToIndex(n); ++i)
         {
             Symbol* templateArgumentSymbol = paramSpecializationType->TemplateArguments(context)[ToUnderlying(i)];
             TypeSymbol* templateArgumentType = nullptr;
@@ -1049,13 +1060,13 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
 {
     Cardinality arity = Cardinality(args.size());
     Cardinality n = functionMatch.function->MemFnArity(context);
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         context->SetArgIndex(ToUnderlying(i));
         BoundExpressionNode* arg = nullptr;
         TypeSymbol* argType = nullptr;
         std::unique_ptr<BoundExpressionNode> defaultArg;
-        if (i >= Index(arity))
+        if (i >= ToIndex(arity))
         {
             ParameterSymbol* parameter = functionMatch.function->MemFnParameters(context)[ToUnderlying(i)];
             if (parameter->DefaultValue())
@@ -1164,7 +1175,7 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
     return true;
 }
 
-void SetTemplateArgs(FunctionSymbol* viableFunction, std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+void SetTemplateArgs(FunctionSymbol* viableFunction, std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap,
     const std::vector<TypeSymbol*>& templateArgs, Context* context)
 {
     if (viableFunction->IsTemplate(context))
@@ -1175,7 +1186,7 @@ void SetTemplateArgs(FunctionSymbol* viableFunction, std::unordered_map<Template
             Cardinality n = Cardinality(templateArgs.size());
             if (templateDeclaration->Arity() >= n)
             {
-                for (Index i = Index(0); i < Index(n); ++i)
+                for (Index i = Index(0); i < ToIndex(n); ++i)
                 {
                     TypeSymbol* templateArg = templateArgs[ToUnderlying(i)];
                     TemplateParameterSymbol* templateParam = templateDeclaration->TemplateParameters(context)[ToUnderlying(i)];
@@ -1195,7 +1206,7 @@ std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<Func
     std::set<std::string> viableFunctionFullNameSet;
     std::set<std::string> viableFunctionDeclarationFullNameSet;
     Cardinality n = Cardinality(viableFunctions.size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         FunctionSymbol* viableFunction = viableFunctions[ToUnderlying(i)];
         if (!viableFunction->GetModule())
@@ -1304,6 +1315,7 @@ std::vector<Scope*> GetArgumentScopes(BoundExpressionNode* arg, Context* context
             std::vector<Module*> importExportModules = classTemplateModule->ImportExportModules(context);
             for (Module* importedModule : importExportModules)
             {
+                context->AddModule(importedModule);
                 std::vector<NamespaceSymbol*> namespaces;
                 const std::vector<SymbolId>& namespaceIds = importedModule->NamespaceIds();
                 for (SymbolId nsId : namespaceIds)
@@ -1395,6 +1407,7 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         }
         for (Module* importedModule : context->GetModule()->ImportExportModules(context))
         {
+            context->AddModule(importedModule);
             std::vector<NamespaceSymbol*> namespaces;
             const std::vector<SymbolId>& namespaceIds = importedModule->NamespaceIds();
             for (SymbolId nsId : namespaceIds)
@@ -1480,6 +1493,10 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         else if (bestMatch->function->IsInline() && context->ReleaseConfig() && otava::optimizer::HasOptimization(otava::optimizer::Optimizations::inlining))
         {
             bestMatch->function = InstantiateInlineFunction(bestMatch->function, fullSpan, context);
+        }
+        else if (bestMatch->function->HasIncompleteType())
+        {
+            bestMatch->function = CompleteIncompleteFunction(bestMatch->function, fullSpan, context);
         }
     }
     std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = CreateBoundFunctionCall(*bestMatch, args, fullSpan, ex, context);

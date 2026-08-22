@@ -5,19 +5,24 @@
 
 export module otava.symbols.fundamental_type_conversion;
 
+import otava.symbols.bound_tree;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.function_symbol;
+import otava.symbols.id;
 import otava.symbols.variable_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.modules;
+import otava.symbols.type_symbol;
 import otava.intermediate.data;
 import otava.intermediate.types;
+import otava.intermediate.value;
+import soul.ast.span;
+import std;
 
 export namespace otava::symbols {
-
-class Context;
 
 struct FundamentalTypeIdentity
 {

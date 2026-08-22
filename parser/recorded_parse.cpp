@@ -8,6 +8,7 @@ module otava.parser.recorded_parse;
 import otava.token;
 import otava.symbols.classes;
 import otava.symbols.exception;
+import otava.symbols.recorded_parse;
 import otava.parser.statement;
 import otava.parser.classes;
 import otava.lexer;

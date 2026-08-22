@@ -45,7 +45,7 @@ void SymbolIndexMap::Read(Reader& reader)
     }
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetSymbolIndexMapOffset())), module->GetSymbolIndexMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         Index index = Index(reader.CurrentReader().ReadUInt());
         indexMap[ToUnderlying(i)] = index;

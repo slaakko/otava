@@ -139,6 +139,8 @@ extern "C" bool ort_is_bad_alloc(std::uint32_t ext);
 extern "C" bool ort_current_ex_is_bad_alloc();
 extern "C" void* ort_get_bad_alloc();
 extern "C" bool ort_path_exists(const char* path);
+extern "C" bool ort_create_file_mapping(const char* filePath, void*& fileHandle, void*& fileMappingHandle, std::uint8_t*& start, std::uint32_t& length);
+extern "C" void ort_destruct_file_mapping(void* fileHandle, void* fileMappingHandle, std::uint8_t* start);
 int stdin_ = 0;
 int stdout_ = 1;
 int stderr_ = 2;

@@ -9,6 +9,8 @@ import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.evaluator;
 import otava.symbols.exception;
+import otava.symbols.function_kind;
+import otava.symbols.fundamental_type_symbol;
 import otava.symbols.fundamental_type_operation;
 import otava.symbols.modules;
 import otava.symbols.scope_ptr;
@@ -33,6 +35,15 @@ EnumeratedTypeSymbol::EnumeratedTypeSymbol(Module* module_, SymbolId id_, const 
     TypeSymbol(module_, id_, name_), underlyingType(nullptr), underlyingTypeId(zeroSymbolId), bound(false), enumTypeKind(EnumTypeKind::enum_)
 {
     GetScope()->SetKind(ScopeKind::enumerationScope);
+}
+
+void EnumeratedTypeSymbol::SetUnderlyingType(TypeSymbol* underlyingType_, Context* context)
+{ 
+    underlyingType = underlyingType_; 
+    if (underlyingType && underlyingType->GetModule() != GetModule())
+    {
+        GetModule()->GetSymbolTable()->AddImportedSymbol(underlyingType->Id(), underlyingType->GetModule());
+    }
 }
 
 bool EnumeratedTypeSymbol::IsValidDeclarationScope(ScopeKind scopeKind) const noexcept

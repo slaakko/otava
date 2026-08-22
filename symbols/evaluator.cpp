@@ -5,6 +5,7 @@
 
 module otava.symbols.evaluator;
 
+import otava.symbols.array_type_symbol;
 import otava.symbols.bound_tree;
 import otava.symbols.context;
 import otava.symbols.exception;
@@ -12,17 +13,21 @@ import otava.symbols.expression_binder;
 import otava.symbols.function_symbol;
 import otava.symbols.function_group_symbol;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.id;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
+import otava.symbols.scope;
 import otava.symbols.scope_resolver;
 import otava.symbols.scope_ptr;
 import otava.symbols.symbol;
 import otava.symbols.type_resolver;
 import otava.symbols.value;
+import otava.intermediate.types;
 import otava.ast.identifier;
 import otava.ast.declaration;
 import otava.ast.expression;
 import otava.ast.node_list;
+import otava.ast.simple_type;
 import otava.ast.statement;
 import otava.ast.visitor;
 
@@ -68,7 +73,8 @@ std::vector<std::unique_ptr<BoundExpressionNode>> ValuesToLiterals(const std::ve
     for (Value* value : values)
     {
         BoundLiteralNode* literal = new BoundLiteralNode(value, fullSpan, value->GetType(context));
-        literals.push_back(std::unique_ptr<BoundExpressionNode>(literal));
+        std::unique_ptr<BoundExpressionNode> lit(literal);
+        literals.push_back(std::move(lit));
     }
     return literals;
 }
@@ -112,7 +118,7 @@ void PopulateEvaluationMap(FunctionSymbol* fn, const std::vector<Value*>& args, 
     {
         ThrowException("invalid argument count");
     }
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         ParameterSymbol* parameter = fn->Parameters(context)[ToUnderlying(i)];
         evaluationMap->SetValue(parameter->Name(), args[ToUnderlying(i)]);
@@ -1107,24 +1113,26 @@ void Evaluator::EvaluateBinOp(otava::ast::NodeKind op, otava::ast::Node* left, o
 
 void Evaluator::EvaluatePrefixInc(otava::ast::Node* argument)
 {
-    otava::ast::BinaryExprNode assignmentExpr(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex,
-        new otava::ast::AssignNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex),
+    soul::ast::FullSpan fs = argument->GetFullSpan();
+    otava::ast::BinaryExprNode assignmentExpr(fs.span, fs.fileIndex,
+        new otava::ast::AssignNode(fs.span, fs.fileIndex),
         argument->Clone(),
-        new otava::ast::BinaryExprNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex, 
-            new otava::ast::PlusNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex), argument->Clone(),
-            new otava::ast::IntegerLiteralNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex, 
+        new otava::ast::BinaryExprNode(fs.span, fs.fileIndex, 
+            new otava::ast::PlusNode(fs.span, fs.fileIndex), argument->Clone(),
+            new otava::ast::IntegerLiteralNode(fs.span, fs.fileIndex, 
                 1, otava::ast::Suffix::none, otava::ast::Base::decimal, std::string())));
     value = Evaluate(&assignmentExpr, context);
 }
 
 void Evaluator::EvaluatePrefixDec(otava::ast::Node* argument)
 {
-    otava::ast::BinaryExprNode assignmentExpr(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex,
-        new otava::ast::AssignNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex),
+    soul::ast::FullSpan fs = argument->GetFullSpan();
+    otava::ast::BinaryExprNode assignmentExpr(fs.span, fs.fileIndex,
+        new otava::ast::AssignNode(fs.span, fs.fileIndex),
         argument->Clone(),
-        new otava::ast::BinaryExprNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex,
-            new otava::ast::MinusNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex), argument->Clone(),
-            new otava::ast::IntegerLiteralNode(argument->GetFullSpan().span, argument->GetFullSpan().fileIndex,
+        new otava::ast::BinaryExprNode(fs.span, fs.fileIndex,
+            new otava::ast::MinusNode(fs.span, fs.fileIndex), argument->Clone(),
+            new otava::ast::IntegerLiteralNode(fs.span, fs.fileIndex,
                 1, otava::ast::Suffix::none, otava::ast::Base::decimal, std::string())));
     value = Evaluate(&assignmentExpr, context);
 }
@@ -1555,37 +1563,44 @@ void Evaluator::Visit(otava::ast::BracedInitListNode& node)
 
 void Evaluator::Visit(otava::ast::CppCastExprNode& node)
 {
-    TypeSymbol* type = ResolveType(node.TypeId(), DeclarationFlags(), context);
-    node.Child()->Accept(*this);
-    if (value)
+    TypeSymbol* type = ResolveType(node.TypeId(), DeclarationFlags(), context, TypeResolverFlags::dontThrow);
+    if (type)
     {
-        switch (value->GetValueKind())
+        node.Child()->Accept(*this);
+        if (value)
         {
-        case ValueKind::integerValue:
-        {
-            IntegerValue* integerValue = static_cast<IntegerValue*>(value);
-            value = context->GetEvaluationContext()->GetIntegerValue(integerValue->GetValue(), integerValue->Rep(), type, context);
-            break;
+            switch (value->GetValueKind())
+            {
+            case ValueKind::integerValue:
+            {
+                IntegerValue* integerValue = static_cast<IntegerValue*>(value);
+                value = context->GetEvaluationContext()->GetIntegerValue(integerValue->GetValue(), integerValue->Rep(), type, context);
+                break;
+            }
+            case ValueKind::floatingValue:
+            {
+                FloatingValue* floatingValue = static_cast<FloatingValue*>(value);
+                value = context->GetEvaluationContext()->GetFloatingValue(floatingValue->GetValue(), floatingValue->Rep(), type, context);
+                break;
+            }
+            case ValueKind::stringValue:
+            {
+                StringValue* stringValue = static_cast<StringValue*>(value);
+                value = context->GetEvaluationContext()->GetStringValue(stringValue->GetValue(), type, context);
+                break;
+            }
+            case ValueKind::charValue:
+            {
+                CharValue* charValue = static_cast<CharValue*>(value);
+                value = context->GetEvaluationContext()->GetCharValue(charValue->GetValue(), type, context);
+                break;
+            }
+            }
         }
-        case ValueKind::floatingValue:
-        {
-            FloatingValue* floatingValue = static_cast<FloatingValue*>(value);
-            value = context->GetEvaluationContext()->GetFloatingValue(floatingValue->GetValue(), floatingValue->Rep(), type, context);
-            break;
-        }
-        case ValueKind::stringValue:
-        {
-            StringValue* stringValue = static_cast<StringValue*>(value);
-            value = context->GetEvaluationContext()->GetStringValue(stringValue->GetValue(), type, context);
-            break;
-        }
-        case ValueKind::charValue:
-        {
-            CharValue* charValue = static_cast<CharValue*>(value);
-            value = context->GetEvaluationContext()->GetCharValue(charValue->GetValue(), type, context);
-            break;
-        }
-        }
+    }
+    else
+    {
+        value = nullptr;
     }
 }
 
@@ -1913,11 +1928,23 @@ void Evaluator::Visit(otava::ast::TryStatementNode& node)
     error = true;
 }
 
-Value* Evaluate(otava::ast::Node* node, Context* context)
+Value* TryEvaluate(otava::ast::Node* node, Context* context)
 {
     Evaluator evaluator(context);
     node->Accept(evaluator);
     return evaluator.GetValue();
+}
+
+Value* Evaluate(otava::ast::Node* node, Context* context)
+{
+    try
+    {
+        return TryEvaluate(node, context);
+    }
+    catch (...)
+    {
+    }
+    return nullptr;
 }
 
 } // namespace otava::symbols

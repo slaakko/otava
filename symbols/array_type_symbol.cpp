@@ -8,10 +8,13 @@ module otava.symbols.array_type_symbol;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
+import otava.symbols.function_kind;
 import otava.symbols.function_group_symbol;
 import otava.symbols.modules;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.variable_symbol;
+import otava.intermediate.code;
 
 namespace otava::symbols {
 
@@ -50,7 +53,7 @@ ArrayTypeSymbol::ArrayTypeSymbol(Module* module_, SymbolId id_, TypeSymbol* elem
     GetScope()->SetKind(ScopeKind::arrayScope);
     if (elementType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(elementType->Id(), elementType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(elementType->Id(), elementType->GetModule());
     }
 }
 

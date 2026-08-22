@@ -12,6 +12,7 @@ import otava.symbols.reader;
 import otava.symbols.exception;
 import otava.symbols.symbol_table;
 import otava.symbols.modules;
+import otava.symbols.variable_symbol;
 import util.binary_stream_writer;
 
 namespace otava::symbols {
@@ -187,6 +188,26 @@ Symbol::~Symbol()
     {
         module->RemoveSymbol(this);
     }
+}
+
+Module* Symbol::GetModule() const noexcept
+{
+    return module;
+}
+
+std::string Symbol::SimpleName(Context* context)
+{
+    return Name();
+}
+
+bool Symbol::IsExportSymbol(Context* context) const noexcept
+{
+    return IsProject();
+}
+
+Symbol* Symbol::GetSingleSymbol(Context* context)
+{
+    return this;
 }
 
 void* Symbol::IrObject(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)

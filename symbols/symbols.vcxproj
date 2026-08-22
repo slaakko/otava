@@ -108,7 +108,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>DEBUG_FUNCTIONS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG_MODULES;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -189,8 +189,6 @@
     <ClCompile Include="emitter.cppm" />
     <ClCompile Include="enums.cpp" />
     <ClCompile Include="enums.cppm" />
-    <ClCompile Include="enum_group_symbol.cpp" />
-    <ClCompile Include="enum_group_symbol.cppm" />
     <ClCompile Include="evaluator.cpp" />
     <ClCompile Include="evaluator.cppm" />
     <ClCompile Include="exception.cpp" />
@@ -203,6 +201,8 @@
     <ClCompile Include="expression_binder.cppm" />
     <ClCompile Include="expr_parser.cpp" />
     <ClCompile Include="expr_parser.cppm" />
+    <ClCompile Include="function_completion.cpp" />
+    <ClCompile Include="function_completion.cppm" />
     <ClCompile Include="function_group_symbol.cpp" />
     <ClCompile Include="function_group_symbol.cppm" />
     <ClCompile Include="function_kind.cpp" />
@@ -246,6 +246,8 @@
     <ClCompile Include="project.cppm" />
     <ClCompile Include="reader.cpp" />
     <ClCompile Include="reader.cppm" />
+    <ClCompile Include="recorded_parse.cpp" />
+    <ClCompile Include="recorded_parse.cppm" />
     <ClCompile Include="scope.cpp" />
     <ClCompile Include="scope.cppm" />
     <ClCompile Include="scope_ptr.cpp" />

@@ -251,6 +251,7 @@ void Project::LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std:
 #ifdef DEBUG_SYMBOL_IO
         std::cout << ">" << m->Name() << "\n";
 #endif
+        m->SetModuleFilePath(root, config, optLevel, context, configurations);
         otava::symbols::Cardinality exportedModuleNameCount = m->ExportedModuleNameCount();
         for (otava::symbols::Index i = otava::symbols::Index(0); i < otava::symbols::Index(exportedModuleNameCount); ++i)
         {
@@ -348,6 +349,33 @@ bool Project::UpToDate(const std::string& config, int optLevel, const std::set<s
         std::string sourceFilePath = util::Path::Combine(util::Path::GetDirectoryName(FilePath()), sourceFileName);
         if (!util::FileExists(sourceFilePath) ||
             util::LastWriteTime(outputFilePath) < util::LastWriteTime(sourceFilePath))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Project::ReferencesUpToDate() const noexcept
+{
+    for (const auto& referencedProject : referencedProjects)
+    {
+        Project* reference = referencedProject.get();
+        if (!util::FileExists(reference->OutputFilePath()) ||
+            util::LastWriteTime(outputFilePath) < util::LastWriteTime(reference->OutputFilePath()))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Project::InterfaceUnitsUpToDate() const noexcept
+{
+    for (std::int32_t interfaceFileIndex : interfaceFiles)
+    {
+        otava::symbols::Module* module = GetModule(interfaceFileIndex);
+        if (!module->UpToDate())
         {
             return false;
         }

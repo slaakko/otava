@@ -11,6 +11,7 @@ import otava.symbols.exception;
 import otava.symbols.modules;
 import otava.symbols.reader;
 import otava.symbols.writer;
+import otava.symbols.symbol;
 
 namespace otava::symbols {
 
@@ -108,7 +109,7 @@ void CompoundTypeSymbol::SetBaseType(TypeSymbol* baseType_) noexcept
     baseType = baseType_;
     if (baseType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(baseType->Id(), baseType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(baseType->Id(), baseType->GetModule());
     }
 }
 
@@ -253,7 +254,7 @@ TypeSymbol* CompoundTypeSymbol::Unify(TypeSymbol* argType, Context* context)
 }
 
 TypeSymbol* CompoundTypeSymbol::UnifyTemplateArgumentType(
-    const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParameterMap,
+    const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap,
     const soul::ast::FullSpan& fullSpan, Context* context)
 {
     TypeSymbol* newBaseType = baseType->UnifyTemplateArgumentType(templateParameterMap, fullSpan, context);

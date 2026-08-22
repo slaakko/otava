@@ -35,7 +35,7 @@ RangeForBlockIds::RangeForBlockIds() : compoundBlockId(-1), forActionStatementId
 }
 
 Context::Context() : 
-    flags(ContextFlags::none), optLevel(-1), node(nullptr), boundCompileUnit(new BoundCompileUnitNode()),
+    flags(ContextFlags::none), optLevel(-1), node(nullptr), boundCompileUnit(MakeBoundCompileUnit()), templateParameterMap(nullptr),
     moduleMapper(nullptr), emitter(nullptr), traceInfo(nullptr),
     lexer(nullptr), module(nullptr), compileUnitModule(nullptr), stdTypeFundamentalModule(nullptr), rejectTemplateId(false), nextBlockId(0), 
     currentBlockId(-1), currentProject(nullptr), parentFn(nullptr), parentBlockId(-1), memFunDefSymbolIndex(-1), fileMap(nullptr), 
@@ -91,6 +91,21 @@ void Context::PopStatementBinder()
 {
     statementBinder = statementBinders.back();
     statementBinders.pop_back();
+}
+
+SymbolTable* Context::GetSymbolTable() const noexcept
+{
+    return GetModule()->GetSymbolTable();
+}
+
+EvaluationContext* Context::GetEvaluationContext() noexcept
+{ 
+    return GetModule()->GetEvaluationContext(); 
+}
+
+SymbolIndexMap* Context::GetSymbolIndexMap() const noexcept
+{
+    return moduleMapper->GetSymbolIndexMap();
 }
 
 StatementBinder* Context::GetParentStatementBinder() const noexcept
@@ -379,7 +394,7 @@ void Context::PopParentStatementIndex()
     parentStatementIndexStack.pop();
 }
 
-void Context::PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* templateParamMap)
+void Context::PushTemplateParameterMap(std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>* templateParamMap)
 {
     templateParameterMapStack.push(templateParameterMap);
     templateParameterMap = templateParamMap;
@@ -578,6 +593,17 @@ Exception Context::ReleaseException()
 {
     hasException = false;
     return std::move(exception);
+}
+
+void Context::AddModule(Module* module)
+{
+#ifdef DEBUG_MODULES
+    if (std::find(modules.begin(), modules.end(), module) == modules.end())
+    {
+        modules.push_back(module);
+        std::cout << "MODULE:" << module->Name() << ":" << ToUnderlying(module->Id()) << "\n";
+    }
+#endif
 }
 
 } // namespace otava::symbols

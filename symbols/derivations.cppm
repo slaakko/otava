@@ -44,13 +44,14 @@ constexpr bool HasDerivation(Derivations derivations, Derivations derivation) no
 constexpr int PointerCount(Derivations derivations) noexcept { return static_cast<int>(static_cast<std::uint8_t>(derivations & Derivations::pointerMask)) >> pointerShift; }
 constexpr Derivations SetPointerCount(Derivations derivations, int pointerCount) noexcept
 {
-    return (derivations & ~Derivations::pointerMask) | static_cast<Derivations>(static_cast<std::uint8_t>(std::min(std::max(0, pointerCount), maxPointerCount) << pointerShift));
+    return Derivations(derivations & Derivations(~Derivations::pointerMask)) | 
+        Derivations(std::uint8_t(std::min(std::max(0, pointerCount), maxPointerCount) << pointerShift));
 }
 constexpr Derivations Plain(Derivations derivations) noexcept { return derivations & Derivations::pointerMask; }
-constexpr Derivations RemoveConst(Derivations derivations) noexcept { return derivations & ~Derivations::constDerivation; }
+constexpr Derivations RemoveConst(Derivations derivations) noexcept { return derivations & Derivations(~Derivations::constDerivation); }
 constexpr Derivations RemovePointer(Derivations derivations) noexcept { return SetPointerCount(derivations, std::max(0, PointerCount(derivations) - 1)); }
-constexpr Derivations RemoveLValueRef(Derivations derivations) noexcept { return derivations & ~Derivations::lvalueRefDerivation; }
-constexpr Derivations RemoveRValueRef(const Derivations& derivations) noexcept { return derivations & ~Derivations::rvalueRefDerivation; }
+constexpr Derivations RemoveLValueRef(Derivations derivations) noexcept { return derivations & Derivations(~Derivations::lvalueRefDerivation); }
+constexpr Derivations RemoveRValueRef(const Derivations& derivations) noexcept { return derivations & Derivations(~Derivations::rvalueRefDerivation); }
 Derivations Merge(Derivations left, Derivations right) noexcept;
 Derivations UnifyDerivations(Derivations left, Derivations right) noexcept;
 int CountMatchingDerivations(Derivations left, Derivations right) noexcept;

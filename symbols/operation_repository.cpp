@@ -6,14 +6,21 @@
 module otava.symbols.operation_repository;
 
 import otava.symbols.argument_conversion_table;
+import otava.symbols.bound_tree;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.expression_binder;
+import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_symbol;
+import otava.symbols.modules;
 import otava.symbols.overload_resolution;
+import otava.symbols.scope;
 import otava.symbols.type_compare;
+import otava.symbols.type_symbol;
 import otava.symbols.variable_symbol;
+import otava.intermediate.value;
 import otava.ast.expression;
 import util.sha1;
 
@@ -1000,7 +1007,7 @@ FunctionSymbol* ClassDefaultCtorOperation::Get(std::vector<std::unique_ptr<Bound
     if (type->PointerCount() != 1 || !type->RemovePointer(context)->PlainType(context)->IsClassTypeSymbol()) return nullptr;
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->GetBaseType(context));
     if (classType->IsClassTemplateSpecializationSymbol() && context->GetFlag(ContextFlags::ignoreClassTemplateSpecializations)) return nullptr;
-    FunctionSymbol* defaultCtor = classType->GetFunctionByIndex(defaultCtorIndex);
+    FunctionSymbol* defaultCtor = classType->GetFunctionByIndex(defaultCtorIndex, context);
     if (defaultCtor)
     {
         return defaultCtor;
@@ -1034,7 +1041,7 @@ void ClassDefaultCtorOperation::GenerateImplementation(ClassDefaultCtor* classDe
     context->PushBoundFunction(boundFunction.release());
     bool setNoExcept = true;
     Cardinality nb = Cardinality(classType->BaseClasses(context).size());
-    for (Index i = Index(0); i < Index(nb); ++i)
+    for (Index i = Index(0); i < ToIndex(nb); ++i)
     {
         TypeSymbol* baseClass = classType->BaseClasses(context)[ToUnderlying(i)];
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
@@ -1099,7 +1106,7 @@ void ClassDefaultCtorOperation::GenerateImplementation(ClassDefaultCtor* classDe
         }
     }
     Cardinality n = Cardinality(classType->MemberVariables(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         VariableSymbol* memberVariableSymbol = classType->MemberVariables(context)[ToUnderlying(i)];
         BoundVariableNode* boundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
@@ -1121,7 +1128,8 @@ void ClassDefaultCtorOperation::GenerateImplementation(ClassDefaultCtor* classDe
     }
     if (!context->GetFlag(ContextFlags::leaveBoundFunction))
     {
-        context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+        std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+        context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         context->PopBoundFunction();
     }
     if (classType->TotalMemberCount() <= inlineClassOperationsThreshold)
@@ -1208,7 +1216,7 @@ FunctionSymbol* ClassCopyCtorOperation::Get(std::vector<std::unique_ptr<BoundExp
     int distance = 0;
     if (!TypesEqual(args[1]->GetType()->GetBaseType(context), classType, context) &&
         !args[1]->GetType()->GetBaseType(context)->HasBaseClass(classType, distance, context)) return nullptr;
-    FunctionSymbol* copyCtor = classType->GetFunctionByIndex(copyCtorIndex);
+    FunctionSymbol* copyCtor = classType->GetFunctionByIndex(copyCtorIndex, context);
     if (copyCtor)
     {
         return copyCtor;
@@ -1241,7 +1249,7 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
     context->PushBoundFunction(boundFunction.release());
     bool setNoExcept = true;
     Cardinality nb = Cardinality(classType->BaseClasses(context).size());
-    for (Index i = Index(0); i < Index(nb); ++i)
+    for (Index i = Index(0); i < ToIndex(nb); ++i)
     {
         TypeSymbol* baseClass = classType->BaseClasses(context)[ToUnderlying(i)];
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
@@ -1318,7 +1326,7 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
         }
     }
     Cardinality n = Cardinality(classType->MemberVariables(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         VariableSymbol* memberVariableSymbol = classType->MemberVariables(context)[ToUnderlying(i)];
         BoundVariableNode* boundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
@@ -1345,7 +1353,8 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
     }
     if (!context->GetFlag(ContextFlags::leaveBoundFunction))
     {
-        context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+        std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+        context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         context->PopBoundFunction();
     }
     if (classType->TotalMemberCount() <= inlineClassOperationsThreshold)
@@ -1424,7 +1433,7 @@ FunctionSymbol* ClassMoveCtorOperation::Get(std::vector<std::unique_ptr<BoundExp
     int distance = 0;
     if (!TypesEqual(args[1]->GetType()->GetBaseType(context), classType, context) &&
         !args[1]->GetType()->GetBaseType(context)->HasBaseClass(classType, distance, context)) return nullptr;
-    FunctionSymbol* moveCtor = classType->GetFunctionByIndex(moveCtorIndex);
+    FunctionSymbol* moveCtor = classType->GetFunctionByIndex(moveCtorIndex, context);
     if (moveCtor)
     {
         return moveCtor;
@@ -1456,7 +1465,7 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
     boundFunction->SetBody(body);
     context->PushBoundFunction(boundFunction.release());
     Cardinality nb = Cardinality(classType->BaseClasses(context).size());
-    for (Index i = Index(0); i < Index(nb); ++i)
+    for (Index i = Index(0); i < ToIndex(nb); ++i)
     {
         TypeSymbol* baseClass = classType->BaseClasses(context)[ToUnderlying(i)];
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
@@ -1529,7 +1538,7 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
         }
     }
     Cardinality n = Cardinality(classType->MemberVariables(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         VariableSymbol* memberVariableSymbol = classType->MemberVariables(context)[ToUnderlying(i)];
         BoundVariableNode* boundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
@@ -1564,7 +1573,8 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
     }
     if (!context->GetFlag(ContextFlags::leaveBoundFunction))
     {
-        context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+        std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+        context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         context->PopBoundFunction();
     }
     if (classType->TotalMemberCount() <= inlineClassOperationsThreshold)
@@ -1635,7 +1645,7 @@ FunctionSymbol* ClassCopyAssignmentOperation::Get(std::vector<std::unique_ptr<Bo
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->GetBaseType(context));
     if (classType->IsClassTemplateSpecializationSymbol() && context->GetFlag(ContextFlags::ignoreClassTemplateSpecializations)) return nullptr;
     if (TypesEqual(args[1]->GetType(), classType->AddRValueRef(context), context) || args[1]->BindToRvalueRef()) return nullptr;
-    FunctionSymbol* copyAssignment = classType->GetFunctionByIndex(copyAssignmentIndex);
+    FunctionSymbol* copyAssignment = classType->GetFunctionByIndex(copyAssignmentIndex, context);
     if (copyAssignment)
     {
         return copyAssignment;
@@ -1664,7 +1674,7 @@ void ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
     context->PushBoundFunction(boundFunction.release());
     bool setNoExcept = true;
     Cardinality nb = Cardinality(classType->BaseClasses(context).size());
-    for (Index i = Index(0); i < Index(nb); ++i)
+    for (Index i = Index(0); i < ToIndex(nb); ++i)
     {
         TypeSymbol* baseClass = classType->BaseClasses(context)[ToUnderlying(i)];
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
@@ -1706,7 +1716,7 @@ void ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
         }
     }
     Cardinality n = Cardinality(classType->MemberVariables(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         VariableSymbol* memberVariableSymbol = classType->MemberVariables(context)[ToUnderlying(i)];
         BoundVariableNode* boundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
@@ -1739,7 +1749,8 @@ void ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
     context->GetBoundFunction()->Body()->AddStatement(returnStatement);
     if (!context->GetFlag(ContextFlags::leaveBoundFunction))
     {
-        context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+        std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+        context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         context->PopBoundFunction();
     }
     if (classType->TotalMemberCount() <= inlineClassOperationsThreshold)
@@ -1815,7 +1826,7 @@ FunctionSymbol* ClassMoveAssignmentOperation::Get(std::vector<std::unique_ptr<Bo
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->GetBaseType(context));
     if (classType->IsClassTemplateSpecializationSymbol() && context->GetFlag(ContextFlags::ignoreClassTemplateSpecializations)) return nullptr;
     if (!TypesEqual(args[1]->GetType(), classType->AddRValueRef(context), context) && !args[1]->BindToRvalueRef()) return nullptr;
-    FunctionSymbol* moveAssignment = classType->GetFunctionByIndex(moveAssignmentIndex);
+    FunctionSymbol* moveAssignment = classType->GetFunctionByIndex(moveAssignmentIndex, context);
     if (moveAssignment)
     {
         return moveAssignment;
@@ -1844,7 +1855,7 @@ void ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* c
     boundFunction->SetBody(body);
     context->PushBoundFunction(boundFunction.release());
     Cardinality nb = Cardinality(classType->BaseClasses(context).size());
-    for (Index i = Index(0); i < Index(nb); ++i)
+    for (Index i = Index(0); i < ToIndex(nb); ++i)
     {
         TypeSymbol* baseClass = classType->BaseClasses(context)[ToUnderlying(i)];
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
@@ -1881,7 +1892,7 @@ void ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* c
         }
     }
     Cardinality n = Cardinality(classType->MemberVariables(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         VariableSymbol* memberVariableSymbol = classType->MemberVariables(context)[ToUnderlying(i)];
         BoundVariableNode* boundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
@@ -1911,7 +1922,8 @@ void ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* c
     context->GetBoundFunction()->Body()->AddStatement(returnStatement);
     if (!context->GetFlag(ContextFlags::leaveBoundFunction))
     {
-        context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+        std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+        context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         context->PopBoundFunction();
     }
     if (classType->TotalMemberCount() <= inlineClassOperationsThreshold)

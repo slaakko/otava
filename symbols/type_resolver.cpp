@@ -6,6 +6,10 @@
 module otava.symbols.type_resolver;
 
 import otava.symbols.alias_group_symbol;
+import otava.symbols.class_group_symbol;
+import otava.symbols.classes;
+import otava.symbols.class_templates;
+import otava.symbols.compound_type_symbol;
 import otava.symbols.exception;
 import otava.symbols.bound_tree;
 import otava.symbols.context;
@@ -15,8 +19,13 @@ import otava.symbols.derivations;
 import otava.symbols.evaluator;
 import otava.symbols.expression_binder;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.id;
+import otava.symbols.lookup;
+import otava.symbols.modules;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
+import otava.symbols.symbol_table;
 import otava.symbols.templates;
 import otava.ast.declaration;
 import otava.ast.expression;
@@ -37,10 +46,7 @@ bool CheckDuplicateSpecifier(DeclarationFlags flags, DeclarationFlags flag, cons
     {
         if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
         {
-            if (!context->HasException())
-            {
-                context->SetException(MakeException("duplicate '" + specifierStr + "'", fullSpan, context));
-            }
+            context->SetException(MakeException("duplicate '" + specifierStr + "'", fullSpan, context));
             return false;
         }
         ThrowException("duplicate '" + specifierStr + "'", fullSpan, context);
@@ -136,10 +142,7 @@ void TypeResolver::ResolveBaseType(otava::ast::Node* node)
             if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("duplicate type symbol in declaration specifier sequence", node->GetFullSpan(), fullSpan, context));
-                }
+                context->SetException(MakeException("duplicate type symbol in declaration specifier sequence", node->GetFullSpan(), fullSpan, context));
                 return;
             }
             ThrowException("duplicate type symbol in declaration specifier sequence", node->GetFullSpan(), fullSpan, context);
@@ -428,7 +431,7 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
     if (context->GetFlag(ContextFlags::processingAliasDeclation))
     {
         context->GetSymbolTable()->PushTopScopeIndex();
-        Scope* scope(GetScope(node.NestedNameSpecifier(), context));
+        Scope* scope = GetScope(node.NestedNameSpecifier(), context);
         ScopePtr scopePtr(scope, context);
         createTypeSymbol = true;
         node.GetId()->Accept(*this);
@@ -459,7 +462,8 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
                         context->GetModule(), context->GetNextSymbolId(SymbolKind::boundTemplateParameterSymbol), templateParameter->Name());
                     boundTemplateParameter->SetTemplateParameterSymbol(templateParameter);
                     boundTemplateParameter->SetBoundSymbol(templateParamType.second);
-                    boundTemplateParameters.push_back(std::unique_ptr<BoundTemplateParameterSymbol>(boundTemplateParameter));
+               std::unique_ptr<BoundTemplateParameterSymbol> btp(boundTemplateParameter);
+                    boundTemplateParameters.push_back(std::move(btp));
                     instantiationScope.Install(boundTemplateParameter, context);
                     context->GetSymbolTable()->MapSymbol(boundTemplateParameter, context);
                 }
@@ -489,10 +493,7 @@ void TypeResolver::Visit(otava::ast::DeclTypeSpecifierNode& node)
         if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
         {
             failed = true;
-            if (!context->HasException())
-            {
-                context->SetException(MakeException("type for decltype specifier not resolved", node.GetFullSpan(), context));
-            }
+            context->SetException(MakeException("type for decltype specifier not resolved", node.GetFullSpan(), context));
             return;
         }
         type = nullptr;
@@ -535,10 +536,7 @@ void TypeResolver::Visit(otava::ast::QualifiedIdNode& node)
     {
         type = nullptr;
         failed = true;
-        if (!context->HasException())
-        {
-            context->SetException(MakeException("type not resolved", node.GetFullSpan(), context));
-        }
+        context->SetException(MakeException("type not resolved", node.GetFullSpan(), context));
     }
     else
     {
@@ -638,6 +636,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
         }
         for (Module* module : importedModules)
         {
+            context->AddModule(module);
             ModulePtr modulePtr(module, context);
             Scope* containerScope = EnterScope(context->GetSymbolTable()->CurrentScope(), containerNames, node.GetFullSpan(), context);
             ScopePtr scopePtr(containerScope, context);
@@ -697,10 +696,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
                 { 
                     type = nullptr;
                     failed = true;
-                    if (!context->HasException())
-                    {
-                        context->SetException(MakeException("symbol '" +symbol->Name() + "' is not a type symbol", fullSpan, context));
-                    }
+                    context->SetException(MakeException("symbol '" +symbol->Name() + "' is not a type symbol", fullSpan, context));
                     return;
                 }
             }
@@ -750,10 +746,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
             ThrowException("symbol '" + node.Str() + "' not found", fullSpan, context);
         }
         failed = true;
-        if (!context->HasException())
-        {
-            context->SetException(MakeException("symbol '" + node.Str() + "' not found", fullSpan, context));
-        }
+        context->SetException(MakeException("symbol '" + node.Str() + "' not found", fullSpan, context));
     }
 }
 
@@ -800,6 +793,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
     {
         for (Module* module : importedModules)
         {
+            context->AddModule(module);
             ModulePtr modulePtr(module, context);
             Scope* containerScope = EnterScope(context->GetSymbolTable()->CurrentScope(), containerNames, node.GetFullSpan(), context);
             ScopePtr scopePtr(containerScope, context);
@@ -815,10 +809,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
         if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
         {
             failed = true;
-            if (!context->HasException())
-            {
-                context->SetException(MakeException("template name '" + node.TemplateName()->Str() + "' not resolved", node.GetFullSpan(), context));
-            }
+            context->SetException(MakeException("template name '" + node.TemplateName()->Str() + "' not resolved", node.GetFullSpan(), context));
             return;
         }
         else
@@ -835,11 +826,11 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
     }
     std::vector<Symbol*> templateArgs;
     Cardinality n = Cardinality(node.Items().size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         otava::ast::Node* argItem = node.Items()[ToUnderlying(i)];
         TemplateParameterSymbol* templateParameter = nullptr;
-        if (templateDeclaration && i < Index(templateDeclaration->Arity()))
+        if (templateDeclaration && i < ToIndex(templateDeclaration->Arity()))
         {
             templateParameter = templateDeclaration->TemplateParameters(context)[ToUnderlying(i)];
             ParameterSymbol* parameter = templateParameter->GetParameterSymbol(context);
@@ -884,11 +875,8 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
             if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("template argument " + std::to_string(ToUnderlying(i)) + " of type '" +
-                        typeSymbol->FullName(context) + "' not resolved", fullSpan, context));
-                }
+                context->SetException(MakeException("template argument " + std::to_string(ToUnderlying(i)) + " of type '" +
+                    typeSymbol->FullName(context) + "' not resolved", fullSpan, context));
                 return;
             }
             ThrowException("template argument " + std::to_string(ToUnderlying(i)) + " of type '" + 
@@ -906,10 +894,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
             if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("no matching class found from class group '" + classGroup->Name() + "'", fullSpan, context));
-                }
+                context->SetException(MakeException("no matching class found from class group '" + classGroup->Name() + "'", fullSpan, context));
                 return;
             }
             ThrowException("no matching class found from class group '" + classGroup->Name() + "'", fullSpan, context);
@@ -932,10 +917,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
             if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("no matching alias type found from alias group '" + aliasGroup->Name() + "'", fullSpan, context));
-                }
+                context->SetException(MakeException("no matching alias type found from alias group '" + aliasGroup->Name() + "'", fullSpan, context));
                 return;
             }
             ThrowException("no matching alias type found from alias group '" + aliasGroup->Name() + "'", fullSpan, context);
@@ -969,10 +951,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
             if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("alias type or class type expected", fullSpan, context));
-                }
+                context->SetException(MakeException("alias type or class type expected", fullSpan, context));
                 return;
             }
             ThrowException("alias type or class type expected", fullSpan, context);
@@ -991,10 +970,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
             if ((resolverFlags & TypeResolverFlags::dontThrow) != TypeResolverFlags::none)
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("alias type or class type expected", fullSpan, context));
-                }
+                context->SetException(MakeException("alias type or class type expected", fullSpan, context));
                 return;
             }
             ThrowException("alias type or class type expected", fullSpan, context);
@@ -1107,24 +1083,6 @@ TypeSymbol* ResolveFwdDeclaredType(TypeSymbol* type, const soul::ast::FullSpan& 
             }
         }
     }
-    else if (type->IsForwardEnumDeclarationSymbol())
-    {
-        ForwardEnumDeclarationSymbol* fwdEnumDeclarationSymbol = static_cast<ForwardEnumDeclarationSymbol*>(type);
-        if (fwdEnumDeclarationSymbol->GetEnumeratedTypeSymbol())
-        {
-            return fwdEnumDeclarationSymbol->GetEnumeratedTypeSymbol();
-        }
-        else
-        {
-            Symbol* type = context->GetSymbolTable()->Lookup(fwdEnumDeclarationSymbol->Name(), SymbolGroupKind::enumSymbolGroup, fullSpan, context,
-                LookupFlags::noFwdDeclarationSymbol);
-            if (type && type->IsEnumeratedTypeSymbol())
-            {
-                fwdEnumDeclarationSymbol->SetEnumeratedTypeSymbol(static_cast<EnumeratedTypeSymbol*>(type));
-                return static_cast<TypeSymbol*>(type);
-            }
-        }
-    }
     return type;
 }
 
@@ -1164,6 +1122,7 @@ Symbol* ResolveTypeIdentifier(const std::string& name, const soul::ast::FullSpan
     std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
     for (Module* importedModule : importedModules)
     {
+        context->AddModule(importedModule);
         ModulePtr modulePtr(importedModule, context);
         Scope* containerScope = EnterScope(importedModule->GetSymbolTable()->CurrentScope(), containerNames, fullSpan, context);
         ScopePtr scopePtr(containerScope, context);

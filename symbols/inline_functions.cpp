@@ -5,14 +5,19 @@
 
 module otava.symbols.inline_functions;
 
+import otava.symbols.bound_tree;
 import otava.symbols.classes;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.statement_binder;
 import otava.ast.function;
+import otava.ast.node;
 
 namespace otava::symbols {
 
@@ -101,7 +106,8 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
                 inlineFn->SetSkip();
                 if (functionDefinition->IsBound())
                 {
-                    context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(context->ReleaseBoundFunction()), context);
+                    std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+                    context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
                 }
                 context->PopBoundFunction();
 

@@ -14,6 +14,7 @@ import otava.symbols.expression_binder;
 import otava.symbols.instantiator;
 import otava.symbols.scope;
 import otava.symbols.statement_binder;
+import otava.symbols.symbol_table;
 import otava.ast.declaration;
 import otava.ast.expression;
 import otava.ast.function;

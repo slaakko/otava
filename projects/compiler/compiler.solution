@@ -8,3 +8,4 @@ project <assembly/assembly.project>;
 project <intermediate/intermediate.project>;
 project <optimizer/optimizer.project>;
 project <ast/ast.project>;
+project <symbols/symbols.project>;

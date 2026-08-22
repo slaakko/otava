@@ -7,11 +7,18 @@ module otava.symbols.value;
 
 import otava.symbols.context;
 import otava.symbols.emitter;
+import otava.symbols.enums;
 import otava.symbols.exception;
+import otava.symbols.function_group_symbol;
+import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
 import otava.symbols.writer;
 import otava.symbols.reader;
 import otava.symbols.type_compare;
+import otava.symbols.type_symbol;
+import otava.symbols.variable_symbol;
+import otava.intermediate.types;
 import util.text_util;
 
 namespace otava::symbols {
@@ -95,6 +102,7 @@ Value::Value(Module* module_, SymbolId id_, const std::string& rep_) : Symbol(mo
 otava::intermediate::Value* Value::IrValue(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     ThrowException("cannot evaluate statically", fullSpan, context);
+    return nullptr;
 }
 
 ValueKind Value::GetValueKind() const noexcept
@@ -159,7 +167,7 @@ void Value::SetType(TypeSymbol* type_, Context* context) noexcept
     type = type_;
     if (type && type->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule());
     }
 }
 
@@ -270,7 +278,7 @@ bool ValueLess(Value* left, Value* right, Context* context)
     return false;
 }
 
-BoolValue::BoolValue(Module* module_, SymbolId id_) : Value(module_, id_)
+BoolValue::BoolValue(Module* module_, SymbolId id_) : Value(module_, id_), value(false)
 {
 }
 
@@ -317,7 +325,7 @@ otava::intermediate::Value* BoolValue::IrValue(Emitter& emitter, const soul::ast
     return emitter.EmitBool(value);
 }
 
-IntegerValue::IntegerValue(Module* module_, SymbolId id_) : Value(module_, id_)
+IntegerValue::IntegerValue(Module* module_, SymbolId id_) : Value(module_, id_), value(0)
 {
 }
 
@@ -366,7 +374,7 @@ otava::intermediate::Value* IntegerValue::IrValue(Emitter& emitter, const soul::
     return emitter.EmitIntegerValue(irType, value);
 }
 
-FloatingValue::FloatingValue(Module* module_, SymbolId id_) : Value(module_, id_)
+FloatingValue::FloatingValue(Module* module_, SymbolId id_) : Value(module_, id_), value(0.0)
 {
 }
 
@@ -498,7 +506,7 @@ otava::intermediate::Value* StringValue::IrValue(Emitter& emitter, const soul::a
     return nullptr;
 }
 
-CharValue::CharValue(Module* module_, SymbolId id_) : Value(module_, id_)
+CharValue::CharValue(Module* module_, SymbolId id_) : Value(module_, id_), value()
 {
 }
 
@@ -537,7 +545,7 @@ otava::intermediate::Value* CharValue::IrValue(Emitter& emitter, const soul::ast
     return emitter.EmitIntegerValue(irType, value);
 }
 
-SymbolValue::SymbolValue(Module* module_, SymbolId id_) : Value(module_, id_)
+SymbolValue::SymbolValue(Module* module_, SymbolId id_) : Value(module_, id_), symbol(nullptr), symbolId(zeroSymbolId)
 {
 }
 
@@ -641,7 +649,7 @@ otava::intermediate::Value* SymbolValue::IrValue(Emitter& emitter, const soul::a
     return nullptr;
 }
 
-InvokeValue::InvokeValue(Module* module_, SymbolId id_) : Value(module_, id_)
+InvokeValue::InvokeValue(Module* module_, SymbolId id_) : Value(module_, id_), subject(nullptr), subjectId(zeroSymbolId)
 {
 }
 
@@ -808,7 +816,7 @@ void ArrayValue::Read(Reader& reader)
     header.Read(reader);
     Value::Read(reader);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId elementValueId = SymbolId(reader.CurrentReader().ReadULong());
         elementValueIds.push_back(elementValueId);
@@ -936,7 +944,7 @@ void StructureValue::Read(Reader& reader)
     header.Read(reader);
     Value::Read(reader);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId fieldValueId = SymbolId(reader.CurrentReader().ReadULong());
         fieldValueIds.push_back(fieldValueId);

@@ -5,8 +5,11 @@
 
 export module otava.symbols.bound_tree;
 
+import otava.symbols.type_symbol;
 import otava.intermediate.code;
 import otava.intermediate.value;
+import otava.intermediate.types;
+import util.component;
 import soul.ast.span;
 import otava.ast.node;
 import std;
@@ -68,6 +71,7 @@ class OperationRepository;
 class ArgumentConversionTable;
 class FunctionTemplateRepository;
 class InlineFunctionRepository;
+class FunctionCompletionRepository;
 
 enum class BoundNodeKind
 {
@@ -229,11 +233,12 @@ public:
     BoundCompileUnitNode();
     ~BoundCompileUnitNode();
     void Sort();
-    inline OperationRepository* GetOperationRepository() const { return operationRepository.get(); }
-    inline ArgumentConversionTable* GetArgumentConversionTable() const { return argumentConversionTable.get(); }
-    inline FunctionTemplateRepository* GetFunctionTemplateRepository() const { return functionTemplateRepository.get(); }
-    inline ClassTemplateRepository* GetClassTemplateRepository() const { return classTemplateRepository.get(); }
-    inline InlineFunctionRepository* GetInlineFunctionRepository() const { return inlineFunctionRepository.get(); }
+    inline OperationRepository* GetOperationRepository() const noexcept { return operationRepository.get(); }
+    inline ArgumentConversionTable* GetArgumentConversionTable() const noexcept  { return argumentConversionTable.get(); }
+    inline FunctionTemplateRepository* GetFunctionTemplateRepository() const noexcept { return functionTemplateRepository.get(); }
+    inline ClassTemplateRepository* GetClassTemplateRepository() const noexcept { return classTemplateRepository.get(); }
+    inline InlineFunctionRepository* GetInlineFunctionRepository() const noexcept { return inlineFunctionRepository.get(); }
+    inline FunctionCompletionRepository* GetFunctionCompletionRepository() const noexcept { return functionCompletionRepository.get(); }
     inline BoundFunctionNode* GetCompileUnitInitializationFunction() { return compileUnitInitializationFunction; }
     BoundFunctionNode* GetOrInsertCompileUnitInitializationFunction(const soul::ast::FullSpan& fullSpan, Context* context);
     void AddDynamicInitialization(BoundExpressionNode* dynamicInitialization, BoundExpressionNode* atExitCall, const soul::ast::FullSpan& fullSpan, Context* context);
@@ -255,10 +260,13 @@ private:
     std::unique_ptr<FunctionTemplateRepository> functionTemplateRepository;
     std::unique_ptr<ClassTemplateRepository> classTemplateRepository;
     std::unique_ptr<InlineFunctionRepository> inlineFunctionRepository;
+    std::unique_ptr<FunctionCompletionRepository> functionCompletionRepository;
     std::set<ClassTypeSymbol*> boundClasses;
     BoundFunctionNode* compileUnitInitializationFunction;
     std::vector<ClassTypeSymbol*> generateDestructorList;
 };
+
+BoundCompileUnitNode* MakeBoundCompileUnit();
 
 class BoundStatementNode;
 
@@ -688,7 +696,6 @@ public:
     void SetExpr(BoundExpressionNode* expr_) noexcept;
     void SetExpr(BoundExpressionNode* expr_, const soul::ast::FullSpan& fullSpan, Context* context);
     inline BoundExpressionNode* GetExpr() const noexcept { return expr.get(); }
-    bool IsTerminator() const noexcept override;
 private:
     std::unique_ptr<BoundExpressionNode> expr;
 };
@@ -855,7 +862,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void AddTemplateArg(TypeSymbol* templateArg);
-    inline const std::vector<TypeSymbol*>& TemplateArgs() const noexcept { return templateArgs; }
+    const std::vector<TypeSymbol*>& TemplateArgs() const noexcept;
 private:
     FunctionGroupSymbol* functionGroupSymbol;
     std::vector<TypeSymbol*> templateArgs;
@@ -870,7 +877,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void AddTemplateArg(TypeSymbol* templateArg);
-    inline const std::vector<TypeSymbol*>& TemplateArgs() const noexcept { return templateArgs; }
+    const std::vector<TypeSymbol*>& TemplateArgs() const noexcept;
 private:
     ClassGroupSymbol* classGroupSymbol;
     std::vector<TypeSymbol*> templateArgs;
@@ -885,7 +892,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void AddTemplateArg(TypeSymbol* templateArg);
-    inline const std::vector<TypeSymbol*>& TemplateArgs() const noexcept { return templateArgs; }
+    const std::vector<TypeSymbol*>& TemplateArgs() const noexcept;
 private:
     AliasGroupSymbol* aliasGroupSymbol;
     std::vector<TypeSymbol*> templateArgs;

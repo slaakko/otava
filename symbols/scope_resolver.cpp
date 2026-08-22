@@ -10,8 +10,13 @@ import otava.ast.visitor;
 import otava.ast.templates;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.lookup;
+import otava.symbols.modules;
 import otava.symbols.scope_ptr;
+import otava.symbols.symbol;
+import otava.symbols.symbol_table;
 import otava.symbols.type_resolver;
+import otava.symbols.type_symbol;
 
 namespace otava::symbols {
 
@@ -92,10 +97,7 @@ void ScopeResolver::Visit(otava::ast::IdentifierNode& node)
                 if (context->GetFlag(ContextFlags::dontThrow))
                 {
                     failed = true;
-                    if (!context->HasException())
-                    {
-                        context->SetException(MakeException("symbol '" + symbol->FullName(context) + "' does not have a scope", node.GetFullSpan(), context));
-                    }
+                    context->SetException(MakeException("symbol '" + symbol->FullName(context) + "' does not have a scope", node.GetFullSpan(), context));
                     return;
                 }
                 ThrowException("symbol '" + symbol->FullName(context) + "' does not have a scope", node.GetFullSpan(), context);
@@ -106,11 +108,8 @@ void ScopeResolver::Visit(otava::ast::IdentifierNode& node)
             if (context->GetFlag(ContextFlags::dontThrow))
             {
                 failed = true;
-                if (!context->HasException())
-                {
-                    context->SetException(MakeException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" +
-                        currentScope->FullName(context) + "'", node.GetFullSpan(), context));
-                }
+                context->SetException(MakeException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" +
+                    currentScope->FullName(context) + "'", node.GetFullSpan(), context));
                 return;
             }
             ThrowException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" +
@@ -122,11 +121,8 @@ void ScopeResolver::Visit(otava::ast::IdentifierNode& node)
         if (context->GetFlag(ContextFlags::dontThrow))
         {
             failed = true;
-            if (!context->HasException())
-            {
-                context->SetException(MakeException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + 
-                    currentScope->FullName(context) + "'", node.GetFullSpan(), context));
-            }
+            context->SetException(MakeException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + 
+                currentScope->FullName(context) + "'", node.GetFullSpan(), context));
             return;
         }
         ThrowException("symbol '" + node.Str() + "' not found from " + ScopeKindStr(currentScope->Kind()) + " '" + currentScope->FullName(context) + "'",
@@ -153,10 +149,7 @@ void ScopeResolver::Visit(otava::ast::TemplateIdNode& node)
     else if (context->GetFlag(ContextFlags::dontThrow))
     {
         failed = true;
-        if (!context->HasException())
-        {
-            context->SetException(MakeException("could not resolve template id", node.GetFullSpan(), context));
-        }
+        context->SetException(MakeException("could not resolve template id", node.GetFullSpan(), context));
         return;
     }
 }
@@ -245,6 +238,7 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
     }
     for (Module* importedModule : importedModules)
     {
+        context->AddModule(importedModule);
         ModulePtr modulePtr(importedModule, context);
         Scope* containerScope = EnterScope(importedModule->GetSymbolTable()->CurrentScope(), containerNames, nnsNode->GetFullSpan(), context);
         ScopePtr scopePtr(containerScope, context);

@@ -6,15 +6,16 @@
 module otava.symbols.scope;
 
 import otava.symbols.alias_group_symbol;
+import otava.symbols.class_group_symbol;
 import otava.symbols.class_templates;
 import otava.symbols.context;
-import otava.symbols.enum_group_symbol;
 import otava.symbols.exception;
 import otava.symbols.namespaces;
 import otava.symbols.function_group_symbol;
 import otava.symbols.modules;
 import otava.symbols.symbol;
 import otava.symbols.templates;
+import otava.symbols.template_param_group_symbol;
 import otava.symbols.variable_group_symbol;
 import otava.ast.error;
 import otava.assembly.error;
@@ -410,7 +411,7 @@ void Scope::Read()
 void Scope::Read(Reader& reader)
 {
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolOffset symbolOffset = SymbolOffset(reader.CurrentReader().ReadUInt());
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
@@ -437,6 +438,26 @@ void Scope::Install(Symbol* symbol, Context* context)
 void Scope::Uninstall(Symbol* symbol)
 {
     // TODO
+}
+
+Scope* Scope::GetClassScope(Context* context) const noexcept
+{
+    return nullptr;
+}
+
+Scope* Scope::GetNamespaceScope(Context* context) const noexcept
+{
+    return nullptr;
+}
+
+Symbol* Scope::GetSymbol() noexcept
+{
+    return nullptr;
+}
+
+ClassTemplateSpecializationSymbol* Scope::GetClassTemplateSpecialization(std::set<Scope*>& visited) const
+{
+    return nullptr;
 }
 
 Scope* Scope::GroupScope(Context* context) noexcept
@@ -474,6 +495,11 @@ void Scope::RemoveContainerScope(Scope* containerScope)
 {
     if (destructing) return;
     containerScopes.erase(std::remove(containerScopes.begin(), containerScopes.end(), containerScope), containerScopes.end());
+}
+
+const std::unordered_map<SymbolOffset, SymbolId>& Scope::SymbolIdMap() const noexcept
+{
+    return symbolIdMap;
 }
 
 ContainerScope::ContainerScope(Module* module_) noexcept : 
@@ -708,6 +734,11 @@ ClassTemplateSpecializationSymbol* ContainerScope::GetClassTemplateSpecializatio
         }
     }
     return nullptr;
+}
+
+ContainerSymbol* ContainerScope::GetContainerSymbol() const noexcept
+{ 
+    return containerSymbol; 
 }
 
 void ContainerScope::AddUsingDeclaration(Symbol* usingDeclaration, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -956,7 +987,7 @@ void ContainerScope::Read(Reader& reader)
 {
     Scope::Read(reader);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         ScopeKind scopeKind = ScopeKind(reader.CurrentReader().ReadByte());
         Scope* scope = MakeScope(GetModule(), scopeKind, this);
@@ -1061,6 +1092,11 @@ void UsingDirectiveScope::Lookup(const std::string& name, SymbolGroupKind symbol
 std::string UsingDirectiveScope::FullName(Context* context) const
 {
     return ns->FullName(context);
+}
+
+NamespaceSymbol* UsingDirectiveScope::Ns() const
+{
+    return ns;
 }
 
 InstantiationScope::InstantiationScope(Module* module_, Scope* parentScope_) noexcept : Scope(module_), destructing(false)

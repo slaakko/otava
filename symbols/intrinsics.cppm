@@ -5,11 +5,18 @@
 
 export module otava.symbols.intrinsics;
 
+import otava.symbols.bound_tree;
+import otava.symbols.id;
 import otava.symbols.function_symbol;
 import otava.symbols.variable_symbol;
+import soul.ast.span;
 import std;
 
 export namespace otava::symbols {
+
+class Emitter;
+class Context;
+class Module;
 
 class GetFramePtrIntrinsic : public FunctionSymbol
 {

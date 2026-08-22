@@ -7,13 +7,19 @@ module otava.symbols.trace;
 
 import otava.symbols.context;
 import otava.symbols.declaration;
+import otava.symbols.function_symbol;
+import otava.symbols.modules;
 import otava.symbols.project;
 import otava.symbols.scope_ptr;
+import otava.symbols.symbol;
+import otava.ast.classes;
 import otava.ast.declaration;
 import otava.ast.expression;
+import otava.ast.function;
 import otava.ast.identifier;
 import otava.ast.literal;
 import otava.ast.statement;
+import soul.ast.span;
 import util.buffered_stream;
 import util.file_stream;
 

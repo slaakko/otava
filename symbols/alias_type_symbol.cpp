@@ -8,6 +8,7 @@ module otava.symbols.alias_type_symbol;
 import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.modules;
+import otava.symbols.symbol;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
 import otava.ast.declaration;
@@ -60,7 +61,7 @@ void AliasTypeSymbol::SetReferredType(TypeSymbol* referredType_) noexcept
     referredType = referredType_; 
     if (referredType && GetModule() != referredType->GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(referredType->Id(), referredType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(referredType->Id(), referredType->GetModule());
     }
 }
 

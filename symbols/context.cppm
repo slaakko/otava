@@ -6,6 +6,7 @@
 export module otava.symbols.context;
 
 import otava.symbols.bound_tree;
+import otava.symbols.declarator;
 import otava.symbols.exception;
 import otava.symbols.modules;
 import otava.symbols.project;
@@ -121,7 +122,6 @@ struct RangeForBlockIds
 
 class AliasTypeSymbol;
 class SymbolsProject;
-struct DeclarationList;
 class SymbolTable;
 class Module;
 class ModuleMapper;
@@ -145,14 +145,14 @@ public:
     inline Module* GetCompileUnitModule() const noexcept { return compileUnitModule; }
     inline void SetModuleMapper(ModuleMapper* moduleMapper_) noexcept { moduleMapper = moduleMapper_;  }
     inline ModuleMapper* GetModuleMapper() const noexcept { return moduleMapper; }
-    inline SymbolTable* GetSymbolTable() const noexcept { return GetModule()->GetSymbolTable(); }
+    SymbolTable* GetSymbolTable() const noexcept;
     inline Emitter* GetEmitter() noexcept { return emitter; }
-    inline EvaluationContext* GetEvaluationContext() noexcept { return GetModule()->GetEvaluationContext(); }
+    EvaluationContext* GetEvaluationContext() noexcept;
     OperationRepository* GetOperationRepository() const noexcept;
     inline TraceInfo* GetTraceInfo() const noexcept { return traceInfo; }
     inline void SetTraceInfo(TraceInfo* traceInfo_) noexcept { traceInfo = traceInfo_; }
     inline void SetEmitter(Emitter* emitter_) noexcept { emitter = emitter_; }
-    inline SymbolIndexMap* GetSymbolIndexMap() const noexcept { return moduleMapper->GetSymbolIndexMap(); }
+    SymbolIndexMap* GetSymbolIndexMap() const noexcept;
     inline SymbolId GetNextSymbolId(SymbolKind symbolKind) 
     { 
         return MakeSymbolId(currentProject->GetProjectId(), symbolKind, GetSymbolIndexMap()->GetNextIndex(symbolKind));
@@ -221,9 +221,9 @@ public:
     void AddTemporaryAliasType(AliasTypeSymbol* temporaryAliasType);
     inline const std::vector<AliasTypeSymbol*>& TemporaryAliasTypes() const noexcept { return temporaryAliasTypes; }
     void ClearTemporaryAliasTypes();
-    void PushTemplateParameterMap(std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* templateParamMap);
+    void PushTemplateParameterMap(std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>* templateParamMap);
     void PopTemplateParameterMap();
-    inline std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* TemplateParameterMap() const noexcept
+    inline std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>* TemplateParameterMap() const noexcept
     { 
         return templateParameterMap; 
     }
@@ -313,6 +313,7 @@ public:
     inline Value* Initializer() const noexcept { return initializer; }
     inline bool IncompleteClassesCompleted() const noexcept { return incompleteClassesCompleted; }
     inline void SetIncompleterClassesCompleted() { incompleteClassesCompleted = true; }
+    void AddModule(Module* module);
 private:
     Module* module;
     Module* compileUnitModule;
@@ -350,8 +351,8 @@ private:
     otava::intermediate::Value* ptr;
     TypeSymbol* argType;
     TypeSymbol* paramType;
-    std::stack<std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>*> templateParameterMapStack;
-    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>* templateParameterMap;
+    std::stack<std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>*> templateParameterMapStack;
+    std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>* templateParameterMap;
     std::vector<StatementBinder*> statementBinders;
     StatementBinder* statementBinder;
     std::string resultVariableName;
@@ -400,6 +401,7 @@ private:
     Exception exception;
     Value* initializer;
     bool incompleteClassesCompleted;
+    std::vector<Module*> modules;
 };
 
 class FlagSetter

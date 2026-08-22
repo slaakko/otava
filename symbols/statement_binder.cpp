@@ -5,21 +5,31 @@
 
 module otava.symbols.statement_binder;
 
+import otava.symbols.alias_type_symbol;
 import otava.symbols.argument_conversion_table;
+import otava.symbols.block;
 import otava.symbols.bound_tree;
+import otava.symbols.classes;
 import otava.symbols.context;
 import otava.symbols.declaration;
 import otava.symbols.declarator;
+import otava.symbols.derivations;
 import otava.symbols.exception;
 import otava.symbols.exception_handling;
 import otava.symbols.expr_parser;
 import otava.symbols.expression_binder;
+import otava.symbols.function_kind;
+import otava.symbols.function_symbol;
 import otava.symbols.function_return_path_checker;
+import otava.symbols.id;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.operation_repository;
 import otava.symbols.overload_resolution;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.stmt_parser;
+import otava.symbols.symbol;
 import otava.symbols.trace;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
@@ -294,7 +304,8 @@ void StatementBinder::AddBaseTerminator(TypeSymbol* baseClass, int index, const 
         baseClass->AddPointer(context), thisPtr->GetType(), fullSpan, context);
     if (conversion)
     {
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, conversion->ReturnType(context))));
+        std::unique_ptr<BoundExpressionNode> bcn(new BoundConversionNode(thisPtr, conversion, fullSpan, conversion->ReturnType(context)));
+        args.push_back(std::move(bcn));
         std::vector<TypeSymbol*> templateArgs;
         std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
             context->GetSymbolTable()->CurrentScope(), "@destructor", templateArgs, args, fullSpan, context);
@@ -326,7 +337,8 @@ void StatementBinder::AddMemberTerminator(VariableSymbol* memberVar, const soul:
     BoundVariableNode* boundVariableNode = new BoundVariableNode(memberVar, fullSpan, memberVar->GetReferredType(context));
     BoundExpressionNode* thisPtr = context->GetThisPtr(fullSpan);
     boundVariableNode->SetThisPtr(thisPtr);
-    args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundVariableNode, fullSpan, boundVariableNode->GetType()->AddPointer(context))));
+    std::unique_ptr<BoundExpressionNode> ban(new BoundAddressOfNode(boundVariableNode, fullSpan, boundVariableNode->GetType()->AddPointer(context)));
+    args.push_back(std::move(ban));
     Exception ex;
     std::vector<TypeSymbol*> templateArgs;
     std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverload(
@@ -368,8 +380,8 @@ void StatementBinder::GenerateSetVPtrStatements(const soul::ast::FullSpan& fullS
             if (conversion)
             {
                 BoundExpressionNode* thisPtrConverted = new BoundConversionNode(thisPtr->Clone(), conversion, fullSpan, conversion->ReturnType(context));
-                setVPtrStatements.push_back(std::unique_ptr<BoundStatementNode>(
-                    new BoundSetVPtrStatementNode(thisPtrConverted, currentClass, vptrHolderClass, fullSpan)));
+                std::unique_ptr<BoundStatementNode> bss(new BoundSetVPtrStatementNode(thisPtrConverted, currentClass, vptrHolderClass, fullSpan));
+                setVPtrStatements.push_back(std::move(bss));
             }
             else
             {
@@ -378,8 +390,8 @@ void StatementBinder::GenerateSetVPtrStatements(const soul::ast::FullSpan& fullS
         }
         else
         {
-            setVPtrStatements.push_back(std::unique_ptr<BoundStatementNode>(new BoundSetVPtrStatementNode(thisPtr->Clone(),
-                currentClass, currentClass, fullSpan)));
+            std::unique_ptr<BoundStatementNode> bss(new BoundSetVPtrStatementNode(thisPtr->Clone(), currentClass, currentClass, fullSpan));
+            setVPtrStatements.push_back(std::move(bss));
         }
     }
 }
@@ -453,7 +465,8 @@ void StatementBinder::AddDefaultMemberInitializer(VariableSymbol* memberVar, con
     BoundExpressionNode* thisPtr = context->GetThisPtr(fullSpan);
     boundVariableNode->SetThisPtr(thisPtr);
     std::vector<TypeSymbol*> templateArgs;
-    args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundVariableNode, fullSpan, boundVariableNode->GetType()->AddPointer(context))));
+    std::unique_ptr<BoundExpressionNode> ban(new BoundAddressOfNode(boundVariableNode, fullSpan, boundVariableNode->GetType()->AddPointer(context)));
+    args.push_back(std::move(ban));
     std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
         context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context);
     std::pair<int, std::unique_ptr<BoundFunctionCallNode>> p(std::move(memberVar->GetIndex()), std::move(boundFunctionCall));
@@ -463,7 +476,7 @@ void StatementBinder::AddDefaultMemberInitializer(VariableSymbol* memberVar, con
 int StatementBinder::GetBaseInitializerOrTerminatorIndex(TypeSymbol* baseClass) const noexcept
 {
     Cardinality n = Cardinality(currentClass->BaseClasses(context).size());
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
         TypeSymbol* baseCls = currentClass->BaseClasses(context)[ToUnderlying(i)];
         if (TypesEqual(baseCls, baseClass, context))
@@ -508,7 +521,8 @@ void StatementBinder::AddDefaultBaseInitializer(TypeSymbol* baseClass, int index
     if (conversion)
     {
         std::vector<TypeSymbol*> templateArgs;
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, conversion->ReturnType(context))));
+        std::unique_ptr<BoundExpressionNode> bcn(new BoundConversionNode(thisPtr, conversion, fullSpan, conversion->ReturnType(context)));
+        args.push_back(std::move(bcn));
         std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
             context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context);
         std::pair<int, std::unique_ptr<BoundFunctionCallNode>> p(std::move(index), std::move(boundFunctionCall));
@@ -1277,8 +1291,8 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
             if (context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ReturnsClass())
             {
                 returnValueParam = context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ReturnValueParam(context);
-                classReturnArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundParameterNode(returnValueParam,
-                    fullSpan, returnValueParam->GetReferredType(context))));
+                std::unique_ptr<BoundExpressionNode> bpn(new BoundParameterNode(returnValueParam, fullSpan, returnValueParam->GetReferredType(context)));
+                classReturnArgs.push_back(std::move(bpn));
                 expression = BindExpression(node.ReturnValue(), context);
                 if (!expression)
                 {
@@ -1899,14 +1913,14 @@ void StatementBinder::Visit(otava::ast::SimpleDeclarationNode& node)
                 {
                     BoundParentVariableNode* boundParentVariable = new BoundParentVariableNode(variable, fullSpan, variable->GetReferredType(context));
                     boundParentVariable->SetLevel(variable->Level());
-                    arguments.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundParentVariable, fullSpan,
-                        boundParentVariable->GetType()->AddPointer(context))));
+                    std::unique_ptr<BoundExpressionNode> ban(new BoundAddressOfNode(boundParentVariable, fullSpan, boundParentVariable->GetType()->AddPointer(context)));
+                    arguments.push_back(std::move(ban));
                 }
                 else
                 {
                     BoundVariableNode* boundVariable = new BoundVariableNode(variable, fullSpan, variable->GetReferredType(context));
-                    arguments.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundVariable, fullSpan,
-                        boundVariable->GetType()->AddPointer(context))));
+                    std::unique_ptr<BoundExpressionNode> ban(new BoundAddressOfNode(boundVariable, fullSpan, boundVariable->GetType()->AddPointer(context)));
+                    arguments.push_back(std::move(ban));
                 }
                 if (initializer)
                 {
@@ -1916,12 +1930,14 @@ void StatementBinder::Visit(otava::ast::SimpleDeclarationNode& node)
                         int n = exprListNode->Count();
                         for (int i = 0; i < n; ++i)
                         {
-                            arguments.push_back(std::unique_ptr<BoundExpressionNode>(exprListNode->ReleaseExpr(i)));
+                            std::unique_ptr<BoundExpressionNode> ben(exprListNode->ReleaseExpr(i));
+                            arguments.push_back(std::move(ben));
                         }
                     }
                     else
                     {
-                        arguments.push_back(std::unique_ptr<BoundExpressionNode>(initializer.release()));
+                        std::unique_ptr<BoundExpressionNode> ben(initializer.release());
+                        arguments.push_back(std::move(ben));
                     }
                 }
                 std::vector<TypeSymbol*> templateArgs;
@@ -2291,7 +2307,8 @@ void StatementBinder::BindStaticLocalVariable(VariableSymbol* variable, otava::a
     {
         BoundVariableNode* boundVariable = new BoundVariableNode(globalStaticVariableSymbol, fullSpan, globalStaticVariableSymbol->GetReferredType(context));
         std::vector<std::unique_ptr<BoundExpressionNode>> arguments;
-        arguments.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundVariable, fullSpan, boundVariable->GetType()->AddPointer(context))));
+        std::unique_ptr<BoundExpressionNode> ban((new BoundAddressOfNode(boundVariable, fullSpan, boundVariable->GetType()->AddPointer(context))));
+        arguments.push_back(std::move(ban));
         std::unique_ptr<BoundExpressionNode> initializer;
         if (initializerNode)
         {
@@ -2305,12 +2322,14 @@ void StatementBinder::BindStaticLocalVariable(VariableSymbol* variable, otava::a
                 int n = exprListNode->Count();
                 for (int i = 0; i < n; ++i)
                 {
-                    arguments.push_back(std::unique_ptr<BoundExpressionNode>(exprListNode->ReleaseExpr(i)));
+                    std::unique_ptr<BoundExpressionNode> ben(exprListNode->ReleaseExpr(i));
+                    arguments.push_back(std::move(ben));
                 }
             }
             else
             {
-                arguments.push_back(std::unique_ptr<BoundExpressionNode>(initializer.release()));
+                std::unique_ptr<BoundExpressionNode> ben(initializer.release());
+                arguments.push_back(std::move(ben));
             }
         }
         std::vector<TypeSymbol*> templateArgs;

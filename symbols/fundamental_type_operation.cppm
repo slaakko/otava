@@ -8,11 +8,17 @@ export module otava.symbols.fundamental_type_operation;
 import otava.symbols.bound_tree;
 import otava.symbols.context;
 import otava.symbols.emitter;
+import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
+import otava.symbols.id;
 import otava.symbols.variable_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.type_symbol;
+import otava.symbols.value;
 import otava.intermediate.value;
+import soul.ast.span;
+import std;
 
 export namespace otava::symbols {
 
@@ -512,7 +518,7 @@ class TrivialDestructor : public FunctionSymbol
 {
 public:
     TrivialDestructor(Module* module_, SymbolId id_);
-    TrivialDestructor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context);
+    TrivialDestructor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }

@@ -8,6 +8,7 @@ module otava.symbols.alias_group_symbol;
 import otava.symbols.alias_type_symbol;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.modules;
 import otava.symbols.type_compare;
 import otava.symbols.writer;
 import otava.symbols.reader;
@@ -102,7 +103,7 @@ void AliasGroupSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId aliasTypeSymbolId = SymbolId(reader.CurrentReader().ReadULong());
         aliasTypeSymbolIds.push_back(aliasTypeSymbolId);

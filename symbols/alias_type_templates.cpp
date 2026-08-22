@@ -5,24 +5,29 @@
 
 module otava.symbols.alias_type_templates;
 
+import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
+import otava.symbols.symbol_table;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.ast.node;
 
 namespace otava::symbols {
 
 AliasTypeTemplateSpecializationSymbol::AliasTypeTemplateSpecializationSymbol(Module* module_, SymbolId id_) : 
-    AliasTypeSymbol(module_, id_), instantiated(false), aliasTypeTemplate(nullptr), templateArgumentsRead(false)
+    AliasTypeSymbol(module_, id_), instantiated(false), aliasTypeTemplate(nullptr), templateArgumentsRead(false), aliasTypeTemplateId(zeroSymbolId)
 {
 }
 
 AliasTypeTemplateSpecializationSymbol::AliasTypeTemplateSpecializationSymbol(Module* module_, SymbolId id_, const std::string& name_) :
-    AliasTypeSymbol(module_, id_, name_), instantiated(false), aliasTypeTemplate(nullptr), templateArgumentsRead(false)
+    AliasTypeSymbol(module_, id_, name_), instantiated(false), aliasTypeTemplate(nullptr), templateArgumentsRead(false), aliasTypeTemplateId(zeroSymbolId)
 {
 }
 
@@ -50,7 +55,7 @@ void AliasTypeTemplateSpecializationSymbol::Read(Reader& reader)
     instantiated = reader.CurrentReader().ReadBool();
     aliasTypeTemplateId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId templateArgumentId = SymbolId(reader.CurrentReader().ReadULong());
         templateArgumentIds.push_back(templateArgumentId);
@@ -82,6 +87,16 @@ const std::vector<Symbol*>& AliasTypeTemplateSpecializationSymbol::TemplateArgum
         }
     }
     return templateArguments;
+}
+
+void TryInstantiate(Instantiator& instantiator, AliasTypeSymbol* aliasTypeSymbol, otava::ast::Node* aliasTypeNode, 
+    AliasTypeTemplateSpecializationSymbol* specialization, Context* context)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateAliasTypeTemplate);
+    context->SetAliasType(specialization);
+    TemplateModulePtr templateModulePtr(context, aliasTypeSymbol->GetModule());
+    TemplateScopePtr templateScopePtr(context, aliasTypeSymbol->GetScope()->GetNamespaceScope(context));
+    aliasTypeNode->Accept(instantiator);
 }
 
 TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector<Symbol*>& templateArgs, otava::ast::TemplateIdNode* node, Context* context)
@@ -116,11 +131,11 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
                 ThrowException("otava.symbols.alias_type_templates: wrong number of template args for instantiating alias type template '" +
                     aliasTypeSymbol->Name() + "'", node->GetFullSpan(), context);
             }
-            for (Index i = Index(0); i < Index(arity); ++i)
+            for (Index i = Index(0); i < ToIndex(arity); ++i)
             {
                 TemplateParameterSymbol* templateParameter = templateDeclaration->TemplateParameters(context)[ToUnderlying(i)];
                 Symbol* templateArg = nullptr;
-                if (i >= Index(argCount))
+                if (i >= ToIndex(argCount))
                 {
                     otava::ast::Node* defaultTemplateArgNode = templateParameter->DefaultTemplateArg();
                     if (defaultTemplateArgNode)
@@ -142,7 +157,8 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
                     context->GetNextSymbolId(SymbolKind::boundTemplateParameterSymbol), templateParameter->Name());
                 boundTemplateParameter->SetTemplateParameterSymbol(templateParameter);
                 boundTemplateParameter->SetBoundSymbol(templateArg);
-                boundTemplateParameters.push_back(std::unique_ptr<BoundTemplateParameterSymbol>(boundTemplateParameter));
+                std::unique_ptr<BoundTemplateParameterSymbol> p(boundTemplateParameter);
+                boundTemplateParameters.push_back(std::move(p));
                 instantiationScope.Install(boundTemplateParameter, context);
                 context->GetSymbolTable()->MapSymbol(boundTemplateParameter, context);
             }
@@ -150,11 +166,7 @@ TypeSymbol* InstantiateAliasTypeSymbol(TypeSymbol* typeSymbol, const std::vector
             Instantiator instantiator(context, &instantiationScope);
             try
             {
-                FlagSetter flagSetter(context, ContextFlags::instantiateAliasTypeTemplate);
-                context->SetAliasType(specialization);
-                TemplateModulePtr templateModulePtr(context, aliasTypeSymbol->GetModule());
-                TemplateScopePtr templateScopePtr(context, aliasTypeSymbol->GetScope()->GetNamespaceScope(context));
-                aliasTypeNode->Accept(instantiator);
+                TryInstantiate(instantiator, aliasTypeSymbol, aliasTypeNode, specialization, context);
             }
             catch (const std::exception& ex)
             {

@@ -5,13 +5,16 @@
 
 module otava.symbols.type_compare;
 
+import otava.symbols.id;
 import otava.symbols.type_symbol;
 import otava.symbols.classes;
 import otava.symbols.class_group_symbol;
 import otava.symbols.class_templates;
 import otava.symbols.compound_type_symbol;
 import otava.symbols.context;
+import otava.symbols.exception;
 import otava.symbols.function_type_symbol;
+import otava.symbols.symbol;
 import otava.symbols.variable_symbol;
 import otava.symbols.templates;
 
@@ -22,7 +25,7 @@ bool TypeIdLess::operator()(TypeSymbol* left, TypeSymbol* right) const noexcept
     return left->Id() < right->Id();
 }
 
-bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
+bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) 
 {
     if (left->IsForwardClassDeclarationSymbol())
     {
@@ -49,7 +52,7 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
         if (!TypesEqual(leftSpecialization->ClassTemplate(context), rightSpecialization->ClassTemplate(context), context)) return false;
         if (leftSpecialization->TemplateArguments(context).size() != rightSpecialization->TemplateArguments(context).size()) return false;
         Cardinality n = Cardinality(leftSpecialization->TemplateArguments(context).size());
-        for (Index i = Index(0); i < Index(n); ++i)
+        for (Index i = Index(0); i < ToIndex(n); ++i)
         {
             Symbol* leftTemplateArg = leftSpecialization->TemplateArguments(context)[ToUnderlying(i)];
             Symbol* rightTemplateArg = rightSpecialization->TemplateArguments(context)[ToUnderlying(i)];
@@ -70,8 +73,17 @@ bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) noexcept
     {
         CompoundTypeSymbol* leftCompound = static_cast<CompoundTypeSymbol*>(left);
         CompoundTypeSymbol* rightCompound = static_cast<CompoundTypeSymbol*>(right);
-        if (TypesEqual(leftCompound->GetBaseType(context), rightCompound->GetBaseType(context), context) && 
-            leftCompound->GetDerivations() == rightCompound->GetDerivations()) return true;
+        TypeSymbol* leftBaseType = leftCompound->GetBaseType(context);
+        TypeSymbol* rightBasetype = rightCompound->GetBaseType(context);
+        if (!leftBaseType)
+        {
+            ThrowException("base type of '" + leftCompound->Name() + "' not found", left->GetFullSpan(), context);
+        }
+        if (!rightBasetype)
+        {
+            ThrowException("base type of '" + rightCompound->Name() + "' not found", right->GetFullSpan(), context);
+        }
+        if (TypesEqual(leftBaseType, rightBasetype, context) && leftCompound->GetDerivations() == rightCompound->GetDerivations()) return true;
     }
     if (left->IsTemplateParameterSymbol() && right->IsTemplateParameterSymbol())
     {

@@ -184,14 +184,14 @@ public:
     Symbol(Module* module_, SymbolId id_);
     Symbol(Module* module_, SymbolId id_, const std::string& name_);
     virtual ~Symbol();
-    inline Module* GetModule() const noexcept { return module; }
+    Module* GetModule() const noexcept;
     inline void ResetModule() noexcept { module = nullptr; }
     inline SymbolId Id() const noexcept { return id; }
     inline StringOffset NameOffset() const noexcept { return nameOffset; }
     std::string Name() const;
     const char* NameCStr() const noexcept { return name; }
     virtual SymbolId IrId() const noexcept { return Id(); }
-    virtual std::string SimpleName(Context* context) { return Name(); }
+    virtual std::string SimpleName(Context* context);
     void SetName(const std::string& name_);
     virtual std::string FullName(Context* context) const;
     inline SymbolKind Kind() const noexcept { return kind; }
@@ -206,7 +206,7 @@ public:
     inline void SetProject() noexcept { SetFlag(SymbolFlags::project); }
     inline bool IsReadOnly() const noexcept { return GetFlag(SymbolFlags::readOnly); }
     inline void SetReadOnly() noexcept { SetFlag(SymbolFlags::readOnly); }
-    virtual bool IsExportSymbol(Context* context) const noexcept { return IsProject(); }
+    virtual bool IsExportSymbol(Context* context) const noexcept;
     inline void SetDeclarationFlags(DeclarationFlags declarationFlags_) noexcept { declarationFlags = declarationFlags_; }
     inline DeclarationFlags GetDeclarationFlags() const noexcept { return declarationFlags; }
     bool CanInstall() const noexcept;
@@ -268,7 +268,7 @@ public:
     virtual bool IsChar16TypeSymbol() const noexcept { return false; }
     virtual bool IsChar32TypeSymbol() const noexcept { return false; }
     virtual Scope* GetScope() { return nullptr; }
-    virtual Symbol* GetSingleSymbol(Context* context) { return this; }
+    virtual Symbol* GetSingleSymbol(Context* context);
     virtual bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const;
     virtual void Write(Writer& writer);
     virtual void Read(Reader& reader);

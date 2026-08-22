@@ -21,10 +21,13 @@ import otava.symbols.classes;
 import otava.symbols.emitter;
 import otava.symbols.enums;
 import otava.symbols.exception;
+import otava.symbols.function_symbol;
+import otava.symbols.modules;
 import otava.symbols.operation_repository;
 import otava.symbols.project;
 import otava.symbols.stmt_parser;
 import otava.symbols.statement_binder;
+import otava.symbols.type_symbol;
 import otava.symbols.type_resolver;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
@@ -929,7 +932,7 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
         BuildGotoTargetMap(node.Body(), &context);
     }
     std::string functionDefinitionName = functionDefinition->IrName(&context);
-    if (!functionDefinition->RemoveForwardDeclarationTypes(&context))
+    if (!functionDefinition->RemoveForwardDeclarationTypes(&context, false))
     {
         otava::symbols::PrintWarning("not all forward references could not be removed for function '" + 
             functionDefinition->FullName(&context) + "': no code generated", functionDefinition->GetFullSpan(), &context);
@@ -1157,7 +1160,8 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
     {
         lastStatement = node.Body()->Statements().back().get();
     }
-    if (!lastStatement || !lastStatement->IsReturnOrSequenceReturnStatementNode() || lastStatement->IsReturnOrSequenceReturnStatementNode() && destructorCallGenerated)
+    if (!lastInstructionWasRet && 
+        !lastStatement || !lastStatement->IsReturnOrSequenceReturnStatementNode() || lastStatement->IsReturnOrSequenceReturnStatementNode() && destructorCallGenerated)
     {
         if (functionDefinition->ReturnType(&context) && !functionDefinition->ReturnType(&context)->IsVoidType() && !functionDefinition->ReturnsClass())
         {
@@ -1755,10 +1759,12 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionCallNode& node)
 {
     SetCurrentLineNumber(node.GetFullSpan());
     node.Load(*emitter, otava::symbols::OperationFlags::none, node.GetFullSpan(), &context);
+/*
     if (node.IsNoReturnFunctionCall())
     {
         EmitReturn(node.GetFullSpan());
     }
+*/
     GenJumpingBoolCode();
 }
 

@@ -13,8 +13,6 @@ import std;
 
 export namespace otava::symbols {
 
-class BoundFunctionCallNode;
-class BoundExpressionNode;
 class Context;
 class Exception;
 class FunctionSymbol;
@@ -60,14 +58,14 @@ struct FunctionMatch
 {
     FunctionMatch() noexcept;
     FunctionMatch(FunctionSymbol* function_, Context* context_) noexcept;
-    FunctionMatch& operator=(const FunctionMatch& that);
+    FunctionMatch& operator=(const FunctionMatch& that) noexcept;
     FunctionSymbol* function;
     Context* context;
     std::vector<ArgumentMatch> argumentMatches;
     int numConversions;
     int numQualifyingConversions;
     bool scopeMatches;
-    std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
+    std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
     ClassTemplateSpecializationSymbol* specialization;
     std::vector<std::unique_ptr<BoundExpressionNode>> defaultArgs;
 };

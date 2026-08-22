@@ -5,20 +5,26 @@
 
 module otava.symbols.declarator;
 
+import otava.symbols.array_type_symbol;
 import otava.symbols.context;
 import otava.symbols.declaration;
+import otava.symbols.derivations;
 import otava.symbols.exception;
 import otava.symbols.evaluator;
 import otava.symbols.function_type_symbol;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
+import otava.symbols.symbol_table;
 import otava.symbols.type_resolver;
+import otava.symbols.value;
 import otava.ast.classes;
 import otava.ast.declaration;
 import otava.ast.expression;
 import otava.ast.function;
 import otava.ast.identifier;
 import otava.ast.punctuation;
+import otava.ast.qualifier;
 import otava.ast.templates;
 import otava.ast.visitor;
 

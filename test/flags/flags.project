@@ -1,0 +1,3 @@
+project flags;
+target=program;
+source <main.cpp>;

@@ -149,6 +149,8 @@
     <ClCompile Include="eh.cppm" />
     <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="filesystem.cppm" />
+    <ClCompile Include="file_mapping.cpp" />
+    <ClCompile Include="file_mapping.cppm" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.cppm" />
     <ClCompile Include="io.cpp" />

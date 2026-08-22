@@ -13,11 +13,17 @@ import otava.symbols.exception;
 import otava.symbols.function_group_symbol;
 import otava.symbols.modules;
 import otava.symbols.project;
+import otava.symbols.reader;
+import otava.symbols.writer;
+import otava.symbols.scope;
+import otava.symbols.symbol;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.type_symbol;
 import otava.symbols.variable_symbol;
+import otava.intermediate.code;
 import soul.xml.dom;
+import util.code_formatter;
 import util.sha1;
 
 namespace otava::symbols {
@@ -115,7 +121,7 @@ FunctionSymbol::FunctionSymbol(Module* module_, SymbolId id_) :
     conversionKind(ConversionKind::implicitConversion), conversionParamType(nullptr), conversionArgType(nullptr), conversionDistance(0),
     memFnParamsConstructed(false), vtabIndex(-1), returnValueParam(nullptr), returnValueParamId(zeroSymbolId), 
     conversionParamTypeId(zeroSymbolId), conversionArgTypeId(zeroSymbolId), destructor(nullptr), nextTemporaryId(0), classParsingMap(nullptr), 
-    parametersFetched(false), destructing(false), specializationFetched(false)
+    parametersFetched(false), destructing(false), specializationFetched(false), groupId(zeroSymbolId)
 {
     GetScope()->SetKind(ScopeKind::functionScope);
     GetModule()->AddFunction(this);
@@ -127,7 +133,7 @@ FunctionSymbol::FunctionSymbol(Module* module_, SymbolId id_, const std::string&
     conversionKind(ConversionKind::implicitConversion), conversionParamType(nullptr), conversionArgType(nullptr), conversionDistance(0),
     memFnParamsConstructed(false), vtabIndex(-1), returnValueParam(nullptr), returnValueParamId(zeroSymbolId), conversionParamTypeId(zeroSymbolId),
     conversionArgTypeId(zeroSymbolId), destructor(nullptr), nextTemporaryId(0), classParsingMap(nullptr), parametersFetched(false), destructing(false),
-    specializationFetched(false)
+    specializationFetched(false), groupId(zeroSymbolId)
 {
     GetScope()->SetKind(ScopeKind::functionScope);
     GetModule()->AddFunction(this);
@@ -258,17 +264,29 @@ bool FunctionSymbol::IsDestructor() const noexcept
     return GroupName() == "@destructor";
 }
 
-bool FunctionSymbol::RemoveForwardDeclarationTypes(Context* context) 
+bool FunctionSymbol::RemoveForwardDeclarationTypes(Context* context, bool force) 
 {
     for (ParameterSymbol* parameter : MemFnParameters(context))
     {
-        TypeSymbol* baseType = parameter->GetType(context)->GetBaseType(context);
+        TypeSymbol* parameterType = parameter->GetType(context);
+        TypeSymbol* baseType = parameterType->GetBaseType(context);
         if (baseType->HasForwardClassDeclarationSymbol(context))
         {
             TypeSymbol* finalType = baseType->FinalType(GetFullSpan(), context);
             if (finalType->HasForwardClassDeclarationSymbol(context))
             {
-                return false;
+                if (!parameterType->IsReplaceableIncompleteType(context))
+                {
+                    return false;
+                }
+                else if (force)
+                {
+                    return false;
+                }
+                else
+                {
+                    SetFlag(FunctionSymbolFlags::hasIncompleteType);
+                }
             }
             else
             {
@@ -285,7 +303,18 @@ bool FunctionSymbol::RemoveForwardDeclarationTypes(Context* context)
             TypeSymbol* finalType = baseType->FinalType(GetFullSpan(), context);
             if (finalType->HasForwardClassDeclarationSymbol(context))
             {
-                return false;
+                if (!returnType->IsReplaceableIncompleteType(context))
+                {
+                    return false;
+                }
+                else if (force)
+                {
+                    return false;
+                }
+                else
+                {
+                    SetFlag(FunctionSymbolFlags::hasIncompleteType);
+                }
             }
             else
             {
@@ -301,7 +330,7 @@ void FunctionSymbol::SetConversionParamType(TypeSymbol* conversionParamType_) no
     conversionParamType = conversionParamType_;
     if (conversionParamType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionParamType->Id(), conversionParamType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionParamType->Id(), conversionParamType->GetModule());
     }
 }
 
@@ -346,7 +375,7 @@ void FunctionSymbol::SetConversionArgType(TypeSymbol* conversionArgType_) noexce
     conversionArgType = conversionArgType_;
     if (conversionArgType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionArgType->Id(), conversionArgType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionArgType->Id(), conversionArgType->GetModule());
     }
 }
 
@@ -608,7 +637,7 @@ void FunctionSymbol::SetReturnType(TypeSymbol* returnType_, Context* context)
     }
     if (returnType && returnType->GetModule() != context->GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(returnType->Id(), returnType->GetModule()->Id());
+        context->GetModule()->GetSymbolTable()->AddImportedSymbol(returnType->Id(), returnType->GetModule());
     }
 }
 
@@ -644,7 +673,7 @@ bool FunctionSymbol::IsTemplate(Context* context) const noexcept
     return ParentTemplateDeclaration(context) != nullptr && !IsSpecialization();
 }
 
-bool FunctionSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const noexcept
+bool FunctionSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const 
 {
     if (visited.find(this) != visited.end()) return false;
     visited.insert(this);
@@ -849,7 +878,7 @@ void FunctionSymbol::Read(Reader& reader)
     index = reader.CurrentReader().ReadInt();
     functionKind = FunctionKind(reader.CurrentReader().ReadByte());
     Cardinality parameterCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(parameterCount); ++i)
+    for (Index i = Index(0); i < ToIndex(parameterCount); ++i)
     {
         SymbolId parameterId = SymbolId(reader.CurrentReader().ReadULong());
         parameterIds.push_back(parameterId);
@@ -866,7 +895,7 @@ void FunctionSymbol::Read(Reader& reader)
     if (HasSpecialization())
     {
         Cardinality specializationCount = Cardinality(reader.CurrentReader().ReadUInt());
-        for (Index i = Index(0); i < Index(specializationCount); ++i)
+        for (Index i = Index(0); i < ToIndex(specializationCount); ++i)
         {
             SymbolId specilizationId = SymbolId(reader.CurrentReader().ReadULong());
             specializationIds.push_back(specilizationId);
@@ -1444,6 +1473,7 @@ bool FunctionDefinitionSymbol::IsInline() const noexcept
     }
     return FunctionSymbol::IsInline();
 }
+
 void FunctionDefinitionSymbol::SetInline() noexcept
 {
     if (declaration)
@@ -1645,7 +1675,7 @@ TypeSymbol* FunctionDefinitionSymbol::NonChildFunctionResultType(Context* contex
 
 std::string FunctionDefinitionSymbol::ResultVarExprStr(TypeSymbol* resultType) const
 {
-    if (resultType->IsReferenceType())
+    if (resultType && resultType->IsReferenceType())
     {
         return "*" + resultVarName;
     }
@@ -1710,7 +1740,7 @@ void FunctionDefinitionSymbol::SetDeclaration(FunctionSymbol* declaration_, Cont
     declaration = declaration_;
     if (declaration->GetModule() != GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(declaration->Id(), declaration->GetModule()->Id());
+        context->GetModule()->GetSymbolTable()->AddImportedSymbol(declaration->Id(), declaration->GetModule());
     }
 }
 
@@ -1756,7 +1786,7 @@ void FunctionDefinitionSymbol::SetReturnType(TypeSymbol* returnType_, Context* c
 }
 
 ExplicitlyInstantiatedFunctionDefinitionSymbol::ExplicitlyInstantiatedFunctionDefinitionSymbol(Module* module_, SymbolId id_) :
-    FunctionDefinitionSymbol(module_, id_)
+    FunctionDefinitionSymbol(module_, id_), functionDefinitionSymbol(nullptr), functionDefinitionId(zeroSymbolId)
 {
 }
 
@@ -1764,7 +1794,7 @@ ExplicitlyInstantiatedFunctionDefinitionSymbol::ExplicitlyInstantiatedFunctionDe
     FunctionDefinitionSymbol* functionDefinitionSymbol_,
     const soul::ast::FullSpan& fullSpan, Context* context) :
     FunctionDefinitionSymbol(module_, id_, functionDefinitionSymbol_->Name()),
-    functionDefinitionSymbol(functionDefinitionSymbol_), irName(functionDefinitionSymbol->IrName(context))
+    functionDefinitionSymbol(functionDefinitionSymbol_), functionDefinitionId(zeroSymbolId), irName(functionDefinitionSymbol->IrName(context))
 {
     SetDeclarationFlags(functionDefinitionSymbol->GetDeclarationFlags());
     SetVTabIndex(functionDefinitionSymbol->VTabIndex());
@@ -1833,7 +1863,12 @@ void CompileUnitInitFn::GenerateCode(Emitter& emitter, std::vector<BoundExpressi
     emitter.EmitCall(initFn, std::vector<otava::intermediate::Value*>());
 }
 
-bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context) noexcept
+CompileUnitInitFn* MakeCompileUnitInitFn(Module* module, SymbolId id, const std::string& name)
+{
+    return new CompileUnitInitFn(module, id, name);
+}
+
+bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context) 
 {
     if (left->GroupName() != right->GroupName()) return false;
     if (left->IsConst() != right->IsConst()) return false;
@@ -1843,7 +1878,7 @@ bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* conte
         TemplateDeclarationSymbol* leftTemplateDeclaration = left->ParentTemplateDeclaration(context);
         TemplateDeclarationSymbol* rightTemplateDeclaration = right->ParentTemplateDeclaration(context);
         if (leftTemplateDeclaration->Arity() != rightTemplateDeclaration->Arity()) return false;
-        for (Index i = Index(0); i < Index(leftTemplateDeclaration->Arity()); ++i)
+        for (Index i = Index(0); i < ToIndex(leftTemplateDeclaration->Arity()); ++i)
         {
             if (!TypesEqual(leftTemplateDeclaration->TemplateParameters(context)[ToUnderlying(i)], 
                 rightTemplateDeclaration->TemplateParameters(context)[ToUnderlying(i)], context)) return false;
@@ -1858,10 +1893,19 @@ bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* conte
     }
     if (left->MemFnArity(context) != right->MemFnArity(context)) return false;
     Cardinality n = left->MemFnArity(context);
-    for (Index i = Index(0); i < Index(n); ++i)
+    for (Index i = Index(0); i < ToIndex(n); ++i)
     {
-        if (!TypesEqual(left->MemFnParameters(context)[ToUnderlying(i)]->GetType(context), 
-            right->MemFnParameters(context)[ToUnderlying(i)]->GetType(context), context)) return false;
+        TypeSymbol* leftType = left->MemFnParameters(context)[ToUnderlying(i)]->GetType(context);
+        TypeSymbol* rightType = right->MemFnParameters(context)[ToUnderlying(i)]->GetType(context);
+        if (!leftType)
+        {
+            ThrowException("type of parameter " + std::to_string(ToUnderlying(i)) + " of function '" + left->FullName(context) + "' not found");
+        }
+        if (!rightType)
+        {
+            ThrowException("type of parameter " + std::to_string(ToUnderlying(i)) + " of function '" + right->FullName(context) + "' not found");
+        }
+        if (!TypesEqual(leftType,  rightType, context)) return false;
     }
     return true;
 }

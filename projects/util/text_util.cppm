@@ -49,6 +49,8 @@ std::string ToHexString(std::uint32_t x);
 std::string ToHexString(std::uint64_t x);
 std::uint8_t ParseHexByte(const std::string& hexByteStr);
 std::uint64_t ParseHexULong(const std::string& hexByteStr);
+std::string HexEscape(const std::string& s);
+std::string HexUnescape(const std::string& s);
 std::int32_t ParseOctal(const std::string& octalDigitStr);
 std::string ToOctalString(std::int32_t value, int numDigits);
 int Log10(int n) noexcept;

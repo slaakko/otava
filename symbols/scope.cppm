@@ -129,10 +129,10 @@ public:
     virtual Scope* SpecializationScope(Context* context);
     virtual std::string FullName(Context* context) const = 0;
     virtual bool IsContainerScope() const noexcept { return false; }
-    virtual Scope* GetClassScope(Context* context) const noexcept { return nullptr; }
-    virtual Scope* GetNamespaceScope(Context* context) const noexcept { return nullptr; }
-    virtual Symbol* GetSymbol() noexcept { return nullptr; }
-    virtual ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const { return nullptr; }
+    virtual Scope* GetClassScope(Context* context) const noexcept;
+    virtual Scope* GetNamespaceScope(Context* context) const noexcept;
+    virtual Symbol* GetSymbol() noexcept;
+    virtual ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const;
     virtual void Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context);
     virtual void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
@@ -155,7 +155,7 @@ public:
     //virtual EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     void Read();
-    inline const std::unordered_map<SymbolOffset, SymbolId>& SymbolIdMap() const noexcept { return symbolIdMap; }
+    const std::unordered_map<SymbolOffset, SymbolId>& SymbolIdMap() const noexcept;
     virtual void Write(Writer& writer);
     virtual void Read(Reader& reader);
     void AddContainerScope(Scope* containerScope);
@@ -191,7 +191,7 @@ public:
     Symbol* GetSymbol() noexcept override;
     Scope* SpecializationScope(Context* context) override;
     ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const override;
-    inline ContainerSymbol* GetContainerSymbol() const noexcept { return containerSymbol; }
+    ContainerSymbol* GetContainerSymbol() const noexcept;
     void SetContainerSymbol(ContainerSymbol* containerSymbol_) noexcept;
     void AddUsingDeclaration(Symbol* usingDeclaration, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void AddUsingDirective(NamespaceSymbol* ns, const soul::ast::FullSpan& fullSpan, Context* context) override;
@@ -206,7 +206,7 @@ public:
     VariableGroupSymbol* GetOrInsertVariableGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     AliasGroupSymbol* GetOrInsertAliasGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     //EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
+    TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     bool HasParentScope(const Scope* parentScope) const noexcept override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
@@ -235,7 +235,6 @@ public:
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
 private:
     ContainerScope* parentScope;
-
 };
 
 class UsingDirectiveScope : public Scope
@@ -246,7 +245,7 @@ public:
     void Lookup(const std::string& name, SymbolGroupKind symbolGroupKind, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
     std::string FullName(Context* context) const override;
-    NamespaceSymbol* Ns() const { return ns; }
+    NamespaceSymbol* Ns() const;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:
@@ -269,7 +268,7 @@ public:
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
     void PushParentScope(Scope* parentScope) override;
     void PopParentScope() override;
-    void RemoveParentScope(Scope* parentScope);
+    void RemoveParentScope(Scope* parentScope) override;
     bool HasParentScope(const Scope* parentScope) const noexcept override;
 private:
     std::vector<Scope*> parentScopes;

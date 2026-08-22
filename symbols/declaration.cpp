@@ -5,12 +5,12 @@
 
 module otava.symbols.declaration;
 
-import std;
 import otava.ast.attribute;
 import otava.ast.classes;
 import otava.ast.identifier;
 import otava.ast.visitor;
 import otava.ast.declaration;
+import otava.ast.enums;
 import otava.ast.expression;
 import otava.ast.function;
 import otava.ast.qualifier;
@@ -31,13 +31,20 @@ import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_templates;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.id;
 import otava.symbols.instantiation_queue;
+import otava.symbols.modules;
 import otava.symbols.overload_resolution;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.statement_binder;
+import otava.symbols.symbol_table;
+import otava.symbols.template_param_compare;
+import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
+import otava.symbols.type_symbol;
 
 namespace otava::symbols {
 
@@ -796,7 +803,7 @@ void ProcessFunctionDeclarator(FunctionDeclarator* functionDeclarator, TypeSymbo
     }
     if (functionSymbol->IsExplicitSpecializationDeclaration(context))
     {
-        std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
+        std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
         InstantiateFunctionTemplate(functionSymbol, templateParameterMap, functionDeclarator->Node()->GetFullSpan(), context);
     }
     AddConvertingConstructorToConversionTable(functionSymbol, functionDeclarator->Node()->GetFullSpan(), context);
@@ -887,8 +894,8 @@ void ProcessSimpleDeclaration(otava::ast::Node* node, otava::ast::Node* function
                         }
                         if (!variable->IsExtern())
                         {
-                            context->GetBoundCompileUnit()->AddBoundNode(
-                                std::unique_ptr<BoundNode>(new BoundGlobalVariableDefinitionNode(variable, node->GetFullSpan())), context);
+                            std::unique_ptr<BoundNode> boundNode(new BoundGlobalVariableDefinitionNode(variable, node->GetFullSpan()));
+                            context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
                             GenerateDynamicInitialization(variable, variableInitializer.get(), node->GetFullSpan(), context);
                         }
                     }
@@ -915,8 +922,8 @@ void ProcessSimpleDeclaration(otava::ast::Node* node, otava::ast::Node* function
             }
             if (variable->IsGlobalVariable(context))
             {
-                context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(
-                    new BoundGlobalVariableDefinitionNode(variable, node->GetFullSpan())), context);
+                std::unique_ptr<BoundNode> boundNode(new BoundGlobalVariableDefinitionNode(variable, node->GetFullSpan()));
+                context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
             }
             declaration.variable = variable;
             break;
@@ -1184,7 +1191,7 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
                 }
                 functionDefinitionSymbol->SetIndex(functionIndex);
                 functionDefinitionNode->SetIndex(functionIndex);
-                if (!classType->GetFunctionByIndex(functionIndex))
+                if (!classType->GetFunctionByIndex(functionIndex, context))
                 {
                     classType->MapFunction(functionDefinitionSymbol);
                 }
@@ -1210,7 +1217,7 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
         }
         if (functionDefinitionSymbol && functionDefinitionSymbol->IsExplicitSpecializationDefinitionSymbol(context))
         {
-            std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual> templateParameterMap;
+            std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
             InstantiateFunctionTemplate(functionDefinitionSymbol, templateParameterMap, node->GetFullSpan(), context);
         }
     }
@@ -1336,7 +1343,8 @@ void GenerateDynamicInitialization(VariableSymbol* variable, BoundExpressionNode
     TypeSymbol* type = variable->GetReferredType(context);
     BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan, type);
     std::vector<std::unique_ptr<BoundExpressionNode>> args;
-    args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType(context)->AddPointer(context))));
+    std::unique_ptr<BoundExpressionNode> arg(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType(context)->AddPointer(context)));
+    args.push_back(std::move(arg));
     if (initializer)
     {
         if (initializer->IsBoundExpressionListNode())
@@ -1345,12 +1353,14 @@ void GenerateDynamicInitialization(VariableSymbol* variable, BoundExpressionNode
             int n = expressionList->Count();
             for (int i = 0; i < n; ++i)
             {
-                args.push_back(std::unique_ptr<BoundExpressionNode>(expressionList->ReleaseExpr(i)));
+                std::unique_ptr<BoundExpressionNode> exprArg(expressionList->ReleaseExpr(i));
+                args.push_back(std::move(exprArg));
             }
         }
         else
         {
-            args.push_back(std::unique_ptr<BoundExpressionNode>(initializer->Clone()));
+            std::unique_ptr<BoundExpressionNode> initializerArg(initializer->Clone());
+            args.push_back(std::move(initializerArg));
         }
     }
     Exception ex;
@@ -1370,7 +1380,8 @@ std::unique_ptr<BoundFunctionCallNode> MakeAtExitForVariable(VariableSymbol* var
 {
     std::vector<std::unique_ptr<BoundExpressionNode>> dtorArgs;
     BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan, variable->GetReferredType(context));
-    dtorArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType(context)->AddPointer(context))));
+    std::unique_ptr<BoundExpressionNode> dtorArg(new BoundAddressOfNode(boundGlobalVariable, fullSpan, variable->GetType(context)->AddPointer(context)));
+    dtorArgs.push_back(std::move(dtorArg));
     Exception ex;
     std::vector<TypeSymbol*> templateArgs;
     std::unique_ptr<BoundFunctionCallNode> destructorCall = ResolveOverload(
@@ -1381,10 +1392,12 @@ std::unique_ptr<BoundFunctionCallNode> MakeAtExitForVariable(VariableSymbol* var
         TypeSymbol* voidPtrType = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(
             FundamentalTypeKind::voidType, context)->AddPointer(context);
         std::vector<std::unique_ptr<BoundExpressionNode>> atExitArgs;
-        atExitArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundFunctionValueNode(destructorCall->GetFunctionSymbol(), fullSpan, voidPtrType)));
+        std::unique_ptr<BoundExpressionNode> atExitArg(new BoundFunctionValueNode(destructorCall->GetFunctionSymbol(), fullSpan, voidPtrType));
+        atExitArgs.push_back(std::move(atExitArg));
         BoundVariableNode* boundGlobalVariable = new BoundVariableNode(variable, fullSpan, variable->GetReferredType(context));
-        atExitArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundVariableAsVoidPtrNode(new BoundAddressOfNode(
-            boundGlobalVariable, fullSpan, boundGlobalVariable->GetType()->AddPointer(context)), fullSpan, voidPtrType)));
+        std::unique_ptr<BoundExpressionNode> varArg(new BoundVariableAsVoidPtrNode(new BoundAddressOfNode(
+            boundGlobalVariable, fullSpan, boundGlobalVariable->GetType()->AddPointer(context)), fullSpan, voidPtrType));
+        atExitArgs.push_back(std::move(varArg));
         Exception ex;
         Scope* scope = context->GetSymbolTable()->CurrentScope();
         std::vector<TypeSymbol*> templateArgs;

@@ -71,6 +71,7 @@ public:
     void LoadModules(otava::symbols::ModuleMapper& moduleMapper, const std::string& config, int optLevel, const std::set<std::string>& configurations,
         otava::symbols::Context* context);
     bool UpToDate(const std::string& config, int optLevel, const std::set<std::string>& configurations) const;
+    bool ReferencesUpToDate() const noexcept;
     inline bool Scanned() const { return scanned; }
     inline void SetScanned() { scanned = true; }
     inline const std::vector<std::unique_ptr<otava::symbols::Module>>& Modules() const { return modules; }
@@ -92,6 +93,7 @@ public:
     void WriteClassIndex(const std::string& moduleDir);
     void ReadProjectId(const std::string& moduleDir);
     void WriteProjectId(const std::string& moduleDir);
+    bool InterfaceUnitsUpToDate() const noexcept;
 private:
     soul::lexer::FileMap* fileMap;
     std::string filePath;

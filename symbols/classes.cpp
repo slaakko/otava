@@ -6,24 +6,33 @@
 module otava.symbols.classes;
 
 import otava.symbols.argument_conversion_table;
+import otava.symbols.bound_tree;
 import otava.symbols.class_group_symbol;
+import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
 import otava.symbols.project;
 import otava.symbols.scope_ptr;
+import otava.symbols.symbol;
+import otava.symbols.recorded_parse;
 import otava.symbols.statement_binder;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
 import otava.symbols.variable_symbol;
+import otava.symbols.writer;
+import otava.symbols.reader;
+import otava.intermediate.metadata;
 import otava.ast.visitor;
 import otava.ast.identifier;
 import otava.ast.templates;
 import otava.ast.type;
+import soul.lexer;
 import util.sha1;
 
 namespace otava::symbols {
@@ -62,37 +71,10 @@ std::int32_t GetSpecialFunctionIndex(SpecialFunctionKind specialFunctionKind) no
     return 0;
 }
 
-RecordedParseCompoundStatementFn recordedParseCompoundStatementFn = nullptr;
-
-void SetRecordedParseCompoundStatementFn(RecordedParseCompoundStatementFn fn) noexcept
-{
-    recordedParseCompoundStatementFn = fn;
-}
-
-void RecordedParseCompoundStatement(otava::ast::CompoundStatementNode* compoundStatementNode, Context* context)
-{
-    if (recordedParseCompoundStatementFn)
-    {
-        recordedParseCompoundStatementFn(compoundStatementNode, context);
-    }
-}
-
-RecordedParseCtorInitializerFn recordedParseInitializerFn = nullptr;
-
-void SetRecordedParseCtorInitializerFn(RecordedParseCtorInitializerFn fn) noexcept
-{
-    recordedParseInitializerFn = fn;
-}
-
-void RecordedParseCtorInitializer(otava::ast::ConstructorInitializerNode* ctorInitializerNode, Context* context)
-{
-    recordedParseInitializerFn(ctorInitializerNode, context);
-}
-
 ClassTypeSymbol::ClassTypeSymbol(Module* module_, SymbolId id_) : 
     TypeSymbol(module_, id_), flags(ClassTypeSymbolFlags::none), classKind(ClassKind::class_), level(0), group(nullptr), 
     groupId(zeroSymbolId), vptrIndex(-1), deltaIndex(-1), currentFunctionIndex(1), specialization(nullptr), specializationId(zeroSymbolId),
-    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset)
+    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset), functionIndexMapResolved(false)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
@@ -100,7 +82,7 @@ ClassTypeSymbol::ClassTypeSymbol(Module* module_, SymbolId id_) :
 ClassTypeSymbol::ClassTypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     TypeSymbol(module_, id_, name_), flags(ClassTypeSymbolFlags::none), classKind(ClassKind::class_), level(0), group(nullptr), 
     groupId(zeroSymbolId), vptrIndex(-1), deltaIndex(-1), currentFunctionIndex(1), specialization(nullptr), specializationId(zeroSymbolId),
-    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset)
+    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset), functionIndexMapResolved(false)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
@@ -483,8 +465,23 @@ FunctionDefinitionSymbol* ClassTypeSymbol::GetMemFnDefSymbol(int32_t defIndex) c
     }
 }
 
-FunctionSymbol* ClassTypeSymbol::GetFunctionByIndex(std::int32_t functionIndex) const noexcept
+FunctionSymbol* ClassTypeSymbol::GetFunctionByIndex(std::int32_t functionIndex, Context* context) const 
 {
+    if (IsReadOnly() && !functionIndexMapResolved)
+    {
+        functionIndexMapResolved = true;
+        for (const auto& p : functionIndexSymbolIdMap)
+        {
+            std::int32_t index = p.first;
+            SymbolId fnId = p.second;
+            FunctionSymbol* fn = GetModule()->GetSymbolTable()->GetFunctionSymbol(fnId, context);
+            if (!fn)
+            {
+                ThrowException("function symbol id " + std::to_string(ToUnderlying(fnId)) + " not found");
+            }
+            functionIndexMap[index] = fn;
+        }
+    }
     auto it = functionIndexMap.find(functionIndex);
     if (it != functionIndexMap.cend())
     {
@@ -560,7 +557,7 @@ bool Overrides(FunctionSymbol* f, FunctionSymbol* g, Context* context) noexcept
     return false;
 }
 
-void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear)
+void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear)
 {
     if (!IsPolymorphic(context)) return;
     if (clear)
@@ -642,7 +639,7 @@ void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* cont
                 {
                     vr = v->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
                 }
-                if (fr && vr && !TypesEqual(fr, vr, context))
+                if (fr && vr && !TypesEqual(fr, vr, context) && !fr->GetBaseType(context)->IsForwardClassDeclarationSymbol())
                 {
                     ThrowException("the return type of the overriding function differs from the return type of base class function",
                         f->GetFullSpan(), v->GetFullSpan(), context);
@@ -673,6 +670,18 @@ void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* cont
                 vtab.push_back(f);
             }
         }
+    }
+}
+
+void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear)
+{
+    try
+    {
+        TryInitVTab(vtab, context, fullSpan, clear);
+    }
+    catch (const std::exception& ex)
+    {
+        ThrowException("could not generate v-table for class '" + FullName(context) + "': " + std::string(ex.what()), fullSpan, context);
     }
 }
 
@@ -802,7 +811,7 @@ void ClassTypeSymbol::AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::
     GetScope()->AddBaseScope(baseClass->GetScope(), fullSpan, context);
     if (GetModule() != baseClass->GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(baseClass->Id(), baseClass->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(baseClass->Id(), baseClass->GetModule());
     }
 }
 
@@ -905,7 +914,7 @@ void ClassTypeSymbol::Write(Writer& writer)
     {
         if (type->GetModule() != GetModule())
         {
-            GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
+            GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule());
         }
         writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
     }
@@ -928,12 +937,25 @@ void ClassTypeSymbol::Write(Writer& writer)
     {
         if (vfn->GetModule() != GetModule())
         {
-            GetModule()->GetSymbolTable()->AddImportedSymbol(vfn->Id(), vfn->GetModule()->Id());
+            GetModule()->GetSymbolTable()->AddImportedSymbol(vfn->Id(), vfn->GetModule());
         }
         writer.GetBinaryStreamWriter().Write(ToUnderlying(vfn->Id()));
     }
     writer.GetBinaryStreamWriter().Write(vptrIndex);
     writer.GetBinaryStreamWriter().Write(deltaIndex);
+    Cardinality n = Cardinality(functionIndexMap.size());
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(n));
+    for (const auto& p : functionIndexMap)
+    {
+        std::int32_t index = p.first;
+        FunctionSymbol* fn = p.second;
+        if (fn->GetModule() != GetModule())
+        {
+            GetModule()->GetSymbolTable()->AddImportedSymbol(fn->Id(), fn->GetModule());
+        }
+        writer.GetBinaryStreamWriter().Write(index);
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(fn->Id()));
+    }
     writer.GetBinaryStreamWriter().Write(ToUnderlying(vtabNameOffset));
     if (specialization)
     {
@@ -952,44 +974,51 @@ void ClassTypeSymbol::Read(Reader& reader)
     flags = ClassTypeSymbolFlags(reader.CurrentReader().ReadByte());
     classKind = ClassKind(reader.CurrentReader().ReadByte());
     Cardinality baseClassCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(baseClassCount); ++i)
+    for (Index i = Index(0); i < ToIndex(baseClassCount); ++i)
     {
         baseClassIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality memberVariableCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(memberVariableCount); ++i)
+    for (Index i = Index(0); i < ToIndex(memberVariableCount); ++i)
     {
         memberVariableIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality staticMemberVariableCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(staticMemberVariableCount); ++i)
+    for (Index i = Index(0); i < ToIndex(staticMemberVariableCount); ++i)
     {
         staticMemberVariableIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality memberFunctionCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(memberFunctionCount); ++i)
+    for (Index i = Index(0); i < ToIndex(memberFunctionCount); ++i)
     {
         memberFunctionIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality objectLayoutCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(objectLayoutCount); ++i)
+    for (Index i = Index(0); i < ToIndex(objectLayoutCount); ++i)
     {
         objectLayoutIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     Cardinality conversionFunctionCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(conversionFunctionCount); ++i)
+    for (Index i = Index(0); i < ToIndex(conversionFunctionCount); ++i)
     {
         conversionFunctionIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     level = reader.CurrentReader().ReadInt();
     groupId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality vtabSize = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(vtabSize); ++i)
+    for (Index i = Index(0); i < ToIndex(vtabSize); ++i)
     {
         vtabIds.push_back(SymbolId(reader.CurrentReader().ReadULong()));
     }
     vptrIndex = reader.CurrentReader().ReadInt();
     deltaIndex = reader.CurrentReader().ReadInt();
+    Cardinality n = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < ToIndex(n); ++i)
+    {
+        std::int32_t index = reader.CurrentReader().ReadInt();
+        SymbolId fnId = SymbolId(reader.CurrentReader().ReadULong());
+        functionIndexSymbolIdMap[index] = fnId;
+    }
     vtabNameOffset = StringOffset(reader.CurrentReader().ReadUInt());
     specializationId = SymbolId(reader.CurrentReader().ReadULong());
     nextMemFnDefIndex = reader.CurrentReader().ReadInt();
@@ -1185,7 +1214,7 @@ void ForwardClassDeclarationSymbol::SetGroup(ClassGroupSymbol* group_) noexcept
     group = group_;
     if (group->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(group->Id(), group->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(group->Id(), group->GetModule());
     }
 }
 
@@ -1343,7 +1372,7 @@ void CompleteIncompleteClasses(Context* context)
     if (!module || context->GetModule() == module) return;
     module->ReadIncompleteClassIdTable();
     otava::symbols::Cardinality n = otava::symbols::Cardinality(module->IncompleteClassIds().size());
-    for (otava::symbols::Index index = otava::symbols::Index(0); index < otava::symbols::Index(n); ++index)
+    for (otava::symbols::Index index = otava::symbols::Index(0); index < otava::symbols::ToIndex(n); ++index)
     {
         otava::symbols::SymbolId classId = module->IncompleteClassIds()[otava::symbols::ToUnderlying(index)];
         otava::symbols::ClassTypeSymbol* cls = module->GetSymbolTable()->GetClassTypeSymbol(classId, context);
@@ -1722,7 +1751,6 @@ void ParseInlineMemberFunction(Context* context, FunctionSymbol* memfn)
             }
             context->PopBoundFunction();
         }
-        context->GetLexer()->SetLog(nullptr);
     }
     catch (const std::exception& ex)
     {
@@ -1892,7 +1920,7 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
     destructorDefinitionSymbol->SetFixedIrName(destructorSymbol->IrName(context));
     destructorDefinitionSymbol->SetNoExcept();
     std::unique_ptr<BoundDtorTerminatorNode> terminator(new BoundDtorTerminatorNode(fullSpan));
-    for (Index i = Index(nm) - Index(1); i >= Index(0); --i)
+    for (Index i = ToIndex(nm) - Index(1); i >= Index(0); --i)
     {
         VariableSymbol* memberVar = classTypeSymbol->MemberVariables(context)[ToUnderlying(i)];
         if (memberVar->GetType(context)->IsPointerType() || memberVar->GetType(context)->IsReferenceType()) continue;
@@ -1922,7 +1950,8 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
         ParameterSymbol* thisParam = destructorDefinitionSymbol->ThisParam(context);
         BoundExpressionNode* thisPtr = new BoundParameterNode(thisParam, fullSpan, thisParam->GetReferredType(context));
         boundVariableNode->SetThisPtr(thisPtr);
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundVariableNode, fullSpan, boundVariableNode->GetType()->AddPointer(context))));
+        std::unique_ptr<BoundExpressionNode> arg(new BoundAddressOfNode(boundVariableNode, fullSpan, boundVariableNode->GetType()->AddPointer(context)));
+        args.push_back(std::move(arg));
         Exception ex;
         std::vector<TypeSymbol*> templateArgs;
         std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverload(
@@ -1941,7 +1970,7 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
             }
         }
     }
-    for (Index i = Index(nb) - Index(1); i >= Index(0); --i)
+    for (Index i = ToIndex(nb) - Index(1); i >= Index(0); --i)
     {
         ClassTypeSymbol* baseClass = classTypeSymbol->BaseClasses(context)[ToUnderlying(i)];
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
@@ -1952,7 +1981,8 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
         if (conversion)
         {
             Symbol* destructorFn = GenerateDestructor(baseClass, fullSpan, context);
-            args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, conversion->ReturnType(context))));
+            std::unique_ptr<BoundExpressionNode> arg(new BoundConversionNode(thisPtr, conversion, fullSpan, conversion->ReturnType(context)));
+            args.push_back(std::move(arg));
             Exception ex;
             std::vector<TypeSymbol*> templateArgs;
             std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverload(
@@ -2050,7 +2080,8 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
     }
     boundDestructor->SetBody(body);
     boundDestructor->SetDtorTerminator(terminator.release());
-    context->GetBoundCompileUnit()->AddBoundNode(std::unique_ptr<BoundNode>(boundDestructor), context);
+    std::unique_ptr<BoundNode> boundNode(boundDestructor);
+    context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
     return destructor;
 }
 
@@ -2126,13 +2157,13 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
     context->GetBoundFunction()->AddTemporaryDestructorCall(destructorCall);
 }
 
-std::pair<bool, std::int64_t> ClassTypeSymbol::Delta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept
+std::pair<bool, std::int64_t> ClassTypeSymbol::ClsDelta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept
 {
     if (TypesEqual(base, this, context)) return std::make_pair(true, static_cast<std::int64_t>(0));
     std::int64_t delta = 0;
     for (ClassTypeSymbol* bc : BaseClasses(context))
     {
-        std::pair<bool, std::int64_t> p = bc->Delta(base, emitter, context);
+        std::pair<bool, std::int64_t> p = bc->ClsDelta(base, emitter, context);
         bool bcfound = p.first;
         std::int64_t bcdelta = p.second;
         if (bcfound) return std::make_pair(true, delta + bcdelta);
@@ -2145,11 +2176,11 @@ std::pair<bool, std::int64_t> ClassTypeSymbol::Delta(ClassTypeSymbol* base, Emit
 
 std::pair<bool, std::int64_t> Delta(ClassTypeSymbol* left, ClassTypeSymbol* right, Emitter& emitter, Context* context) noexcept
 {
-    std::pair<bool, std::int64_t> p = left->Delta(right, emitter, context);
+    std::pair<bool, std::int64_t> p = left->ClsDelta(right, emitter, context);
     bool found = p.first;
     std::int64_t delta = p.second;
     if (found) return std::make_pair(true, delta);
-    std::pair<bool, std::int64_t> r = right->Delta(left, emitter, context);
+    std::pair<bool, std::int64_t> r = right->ClsDelta(left, emitter, context);
     bool rfound = r.first;
     std::int64_t rdelta = r.second;
     if (rfound) return std::make_pair(true, -rdelta);

@@ -10,13 +10,22 @@ import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
+import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.function_templates;
 import otava.symbols.bound_tree_visitor;
+import otava.symbols.classes;
+import otava.symbols.enums;
 import otava.symbols.inline_functions;
+import otava.symbols.function_completion;
+import otava.symbols.modules;
 import otava.symbols.operation_repository;
+import otava.symbols.scope;
+import otava.symbols.symbol;
+import otava.symbols.symbol_table;
 import otava.symbols.type_resolver;
 import otava.symbols.type_symbol;
+import otava.symbols.value;
 import otava.symbols.variable_symbol;
 import otava.ast.error;
 import otava.intermediate.error;
@@ -253,9 +262,10 @@ BoundExpressionNode::BoundExpressionNode(BoundNodeKind kind_, const soul::ast::F
 
 BoundExpressionNode::~BoundExpressionNode()
 {
-    if (destructTemporariesNode)
+    BoundDestructTemporariesNode* node = destructTemporariesNode;
+    if (node)
     {
-        delete destructTemporariesNode;
+        delete node;
     }
 }
 
@@ -343,6 +353,7 @@ BoundCompileUnitNode::BoundCompileUnitNode() :
     functionTemplateRepository(new FunctionTemplateRepository()),
     classTemplateRepository(new ClassTemplateRepository()),
     inlineFunctionRepository(new InlineFunctionRepository()),
+    functionCompletionRepository(new FunctionCompletionRepository()),
     id(),
     compileUnitInitializationFunction(nullptr)
 {
@@ -475,6 +486,11 @@ void BoundCompileUnitNode::AddClassToGenerateDestructorList(ClassTypeSymbol* cla
     {
         generateDestructorList.push_back(classType);
     }
+}
+
+BoundCompileUnitNode* MakeBoundCompileUnit()
+{
+    return new BoundCompileUnitNode();
 }
 
 BoundCtorInitializerNode::BoundCtorInitializerNode(const soul::ast::FullSpan& fullSpan_) : BoundNode(BoundNodeKind::boundCtorInitializerNode, fullSpan_)
@@ -643,9 +659,10 @@ BoundStatementNode::BoundStatementNode(BoundNodeKind kind_, const soul::ast::Ful
 
 BoundStatementNode::~BoundStatementNode()
 {
-    if (destructTemporariesNode)
+    BoundDestructTemporariesNode* node = destructTemporariesNode;
+    if (node)
     {
-        delete destructTemporariesNode;
+        delete node;
     }
 }
 
@@ -1337,11 +1354,6 @@ void BoundExpressionStatementNode::SetExpr(BoundExpressionNode* expr_, const sou
 {
     expr.reset(expr_);
     expr->ModifyTypes(fullSpan, context);
-}
-
-bool BoundExpressionStatementNode::IsTerminator() const noexcept
-{
-    return expr && (expr->IsNoReturnFunctionCall());
 }
 
 BoundSetVPtrStatementNode::BoundSetVPtrStatementNode(const soul::ast::FullSpan& fullSpan_) noexcept :
@@ -2138,6 +2150,11 @@ void BoundFunctionGroupNode::AddTemplateArg(TypeSymbol* templateArg)
     templateArgs.push_back(templateArg);
 }
 
+const std::vector<TypeSymbol*>& BoundFunctionGroupNode::TemplateArgs() const noexcept
+{
+    return templateArgs;
+}
+
 BoundClassGroupNode::BoundClassGroupNode(ClassGroupSymbol* classGroupSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
     BoundExpressionNode(BoundNodeKind::boundClassGroupNode, fullSpan_, type_), classGroupSymbol(classGroupSymbol_)
 {
@@ -2174,6 +2191,11 @@ void BoundClassGroupNode::AddTemplateArg(TypeSymbol* templateArg)
     templateArgs.push_back(templateArg);
 }
 
+const std::vector<TypeSymbol*>& BoundClassGroupNode::TemplateArgs() const noexcept
+{
+    return templateArgs;
+}
+
 BoundAliasGroupNode::BoundAliasGroupNode(AliasGroupSymbol* aliasGroupSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
     BoundExpressionNode(BoundNodeKind::boundAliasGroupNode, fullSpan_, type_), aliasGroupSymbol(aliasGroupSymbol_)
 {
@@ -2208,6 +2230,11 @@ BoundExpressionNode* BoundAliasGroupNode::Clone() const
 void BoundAliasGroupNode::AddTemplateArg(TypeSymbol* templateArg)
 {
     templateArgs.push_back(templateArg);
+}
+
+const std::vector<TypeSymbol*>& BoundAliasGroupNode::TemplateArgs() const noexcept
+{
+    return templateArgs;
 }
 
 BoundTypeNode::BoundTypeNode(TypeSymbol* type_, const soul::ast::FullSpan& fullSpan_) noexcept :

@@ -9,12 +9,17 @@ import otava.symbols.classes;
 import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.compound_type_symbol;
+import otava.symbols.derivations;
 import otava.symbols.exception;
+import otava.symbols.lookup;
+import otava.symbols.modules;
 import otava.symbols.scope_resolver;
+import otava.symbols.symbol_table;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import soul.ast.span;
 
 namespace otava::symbols {
 
@@ -230,7 +235,7 @@ Symbol* ClassGroupSymbol::GetSingleSymbol(Context* context)
     }
 }
 
-std::vector<Symbol*> MakeTemplateArgs(const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamHash, TemplateParamEqual>& templateParamMap)
+std::vector<Symbol*> MakeTemplateArgs(const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParamMap)
 {
     std::vector<Symbol*> templateArgs;
     for (const auto& p : templateParamMap)
@@ -260,6 +265,7 @@ const std::vector<ClassTypeSymbol*>& ClassGroupSymbol::Classes(Symbol* parent, C
         std::vector<Module*> modules = context->GetModule()->ImportExportModules(context);
         for (Module* module : modules)
         {
+            context->AddModule(module);
             Scope* globalNsScope = module->GetSymbolTable()->GetGlobalNs(context)->GetScope();
             Scope* containerScope = EnterScope(globalNsScope, containerNames, GetFullSpan(), context);
             Symbol* s = containerScope->Lookup(Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::allScopes, GetFullSpan(), context, LookupFlags::dontResolveSingle);
@@ -379,7 +385,7 @@ ClassTypeSymbol* ClassGroupSymbol::GetBestMatchingClass(const std::vector<Symbol
             {
                 int score = -1;
                 TemplateMatchInfo info;
-                for (Index i = Index(0); i < Index(arity); ++i)
+                for (Index i = Index(0); i < ToIndex(arity); ++i)
                 {
                     Symbol* templateArg = templateArgs[ToUnderlying(i)];
                     int matchValue = Match(templateArg, specialization, i, info, context);
@@ -432,13 +438,13 @@ void ClassGroupSymbol::Read(Reader& reader)
 {
     Symbol::Read(reader);
     Cardinality classCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(classCount); ++i)
+    for (Index i = Index(0); i < ToIndex(classCount); ++i)
     {
         SymbolId classId = SymbolId(reader.CurrentReader().ReadULong());
         classIds.push_back(classId);
     }
     Cardinality fwdCount = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < Index(fwdCount); ++i)
+    for (Index i = Index(0); i < ToIndex(fwdCount); ++i)
     {
         SymbolId fwdId = SymbolId(reader.CurrentReader().ReadULong());
         fwdDeclIds.push_back(fwdId);

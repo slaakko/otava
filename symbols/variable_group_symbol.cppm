@@ -5,11 +5,15 @@
 
 export module otava.symbols.variable_group_symbol;
 
+import otava.symbols.id;
+import otava.symbols.scope;
 import otava.symbols.symbol;
 import std;
 
 export namespace otava::symbols {
 
+class Context;
+class Module;
 class VariableSymbol;
 
 class VariableGroupSymbol : public Symbol
