@@ -132,7 +132,6 @@ FunctionSymbol* CompleteIncompleteFunction(FunctionSymbol* fn, const soul::ast::
         {
             otava::symbols::PrintWarning("not all forward references could not be removed for function '" +
                 completedFn->FullName(context) + "'", completedFn->GetFullSpan(), fullSpan, context);
-            __debugbreak();
         }
         context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
         return completedFn;

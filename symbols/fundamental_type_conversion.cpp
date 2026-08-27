@@ -6,6 +6,7 @@
 module otava.symbols.fundamental_type_conversion;
 
 import otava.symbols.conversion_table;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 
 namespace otava::symbols {
@@ -170,6 +171,26 @@ otava::intermediate::Value* FundamentalTypeBoolToInt::Generate(Emitter& emitter,
     return result;
 }
 
+otava::intermediate::Value* FundamentalTypeBoolToFloat::Generate(Emitter& emitter, otava::intermediate::Value* value, otava::intermediate::Type* destType, Context* context)
+{
+    otava::intermediate::Value* resultVar = emitter.EmitLocal(destType);
+    otava::intermediate::BasicBlock* trueDest = emitter.CreateBasicBlock();
+    otava::intermediate::BasicBlock* falseDest = emitter.CreateBasicBlock();
+    otava::intermediate::BasicBlock* next = emitter.CreateBasicBlock();
+    emitter.EmitBranch(value, trueDest, falseDest);
+    emitter.SetCurrentBasicBlock(falseDest);
+    otava::intermediate::Value* zero = emitter.EmitFloatingValue(destType, 0.0);
+    emitter.EmitStore(zero, resultVar);
+    emitter.EmitJump(next);
+    emitter.SetCurrentBasicBlock(trueDest);
+    otava::intermediate::Value* one = emitter.EmitFloatingValue(destType, 1.0);
+    emitter.EmitStore(one, resultVar);
+    emitter.EmitJump(next);
+    emitter.SetCurrentBasicBlock(next);
+    otava::intermediate::Value* result = emitter.EmitLoad(resultVar);
+    return result;
+}
+
 FundamentalTypeSignExtendConversion::FundamentalTypeSignExtendConversion(Module* module_, SymbolId id_) : 
     FundamentalTypeConversion<FundamentalTypeSignExtension>(module_, id_)
 {
@@ -255,6 +276,16 @@ FundamentalTypeBoolToIntConversion::FundamentalTypeBoolToIntConversion(Module* m
 
 FundamentalTypeBoolToIntConversion::FundamentalTypeBoolToIntConversion(Module* module_, SymbolId id_, TypeSymbol* boolType, TypeSymbol* destType, Context* context) :
     FundamentalTypeConversion<FundamentalTypeBoolToInt>(module_, id_, 255, ConversionKind::explicitConversion, destType, boolType, context)
+{
+}
+
+FundamentalTypeBoolToFloatConversion::FundamentalTypeBoolToFloatConversion(Module* module_, SymbolId id_) :
+    FundamentalTypeConversion<FundamentalTypeBoolToFloat>(module_, id_)
+{
+}
+
+FundamentalTypeBoolToFloatConversion::FundamentalTypeBoolToFloatConversion(Module* module_, SymbolId id_, TypeSymbol* boolType, TypeSymbol* destType, Context* context) :
+    FundamentalTypeConversion<FundamentalTypeBoolToFloat>(module_, id_, 255, ConversionKind::explicitConversion, destType, boolType, context)
 {
 }
 

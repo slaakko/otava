@@ -108,12 +108,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>DEBUG_MODULES;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4267;4146</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -132,7 +132,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4267;4146</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -171,6 +171,8 @@
     <ClCompile Include="compound_type_symbol.cppm" />
     <ClCompile Include="concepts.cpp" />
     <ClCompile Include="concepts.cppm" />
+    <ClCompile Include="concrete_value.cpp" />
+    <ClCompile Include="concrete_value.cppm" />
     <ClCompile Include="container_symbol.cpp" />
     <ClCompile Include="container_symbol.cppm" />
     <ClCompile Include="context.cpp" />
@@ -189,6 +191,8 @@
     <ClCompile Include="emitter.cppm" />
     <ClCompile Include="enums.cpp" />
     <ClCompile Include="enums.cppm" />
+    <ClCompile Include="evaluation_context.cpp" />
+    <ClCompile Include="evaluation_context.cppm" />
     <ClCompile Include="evaluator.cpp" />
     <ClCompile Include="evaluator.cppm" />
     <ClCompile Include="exception.cpp" />
@@ -219,6 +223,7 @@
     <ClCompile Include="fundamental_type_conversion.cppm" />
     <ClCompile Include="fundamental_type_conversion_init.cpp" />
     <ClCompile Include="fundamental_type_conversion_init.cppm" />
+    <ClCompile Include="fundamental_type_kind.cppm" />
     <ClCompile Include="fundamental_type_operation.cpp" />
     <ClCompile Include="fundamental_type_operation.cppm" />
     <ClCompile Include="fundamental_type_symbol.cpp" />

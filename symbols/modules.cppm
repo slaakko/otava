@@ -13,6 +13,7 @@ import otava.symbols.symbol_table;
 import otava.symbols.section;
 import otava.symbols.symbol_index_map;
 import otava.symbols.value;
+import otava.symbols.evaluation_context;
 import otava.ast.file;
 import otava.ast.node;
 import otava.ast.node_map;
@@ -107,6 +108,7 @@ public:
     inline ModuleKind Kind() const noexcept { return kind; }
     void SetInterfaceUnitName(const std::string& interfaceUnitName);
     std::string InterfaceUnitName();
+    Module* InterfaceModule(Context* context);
     inline bool IsReadOnly() const noexcept { return symbolTable.IsReadOnly(); }
     std::string Name();
     inline const std::string& FilePath() const noexcept { return filePath; }

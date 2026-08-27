@@ -30,6 +30,7 @@ import otava.symbols.function_group_symbol;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.function_type_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.lookup;
 import otava.symbols.scope;
@@ -243,7 +244,7 @@ public:
     void ReadSymbolIdVector(Reader& reader);
     const std::vector<SymbolId>& GetSymbolIds();
     std::int64_t GetArgumentId(int index);
-    void AddImportedSymbol(SymbolId symbolId, ModuleId moduleId);
+    void AddImportedSymbol(SymbolId symbolId, Module* module);
     const std::unordered_map<SymbolId, ModuleId>& AddedImportedSymbolMap() const { return addedImportedSymbolMap; }
 private:
     Module* module;

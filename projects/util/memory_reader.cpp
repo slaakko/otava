@@ -71,6 +71,12 @@ std::int64_t MemoryReader::ReadLong()
     return static_cast<std::int64_t>(ReadULong());
 }
 
+float MemoryReader::ReadFloat()
+{
+    std::uint32_t x = ReadUInt();
+    return *reinterpret_cast<float*>(&x);
+}
+
 double MemoryReader::ReadDouble()
 {
     std::uint64_t x = ReadULong();

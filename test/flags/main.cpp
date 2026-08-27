@@ -9,21 +9,23 @@ constexpr std::uint8_t ToUnderlying(SymbolFlags flags) { return std::uint8_t(fla
 
 constexpr SymbolFlags operator|(SymbolFlags left, SymbolFlags right) noexcept
 {
-    return SymbolFlags(std::uint8_t(left) | std::uint8_t(right));
+    return SymbolFlags(ToUnderlying(left) | ToUnderlying(right));
 }
 
 constexpr SymbolFlags operator&(SymbolFlags left, SymbolFlags right) noexcept
 {
-    return SymbolFlags(std::uint8_t(left) & std::uint8_t(right));
+    return SymbolFlags(ToUnderlying(left) & ToUnderlying(right));
 }
 
 constexpr SymbolFlags operator~(SymbolFlags flags) noexcept
 {
-    return SymbolFlags(~std::uint8_t(flags));
+    return SymbolFlags(~ToUnderlying(flags));
 }
 
 int main()
 {
-    SymbolFlags flags = SymbolFlags::none;
-    std::uint8_t x = ToUnderlying(flags & ~SymbolFlags::project);
+    std::uint8_t p = ToUnderlying(SymbolFlags::project);
+    SymbolFlags f = SymbolFlags(p);
+    SymbolFlags s = f & ~SymbolFlags::project;
+    std::uint8_t u = ToUnderlying(s);
 }

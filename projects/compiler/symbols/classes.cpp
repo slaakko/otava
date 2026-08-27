@@ -13,14 +13,15 @@ import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
 import otava.symbols.project;
 import otava.symbols.scope_ptr;
+import otava.symbols.symbol;
 import otava.symbols.recorded_parse;
 import otava.symbols.statement_binder;
-import otava.symbols.symbol;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
@@ -32,6 +33,7 @@ import otava.ast.visitor;
 import otava.ast.identifier;
 import otava.ast.templates;
 import otava.ast.type;
+import soul.lexer;
 import util.sha1;
 
 namespace otava::symbols {
@@ -341,10 +343,10 @@ void ClassTypeSymbol::MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Cont
     {
         if (IsPolymorphic(context))
         {
-            SetVPtrIndex(objectLayout.size());
+            SetVPtrIndex(int(objectLayout.size()));
             objectLayout.push_back(
                 context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::voidType, context)->AddPointer(context));
-            SetDeltaIndex(objectLayout.size());
+            SetDeltaIndex(int(objectLayout.size()));
             objectLayout.push_back(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::longLongIntType, context));
         }
         else if (memberVariables.empty())
@@ -751,6 +753,7 @@ std::string ClassTypeSymbol::GroupName(Context* context)
     {
         ThrowException("group name of class '" + FullName(context) + "' not resolved", GetFullSpan(), context);
     }
+    return std::string();
 }
 
 otava::intermediate::Value* ClassTypeSymbol::GetVTabVariable(Emitter& emitter, Context* context)
@@ -810,7 +813,7 @@ void ClassTypeSymbol::AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::
     GetScope()->AddBaseScope(baseClass->GetScope(), fullSpan, context);
     if (GetModule() != baseClass->GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(baseClass->Id(), baseClass->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(baseClass->Id(), baseClass->GetModule());
     }
 }
 
@@ -826,7 +829,7 @@ void ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
         }
         else
         {
-            memberVariable->SetIndex(memberVariables.size());
+            memberVariable->SetIndex(int(memberVariables.size()));
             memberVariables.push_back(memberVariable);
         }
     }
@@ -913,7 +916,7 @@ void ClassTypeSymbol::Write(Writer& writer)
     {
         if (type->GetModule() != GetModule())
         {
-            GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
+            GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule());
         }
         writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
     }
@@ -936,7 +939,7 @@ void ClassTypeSymbol::Write(Writer& writer)
     {
         if (vfn->GetModule() != GetModule())
         {
-            GetModule()->GetSymbolTable()->AddImportedSymbol(vfn->Id(), vfn->GetModule()->Id());
+            GetModule()->GetSymbolTable()->AddImportedSymbol(vfn->Id(), vfn->GetModule());
         }
         writer.GetBinaryStreamWriter().Write(ToUnderlying(vfn->Id()));
     }
@@ -950,7 +953,7 @@ void ClassTypeSymbol::Write(Writer& writer)
         FunctionSymbol* fn = p.second;
         if (fn->GetModule() != GetModule())
         {
-            GetModule()->GetSymbolTable()->AddImportedSymbol(fn->Id(), fn->GetModule()->Id());
+            GetModule()->GetSymbolTable()->AddImportedSymbol(fn->Id(), fn->GetModule());
         }
         writer.GetBinaryStreamWriter().Write(index);
         writer.GetBinaryStreamWriter().Write(ToUnderlying(fn->Id()));
@@ -1213,7 +1216,7 @@ void ForwardClassDeclarationSymbol::SetGroup(ClassGroupSymbol* group_) noexcept
     group = group_;
     if (group->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(group->Id(), group->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(group->Id(), group->GetModule());
     }
 }
 

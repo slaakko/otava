@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Seppo Laakko
 // Distributed under the MIT license
 // =================================
- 
+
 module otava.symbols.recorded_parse;
 
 namespace otava::symbols {

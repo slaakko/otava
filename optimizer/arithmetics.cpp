@@ -1233,7 +1233,7 @@ bool OptimizeLess(otava::intermediate::LessInstruction* inst, otava::intermediat
     {
         otava::intermediate::BoolValue* boolLeft = static_cast<otava::intermediate::BoolValue*>(left);
         otava::intermediate::BoolValue* boolRight = static_cast<otava::intermediate::BoolValue*>(right);
-        otava::intermediate::Value* value = context->GetBoolValue(boolLeft->GetValue() < boolRight->GetValue());
+        otava::intermediate::Value* value = context->GetBoolValue(std::int8_t(boolLeft->GetValue()) < std::int8_t(boolRight->GetValue()));
         otava::intermediate::ReplaceInstructionWithValue(inst, value);
         optimized = true;
     }

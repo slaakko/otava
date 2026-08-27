@@ -21,6 +21,9 @@ SymbolIndexMap::SymbolIndexMap(Module* module_) : module(module_)
 {
     auto start = ToUnderlying(SymbolKind::null);
     auto end = ToUnderlying(SymbolKind::max);
+#ifdef OTAVA
+    indexMap.resize(end - start);
+#endif
     for (auto i = start; i < end; ++i)
     {
         indexMap[ToUnderlying(SymbolKind(i))] = Index(1);

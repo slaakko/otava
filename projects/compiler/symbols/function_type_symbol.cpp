@@ -19,7 +19,7 @@ std::string MakeFunctionTypeName(TypeSymbol* returnType, const std::vector<TypeS
 {
     std::string name = returnType->Name();
     name.append(" (");
-    ptrIndex = name.length();
+    ptrIndex = int(name.length());
     if (makePtrType)
     {
         name.append(1, '*');

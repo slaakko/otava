@@ -19,6 +19,7 @@ public:
     std::int32_t ReadInt();
     std::uint64_t ReadULong();
     std::int64_t ReadLong();
+    float ReadFloat();
     double ReadDouble();
     char32_t ReadUChar();
     DateTime ReadDateTime();

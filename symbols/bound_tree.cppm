@@ -187,6 +187,7 @@ public:
     inline void SetFlags(BoundExpressionFlags flags_) noexcept { flags = flags_; }
     inline TypeSymbol* GetType() const noexcept { return type; }
     inline void SetType(TypeSymbol* type_) noexcept { type = type_; }
+    virtual TypeSymbol* GetInterfaceType(Context* context) const noexcept { return GetType(); }
     virtual void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context);
     Scope* GetMemberScope(otava::ast::Node* op, const soul::ast::FullSpan& fullSpan, Context* context) const override;
     bool BindToRvalueRef() const noexcept { return GetFlag(BoundExpressionFlags::bindToRvalueRef); }
@@ -741,8 +742,11 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     Value* ToValue(Context* context) override { return value; }
+    TypeSymbol* GetInterfaceType(Context* context) const noexcept override;
+    void SetInterfaceType(TypeSymbol* interfaceType_) noexcept { interfaceType = interfaceType_; }
 private:
     Value* value;
+    TypeSymbol* interfaceType;
 };
 
 class BoundStringLiteralNode : public BoundExpressionNode
@@ -849,6 +853,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     Value* ToValue(Context* context) override;
+    TypeSymbol* GetInterfaceType(Context* context) const noexcept override;
 private:
     EnumConstantSymbol* enumConstant;
 };

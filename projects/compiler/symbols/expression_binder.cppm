@@ -6,8 +6,8 @@
 export module otava.symbols.expression_binder;
 
 import std;
-import otava.ast.node;
 import otava.symbols.bound_tree;
+import otava.ast.node;
 import otava.symbols.scope;
 import otava.symbols.symbol;
 import soul.ast.span;

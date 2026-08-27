@@ -17,6 +17,7 @@ import otava.symbols.expr_parser;
 import otava.symbols.stmt_parser;
 import otava.symbols.decl_specifier_seq_parser;
 import otava.symbols.exception;
+import otava.symbols.symbol;
 import otava.optimizer;
 import soul.lexer.file_map;
 import util.init_done;
@@ -26,7 +27,7 @@ import util.time;
 
 std::string Version()
 {
-    return "0.2.0";
+    return "0.2.1";
 }
 
 void PrintHelp()

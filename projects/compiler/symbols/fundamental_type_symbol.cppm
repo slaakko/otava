@@ -6,6 +6,7 @@
 export module otava.symbols.fundamental_type_symbol;
 
 import std;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.id;
 import otava.symbols.symbol;
 import otava.symbols.type_symbol;
@@ -20,18 +21,7 @@ class Context;
 class Writer;
 class Reader;
 
-enum class FundamentalTypeKind : std::uint8_t
-{
-    none, boolType, charType, signedCharType, unsignedCharType, char8Type, char16Type,
-    shortIntType, unsignedShortIntType, char32Type, wcharType, intType, unsignedIntType, longIntType, unsignedLongIntType,
-    longLongIntType, unsignedLongLongIntType, floatType, doubleType, longDoubleType, voidType, autoType, nullPtrType,
-    max
-};
-
-constexpr std::uint8_t ToUnderlying(FundamentalTypeKind fundamentalTypeKind)
-{
-    return std::uint8_t(fundamentalTypeKind);
-}
+ValueKind ToValueKind(FundamentalTypeKind fundamentalTypeKind);
 
 std::string MakeFundamentalTypeName(FundamentalTypeKind fundamentalTypeKind);
 
@@ -44,7 +34,7 @@ class FundamentalTypeSymbol : public TypeSymbol
 public:
     FundamentalTypeSymbol(Module* module_, SymbolId symbolId_);
     FundamentalTypeSymbol(Module* module_, SymbolId symbolId_, FundamentalTypeKind fundamentalTypeKind_);
-    inline FundamentalTypeKind GetFundamentalTypeKind() const noexcept { return fundamentalTypeKind; }
+    FundamentalTypeKind GetFundamentalTypeKind() const noexcept override { return fundamentalTypeKind; }
     inline bool IsAutoTypeSymbol() const noexcept { return fundamentalTypeKind == FundamentalTypeKind::autoType; }
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;

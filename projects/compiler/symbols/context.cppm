@@ -122,7 +122,6 @@ struct RangeForBlockIds
 
 class AliasTypeSymbol;
 class SymbolsProject;
-struct DeclarationList;
 class SymbolTable;
 class Module;
 class ModuleMapper;
@@ -148,7 +147,7 @@ public:
     inline ModuleMapper* GetModuleMapper() const noexcept { return moduleMapper; }
     SymbolTable* GetSymbolTable() const noexcept;
     inline Emitter* GetEmitter() noexcept { return emitter; }
-    inline EvaluationContext* GetEvaluationContext() noexcept;
+    EvaluationContext* GetEvaluationContext() noexcept;
     OperationRepository* GetOperationRepository() const noexcept;
     inline TraceInfo* GetTraceInfo() const noexcept { return traceInfo; }
     inline void SetTraceInfo(TraceInfo* traceInfo_) noexcept { traceInfo = traceInfo_; }
@@ -314,6 +313,7 @@ public:
     inline Value* Initializer() const noexcept { return initializer; }
     inline bool IncompleteClassesCompleted() const noexcept { return incompleteClassesCompleted; }
     inline void SetIncompleterClassesCompleted() { incompleteClassesCompleted = true; }
+    void AddModule(Module* module);
 private:
     Module* module;
     Module* compileUnitModule;
@@ -401,6 +401,7 @@ private:
     Exception exception;
     Value* initializer;
     bool incompleteClassesCompleted;
+    std::vector<Module*> modules;
 };
 
 class FlagSetter

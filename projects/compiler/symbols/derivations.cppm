@@ -44,7 +44,8 @@ constexpr bool HasDerivation(Derivations derivations, Derivations derivation) no
 constexpr int PointerCount(Derivations derivations) noexcept { return static_cast<int>(static_cast<std::uint8_t>(derivations & Derivations::pointerMask)) >> pointerShift; }
 constexpr Derivations SetPointerCount(Derivations derivations, int pointerCount) noexcept
 {
-    return Derivations(derivations & ~Derivations(Derivations::pointerMask)) | Derivations(std::uint8_t(std::min(std::max(0, pointerCount), maxPointerCount) << pointerShift));
+    return Derivations(derivations & Derivations(~Derivations::pointerMask)) | 
+        Derivations(std::uint8_t(std::min(std::max(0, pointerCount), maxPointerCount) << pointerShift));
 }
 constexpr Derivations Plain(Derivations derivations) noexcept { return derivations & Derivations::pointerMask; }
 constexpr Derivations RemoveConst(Derivations derivations) noexcept { return derivations & Derivations(~Derivations::constDerivation); }

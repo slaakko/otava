@@ -9,6 +9,7 @@ import std;
 import otava.symbols.ast_node_io;
 import otava.symbols.derivations;
 import otava.symbols.container_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.id;
 import otava.symbols.template_param_compare;
 import otava.ast.node;
@@ -94,6 +95,7 @@ public:
         const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap,
         const soul::ast::FullSpan& fullSpan, Context* context);
     virtual Value* DefaultValue(Context* context) { return nullptr; }
+    virtual FundamentalTypeKind GetFundamentalTypeKind() const noexcept { return FundamentalTypeKind::none; }
 private:
     bool destructing;
 };

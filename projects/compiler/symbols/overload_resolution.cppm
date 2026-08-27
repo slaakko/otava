@@ -58,7 +58,7 @@ struct FunctionMatch
 {
     FunctionMatch() noexcept;
     FunctionMatch(FunctionSymbol* function_, Context* context_) noexcept;
-    FunctionMatch& operator=(const FunctionMatch& that);
+    FunctionMatch& operator=(const FunctionMatch& that) noexcept;
     FunctionSymbol* function;
     Context* context;
     std::vector<ArgumentMatch> argumentMatches;

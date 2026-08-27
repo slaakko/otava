@@ -14,8 +14,8 @@ import std;
 
 export namespace otava::symbols {
 
-class Context;
 class Emitter;
+class Context;
 class Module;
 
 class GetFramePtrIntrinsic : public FunctionSymbol

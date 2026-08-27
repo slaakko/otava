@@ -14,6 +14,7 @@ import otava.symbols.expr_parser;
 import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.project;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;
@@ -85,7 +86,8 @@ void CleanupBlock::Make(otava::ast::CompoundStatementNode* compoundStatement)
     {
         BoundExpressionStatementNode* exprStmt = new BoundExpressionStatementNode(destructorCalls[i]->GetFullSpan());
         exprStmt->SetExpr(destructorCalls[i]->Clone());
-        otava::ast::BoundStatementNode* stmt = new otava::ast::BoundStatementNode(exprStmt, exprStmt->GetFullSpan().span, -1);
+        soul::ast::FullSpan fs = exprStmt->GetFullSpan();
+        otava::ast::BoundStatementNode* stmt = new otava::ast::BoundStatementNode(exprStmt, fs.span, -1);
         compoundStatement->AddNode(stmt);
     }
 }

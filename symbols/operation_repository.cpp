@@ -13,6 +13,7 @@ import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
@@ -2042,7 +2043,7 @@ void OperationGroup::AddOperation(Operation* operation)
 FunctionSymbol* OperationGroup::GetOperation(std::vector<std::unique_ptr<BoundExpressionNode>>& args, const soul::ast::FullSpan& fullSpan,
     otava::symbols::Context* context)
 {
-    auto it = arityOperationsMap.find(args.size());
+    auto it = arityOperationsMap.find(int(args.size()));
     if (it != arityOperationsMap.cend())
     {
         for (Operation* operation : it->second)

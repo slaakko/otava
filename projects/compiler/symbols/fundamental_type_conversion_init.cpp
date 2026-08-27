@@ -50,6 +50,9 @@ void AddFundamentalTypeConversionsToSymboTable(
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), wcharType, boolType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBooleanConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), shortIntType, boolType, context), fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeBooleanConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolean), unsignedShortIntType, boolType, context), fullSpan, context);
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBooleanConversion(context->GetModule(),
@@ -109,6 +112,12 @@ void AddFundamentalTypeConversionsToSymboTable(
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBoolToIntConversion(context->GetModule(),
             context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolToInt), boolType, unsignedLongLongIntType, context), fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeBoolToFloatConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolToFloat), boolType, floatType, context), fullSpan, context);
+    context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
+        new FundamentalTypeBoolToFloatConversion(context->GetModule(),
+            context->GetNextSymbolId(SymbolKind::fundamentalTypeBoolToFloat), boolType, doubleType, context), fullSpan, context);
 
     context->GetSymbolTable()->AddFunctionSymbol(context->GetSymbolTable()->GlobalNs()->GetScope(),
         new FundamentalTypeBitcastConversion(context->GetModule(),

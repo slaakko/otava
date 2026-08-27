@@ -8,27 +8,10 @@ module otava.symbols.alias_group_symbol;
 import otava.symbols.alias_type_symbol;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.modules;
 import otava.symbols.type_compare;
 import otava.symbols.writer;
 import otava.symbols.reader;
-
-import otava.intermediate.value;
-import otava.ast.node;
-import otava.ast.node_map;
-import otava.ast.function;
-import soul.lexer.file_map;
-import soul.lexer.base;
-import soul.ast.span;
-import otava.symbols.type_symbol;
-import otava.symbols.modules;
-import otava.intermediate.types;
-import util.file_mapping;
-import util.file_stream;
-import util.buffered_stream;
-import util.binary_stream_writer;
-import util.stream;
-import util.uuid;
-import util.memory_reader;
 
 namespace otava::symbols {
 

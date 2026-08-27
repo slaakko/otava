@@ -11,11 +11,14 @@ import otava.symbols.declaration;
 import otava.symbols.derivations;
 import otava.symbols.exception;
 import otava.symbols.evaluator;
+import otava.symbols.evaluation_context;
 import otava.symbols.function_type_symbol;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
+import otava.symbols.symbol_table;
 import otava.symbols.type_resolver;
+import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.ast.classes;
 import otava.ast.declaration;
@@ -926,15 +929,9 @@ void DeclaratorProcessor::Visit(otava::ast::ArrayDeclaratorNode& node)
     if (node.Dimension())
     {
         Value* sizeValue = Evaluate(node.Dimension(), context);
-        if (sizeValue->IsIntegerValue())
-        {
-            IntegerValue* integerValue = static_cast<IntegerValue*>(sizeValue);
-            size = integerValue->GetValue();
-        }
-        else
-        {
-            ThrowException("integer value expected", node.GetFullSpan(), context);
-        }
+        Value* asULong = sizeValue->Convert(ValueKind::ulongValue, context);
+        FundamentalTypeValue<std::uint64_t>* val = static_cast<FundamentalTypeValue<std::uint64_t>*>(asULong);
+        size = val->GetValue();
     }
     ArrayTypeSymbol* arrayType = context->GetSymbolTable()->MakeArrayType(baseType, size, context);
     arrayType->Bind(node.GetFullSpan(), context);

@@ -8,6 +8,7 @@ module otava.symbols.variable_symbol;
 import otava.symbols.alias_type_symbol;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.modules;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
 import otava.symbols.variable_group_symbol;
@@ -92,7 +93,7 @@ void VariableSymbol::SetDeclaredType(TypeSymbol* declaredType_, Context* context
     declaredType = declaredType_;
     if (declaredType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(declaredType->Id(), declaredType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(declaredType->Id(), declaredType->GetModule());
     }
 }
 
@@ -110,7 +111,7 @@ void VariableSymbol::SetInitializerType(TypeSymbol* initializerType_, Context* c
     initializerType = initializerType_;
     if (initializerType && initializerType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(initializerType->Id(), initializerType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(initializerType->Id(), initializerType->GetModule());
     }
 }
 
@@ -149,11 +150,24 @@ Value* VariableSymbol::GetValue(Context* context)
 {
     if (value)
     {
+        TypeSymbol* type = GetType(context);
+        if (type->IsEnumeratedTypeSymbol())
+        {
+            value->SetInterfaceType(type);
+        }
         return value;
     }
     if (IsReadOnly() && valueId != zeroSymbolId)
     {
         GetContent(context);
+    }
+    if (value)
+    {
+        TypeSymbol* type = GetType(context);
+        if (type && type->IsEnumeratedTypeSymbol())
+        {
+            value->SetInterfaceType(type);
+        }
     }
     return value;
 }
@@ -313,7 +327,7 @@ void ParameterSymbol::SetType(TypeSymbol* type_, Context* context) noexcept
     type = type_;
     if (type->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(type->Id(), type->GetModule());
     }
 }
 

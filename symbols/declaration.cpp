@@ -30,6 +30,7 @@ import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_templates;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.instantiation_queue;

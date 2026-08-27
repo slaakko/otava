@@ -163,11 +163,6 @@ Scope::~Scope()
     }
 }
 
-Module* Scope::GetModule() const noexcept
-{
-    return module;
-}
-
 Symbol* Scope::Lookup(const std::string& name, SymbolGroupKind symbolGroupKind, ScopeLookup scopeLookup, const soul::ast::FullSpan& fullSpan, Context* context,
     LookupFlags flags) 
 {
@@ -370,14 +365,6 @@ AliasGroupSymbol* Scope::GetOrInsertAliasGroup(const std::string& name, const so
     return nullptr;
 }
 
-/*
-EnumGroupSymbol* Scope::GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
-{
-    ThrowException("cannot add enum group '" + name + "' to " + ScopeKindStr(kind) + " '" + FullName(context) + "'", fullSpan, context);
-    return nullptr;
-}
-*/
-
 TemplateParamGroupSymbol* Scope::GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     ThrowException("cannot add template parameter group '" + name + "' to " + ScopeKindStr(kind) + " '" + FullName(context) + "'", fullSpan, context);
@@ -418,7 +405,7 @@ void Scope::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < ToIndex(count); ++i)
     {
-        SymbolOffset symbolOffset = SymbolOffset(reader.CurrentReader().ReadUInt());
+        SymbolOffset symbolOffset = SymbolOffset(reader.CurrentReader().ReadULong());
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         symbolIdMap[symbolOffset] = symbolId;
     }
@@ -445,24 +432,24 @@ void Scope::Uninstall(Symbol* symbol)
     // TODO
 }
 
-Scope* Scope::GetClassScope(Context* context) const noexcept 
-{ 
-    return nullptr; 
+Scope* Scope::GetClassScope(Context* context) const noexcept
+{
+    return nullptr;
 }
 
 Scope* Scope::GetNamespaceScope(Context* context) const noexcept
-{ 
-    return nullptr; 
+{
+    return nullptr;
 }
 
 Symbol* Scope::GetSymbol() noexcept
-{ 
-    return nullptr; 
+{
+    return nullptr;
 }
 
 ClassTemplateSpecializationSymbol* Scope::GetClassTemplateSpecialization(std::set<Scope*>& visited) const
-{ 
-    return nullptr; 
+{
+    return nullptr;
 }
 
 Scope* Scope::GroupScope(Context* context) noexcept
@@ -502,9 +489,9 @@ void Scope::RemoveContainerScope(Scope* containerScope)
     containerScopes.erase(std::remove(containerScopes.begin(), containerScopes.end(), containerScope), containerScopes.end());
 }
 
-const std::unordered_map<SymbolOffset, SymbolId>& Scope::SymbolIdMap() const noexcept 
-{ 
-    return symbolIdMap; 
+const std::unordered_map<SymbolOffset, SymbolId>& Scope::SymbolIdMap() const noexcept
+{
+    return symbolIdMap;
 }
 
 ContainerScope::ContainerScope(Module* module_) noexcept : 
@@ -742,8 +729,8 @@ ClassTemplateSpecializationSymbol* ContainerScope::GetClassTemplateSpecializatio
 }
 
 ContainerSymbol* ContainerScope::GetContainerSymbol() const noexcept
-{
-    return containerSymbol;
+{ 
+    return containerSymbol; 
 }
 
 void ContainerScope::AddUsingDeclaration(Symbol* usingDeclaration, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -1099,9 +1086,9 @@ std::string UsingDirectiveScope::FullName(Context* context) const
     return ns->FullName(context);
 }
 
-NamespaceSymbol* UsingDirectiveScope::Ns() const 
-{ 
-    return ns; 
+NamespaceSymbol* UsingDirectiveScope::Ns() const
+{
+    return ns;
 }
 
 InstantiationScope::InstantiationScope(Module* module_, Scope* parentScope_) noexcept : Scope(module_), destructing(false)

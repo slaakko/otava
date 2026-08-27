@@ -53,7 +53,7 @@ public:
 private:
     Module* module;
     std::unordered_map<ConversionTableEntry, std::uint64_t, ConversionTableEntryHash, ConversionTableEntryEqual> conversionMap;
-    bool read;
+    bool tableRead;
     void Read();
 };
 

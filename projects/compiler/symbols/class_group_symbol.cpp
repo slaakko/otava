@@ -12,7 +12,9 @@ import otava.symbols.compound_type_symbol;
 import otava.symbols.derivations;
 import otava.symbols.exception;
 import otava.symbols.lookup;
+import otava.symbols.modules;
 import otava.symbols.scope_resolver;
+import otava.symbols.symbol_table;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.writer;
@@ -263,6 +265,7 @@ const std::vector<ClassTypeSymbol*>& ClassGroupSymbol::Classes(Symbol* parent, C
         std::vector<Module*> modules = context->GetModule()->ImportExportModules(context);
         for (Module* module : modules)
         {
+            context->AddModule(module);
             Scope* globalNsScope = module->GetSymbolTable()->GetGlobalNs(context)->GetScope();
             Scope* containerScope = EnterScope(globalNsScope, containerNames, GetFullSpan(), context);
             Symbol* s = containerScope->Lookup(Name(), SymbolGroupKind::classSymbolGroup, ScopeLookup::allScopes, GetFullSpan(), context, LookupFlags::dontResolveSingle);

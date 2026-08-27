@@ -8,10 +8,12 @@ module otava.symbols.evaluator;
 import otava.symbols.array_type_symbol;
 import otava.symbols.bound_tree;
 import otava.symbols.context;
+import otava.symbols.evaluation_context;
 import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_symbol;
 import otava.symbols.function_group_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.modules;
@@ -21,6 +23,7 @@ import otava.symbols.scope_resolver;
 import otava.symbols.scope_ptr;
 import otava.symbols.symbol;
 import otava.symbols.type_resolver;
+import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.intermediate.types;
 import otava.ast.identifier;
@@ -32,6 +35,744 @@ import otava.ast.statement;
 import otava.ast.visitor;
 
 namespace otava::symbols {
+
+template<typename T, typename Op>
+Value* EvaluateIntegerUnaryOperator(FundamentalTypeValue<T>* arg, Op op, Context* context)
+{
+    if (!arg) return nullptr;
+    ValueKind valueKind = arg->GetValueKind();
+    Value* result = context->GetEvaluationContext()->GetIntegerValue(static_cast<std::uint64_t>(op(arg->GetValue())), GetValueType(valueKind, context), context);
+    return result;
+}
+
+template<typename T, typename Op>
+Value* EvaluateFloatingUnaryOperator(FundamentalTypeValue<T>* arg, Op op, Context* context)
+{
+    if (!arg) return nullptr;
+    ValueKind valueKind = arg->GetValueKind();
+    Value* result = context->GetEvaluationContext()->GetFloatingValue(static_cast<double>(op(arg->GetValue())), GetValueType(valueKind, context), context);
+    return result;
+}
+
+template<typename T, typename Op>
+Value* EvaluateIntegerBinaryOperator(ValueKind commonValueKind, FundamentalTypeValue<T>* left, FundamentalTypeValue<T>* right, Op op, Context* context)
+{
+    if (!left || !right) return nullptr;
+    Value* result = context->GetEvaluationContext()->GetIntegerValue(static_cast<std::uint64_t>(op(left->GetValue(), 
+        right->GetValue())), GetValueType(commonValueKind, context), context);
+    return result;
+}
+
+template<typename T, typename Op>
+Value* EvaluateFloatingBinaryOperator(ValueKind commonValueKind, FundamentalTypeValue<T>* left, FundamentalTypeValue<T>* right, Op op, Context* context)
+{
+    if (!left || !right) return nullptr;
+    Value* result = context->GetEvaluationContext()->GetFloatingValue(static_cast<double>(op(left->GetValue(),
+        right->GetValue())), GetValueType(commonValueKind, context), context);
+    return result;
+}
+
+template<typename T, typename Op>
+Value* EvaluateComparisonOperator(FundamentalTypeValue<T>* left, FundamentalTypeValue<T>* right, Op op, Context* context)
+{
+    if (!left || !right) return nullptr;
+    Value* result = context->GetEvaluationContext()->GetBoolValue(op(left->GetValue(), right->GetValue()));
+    return result;
+}
+
+Value* EvaluateUnaryMinus(Value* arg, Context* context)
+{
+    if (!arg) return nullptr;
+    ValueKind valueKind = arg->GetValueKind();
+    switch (valueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint8_t>*>(arg), std::negate<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int8_t>*>(arg), std::negate<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int16_t>*>(arg), std::negate<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint16_t>*>(arg), std::negate<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int32_t>*>(arg), std::negate<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint32_t>*>(arg), std::negate<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int64_t>*>(arg), std::negate<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint64_t>*>(arg), std::negate<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateFloatingUnaryOperator(static_cast<FundamentalTypeValue<float>*>(arg), std::negate<float>(), context);
+    case ValueKind::doubleValue: return EvaluateFloatingUnaryOperator(static_cast<FundamentalTypeValue<double>*>(arg), std::negate<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateComplement(Value* arg, Context* context)
+{
+    if (!arg) return nullptr;
+    ValueKind valueKind = arg->GetValueKind();
+    switch (valueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint8_t>*>(arg), std::bit_not<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int8_t>*>(arg), std::bit_not<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int16_t>*>(arg), std::bit_not<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint16_t>*>(arg), std::bit_not<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int32_t>*>(arg), std::bit_not<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint32_t>*>(arg), std::bit_not<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::int64_t>*>(arg), std::bit_not<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerUnaryOperator(static_cast<FundamentalTypeValue<std::uint64_t>*>(arg), std::bit_not<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateAdd(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind, 
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon), std::plus<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon), std::plus<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon), std::plus<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon), std::plus<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon), std::plus<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon), std::plus<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon), std::plus<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon), std::plus<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon), std::plus<float>(), context);
+    case ValueKind::doubleValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon), std::plus<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateSub(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon), 
+        std::minus<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon), 
+        std::minus<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon), 
+        std::minus<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon), 
+        std::minus<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon), 
+        std::minus<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon), 
+        std::minus<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon), 
+        std::minus<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon), 
+        std::minus<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon), 
+        std::minus<float>(), context);
+    case ValueKind::doubleValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon), 
+        std::minus<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateMul(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon), 
+        std::multiplies<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon), 
+        std::multiplies<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon), 
+        std::multiplies<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon), 
+        std::multiplies<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon), 
+        std::multiplies<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon), 
+        std::multiplies<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon), 
+        std::multiplies<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon), 
+        std::multiplies<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon), 
+        std::multiplies<float>(), context);
+    case ValueKind::doubleValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon), 
+        std::multiplies<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateDiv(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::divides<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::divides<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::divides<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::divides<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::divides<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::divides<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::divides<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::divides<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon),
+        std::divides<float>(), context);
+    case ValueKind::doubleValue: return EvaluateFloatingBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon),
+        std::divides<double>(), context);
+    }
+    return nullptr;
+}
+
+template<typename T>
+struct shift_left
+{
+    constexpr T operator()(const T& left, const T& right) const
+    {
+        return left << right;
+    }
+};
+
+template<typename T>
+struct shift_right
+{
+    constexpr T operator()(const T& left, const T& right) const
+    {
+        return left >> right;
+    }
+};
+
+Value* EvaluateMod(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::modulus<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::modulus<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::modulus<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::modulus<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::modulus<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::modulus<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::modulus<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::modulus<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateShiftLeft(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        shift_left<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        shift_left<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        shift_left<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        shift_left<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        shift_left<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        shift_left<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        shift_left<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        shift_left<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateShiftRight(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        shift_right<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        shift_right<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        shift_right<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        shift_right<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        shift_right<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        shift_right<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        shift_right<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        shift_right<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateBitOr(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::bit_or<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::bit_or<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::bit_or<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::bit_or<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::bit_or<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::bit_or<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::bit_or<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::bit_or<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateBitXor(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::bit_xor<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::bit_xor<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::bit_xor<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::bit_xor<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::bit_xor<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::bit_xor<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::bit_xor<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::bit_xor<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateBitAnd(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::bit_and<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::bit_and<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::bit_and<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::bit_and<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::bit_and<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::bit_and<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::bit_and<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateIntegerBinaryOperator(commonValueKind,
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::bit_and<std::uint64_t>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateEqual(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::boolValue:
+    {
+        BoolValue* leftBool = static_cast<BoolValue*>(leftCommon);
+        BoolValue* rightBool = static_cast<BoolValue*>(rightCommon);
+        return context->GetEvaluationContext()->GetBoolValue(leftBool->GetValue() == rightBool->GetValue());
+    }
+    case ValueKind::byteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon), 
+        std::equal_to<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon), 
+        std::equal_to<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon), 
+        std::equal_to<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon), 
+        std::equal_to<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon), 
+        std::equal_to<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon), 
+        std::equal_to<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon), 
+        std::equal_to<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon), 
+        std::equal_to<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon), 
+        std::equal_to<float>(), context);
+    case ValueKind::doubleValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon), 
+        std::equal_to<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateNotEqual(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::boolValue:
+    {
+        BoolValue* leftBool = static_cast<BoolValue*>(leftCommon);
+        BoolValue* rightBool = static_cast<BoolValue*>(rightCommon);
+        return context->GetEvaluationContext()->GetBoolValue(leftBool->GetValue() != rightBool->GetValue());
+    }
+    case ValueKind::byteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::not_equal_to<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::not_equal_to<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::not_equal_to<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::not_equal_to<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::not_equal_to<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::not_equal_to<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::not_equal_to<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::not_equal_to<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon),
+        std::not_equal_to<float>(), context);
+    case ValueKind::doubleValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon),
+        std::not_equal_to<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateLess(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::less<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::less<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::less<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::less<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::less<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::less<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::less<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::less<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon),
+        std::less<float>(), context);
+    case ValueKind::doubleValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon),
+        std::less<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateGreater(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::greater<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::greater<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::greater<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::greater<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::greater<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::greater<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::greater<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::greater<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon),
+        std::greater<float>(), context);
+    case ValueKind::doubleValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon),
+        std::greater<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateLessOrEqual(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::less_equal<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::less_equal<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::less_equal<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::less_equal<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::less_equal<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::less_equal<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::less_equal<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::less_equal<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon),
+        std::less_equal<float>(), context);
+    case ValueKind::doubleValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon),
+        std::less_equal<double>(), context);
+    }
+    return nullptr;
+}
+
+Value* EvaluateGreaterOrEqual(Value* left, Value* right, Context* context)
+{
+    if (!left || !right) return nullptr;
+    ValueKind commonValueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
+    Value* leftCommon = left->Convert(commonValueKind, context);
+    Value* rightCommon = right->Convert(commonValueKind, context);
+    switch (commonValueKind)
+    {
+    case ValueKind::byteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint8_t>*>(rightCommon),
+        std::greater_equal<std::uint8_t>(), context);
+    case ValueKind::sbyteValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int8_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int8_t>*>(rightCommon),
+        std::greater_equal<std::int8_t>(), context);
+    case ValueKind::shortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int16_t>*>(rightCommon),
+        std::greater_equal<std::int16_t>(), context);
+    case ValueKind::ushortValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint16_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint16_t>*>(rightCommon),
+        std::greater_equal<std::uint16_t>(), context);
+    case ValueKind::intValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int32_t>*>(rightCommon),
+        std::greater_equal<std::int32_t>(), context);
+    case ValueKind::uintValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint32_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint32_t>*>(rightCommon),
+        std::greater_equal<std::uint32_t>(), context);
+    case ValueKind::longValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::int64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::int64_t>*>(rightCommon),
+        std::greater_equal<std::int64_t>(), context);
+    case ValueKind::ulongValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<std::uint64_t>*>(leftCommon), static_cast<FundamentalTypeValue<std::uint64_t>*>(rightCommon),
+        std::greater_equal<std::uint64_t>(), context);
+    case ValueKind::floatValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<float>*>(leftCommon), static_cast<FundamentalTypeValue<float>*>(rightCommon),
+        std::greater_equal<float>(), context);
+    case ValueKind::doubleValue: return EvaluateComparisonOperator(
+        static_cast<FundamentalTypeValue<double>*>(leftCommon), static_cast<FundamentalTypeValue<double>*>(rightCommon),
+        std::greater_equal<double>(), context);
+    }
+    return nullptr;
+}
 
 otava::ast::FunctionDefinitionNode* GetFunctionDefinitionNode(FunctionSymbol* fn, Context* context)
 {
@@ -73,6 +814,10 @@ std::vector<std::unique_ptr<BoundExpressionNode>> ValuesToLiterals(const std::ve
     for (Value* value : values)
     {
         BoundLiteralNode* literal = new BoundLiteralNode(value, fullSpan, value->GetType(context));
+        if (value->GetInterfaceType(context)->IsEnumeratedTypeSymbol())
+        {
+            literal->SetInterfaceType(value->GetInterfaceType(context));
+        }
         std::unique_ptr<BoundExpressionNode> lit(literal);
         literals.push_back(std::move(lit));
     }
@@ -88,6 +833,10 @@ std::vector<Value*> ExpressionsToValues(const std::vector<std::unique_ptr<BoundE
         Value* value = expr->ToValue(context);
         if (value)
         {
+            if (value->GetInterfaceType(context)->IsEnumeratedTypeSymbol())
+            {
+                value->SetInterfaceType(expr->GetInterfaceType(context));
+            }
             values.push_back(value);
         }
         else
@@ -467,13 +1216,13 @@ void Evaluator::Visit(otava::ast::DoubleNode& node)
 void Evaluator::Visit(otava::ast::IntegerLiteralNode& node)
 {
     TypeSymbol* type = GetIntegerType(node.GetSuffix(), node.GetFullSpan(), context);
-    value = context->GetEvaluationContext()->GetIntegerValue(node.GetValue(), node.Rep(), type, context);
+    value = context->GetEvaluationContext()->GetIntegerValue(node.GetValue(), type, context);
 }
 
 void Evaluator::Visit(otava::ast::FloatingLiteralNode& node)
 {
     TypeSymbol* type = GetFloatingPointType(node.GetSuffix(), node.GetFullSpan(), context);
-    value = context->GetEvaluationContext()->GetFloatingValue(node.GetValue(), node.Rep(), type, context);
+    value = context->GetEvaluationContext()->GetFloatingValue(node.GetValue(), type, context);
 }
 
 void Evaluator::Visit(otava::ast::CharacterLiteralNode& node)
@@ -629,39 +1378,16 @@ void Evaluator::EvaluateUnaryOp(otava::ast::NodeKind op, otava::ast::Node* argum
         {
         case otava::ast::NodeKind::plusNode:
         {
-            if (value->IsIntegerValue())
-            {
-                IntegerValue* integerValue = static_cast<IntegerValue*>(value);
-                value = context->GetEvaluationContext()->GetIntegerValue(integerValue->GetValue(), "+" + value->Rep(), integerValue->GetType(context), context);
-            }
-            else if (value->IsFloatingValue())
-            {
-                FloatingValue* floatingValue = static_cast<FloatingValue*>(value);
-                value = context->GetEvaluationContext()->GetFloatingValue(floatingValue->GetValue(), "+" + value->Rep(), floatingValue->GetType(context), context);
-            }
             break;
         }
         case otava::ast::NodeKind::minusNode:
         {
-            if (value->IsIntegerValue())
-            {
-                IntegerValue* integerValue = static_cast<IntegerValue*>(value);
-                value = context->GetEvaluationContext()->GetIntegerValue(-integerValue->GetValue(), "-" + value->Rep(), integerValue->GetType(context), context);
-            }
-            else if (value->IsFloatingValue())
-            {
-                FloatingValue* floatingValue = static_cast<FloatingValue*>(value);
-                value = context->GetEvaluationContext()->GetFloatingValue(-floatingValue->GetValue(), "-" + value->Rep(), floatingValue->GetType(context), context);
-            }
+            value = otava::symbols::EvaluateUnaryMinus(value, context);
             break;
         }
         case otava::ast::NodeKind::complementNode:
         {
-            if (value->IsIntegerValue())
-            {
-                IntegerValue* integerValue = static_cast<IntegerValue*>(value);
-                value = context->GetEvaluationContext()->GetIntegerValue(~integerValue->GetValue(), "~" + value->Rep(), integerValue->GetType(context), context);
-            }
+            value = otava::symbols::EvaluateComplement(value, context);
             break;
         }
         case otava::ast::NodeKind::notNode:
@@ -891,223 +1617,93 @@ void Evaluator::EvaluateBinOp(otava::ast::NodeKind op, otava::ast::Node* left, o
         error = true;
         return;
     }
-    ValueKind commonKind = CommonValueKind(leftValue->GetValueKind(), rightValue->GetValueKind());
-    Value* leftConv = leftValue->Convert(commonKind, context);
-    Value* rightConv = rightValue->Convert(commonKind, context);
-    EvaluationContext* evaluationContext = context->GetEvaluationContext();
-    switch (commonKind)
+    switch (op)
     {
-        case ValueKind::integerValue:
-        {
-            IntegerValue* leftInt = static_cast<IntegerValue*>(leftConv);
-            IntegerValue* rightInt = static_cast<IntegerValue*>(rightConv);
-            switch (op)
-            {
-            case otava::ast::NodeKind::plusNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() + rightInt->GetValue(), leftInt->ToString() + " + " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::minusNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() - rightInt->GetValue(), leftInt->ToString() + " - " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::mulNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() * rightInt->GetValue(), leftInt->ToString() + " * " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::divNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() / rightInt->GetValue(), leftInt->ToString() + " / " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::modNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() % rightInt->GetValue(), leftInt->ToString() + " % " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::shiftLeftNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() << rightInt->GetValue(), leftInt->ToString() + " << " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::shiftRightNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() >> rightInt->GetValue(), leftInt->ToString() + " >> " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::inclusiveOrNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() | rightInt->GetValue(), leftInt->ToString() + " | " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::exclusiveOrNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() ^ rightInt->GetValue(), leftInt->ToString() + " ^ " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::andNode:
-            {
-                value = evaluationContext->GetIntegerValue(leftInt->GetValue() & rightInt->GetValue(), leftInt->ToString() + " & " + rightInt->ToString(),
-                    leftInt->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::equalNode:
-            {
-                value = evaluationContext->GetBoolValue(leftInt->GetValue() == rightInt->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::notEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftInt->GetValue() != rightInt->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::greaterNode:
-            {
-                value = evaluationContext->GetBoolValue(leftInt->GetValue() > rightInt->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::lessNode:
-            {
-                value = evaluationContext->GetBoolValue(leftInt->GetValue() < rightInt->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::greaterOrEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftInt->GetValue() >= rightInt->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::lessOrEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftInt->GetValue() <= rightInt->GetValue());
-                break;
-            }
-            default:
-            {
-                error = true;
-                return;
-            }
-            }
-            break;
-        }
-        case ValueKind::floatingValue:
-        {
-            FloatingValue* leftFloat = static_cast<FloatingValue*>(leftConv);
-            FloatingValue* rightFloat = static_cast<FloatingValue*>(rightConv);
-            switch (op)
-            {
-            case otava::ast::NodeKind::plusNode:
-            {
-                value = evaluationContext->GetFloatingValue(leftFloat->GetValue() + rightFloat->GetValue(), leftFloat->ToString() + " + " + rightFloat->ToString(),
-                    leftFloat->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::minusNode:
-            {
-                value = evaluationContext->GetFloatingValue(leftFloat->GetValue() - rightFloat->GetValue(), leftFloat->ToString() + " - " + rightFloat->ToString(),
-                    leftFloat->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::mulNode:
-            {
-                value = evaluationContext->GetFloatingValue(leftFloat->GetValue() * rightFloat->GetValue(), leftFloat->ToString() + " * " + rightFloat->ToString(),
-                    leftFloat->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::divNode:
-            {
-                value = evaluationContext->GetFloatingValue(leftFloat->GetValue() / rightFloat->GetValue(), leftFloat->ToString() + " / " + rightFloat->ToString(),
-                    leftFloat->GetType(context), context);
-                break;
-            }
-            case otava::ast::NodeKind::equalNode:
-            {
-                value = evaluationContext->GetBoolValue(leftFloat->GetValue() == rightFloat->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::notEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftFloat->GetValue() != rightFloat->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::greaterNode:
-            {
-                value = evaluationContext->GetBoolValue(leftFloat->GetValue() > rightFloat->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::lessNode:
-            {
-                value = evaluationContext->GetBoolValue(leftFloat->GetValue() < rightFloat->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::greaterOrEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftFloat->GetValue() >= rightFloat->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::lessOrEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftFloat->GetValue() <= rightFloat->GetValue());
-                break;
-            }
-            default:
-            {
-                error = true;
-                return;
-            }
-            }
-            break;
-        }
-        case ValueKind::boolValue:
-        {
-            BoolValue* leftBool = static_cast<BoolValue*>(leftConv);
-            BoolValue* rightBool = static_cast<BoolValue*>(rightConv);
-            switch (op)
-            {
-            case otava::ast::NodeKind::disjunctionNode:
-            {
-                value = evaluationContext->GetBoolValue(leftBool->GetValue() || rightBool->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::conjunctionNode:
-            {
-                value = evaluationContext->GetBoolValue(leftBool->GetValue() && rightBool->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::equalNode:
-            {
-                value = evaluationContext->GetBoolValue(leftBool->GetValue() == rightBool->GetValue());
-                break;
-            }
-            case otava::ast::NodeKind::notEqualNode:
-            {
-                value = evaluationContext->GetBoolValue(leftBool->GetValue() != rightBool->GetValue());
-                break;
-            }
-            default:
-            {
-                error = true;
-                return;
-            }
-            }
-            break;
-        }
-        default:
-        {
-            error = true;
-            return;
-        }
+    case otava::ast::NodeKind::plusNode:
+    {
+        value = EvaluateAdd(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::minusNode:
+    {
+        value = EvaluateSub(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::mulNode:
+    {
+        value = EvaluateMul(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::divNode:
+    {
+        value = EvaluateDiv(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::modNode:
+    {
+        value = EvaluateMod(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::shiftLeftNode:
+    {
+        value = EvaluateShiftLeft(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::shiftRightNode:
+    {
+        value = EvaluateShiftRight(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::inclusiveOrNode:
+    {
+        value = EvaluateBitOr(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::exclusiveOrNode:
+    {
+        value = EvaluateBitXor(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::andNode:
+    {
+        value = EvaluateBitAnd(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::equalNode:
+    {
+        value = EvaluateEqual(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::notEqualNode:
+    {
+        value = EvaluateNotEqual(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::lessNode:
+    {
+        value = EvaluateLess(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::greaterNode:
+    {
+        value = EvaluateGreater(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::lessOrEqualNode:
+    {
+        value = EvaluateLessOrEqual(leftValue, rightValue, context);
+        break;
+    }
+    case otava::ast::NodeKind::greaterOrEqualNode:
+    {
+        value = EvaluateGreaterOrEqual(leftValue, rightValue, context);
+        break;
+    }
+    default:
+    {
+        error = true;
+        return;
+    }
     }
 }
 
@@ -1504,7 +2100,7 @@ void Evaluator::Visit(otava::ast::SizeOfTypeExprNode& node)
     type = type->DirectType(context)->FinalType(node.GetFullSpan(), context);
     otava::intermediate::Type* irType = type->IrType(*context->GetEmitter(), node.GetFullSpan(), context);
     std::int64_t size = irType->Size();
-    value = context->GetEvaluationContext()->GetIntegerValue(size, std::to_string(size),
+    value = context->GetEvaluationContext()->GetIntegerValue(size, 
         context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::unsignedLongLongIntType, context), context);
 }
 
@@ -1564,37 +2160,18 @@ void Evaluator::Visit(otava::ast::BracedInitListNode& node)
 void Evaluator::Visit(otava::ast::CppCastExprNode& node)
 {
     TypeSymbol* type = ResolveType(node.TypeId(), DeclarationFlags(), context, TypeResolverFlags::dontThrow);
-    if (type)
+    if (type && type->IsFundamentalTypeSymbol())
     {
         node.Child()->Accept(*this);
         if (value)
         {
-            switch (value->GetValueKind())
+            if (value->IsIntegerValue())
             {
-            case ValueKind::integerValue:
-            {
-                IntegerValue* integerValue = static_cast<IntegerValue*>(value);
-                value = context->GetEvaluationContext()->GetIntegerValue(integerValue->GetValue(), integerValue->Rep(), type, context);
-                break;
+                value = context->GetEvaluationContext()->GetIntegerValue(value->GetIntegerValue(), type, context);
             }
-            case ValueKind::floatingValue:
+            else if (value->IsFloatingValue())
             {
-                FloatingValue* floatingValue = static_cast<FloatingValue*>(value);
-                value = context->GetEvaluationContext()->GetFloatingValue(floatingValue->GetValue(), floatingValue->Rep(), type, context);
-                break;
-            }
-            case ValueKind::stringValue:
-            {
-                StringValue* stringValue = static_cast<StringValue*>(value);
-                value = context->GetEvaluationContext()->GetStringValue(stringValue->GetValue(), type, context);
-                break;
-            }
-            case ValueKind::charValue:
-            {
-                CharValue* charValue = static_cast<CharValue*>(value);
-                value = context->GetEvaluationContext()->GetCharValue(charValue->GetValue(), type, context);
-                break;
-            }
+                value = context->GetEvaluationContext()->GetFloatingValue(value->GetFloatingValue(), type, context);
             }
         }
     }

@@ -54,11 +54,11 @@ StringOffset StringTable::AddString(const std::string& s)
 {
     StringOffset offset = GetOffset(s);
     if (offset != notFoundOffset) return offset;
-    offset = StringOffset(length);
+    offset = StringOffset(ToUnderlying(length));
     strings.push_back(s);
     stringMap[s] = offset;
     offsetMap[offset] = s;
-    length = Length(offset + s.length() + 1);
+    length = Length(ToUnderlying(offset) + std::uint32_t(s.length() + 1));
     return offset;
 }
 
@@ -163,7 +163,7 @@ void StringTable::ReadStrings()
         std::string str = util::HexUnescape(hexEscapedStr);
         stringMap[str] = offset;
         offsetMap[offset] = str;
-        offset += hexEscapedStr.length() + 1;
+        offset += std::uint32_t(hexEscapedStr.length() + 1);
     }
 }
 

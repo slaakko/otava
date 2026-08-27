@@ -80,7 +80,7 @@ bool BetterArgumentMatch::operator()(const ArgumentMatch& left, const ArgumentMa
     return false;
 }
 
-FunctionMatch::FunctionMatch() noexcept : function(nullptr), numConversions(0), numQualifyingConversions(0), specialization(nullptr), context(nullptr)
+FunctionMatch::FunctionMatch() noexcept : function(nullptr), numConversions(0), numQualifyingConversions(0), scopeMatches(false), specialization(nullptr), context(nullptr)
 {
 }
 
@@ -1085,7 +1085,7 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
         else
         {
             arg = args[ToUnderlying(i)].get();
-            argType = arg->GetType();
+            argType = arg->GetInterfaceType(context);
         }
         ParameterSymbol* parameter = functionMatch.function->MemFnParameters(context)[ToUnderlying(i)];
         FlagSetter resolveFlagSetter(context, ContextFlags::resolveDependentTypes | ContextFlags::resolveNestedTypes);
@@ -1258,7 +1258,11 @@ std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<Func
     }
     else if (functionMatches.size() > 1)
     {
+#ifdef OTAVA
+        std::insertion_sort(functionMatches.begin(), functionMatches.end(), BetterFunctionMatch(context));
+#else
         std::sort(functionMatches.begin(), functionMatches.end(), BetterFunctionMatch(context));
+#endif
         if (BetterFunctionMatch(context)(functionMatches[0], functionMatches[1]))
         {
             return std::move(functionMatches.front());

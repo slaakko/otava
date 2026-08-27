@@ -28,6 +28,7 @@ import otava.symbols.variable_group_symbol;
 import otava.symbols.namespaces;
 import otava.symbols.templates;
 import otava.symbols.value;
+import otava.symbols.concrete_value;
 import otava.symbols.variable_symbol;
 import otava.symbols.template_param_group_symbol;
 import otava.symbols.type_symbol;
@@ -67,13 +68,45 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     {
         return new BoolValue(module, symbolId);
     }
-    case SymbolKind::integerValueSymbol:
+    case SymbolKind::byteValueSymbol:
     {
-        return new IntegerValue(module, symbolId);
+        return new FundamentalTypeValue<std::uint8_t>(module, symbolId);
     }
-    case SymbolKind::floatingValueSymbol:
+    case SymbolKind::sbyteValueSymbol:
     {
-        return new FloatingValue(module, symbolId);
+        return new FundamentalTypeValue<std::int8_t>(module, symbolId);
+    }
+    case SymbolKind::shortValueSymbol:
+    {
+        return new FundamentalTypeValue<std::int16_t>(module, symbolId);
+    }
+    case SymbolKind::ushortValueSymbol:
+    {
+        return new FundamentalTypeValue<std::uint16_t>(module, symbolId);
+    }
+    case SymbolKind::intValueSymbol:
+    {
+        return new FundamentalTypeValue<std::int32_t>(module, symbolId);
+    }
+    case SymbolKind::uintValueSymbol:
+    {
+        return new FundamentalTypeValue<std::uint32_t>(module, symbolId);
+    }
+    case SymbolKind::longValueSymbol:
+    {
+        return new FundamentalTypeValue<std::int64_t>(module, symbolId);
+    }
+    case SymbolKind::ulongValueSymbol:
+    {
+        return new FundamentalTypeValue<std::uint64_t>(module, symbolId);
+    }
+    case SymbolKind::floatValueSymbol:
+    {
+        return new FundamentalTypeValue<float>(module, symbolId);
+    }
+    case SymbolKind::doubleValueSymbol:
+    {
+        return new FundamentalTypeValue<double>(module, symbolId);
     }
     case SymbolKind::nullPtrValueSymbol:
     {
@@ -82,10 +115,6 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     case SymbolKind::stringValueSymbol:
     {
         return new StringValue(module, symbolId);
-    }
-    case SymbolKind::charValueSymbol:
-    {
-        return new CharValue(module, symbolId);
     }
     case SymbolKind::arrayValueSymbol:
     {
@@ -336,6 +365,10 @@ Symbol* MakeSymbol(Module* module, SymbolId symbolId)
     case SymbolKind::fundamentalTypeBoolToInt:
     {
         return new FundamentalTypeBoolToIntConversion(module, symbolId);
+    }
+    case SymbolKind::fundamentalTypeBoolToFloat:
+    {
+        return new FundamentalTypeBoolToFloatConversion(module, symbolId);
     }
     case SymbolKind::fundamentalTypeDefaultCtor:
     {

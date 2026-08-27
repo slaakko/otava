@@ -26,7 +26,11 @@ public:
     void Import(const SymbolIndexMap& that);
 private:
     Module* module;
+#ifdef OTAVA
+    std::vector<Index> indexMap;
+#else
     Index indexMap[ToUnderlying(SymbolKind::max)];
+#endif
 };
 
 } // namespace otava::symbols

@@ -1,0 +1,5 @@
+project boolean;
+target=program;
+interface <conversion_table.cppm>;
+source <conversion_table.cpp>;
+source <main.cpp>;

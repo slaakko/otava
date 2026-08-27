@@ -553,12 +553,12 @@ void FundamentalTypeDefaultCtor::GenerateCode(Emitter& emitter, std::vector<Boun
     }
 }
 
-FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)
+FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_), type(nullptr), typeId(zeroSymbolId)
 {
 }
 
-FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context) :
-    FunctionSymbol(module_, id_, "@constructor")
+FundamentalTypeCopyCtor::FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context) :
+    FunctionSymbol(module_, id_, "@constructor"), type(type_), typeId(zeroSymbolId)
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
@@ -582,6 +582,41 @@ void FundamentalTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundEx
         storeFlags = storeFlags | OperationFlags::deref;
     }
     args[0]->Store(emitter, storeFlags, fullSpan, context);
+}
+
+void FundamentalTypeCopyCtor::Write(Writer& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(type->Id()));
+}
+
+void FundamentalTypeCopyCtor::Read(Reader& reader)
+{
+    FunctionSymbol::Read(reader);
+    typeId = SymbolId(reader.CurrentReader().ReadULong());
+}
+
+void FundamentalTypeCopyCtor::Resolve(Context* context)
+{
+    if (IsReadOnly() && typeId != zeroSymbolId)
+    {
+        type = GetModule()->GetSymbolTable()->GetTypeSymbol(typeId, context);
+        if (!type)
+        {
+            ThrowException("type id " + std::to_string(ToUnderlying(typeId)) + " not found from module '" + GetModule()->Name() + "'");
+        }
+    }
+}
+
+void FundamentalTypeCopyCtor::Evaluate(Context* context)
+{
+    Value* value = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+    Value* clone = value->Clone(context);
+    clone->SetInterfaceType(nullptr);
+    Resolve(context);
+    Value* convertedValue = clone->Convert(ToValueKind(type->GetFundamentalTypeKind()), context);
+    convertedValue->SetInterfaceType(nullptr);
+    context->GetEvaluationContext()->GetEvaluationStack()->Push(convertedValue);
 }
 
 FundamentalTypeMoveCtor::FundamentalTypeMoveCtor(Module* module_, SymbolId id_) : FunctionSymbol(module_, id_)

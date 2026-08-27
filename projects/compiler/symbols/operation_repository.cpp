@@ -13,10 +13,13 @@ import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.modules;
 import otava.symbols.overload_resolution;
 import otava.symbols.scope;
 import otava.symbols.type_compare;
+import otava.symbols.type_symbol;
 import otava.symbols.variable_symbol;
 import otava.intermediate.value;
 import otava.ast.expression;
@@ -1005,7 +1008,7 @@ FunctionSymbol* ClassDefaultCtorOperation::Get(std::vector<std::unique_ptr<Bound
     if (type->PointerCount() != 1 || !type->RemovePointer(context)->PlainType(context)->IsClassTypeSymbol()) return nullptr;
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->GetBaseType(context));
     if (classType->IsClassTemplateSpecializationSymbol() && context->GetFlag(ContextFlags::ignoreClassTemplateSpecializations)) return nullptr;
-    FunctionSymbol* defaultCtor = classType->GetFunctionByIndex(defaultCtorIndex);
+    FunctionSymbol* defaultCtor = classType->GetFunctionByIndex(defaultCtorIndex, context);
     if (defaultCtor)
     {
         return defaultCtor;
@@ -1214,7 +1217,7 @@ FunctionSymbol* ClassCopyCtorOperation::Get(std::vector<std::unique_ptr<BoundExp
     int distance = 0;
     if (!TypesEqual(args[1]->GetType()->GetBaseType(context), classType, context) &&
         !args[1]->GetType()->GetBaseType(context)->HasBaseClass(classType, distance, context)) return nullptr;
-    FunctionSymbol* copyCtor = classType->GetFunctionByIndex(copyCtorIndex);
+    FunctionSymbol* copyCtor = classType->GetFunctionByIndex(copyCtorIndex, context);
     if (copyCtor)
     {
         return copyCtor;
@@ -1431,7 +1434,7 @@ FunctionSymbol* ClassMoveCtorOperation::Get(std::vector<std::unique_ptr<BoundExp
     int distance = 0;
     if (!TypesEqual(args[1]->GetType()->GetBaseType(context), classType, context) &&
         !args[1]->GetType()->GetBaseType(context)->HasBaseClass(classType, distance, context)) return nullptr;
-    FunctionSymbol* moveCtor = classType->GetFunctionByIndex(moveCtorIndex);
+    FunctionSymbol* moveCtor = classType->GetFunctionByIndex(moveCtorIndex, context);
     if (moveCtor)
     {
         return moveCtor;
@@ -1643,7 +1646,7 @@ FunctionSymbol* ClassCopyAssignmentOperation::Get(std::vector<std::unique_ptr<Bo
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->GetBaseType(context));
     if (classType->IsClassTemplateSpecializationSymbol() && context->GetFlag(ContextFlags::ignoreClassTemplateSpecializations)) return nullptr;
     if (TypesEqual(args[1]->GetType(), classType->AddRValueRef(context), context) || args[1]->BindToRvalueRef()) return nullptr;
-    FunctionSymbol* copyAssignment = classType->GetFunctionByIndex(copyAssignmentIndex);
+    FunctionSymbol* copyAssignment = classType->GetFunctionByIndex(copyAssignmentIndex, context);
     if (copyAssignment)
     {
         return copyAssignment;
@@ -1824,7 +1827,7 @@ FunctionSymbol* ClassMoveAssignmentOperation::Get(std::vector<std::unique_ptr<Bo
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->GetBaseType(context));
     if (classType->IsClassTemplateSpecializationSymbol() && context->GetFlag(ContextFlags::ignoreClassTemplateSpecializations)) return nullptr;
     if (!TypesEqual(args[1]->GetType(), classType->AddRValueRef(context), context) && !args[1]->BindToRvalueRef()) return nullptr;
-    FunctionSymbol* moveAssignment = classType->GetFunctionByIndex(moveAssignmentIndex);
+    FunctionSymbol* moveAssignment = classType->GetFunctionByIndex(moveAssignmentIndex, context);
     if (moveAssignment)
     {
         return moveAssignment;
@@ -2040,7 +2043,7 @@ void OperationGroup::AddOperation(Operation* operation)
 FunctionSymbol* OperationGroup::GetOperation(std::vector<std::unique_ptr<BoundExpressionNode>>& args, const soul::ast::FullSpan& fullSpan,
     otava::symbols::Context* context)
 {
-    auto it = arityOperationsMap.find(args.size());
+    auto it = arityOperationsMap.find(int(args.size()));
     if (it != arityOperationsMap.cend())
     {
         for (Operation* operation : it->second)

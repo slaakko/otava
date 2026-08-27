@@ -92,6 +92,7 @@ FrameLocation Frame::GetFrameLocation(int index, const soul::ast::Span& span, In
     {
         Error("invalid frame location access index " + std::to_string(index), span, context);
     }
+    return FrameLocation();
 }
 
 FrameLocation Frame::GetParentFrameLocation(const soul::ast::Span& span, IntermediateContext* context) const

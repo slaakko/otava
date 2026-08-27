@@ -15,8 +15,6 @@ export namespace otava::symbols {
 class Context;
 class Module;
 class VariableSymbol;
-class Writer;
-class Reader;
 
 class VariableGroupSymbol : public Symbol
 {

@@ -75,7 +75,7 @@ constexpr std::int32_t GetBaseTypeId(std::int32_t typeId) noexcept
 
 constexpr std::int8_t GetPointerCount(std::int32_t typeId) noexcept
 {
-    return (typeId & (std::int32_t(0x7F) << (32 - 8))) >> (32 - 8);
+    return std::int8_t((typeId & (std::int32_t(0x7F) << (32 - 8))) >> (32 - 8));
 }
 
 enum class TypeKind : int

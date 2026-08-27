@@ -109,7 +109,7 @@ void CompoundTypeSymbol::SetBaseType(TypeSymbol* baseType_) noexcept
     baseType = baseType_;
     if (baseType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(baseType->Id(), baseType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(baseType->Id(), baseType->GetModule());
     }
 }
 

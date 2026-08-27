@@ -122,11 +122,11 @@ Type* Type::AddPointer(IntermediateContext* context) const
     if (IsPointerType())
     {
         const PointerType* pointerType = static_cast<const PointerType*>(this);
-        return context->GetTypes().MakePointerType(Span(), GetBaseTypeId(pointerType->Id()), GetPointerCount(pointerType->Id()) + 1, context);
+        return context->GetTypes().MakePointerType(Span(), GetBaseTypeId(pointerType->Id()), GetPointerCount(pointerType->Id()) + std::int8_t(1), context);
     }
     else
     {
-        return context->GetTypes().MakePointerType(Span(), Id(), 1, context);
+        return context->GetTypes().MakePointerType(Span(), Id(), std::int8_t(1), context);
     }
 }
 
@@ -267,7 +267,7 @@ SByteType::SByteType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalT
 
 Value* SByteType::MakeDefaultValue(IntermediateContext& context) const
 {
-    return context.GetSByteValue(0);
+    return context.GetSByteValue(std::int8_t(0));
 }
 
 ByteType::ByteType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalType, byteTypeId)
@@ -276,7 +276,7 @@ ByteType::ByteType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalTyp
 
 Value* ByteType::MakeDefaultValue(IntermediateContext& context) const
 {
-    return context.GetByteValue(0u);
+    return context.GetByteValue(std::uint8_t(0));
 }
 
 ShortType::ShortType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalType, shortTypeId)
@@ -285,7 +285,7 @@ ShortType::ShortType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalT
 
 Value* ShortType::MakeDefaultValue(IntermediateContext& context) const
 {
-    return context.GetShortValue(0);
+    return context.GetShortValue(std::int16_t(0));
 }
 
 UShortType::UShortType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalType, ushortTypeId)
@@ -294,7 +294,7 @@ UShortType::UShortType() noexcept : Type(soul::ast::Span(), TypeKind::fundamenta
 
 Value* UShortType::MakeDefaultValue(IntermediateContext& context) const
 {
-    return context.GetUShortValue(0u);
+    return context.GetUShortValue(std::uint16_t(0));
 }
 
 IntType::IntType() noexcept : Type(soul::ast::Span(), TypeKind::fundamentalType, intTypeId)
@@ -756,10 +756,10 @@ Types::Types() noexcept : context(nullptr), nextTypeId(userTypeId)
 void Types::Init()
 {
     boolType.SetDefaultValue(context->GetFalseValue());
-    sbyteType.SetDefaultValue(context->GetSByteValue(0));
-    byteType.SetDefaultValue(context->GetByteValue(0u));
-    shortType.SetDefaultValue(context->GetShortValue(0));
-    ushortType.SetDefaultValue(context->GetUShortValue(0u));
+    sbyteType.SetDefaultValue(context->GetSByteValue(std::int8_t(0)));
+    byteType.SetDefaultValue(context->GetByteValue(std::uint8_t(0)));
+    shortType.SetDefaultValue(context->GetShortValue(std::int16_t(0)));
+    ushortType.SetDefaultValue(context->GetUShortValue(std::uint16_t(0)));
     intType.SetDefaultValue(context->GetIntValue(0));
     uintType.SetDefaultValue(context->GetUIntValue(0u));
     longType.SetDefaultValue(context->GetLongValue(0));
@@ -866,7 +866,7 @@ PointerType* Types::MakePointerType(const soul::ast::Span& span, std::int32_t ba
     PointerType* type = nullptr;
     if (pointerCount > 1)
     {
-        type = new PointerType(span, MakePointerTypeId(baseTypeId, pointerCount), pointerCount, MakePointerTypeId(baseTypeId, pointerCount - 1));
+        type = new PointerType(span, MakePointerTypeId(baseTypeId, pointerCount), pointerCount, MakePointerTypeId(baseTypeId, std::int8_t(pointerCount - 1)));
         type->SetDefaultValue(context->GetNullValue(soul::ast::Span(), type));
     }
     else if (pointerCount == 1)

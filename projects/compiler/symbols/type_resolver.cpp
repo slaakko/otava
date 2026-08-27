@@ -25,6 +25,7 @@ import otava.symbols.modules;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
+import otava.symbols.symbol_table;
 import otava.symbols.templates;
 import otava.ast.declaration;
 import otava.ast.expression;
@@ -461,7 +462,7 @@ void TypeResolver::Visit(otava::ast::TypenameSpecifierNode& node)
                         context->GetModule(), context->GetNextSymbolId(SymbolKind::boundTemplateParameterSymbol), templateParameter->Name());
                     boundTemplateParameter->SetTemplateParameterSymbol(templateParameter);
                     boundTemplateParameter->SetBoundSymbol(templateParamType.second);
-                    std::unique_ptr<BoundTemplateParameterSymbol> btp(boundTemplateParameter);
+               std::unique_ptr<BoundTemplateParameterSymbol> btp(boundTemplateParameter);
                     boundTemplateParameters.push_back(std::move(btp));
                     instantiationScope.Install(boundTemplateParameter, context);
                     context->GetSymbolTable()->MapSymbol(boundTemplateParameter, context);
@@ -635,6 +636,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
         }
         for (Module* module : importedModules)
         {
+            context->AddModule(module);
             ModulePtr modulePtr(module, context);
             Scope* containerScope = EnterScope(context->GetSymbolTable()->CurrentScope(), containerNames, node.GetFullSpan(), context);
             ScopePtr scopePtr(containerScope, context);
@@ -791,6 +793,7 @@ void TypeResolver::Visit(otava::ast::TemplateIdNode& node)
     {
         for (Module* module : importedModules)
         {
+            context->AddModule(module);
             ModulePtr modulePtr(module, context);
             Scope* containerScope = EnterScope(context->GetSymbolTable()->CurrentScope(), containerNames, node.GetFullSpan(), context);
             ScopePtr scopePtr(containerScope, context);
@@ -1119,6 +1122,7 @@ Symbol* ResolveTypeIdentifier(const std::string& name, const soul::ast::FullSpan
     std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
     for (Module* importedModule : importedModules)
     {
+        context->AddModule(importedModule);
         ModulePtr modulePtr(importedModule, context);
         Scope* containerScope = EnterScope(importedModule->GetSymbolTable()->CurrentScope(), containerNames, fullSpan, context);
         ScopePtr scopePtr(containerScope, context);

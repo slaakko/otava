@@ -15,6 +15,8 @@ import otava.symbols.id;
 import otava.symbols.variable_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.modules;
+import otava.symbols.type_symbol;
 import otava.intermediate.data;
 import otava.intermediate.types;
 import otava.intermediate.value;
@@ -72,6 +74,11 @@ struct FundamentalTypeFloatToInt
 };
 
 struct FundamentalTypeBoolToInt
+{
+    static otava::intermediate::Value* Generate(Emitter& emitter, otava::intermediate::Value* value, otava::intermediate::Type* destType, Context* context);
+};
+
+struct FundamentalTypeBoolToFloat
 {
     static otava::intermediate::Value* Generate(Emitter& emitter, otava::intermediate::Value* value, otava::intermediate::Type* destType, Context* context);
 };
@@ -260,6 +267,14 @@ public:
     FundamentalTypeBoolToIntConversion(Module* module_, SymbolId id_);
     FundamentalTypeBoolToIntConversion(Module* module_, SymbolId id_, TypeSymbol* boolType, TypeSymbol* destType, Context* context);
 };
+
+class FundamentalTypeBoolToFloatConversion : public FundamentalTypeConversion<FundamentalTypeBoolToFloat>
+{
+public:
+    FundamentalTypeBoolToFloatConversion(Module* module_, SymbolId id_);
+    FundamentalTypeBoolToFloatConversion(Module* module_, SymbolId id_, TypeSymbol* boolType, TypeSymbol* destType, Context* context);
+};
+
 
 class FundamentalTypeBooleanConversion : public FunctionSymbol
 {

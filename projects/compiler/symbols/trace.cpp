@@ -7,6 +7,8 @@ module otava.symbols.trace;
 
 import otava.symbols.context;
 import otava.symbols.declaration;
+import otava.symbols.function_symbol;
+import otava.symbols.modules;
 import otava.symbols.project;
 import otava.symbols.scope_ptr;
 import otava.symbols.symbol;

@@ -8,13 +8,16 @@ export module otava.symbols.fundamental_type_operation;
 import otava.symbols.bound_tree;
 import otava.symbols.context;
 import otava.symbols.emitter;
+import otava.symbols.evaluation_context;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.id;
 import otava.symbols.variable_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.type_symbol;
 import otava.symbols.value;
+import otava.symbols.concrete_value;
 import otava.intermediate.value;
 import soul.ast.span;
 import std;
@@ -473,11 +476,18 @@ class FundamentalTypeCopyCtor : public FunctionSymbol
 {
 public:
     FundamentalTypeCopyCtor(Module* module_, SymbolId id_);
-    FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type, Context* context);
+    FundamentalTypeCopyCtor(Module* module_, SymbolId id_, TypeSymbol* type_, Context* context);
+    void Write(Writer& writer) override;
+    void Read(Reader& reader) override;
+    void Resolve(Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
+    void Evaluate(Context* context) override;
+private:
+    TypeSymbol* type;
+    SymbolId typeId;
 };
 
 class FundamentalTypeMoveCtor : public FunctionSymbol
@@ -527,5 +537,6 @@ private:
 };
 
 void AddFundamentalTypeOperationsToSymbolTable(Context* context);
+
 
 } // namespace otava::symbols

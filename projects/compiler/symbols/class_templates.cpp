@@ -70,15 +70,15 @@ ClassTypeSymbol* ClassTemplateSpecializationSymbol::ClassTemplate(Context* conte
         classTemplate = GetModule()->GetSymbolTable()->GetClassTypeSymbol(classTemplateId, context);
         if (!classTemplate)
         {
-            ThrowException("class template id " + std::to_string(ToUnderlying(classTemplateId)) + " not found", GetFullSpan(), context);
+            ThrowException("class template id " + std::to_string(ToUnderlying(classTemplateId)) + " not found: note: specialization is '" + Name() + "'", GetFullSpan(), context);
         }
     }
     return classTemplate;
 }
 
-std::string ClassTemplateSpecializationSymbol::SimpleName(Context* context)
-{
-    return ClassTemplate(context)->SimpleName(context);
+std::string ClassTemplateSpecializationSymbol::SimpleName(Context* context) 
+{ 
+    return ClassTemplate(context)->SimpleName(context); 
 }
 
 void ClassTemplateSpecializationSymbol::SetClassTemplate(ClassTypeSymbol* classTemplate_, Context* context) noexcept
@@ -86,7 +86,7 @@ void ClassTemplateSpecializationSymbol::SetClassTemplate(ClassTypeSymbol* classT
     classTemplate = classTemplate_;
     if (classTemplate->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(classTemplate->Id(), classTemplate->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(classTemplate->Id(), classTemplate->GetModule());
     }
 }
 
@@ -183,9 +183,9 @@ const std::vector<Symbol*>& ClassTemplateSpecializationSymbol::TemplateArguments
 void ClassTemplateSpecializationSymbol::AddTemplateArgument(Symbol* templateArgument, Context* context)
 {
     templateArguments.push_back(templateArgument);
-    if (templateArgument->GetModule() != context->GetModule())
+    if (templateArgument->GetModule() != GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(templateArgument->Id(), templateArgument->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(templateArgument->Id(), templateArgument->GetModule());
     }
 }
 

@@ -48,10 +48,17 @@ std::string SymbolKindStr(SymbolKind kind)
     case SymbolKind::variableGroupSymbol: return "variableGroup";
     case SymbolKind::aliasGroupSymbol: return "aliasGroup";
     case SymbolKind::boolValueSymbol: return "boolValue";
-    case SymbolKind::integerValueSymbol: return "integerValue";
-    case SymbolKind::floatingValueSymbol: return "floatingValue";
+    case SymbolKind::byteValueSymbol: return "byteValue";
+    case SymbolKind::sbyteValueSymbol: return "sbyteValue";
+    case SymbolKind::shortValueSymbol: return "shortValue";
+    case SymbolKind::ushortValueSymbol: return "ushortValue";
+    case SymbolKind::intValueSymbol: return "intValue";
+    case SymbolKind::uintValueSymbol: return "uintValue";
+    case SymbolKind::longValueSymbol: return "longValue";
+    case SymbolKind::ulongValueSymbol: return "ulongValue";
+    case SymbolKind::floatValueSymbol: return "floatValue";
+    case SymbolKind::doubleValueSymbol: return "doubleValue";
     case SymbolKind::stringValueSymbol: return "stringValue";
-    case SymbolKind::charValueSymbol: return "charValue";
     case SymbolKind::nullPtrTypeSymbol: return "nullPtrType";
     case SymbolKind::arrayValueSymbol: return "arrayValue";
     case SymbolKind::structureValueSymbol: return "structureValue";
@@ -123,6 +130,7 @@ std::string SymbolKindStr(SymbolKind kind)
     case SymbolKind::fundamentalTypeIntToFloat: return "fundamentalTypeIntToFloat";
     case SymbolKind::fundamentalTypeFloatToInt: return "fundamentalTypeFloatToInt";
     case SymbolKind::fundamentalTypeBoolToInt: return "fundamentalTypeBoolToInt";
+    case SymbolKind::fundamentalTypeBoolToFloat: return "fundamentalTypeBoolToFloat";
     case SymbolKind::fundamentalTypeDefaultCtor: return "fundamentalTypeDefaultCtor";
     case SymbolKind::fundamentalTypeCopyCtor: return "fundamentalTypeCopyCtor";
     case SymbolKind::fundamentalTypeCopyCtorLiteral: return "fundamentalTypeCopyCtorLiteral";
@@ -191,23 +199,23 @@ Symbol::~Symbol()
 }
 
 Module* Symbol::GetModule() const noexcept
-{ 
-    return module; 
+{
+    return module;
 }
 
 std::string Symbol::SimpleName(Context* context)
-{ 
-    return Name(); 
+{
+    return Name();
 }
 
 bool Symbol::IsExportSymbol(Context* context) const noexcept
-{ 
-    return IsProject(); 
+{
+    return IsProject();
 }
 
 Symbol* Symbol::GetSingleSymbol(Context* context)
-{ 
-    return this; 
+{
+    return this;
 }
 
 void* Symbol::IrObject(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
@@ -428,6 +436,7 @@ bool Symbol::IsFunctionSymbol() const noexcept
     case SymbolKind::fundamentalTypeIntToFloat:
     case SymbolKind::fundamentalTypeFloatToInt:
     case SymbolKind::fundamentalTypeBoolToInt:
+    case SymbolKind::fundamentalTypeBoolToFloat:
     case SymbolKind::fundamentalTypeBoolean:
     case SymbolKind::fundamentalTypeDefaultCtor:
     case SymbolKind::fundamentalTypeCopyCtor:
@@ -461,11 +470,18 @@ bool Symbol::IsValueSymbol() const noexcept
     switch (kind)
     {
     case SymbolKind::boolValueSymbol:
-    case SymbolKind::integerValueSymbol:
-    case SymbolKind::floatingValueSymbol:
+    case SymbolKind::byteValueSymbol:
+    case SymbolKind::sbyteValueSymbol:
+    case SymbolKind::shortValueSymbol:
+    case SymbolKind::ushortValueSymbol:
+    case SymbolKind::intValueSymbol:
+    case SymbolKind::uintValueSymbol:
+    case SymbolKind::longValueSymbol:
+    case SymbolKind::ulongValueSymbol:
+    case SymbolKind::floatValueSymbol:
+    case SymbolKind::doubleValueSymbol:
     case SymbolKind::nullPtrValueSymbol:
     case SymbolKind::stringValueSymbol:
-    case SymbolKind::charValueSymbol:
     case SymbolKind::symbolValueSymbol:
     case SymbolKind::invokeValueSymbol:
     case SymbolKind::arrayValueSymbol:
@@ -613,6 +629,7 @@ bool Symbol::CanInstall() const noexcept
     case SymbolKind::fundamentalTypeIntToFloat:
     case SymbolKind::fundamentalTypeFloatToInt:
     case SymbolKind::fundamentalTypeBoolToInt:
+    case SymbolKind::fundamentalTypeBoolToFloat:
     case SymbolKind::fundamentalTypeBoolean:
     case SymbolKind::fundamentalTypeDefaultCtor:
     case SymbolKind::fundamentalTypeCopyCtor:

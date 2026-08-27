@@ -7,6 +7,7 @@ module otava.symbols.template_param_group_symbol;
 
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.symbol_table;
 import otava.symbols.templates;
 
 namespace otava::symbols {

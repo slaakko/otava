@@ -9,6 +9,7 @@ import otava.symbols.writer;
 import otava.symbols.reader;
 import otava.symbols.exception;
 import otava.symbols.context;
+import otava.symbols.concrete_value;
 import util.binary_stream_writer;
 import util.utility;
 import util.path;
@@ -136,7 +137,7 @@ void ModuleHeader::Read(Reader& reader)
     reader.PushCurrentReader(reader.Start(), Length(sizeof(Length)));
     length = Length(reader.CurrentReader().ReadUInt());
     reader.PopCurrentReader();
-    reader.PushCurrentReader(util::Advance(reader.Start(), sizeof(length)), length);
+    reader.PushCurrentReader(util::Advance(reader.Start(), std::uint32_t(sizeof(length))), length);
     nameOffset = StringOffset(reader.CurrentReader().ReadUInt());
     id = ModuleId(reader.CurrentReader().ReadUInt());
     Cardinality exportedModuleNamesCount = Cardinality(reader.CurrentReader().ReadUInt());
@@ -308,7 +309,7 @@ void Module::SetFilePath(const std::string& filePath_)
     filePath = filePath_;
 }
 
-std::string Module::InterfaceUnitName()
+std::string Module::InterfaceUnitName() 
 {
     if (kind == ModuleKind::implementationModule)
     {
@@ -320,6 +321,16 @@ std::string Module::InterfaceUnitName()
 void Module::SetInterfaceUnitName(const std::string& interfaceUnitName)
 {
     interfaceUnitNameOffset = stringTable.AddString(interfaceUnitName);
+}
+
+Module* Module::InterfaceModule(Context* context) 
+{
+    std::string interfaceUnitName = InterfaceUnitName();
+    if (!interfaceUnitName.empty())
+    {
+        return context->GetModule(interfaceUnitName);
+    }
+    return nullptr;
 }
 
 void Module::SetId(ModuleId id_) noexcept

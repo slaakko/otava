@@ -116,10 +116,12 @@ public:
     EnumTypeCopyCtor(Module* module_, SymbolId id_, EnumeratedTypeSymbol* enumType_, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    void Resolve(Context* context);
     void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     bool IsCtorAssignmentOrArrow() const noexcept override { return true; }
     ParameterSymbol* ThisParam(Context* context) const override { return nullptr; }
+    void Evaluate(Context* context) override;
 private:
     EnumeratedTypeSymbol* enumType;
     SymbolId enumTypeId;

@@ -22,7 +22,6 @@ class FunctionGroupSymbol;
 class ConceptGroupSymbol;
 class VariableGroupSymbol;
 class AliasGroupSymbol;
-class EnumGroupSymbol;
 class TemplateParamGroupSymbol;
 class UsingDeclarationScope;
 class UsingDirectiveScope;
@@ -39,9 +38,9 @@ enum class ScopeKind : std::uint8_t
 
 constexpr std::uint8_t ToUnderlying(ScopeKind scopeKind) { return std::uint8_t(scopeKind); }
 
-enum class SymbolOffset : std::uint32_t {};
+enum class SymbolOffset : std::uint64_t {};
 
-constexpr std::uint32_t ToUnderlying(SymbolOffset symbolOffset) { return std::uint32_t(symbolOffset); }
+constexpr std::uint64_t ToUnderlying(SymbolOffset symbolOffset) { return std::uint64_t(symbolOffset); }
 
 enum class SymbolGroupKind : std::uint8_t
 {
@@ -58,25 +57,25 @@ enum class SymbolGroupKind : std::uint8_t
 
 constexpr std::uint8_t ToUnderlying(SymbolGroupKind symbolGroupKind) { return std::uint8_t(symbolGroupKind); }
 
-constexpr std::uint32_t symbolOffsetShift = 32 - 7;
+constexpr std::uint64_t symbolOffsetShift = 64 - 8;
 
-constexpr std::uint32_t symbolOffsetMask = 0xFFFFFFFFu >> 7;
+constexpr std::uint64_t stringOffsetMask = 0xFFFFFFFFFFFFFFFFu >> 8;
 
-constexpr std::uint8_t symbolGroupMask = 0x7Fu;
+constexpr std::uint64_t symbolGroupMask = 0x00000000000000FFu;
 
 constexpr SymbolOffset MakeSymbolOffset(SymbolGroupKind symbolGroupKind, StringOffset stringOffset)
 {
-    return SymbolOffset((std::uint32_t(ToUnderlying(symbolGroupKind)) << symbolOffsetShift) | (ToUnderlying(stringOffset) & symbolOffsetMask));
+    return SymbolOffset((std::uint64_t(ToUnderlying(symbolGroupKind)) << symbolOffsetShift) | (std::uint64_t(ToUnderlying(stringOffset)) & stringOffsetMask));
 }
 
 constexpr SymbolGroupKind GetSymbolGroupKind(SymbolOffset symbolOffset)
 {
-    return SymbolGroupKind((ToUnderlying(symbolOffset) >> symbolOffsetShift) & symbolGroupMask);
+    return SymbolGroupKind(std::uint8_t((ToUnderlying(symbolOffset) >> symbolOffsetShift) & symbolGroupMask));
 }
 
 constexpr StringOffset GetStringOffset(SymbolOffset symbolOffset)
 {
-    return StringOffset(ToUnderlying(symbolOffset) & symbolOffsetMask);
+    return StringOffset(std::uint32_t(ToUnderlying(symbolOffset) & stringOffsetMask));
 }
 
 std::string SymbolGroupStr(SymbolGroupKind group);
@@ -152,7 +151,6 @@ public:
     virtual FunctionGroupSymbol* GetOrInsertFunctionGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual VariableGroupSymbol* GetOrInsertVariableGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual AliasGroupSymbol* GetOrInsertAliasGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
-    //virtual EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context);
     void Read();
     const std::unordered_map<SymbolOffset, SymbolId>& SymbolIdMap() const noexcept;
@@ -205,7 +203,6 @@ public:
     FunctionGroupSymbol* GetOrInsertFunctionGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     VariableGroupSymbol* GetOrInsertVariableGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     AliasGroupSymbol* GetOrInsertAliasGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    //EnumGroupSymbol* GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     TemplateParamGroupSymbol* GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     bool HasParentScope(const Scope* parentScope) const noexcept override;
     void Write(Writer& writer) override;

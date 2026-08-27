@@ -11,10 +11,6 @@ import otava.symbols.symbol;
 
 export namespace otava::symbols {
 
-class Module;
-class Reader;
-class Writer;
-
 class SymbolIndexMap
 {
 public:
@@ -30,7 +26,11 @@ public:
     void Import(const SymbolIndexMap& that);
 private:
     Module* module;
+#ifdef OTAVA
     std::vector<Index> indexMap;
+#else
+    Index indexMap[ToUnderlying(SymbolKind::max)];
+#endif
 };
 
 } // namespace otava::symbols

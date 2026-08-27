@@ -53,7 +53,7 @@ ArrayTypeSymbol::ArrayTypeSymbol(Module* module_, SymbolId id_, TypeSymbol* elem
     GetScope()->SetKind(ScopeKind::arrayScope);
     if (elementType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(elementType->Id(), elementType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(elementType->Id(), elementType->GetModule());
     }
 }
 

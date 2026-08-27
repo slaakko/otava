@@ -15,7 +15,7 @@ import util.utility;
 
 namespace otava::symbols {
 
-ConversionTable::ConversionTable(Module* module_) : module(module_), read(false)
+ConversionTable::ConversionTable(Module* module_) : module(module_), tableRead(false)
 {
 }
 
@@ -59,8 +59,8 @@ void ConversionTable::Write(Writer& writer)
 
 void ConversionTable::Read()
 {
-    if (read) return;
-    read = true;
+    if (tableRead) return;
+    tableRead = true;
     Reader reader(module->GetFileMapping());
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetConversionTableOffset())), module->GetConversionTableLength());
     Read(reader);

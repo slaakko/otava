@@ -424,7 +424,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         moduleMapper.AddProjectId(reference->Name(), reference->GetProjectId());
     }
     project->SetProjectId(moduleMapper.MakeProjectId(project->Name()));
-    //std::cout << project->Name() << " " << util::ToHexString(otava::symbols::ToUnderlying(project->GetProjectId())) << "\n";
     std::string moduleDir = otava::symbols::MakeModuleDirPath(project->Root(), config, optLevel, configurations);
     project->WriteProjectId(moduleDir);
     project->LoadModules(moduleMapper, config, optLevel, configurations, &moduleContext);

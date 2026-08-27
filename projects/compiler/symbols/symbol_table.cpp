@@ -66,7 +66,11 @@ Section* SymbolTable::GetSection(Symbol* forSymbol) const noexcept
 
 ConversionTable* SymbolTable::GetConversionTable() const noexcept
 {
+#ifdef OTAVA
     return &conversionTable;
+#else
+    return &(const_cast<SymbolTable*>(this)->conversionTable);
+#endif
 }
 
 NamespaceSymbol* SymbolTable::GetGlobalNs(Context* context)
@@ -170,7 +174,7 @@ void SymbolTable::EndScopeGeneric(Context* context)
 void SymbolTable::PushTopScopeIndex()
 {
     topScopeIndexStack.push(topScopeIndex);
-    topScopeIndex = scopeStack.size() - 1;
+    topScopeIndex = int(scopeStack.size()) - 1;
 }
 
 void SymbolTable::PopTopScopeIndex()
@@ -214,7 +218,7 @@ Symbol* SymbolTable::LookupInScopeStack(const std::string& name, SymbolGroupKind
     Context* context, LookupFlags flags)
 {
     if (topScopeIndex == -1) return nullptr;
-    for (int i = scopeStack.size() - 1; i >= topScopeIndex; --i)
+    for (int i = int(scopeStack.size()) - 1; i >= topScopeIndex; --i)
     {
         Scope* scope = scopeStack[i];
         Symbol* symbol = scope->Lookup(name, symbolGroupKind, ScopeLookup::allScopes, fullSpan, context, flags);
@@ -584,14 +588,6 @@ void SymbolTable::AddFriend(const std::string& name, otava::ast::Node* node, Con
 void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context)
 {
     soul::ast::FullSpan fullSpan = node->GetFullSpan();
-/*
-    EnumGroupSymbol* enumGroup = currentScope->GroupScope(context)->GetOrInsertEnumGroup(name, fullSpan, context);
-    EnumeratedTypeSymbol* enumType = enumGroup->GetEnumType(context);
-    if (enumType)
-    {
-        ThrowException("enumerated type '" + name + "' not unique", fullSpan, context);
-    }
-*/
     EnumeratedTypeSymbol* enumTypeSymbol = new EnumeratedTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::enumTypeSymbol), name);
     enumTypeSymbol->SetAccess(CurrentAccess());
     enumTypeSymbol->SetEnumTypeKind(kind);
@@ -599,7 +595,6 @@ void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind
     enumTypeSymbol->SetFullSpan(fullSpan);
     currentScope->SymbolScope(context)->AddSymbol(enumTypeSymbol, fullSpan, context);
     MapNode(node, enumTypeSymbol, context);
-    //enumGroup->SetEnumType(enumTypeSymbol);
     BeginScope(enumTypeSymbol->GetScope(), context);
 }
 
@@ -934,6 +929,7 @@ void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* conte
     CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(), compoundTypeSymbol->GetDerivations());
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         auto it = importedModule->GetSymbolTable()->irCompoundTypeMap.find(irKey);
         if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
         {
@@ -1038,6 +1034,7 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         aliasTypeTemplateSpecialization = importedModule->GetSymbolTable()->GetAliasTypeTemplateSpecialization(aliasTypeTemplate, templateArguments, context);
         if (aliasTypeTemplateSpecialization)
         {
@@ -1096,6 +1093,7 @@ void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Con
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         auto it = importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.find(irKey);
         if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
         {
@@ -1149,6 +1147,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         classTemplateSpecialization = importedModule->GetSymbolTable()->GetClassTemplateSpecialization(classTemplate, templateArguments, context);
         if (classTemplateSpecialization)
         {
@@ -1200,6 +1199,7 @@ ExplicitInstantiationSymbol* SymbolTable::GetExplicitInstantiation(const Special
     {
         for (Module* importedModule : GetModule()->ImportExportModules(context))
         {
+            context->AddModule(importedModule);
             ExplicitInstantiationSymbol* explicitInstantiationSymbol = importedModule->GetSymbolTable()->GetExplicitInstantiation(key, context, level - 1);
             if (explicitInstantiationSymbol)
             {
@@ -1271,6 +1271,7 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         functionTypeSymbol = importedModule->GetSymbolTable()->GetFunctionTypeSymbol(key, context);
         if (functionTypeSymbol)
         {
@@ -1377,6 +1378,7 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, std::int64_
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
+        context->AddModule(importedModule);
         arrayTypeSymbol = importedModule->GetSymbolTable()->GetArrayType(elementType, size, context);
         if (arrayTypeSymbol)
         {
@@ -1830,9 +1832,10 @@ std::int64_t SymbolTable::GetArgumentId(int index)
     return argumentIds[index % maxArguments];
 }
 
-void SymbolTable::AddImportedSymbol(SymbolId symbolId, ModuleId moduleId)
+void SymbolTable::AddImportedSymbol(SymbolId symbolId, Module* module)
 {
-    addedImportedSymbolMap[symbolId] = moduleId;
+    addedImportedSymbolMap[symbolId] = module->Id();
+    GetModule()->AddImportedModule(module);
 }
 
 void SymbolTable::ReadSymbolIdVector()

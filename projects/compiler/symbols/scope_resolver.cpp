@@ -238,6 +238,7 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
     }
     for (Module* importedModule : importedModules)
     {
+        context->AddModule(importedModule);
         ModulePtr modulePtr(importedModule, context);
         Scope* containerScope = EnterScope(importedModule->GetSymbolTable()->CurrentScope(), containerNames, nnsNode->GetFullSpan(), context);
         ScopePtr scopePtr(containerScope, context);

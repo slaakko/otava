@@ -90,8 +90,9 @@ enum class SymbolKind : std::uint8_t
 {
     null,
     classGroupSymbol, conceptGroupSymbol, functionGroupSymbol, variableGroupSymbol, aliasGroupSymbol, enumGroupSymbol,
-    boolValueSymbol, integerValueSymbol, floatingValueSymbol, stringValueSymbol, charValueSymbol, nullPtrTypeSymbol, arrayValueSymbol, 
-    structureValueSymbol,
+    boolValueSymbol, byteValueSymbol, sbyteValueSymbol, shortValueSymbol, ushortValueSymbol, intValueSymbol, uintValueSymbol, longValueSymbol, ulongValueSymbol,
+    floatValueSymbol, doubleValueSymbol, 
+    stringValueSymbol, nullPtrTypeSymbol, arrayValueSymbol, structureValueSymbol,
     aliasTypeSymbol, arrayTypeSymbol, blockSymbol, classTypeSymbol, compoundTypeSymbol,
     conceptSymbol, enumTypeSymbol, enumConstantSymbol, functionSymbol, functionTypeSymbol, functionDefinitionSymbol, explicitlyInstantiatedFunctionDefinitionSymbol,
     fundamentalTypeSymbol, namespaceSymbol, templateDeclarationSymbol, typenameConstraintSymbol, explicitInstantiationSymbol,
@@ -106,7 +107,7 @@ enum class SymbolKind : std::uint8_t
     fundamentalTypeModAssign, fundamentalTypeAndAssign, fundamentalTypeOrAssign, fundamentalTypeXorAssign, fundamentalTypeShlAssign, fundamentalTypeShrAssign,
     fundamentalTypeEqual, fundamentalTypeLess, fundamentalTypeBoolean,
     fundamentalTypeSignExtension, fundamentalTypeZeroExtension, fundamentalTypeFloatingPointExtension,
-    fundamentalTypeTruncate, fundamentalTypeBitcast, fundamentalTypeIntToFloat, fundamentalTypeFloatToInt, fundamentalTypeBoolToInt,
+    fundamentalTypeTruncate, fundamentalTypeBitcast, fundamentalTypeIntToFloat, fundamentalTypeFloatToInt, fundamentalTypeBoolToInt, fundamentalTypeBoolToFloat,
     fundamentalTypeDefaultCtor, fundamentalTypeCopyCtor, fundamentalTypeCopyCtorLiteral, fundamentalTypeMoveCtor, fundamentalTypeCopyAssignment,
     fundamentalTypeMoveAssignment,
     enumTypeDefaultCtor, enumTypeCopyCtor, enumTypeMoveCtor, enumTypeCopyAssignment, enumTypeMoveAssignment, enumTypeEqual, enumTypeLess,
@@ -132,22 +133,23 @@ class ClassTypeSymbol;
 class NamespaceSymbol;
 class TypeSymbol;
 
-std::uint64_t projectIdShift = 32;
-std::uint64_t symbolIdShift = 32 - 7;
-std::uint64_t symbolIndexMask = 0xFFFFFFFFu >> 7;
-std::uint8_t symbolKindMask = 0x7Fu;
+constexpr std::uint64_t projectIdShift = 32;
+constexpr std::uint64_t symbolIdShift = 32 - 8;
+constexpr std::uint64_t symbolIdMask = 0x00000000FFFFFFFFull;
+constexpr std::uint64_t symbolIndexMask = 0x00000000FFFFFFFFull >> 8;
+constexpr std::uint8_t symbolKindMask = 0xFFu;
 
 constexpr SymbolId MakeSymbolId(ProjectId projectId, SymbolKind kind, Index index)
 {
     return SymbolId(
         (std::uint64_t(ToUnderlying(projectId)) << projectIdShift) |
         (std::uint64_t(ToUnderlying(kind)) << symbolIdShift) |
-        (ToUnderlying(index) & symbolIndexMask));
+        (std::uint64_t(ToUnderlying(index)) & symbolIndexMask));
 }
 
 constexpr SymbolKind GetSymbolKind(SymbolId symbolId)
 {
-    return SymbolKind((ToUnderlying(symbolId) >> symbolIdShift) & symbolKindMask);
+    return SymbolKind(std::uint8_t((ToUnderlying(symbolId) & symbolIdMask) >> symbolIdShift) & symbolKindMask);
 }
 
 inline bool IsForwardClassDeclarationSymbol(SymbolId id) noexcept { return GetSymbolKind(id) == SymbolKind::forwardClassDeclarationSymbol; }
@@ -163,17 +165,17 @@ constexpr std::uint8_t ToUnderlying(SymbolFlags flags) { return std::uint8_t(fla
 
 constexpr SymbolFlags operator|(SymbolFlags left, SymbolFlags right) noexcept
 {
-    return SymbolFlags(std::uint8_t(left) | std::uint8_t(right));
+    return SymbolFlags(ToUnderlying(left) | ToUnderlying(right));
 }
 
 constexpr SymbolFlags operator&(SymbolFlags left, SymbolFlags right) noexcept
 {
-    return SymbolFlags(std::uint8_t(left) & std::uint8_t(right));
+    return SymbolFlags(ToUnderlying(left) & ToUnderlying(right));
 }
 
 constexpr SymbolFlags operator~(SymbolFlags flags) noexcept
 {
-    return SymbolFlags(~std::uint8_t(flags));
+    return SymbolFlags(~ToUnderlying(flags));
 }
 
 std::string SymbolKindStr(SymbolKind kind);
@@ -219,10 +221,7 @@ public:
     inline bool IsArrayTypeSymbol() const noexcept { return kind == SymbolKind::arrayTypeSymbol; }
     inline bool IsCompoundTypeSymbol() const noexcept { return kind == SymbolKind::compoundTypeSymbol; }
     inline bool IsExplicitInstantiationSymbol() const noexcept { return kind == SymbolKind::explicitInstantiationSymbol; }
-    inline bool IsIntegerValueSymbol() const noexcept { return kind == SymbolKind::integerValueSymbol; }
-    inline bool IsFloatingValueSymbol() const noexcept { return kind == SymbolKind::floatingValueSymbol; }
     inline bool IsStringValueSymbol() const noexcept { return kind == SymbolKind::stringValueSymbol; }
-    inline bool IsCharValueSymbol() const noexcept { return kind == SymbolKind::charValueSymbol; }
     inline bool IsSymbolValueSymbol() const noexcept { return kind == SymbolKind::symbolValueSymbol; }
     inline bool IsAliasTypeSymbol() const noexcept { return kind == SymbolKind::aliasTypeSymbol || IsAliasTypeTemplateSpecializationSymbol(); }
     inline bool IsAliasGroupSymbol() const noexcept { return kind == SymbolKind::aliasGroupSymbol; }

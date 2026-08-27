@@ -10,12 +10,14 @@ import otava.symbols.emitter;
 import otava.symbols.evaluator;
 import otava.symbols.exception;
 import otava.symbols.function_kind;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.fundamental_type_operation;
 import otava.symbols.modules;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.type_resolver;
+import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.symbols.writer;
 import otava.symbols.reader;
@@ -129,7 +131,9 @@ Value* EnumeratedTypeSymbol::DefaultValue(Context* context)
     {
         ut = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::intType, context);
     }
-    return ut->DefaultValue(context);
+    Value* value = ut->DirectType(context)->FinalType(GetFullSpan(), context)->DefaultValue(context);
+    value->SetInterfaceType(this);
+    return value;
 }
 
 ForwardEnumDeclarationSymbol::ForwardEnumDeclarationSymbol(Module* module_, SymbolId id_) : 
@@ -178,6 +182,7 @@ Value* EnumConstantSymbol::GetValue(Context* context)
 {
     if (value)
     {
+        value->SetInterfaceType(GetEnumType(context));
         return value;
     }
     if (IsReadOnly() && valueId != zeroSymbolId)
@@ -188,6 +193,7 @@ Value* EnumConstantSymbol::GetValue(Context* context)
             ThrowException("enumeration constant value id " + std::to_string(ToUnderlying(valueId)) + " not found");
         }
     }
+    value->SetInterfaceType(GetEnumType(context));
     return value;
 }
 
@@ -310,6 +316,18 @@ void EnumTypeCopyCtor::Read(Reader& reader)
     enumTypeId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
+void EnumTypeCopyCtor::Resolve(Context* context)
+{
+    if (IsReadOnly() && enumTypeId != zeroSymbolId && !enumType)
+    {
+        enumType = GetModule()->GetSymbolTable()->GetEnumeratedTypeSymbol(enumTypeId, context);
+        if (!enumType)
+        {
+            ThrowException("enumerated type id " + std::to_string(ToUnderlying(enumTypeId)) + " not found", GetFullSpan(), context);
+        }
+    }
+}
+
 void EnumTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
     const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
 {
@@ -320,6 +338,15 @@ void EnumTypeCopyCtor::GenerateCode(Emitter& emitter, std::vector<BoundExpressio
         storeFlags = storeFlags | OperationFlags::deref;
     }
     args[0]->Store(emitter, storeFlags, fullSpan, context);
+}
+
+void EnumTypeCopyCtor::Evaluate(Context* context)
+{
+    Value* value = context->GetEvaluationContext()->GetEvaluationStack()->Pop();
+    Value* clone = value->Clone(context);
+    Resolve(context);
+    clone->SetInterfaceType(enumType);
+    context->GetEvaluationContext()->GetEvaluationStack()->Push(clone);
 }
 
 EnumTypeMoveCtor::EnumTypeMoveCtor(Module* module_, SymbolId id_) :
@@ -574,7 +601,7 @@ private:
     TypeSymbol* underlyingType;
     Scope* scope;
     Value* value;
-    std::int64_t prevValue;
+    std::uint64_t prevValue;
     bool first;
     bool createEnumeratedType;
     bool createEnumerators;
@@ -651,18 +678,21 @@ void EnumCreator::Visit(otava::ast::EnumeratorDefinitionNode& node)
     {
         valueType = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::intType, context);
     }
+    else
+    {
+        valueType = valueType->DirectType(context)->FinalType(node.GetFullSpan(), context);
+    }
     if (node.GetValue())
     {
         Value* val = Evaluate(node.GetValue(), context);
         if (val->IsIntegerValue())
         {
-            IntegerValue* intVal = static_cast<IntegerValue*>(val);
-            value = context->GetEvaluationContext()->GetIntegerValue(intVal->GetValue(), std::to_string(intVal->GetValue()), valueType, context);
+            value = context->GetEvaluationContext()->GetIntegerValue(val->GetIntegerValue(), valueType, context);
+            value->SetInterfaceType(enumType);
         }
         if (value && value->IsIntegerValue())
         {
-            IntegerValue* integerValue = static_cast<IntegerValue*>(value);
-            prevValue = integerValue->GetValue();
+            prevValue = value->GetIntegerValue();
         }
         if (first)
         {
@@ -673,13 +703,15 @@ void EnumCreator::Visit(otava::ast::EnumeratorDefinitionNode& node)
     {
         if (first)
         {
-            value = context->GetEvaluationContext()->GetIntegerValue(0, std::to_string(0), valueType, context);
+            value = context->GetEvaluationContext()->GetIntegerValue(0, valueType, context);
+            value->SetInterfaceType(enumType);
             prevValue = 0;
             first = false;
         }
         else
         {
-            value = context->GetEvaluationContext()->GetIntegerValue(prevValue + 1, std::to_string(prevValue + 1), valueType, context);
+            value = context->GetEvaluationContext()->GetIntegerValue(prevValue + 1, valueType, context);
+            value->SetInterfaceType(enumType);
             ++prevValue;
         }
     }

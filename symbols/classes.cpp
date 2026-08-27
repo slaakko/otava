@@ -13,6 +13,7 @@ import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
@@ -342,10 +343,10 @@ void ClassTypeSymbol::MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Cont
     {
         if (IsPolymorphic(context))
         {
-            SetVPtrIndex(objectLayout.size());
+            SetVPtrIndex(int(objectLayout.size()));
             objectLayout.push_back(
                 context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::voidType, context)->AddPointer(context));
-            SetDeltaIndex(objectLayout.size());
+            SetDeltaIndex(int(objectLayout.size()));
             objectLayout.push_back(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::longLongIntType, context));
         }
         else if (memberVariables.empty())
@@ -752,6 +753,7 @@ std::string ClassTypeSymbol::GroupName(Context* context)
     {
         ThrowException("group name of class '" + FullName(context) + "' not resolved", GetFullSpan(), context);
     }
+    return std::string();
 }
 
 otava::intermediate::Value* ClassTypeSymbol::GetVTabVariable(Emitter& emitter, Context* context)
@@ -827,7 +829,7 @@ void ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
         }
         else
         {
-            memberVariable->SetIndex(memberVariables.size());
+            memberVariable->SetIndex(int(memberVariables.size()));
             memberVariables.push_back(memberVariable);
         }
     }

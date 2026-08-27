@@ -9,10 +9,12 @@ import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.templates;
 import otava.symbols.type_resolver;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;
+import otava.symbols.symbol_table;
 import otava.symbols.writer;
 import otava.symbols.reader;
 import otava.ast.node;
@@ -87,7 +89,7 @@ const std::vector<Symbol*>& AliasTypeTemplateSpecializationSymbol::TemplateArgum
     return templateArguments;
 }
 
-void TryInstantiate(Instantiator& instantiator, AliasTypeSymbol* aliasTypeSymbol, otava::ast::Node* aliasTypeNode,
+void TryInstantiate(Instantiator& instantiator, AliasTypeSymbol* aliasTypeSymbol, otava::ast::Node* aliasTypeNode, 
     AliasTypeTemplateSpecializationSymbol* specialization, Context* context)
 {
     FlagSetter flagSetter(context, ContextFlags::instantiateAliasTypeTemplate);

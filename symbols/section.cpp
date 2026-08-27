@@ -99,6 +99,7 @@ SectionKind ToSectionKind(SymbolKind symbolKind)
     case SymbolKind::fundamentalTypeIntToFloat:
     case SymbolKind::fundamentalTypeFloatToInt:
     case SymbolKind::fundamentalTypeBoolToInt:
+    case SymbolKind::fundamentalTypeBoolToFloat:
     case SymbolKind::fundamentalTypeDefaultCtor:
     case SymbolKind::fundamentalTypeCopyCtor:
     case SymbolKind::fundamentalTypeCopyCtorLiteral:
@@ -139,10 +140,17 @@ SectionKind ToSectionKind(SymbolKind symbolKind)
     }
     case SymbolKind::variableGroupSymbol:
     case SymbolKind::boolValueSymbol:
-    case SymbolKind::integerValueSymbol:
-    case SymbolKind::floatingValueSymbol:
+    case SymbolKind::byteValueSymbol:
+    case SymbolKind::sbyteValueSymbol:
+    case SymbolKind::shortValueSymbol:
+    case SymbolKind::ushortValueSymbol:
+    case SymbolKind::intValueSymbol:
+    case SymbolKind::uintValueSymbol:
+    case SymbolKind::longValueSymbol:
+    case SymbolKind::ulongValueSymbol:
+    case SymbolKind::floatValueSymbol:
+    case SymbolKind::doubleValueSymbol:
     case SymbolKind::stringValueSymbol:
-    case SymbolKind::charValueSymbol:
     case SymbolKind::arrayValueSymbol:
     case SymbolKind::structureValueSymbol:
     case SymbolKind::enumConstantSymbol:

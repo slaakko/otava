@@ -29,6 +29,7 @@ import otava.symbols.stmt_parser;
 import otava.symbols.statement_binder;
 import otava.symbols.type_symbol;
 import otava.symbols.type_resolver;
+import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
 import otava.ast.identifier;
@@ -1696,7 +1697,7 @@ void CodeGenerator::Visit(otava::symbols::BoundLiteralNode& node)
     SetCurrentLineNumber(node.GetFullSpan());
     if (inLineNumberCode)
     {
-        node.SetValue(context.GetEvaluationContext()->GetIntegerValue(line, std::to_string(line),
+        node.SetValue(context.GetEvaluationContext()->GetIntegerValue(line, 
             context.GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(otava::symbols::FundamentalTypeKind::intType, &context), &context));
     }
     else

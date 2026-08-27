@@ -12,6 +12,7 @@ import otava.symbols.exception;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.statement_binder;

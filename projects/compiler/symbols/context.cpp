@@ -93,19 +93,19 @@ void Context::PopStatementBinder()
     statementBinders.pop_back();
 }
 
-SymbolTable* Context::GetSymbolTable() const noexcept 
-{ 
-    return GetModule()->GetSymbolTable(); 
+SymbolTable* Context::GetSymbolTable() const noexcept
+{
+    return GetModule()->GetSymbolTable();
 }
 
 EvaluationContext* Context::GetEvaluationContext() noexcept
-{
-    return GetModule()->GetEvaluationContext();
+{ 
+    return GetModule()->GetEvaluationContext(); 
 }
 
 SymbolIndexMap* Context::GetSymbolIndexMap() const noexcept
-{ 
-    return moduleMapper->GetSymbolIndexMap(); 
+{
+    return moduleMapper->GetSymbolIndexMap();
 }
 
 StatementBinder* Context::GetParentStatementBinder() const noexcept
@@ -593,6 +593,17 @@ Exception Context::ReleaseException()
 {
     hasException = false;
     return std::move(exception);
+}
+
+void Context::AddModule(Module* module)
+{
+#ifdef DEBUG_MODULES
+    if (std::find(modules.begin(), modules.end(), module) == modules.end())
+    {
+        modules.push_back(module);
+        std::cout << "MODULE:" << module->Name() << ":" << ToUnderlying(module->Id()) << "\n";
+    }
+#endif
 }
 
 } // namespace otava::symbols

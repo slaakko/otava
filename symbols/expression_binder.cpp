@@ -17,11 +17,13 @@ import otava.symbols.declarator;
 import otava.symbols.derivations;
 import otava.symbols.enums;
 import otava.symbols.evaluator;
+import otava.symbols.evaluation_context;
 import otava.symbols.exception;
 import otava.symbols.expr_parser;
 import otava.symbols.expression;
 import otava.symbols.function_group_symbol;
 import otava.symbols.function_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.lookup;
@@ -34,6 +36,7 @@ import otava.symbols.symbol_table;
 import otava.symbols.type_resolver;
 import otava.symbols.type_symbol;
 import otava.symbols.type_compare;
+import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.symbols.variable_group_symbol;
 import otava.intermediate.types;
@@ -768,7 +771,12 @@ void ExpressionBinder::BindBinaryOp(otava::ast::NodeKind op, const soul::ast::Fu
                     Value* value = Evaluate(fnDefNode, context);
                     if (value && value->IsComplete())
                     {
-                        boundExpression.reset(new BoundLiteralNode(value, fullSpan, value->GetType(context)));
+                        BoundLiteralNode* boundLiteralNode = new BoundLiteralNode(value, fullSpan, value->GetType(context));
+                        if (value->GetInterfaceType(context)->IsEnumeratedTypeSymbol())
+                        {
+                            boundLiteralNode->SetInterfaceType(value->GetInterfaceType(context));
+                        }
+                        boundExpression.reset(boundLiteralNode);
                         valueSet = true;
                     }
                 }
@@ -927,7 +935,12 @@ void ExpressionBinder::BindUnaryOp(otava::ast::NodeKind op, const soul::ast::Ful
                     Value* value = Evaluate(fnDefNode, context);
                     if (value && value->IsComplete())
                     {
-                        boundExpression.reset(new BoundLiteralNode(value, node->GetFullSpan(), value->GetType(context)));
+                        BoundLiteralNode* boundLiteralNode = new BoundLiteralNode(value, node->GetFullSpan(), value->GetType(context));
+                        if (value->GetInterfaceType(context)->IsEnumeratedTypeSymbol())
+                        {
+                            boundLiteralNode->SetInterfaceType(value->GetInterfaceType(context));
+                        }
+                        boundExpression.reset(boundLiteralNode);
                         valueSet = true;
                     }
                 }
@@ -2427,14 +2440,6 @@ void ExpressionBinder::Visit(otava::ast::InvokeExprNode& node)
     }
     if (subject)
     {
-        if (!subject->IsBoundTypeNode())
-        {
-            std::string s = GetGroupName(subject.get(), context);
-            if (s == "ToUnderlying")
-            {
-                int x = 0;
-            }
-        }
         TypeSymbol* subjectType = subject->GetType();
         if (subjectType && subjectType->IsFunctionPtrType(context))
         {
@@ -2672,7 +2677,12 @@ void ExpressionBinder::Visit(otava::ast::InvokeExprNode& node)
                 Value* value = Evaluate(&node, context);
                 if (value && value->IsComplete())
                 {
-                    boundExpression.reset(new BoundLiteralNode(value, node.GetFullSpan(), value->GetType(context)));
+                    BoundLiteralNode* boundLiteralNode = new BoundLiteralNode(value, node.GetFullSpan(), value->GetType(context));
+                    if (value->GetInterfaceType(context)->IsEnumeratedTypeSymbol())
+                    {
+                        boundLiteralNode->SetInterfaceType(value->GetInterfaceType(context));
+                    }
+                    boundExpression.reset(boundLiteralNode);
                     valueSet = true;
                 }
             }
@@ -2998,7 +3008,7 @@ void ExpressionBinder::Visit(otava::ast::SizeOfTypeExprNode& node)
         AliasTypeSymbol* aliasType = static_cast<AliasTypeSymbol*>(size_t_type);
         size_t_type = aliasType->ReferredType(context);
     }
-    IntegerValue* integerValue = context->GetEvaluationContext()->GetIntegerValue(size, std::to_string(size), size_t_type, context);
+    Value* integerValue = context->GetEvaluationContext()->GetIntegerValue(size, size_t_type, context);
     boundExpression.reset(new BoundLiteralNode(integerValue, fullSpan, integerValue->GetType(context)));
 }
 
@@ -3023,7 +3033,7 @@ void ExpressionBinder::Visit(otava::ast::SizeOfUnaryExprNode& node)
         AliasTypeSymbol* aliasType = static_cast<AliasTypeSymbol*>(size_t_type);
         size_t_type = aliasType->ReferredType(context);
     }
-    IntegerValue* integerValue = context->GetEvaluationContext()->GetIntegerValue(size, std::to_string(size), size_t_type, context);
+    Value* integerValue = context->GetEvaluationContext()->GetIntegerValue(size, size_t_type, context);
     boundExpression.reset(new BoundLiteralNode(integerValue, fullSpan, integerValue->GetType(context)));
 }
 
@@ -3124,11 +3134,10 @@ void ExpressionBinder::Visit(otava::ast::NewExprNode& node)
     if (!hasPlacement && size->IsBoundLiteralNode())
     {
         BoundLiteralNode* value = static_cast<BoundLiteralNode*>(size);
-        std::int64_t sizeValue = 0;
+        std::uint64_t sizeValue = 0;
         if (value->GetValue()->IsIntegerValue())
         {
-            IntegerValue* integerValue = static_cast<IntegerValue*>(value->GetValue());
-            sizeValue = integerValue->GetValue();
+            sizeValue = value->GetValue()->GetIntegerValue();
         }
         else
         {

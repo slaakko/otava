@@ -79,6 +79,7 @@ public:
     inline void SetSkip() noexcept { SetFlag(FunctionSymbolFlags::skip); }
     inline bool IsCompileTimeFn() const { return GetFlag(FunctionSymbolFlags::compileTimeFn); }
     inline void SetCompileTimeFn() { SetFlag(FunctionSymbolFlags::compileTimeFn); }
+    inline bool HasIncompleteType() const noexcept { return GetFlag(FunctionSymbolFlags::hasIncompleteType); }
     virtual bool IsConst() const noexcept;
     virtual bool IsVirtual() const noexcept;
     virtual bool IsPure() const noexcept;
@@ -132,7 +133,7 @@ public:
     const std::vector<TypeSymbol*>& Specialization(Context* context) const;
     virtual bool IsMemberFunction(Context* context) const noexcept;
     bool IsTemplate(Context* context) const noexcept;
-    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const noexcept override;
+    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     Cardinality TemplateArity(Context* context) const noexcept;
     bool IsMemFnOfClassTemplate(Context* context) const noexcept;
     bool IsExplicitSpecializationDefinitionSymbol(Context* context) const noexcept;
@@ -304,7 +305,7 @@ public:
 
 CompileUnitInitFn* MakeCompileUnitInitFn(Module* module, SymbolId id, const std::string& name);
 
-bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context) noexcept;
+bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context);
 
 void PrintXml(FunctionSymbol* function, Context* context);
 

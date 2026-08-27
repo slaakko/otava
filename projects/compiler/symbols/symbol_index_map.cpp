@@ -21,7 +21,9 @@ SymbolIndexMap::SymbolIndexMap(Module* module_) : module(module_)
 {
     auto start = ToUnderlying(SymbolKind::null);
     auto end = ToUnderlying(SymbolKind::max);
+#ifdef OTAVA
     indexMap.resize(end - start);
+#endif
     for (auto i = start; i < end; ++i)
     {
         indexMap[ToUnderlying(SymbolKind(i))] = Index(1);
@@ -48,7 +50,7 @@ void SymbolIndexMap::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < ToIndex(count); ++i)
     {
-        Index index = Index(reader.CurrentReader().ReadInt());
+        Index index = Index(reader.CurrentReader().ReadUInt());
         indexMap[ToUnderlying(i)] = index;
     }
     reader.PopCurrentReader();

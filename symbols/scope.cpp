@@ -365,14 +365,6 @@ AliasGroupSymbol* Scope::GetOrInsertAliasGroup(const std::string& name, const so
     return nullptr;
 }
 
-/*
-EnumGroupSymbol* Scope::GetOrInsertEnumGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
-{
-    ThrowException("cannot add enum group '" + name + "' to " + ScopeKindStr(kind) + " '" + FullName(context) + "'", fullSpan, context);
-    return nullptr;
-}
-*/
-
 TemplateParamGroupSymbol* Scope::GetOrInsertTemplateParamGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     ThrowException("cannot add template parameter group '" + name + "' to " + ScopeKindStr(kind) + " '" + FullName(context) + "'", fullSpan, context);
@@ -413,7 +405,7 @@ void Scope::Read(Reader& reader)
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < ToIndex(count); ++i)
     {
-        SymbolOffset symbolOffset = SymbolOffset(reader.CurrentReader().ReadUInt());
+        SymbolOffset symbolOffset = SymbolOffset(reader.CurrentReader().ReadULong());
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         symbolIdMap[symbolOffset] = symbolId;
     }

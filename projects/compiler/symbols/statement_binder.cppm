@@ -29,13 +29,14 @@ import otava.ast.templates;
 import otava.ast.translation_unit;
 import otava.ast.type;
 import soul.ast.lexer_pos_pair;
-import soul.ast.span;
 import util.uuid;
+import soul.ast.span;
 import std;
 
 export namespace otava::symbols {
 
 class FunctionDefinitionSymbol;
+class BoundStatementNode;
 class Context;
 class ClassTypeSymbol;
 class TypeSymbol;

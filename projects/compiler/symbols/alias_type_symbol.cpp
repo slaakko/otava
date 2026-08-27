@@ -61,7 +61,7 @@ void AliasTypeSymbol::SetReferredType(TypeSymbol* referredType_) noexcept
     referredType = referredType_; 
     if (referredType && GetModule() != referredType->GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(referredType->Id(), referredType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(referredType->Id(), referredType->GetModule());
     }
 }
 

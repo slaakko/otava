@@ -31,18 +31,18 @@ TypeSymbol::TypeSymbol(Module* module_, SymbolId id_, const std::string& name_) 
 }
 
 TypeSymbol* TypeSymbol::PlainType(Context* context)
-{
-    return this;
+{ 
+    return this; 
 }
 
 TypeSymbol* TypeSymbol::FinalType(const soul::ast::FullSpan& fullSpan, Context* context)
-{
-    return this;
+{ 
+    return this; 
 }
 
 TypeSymbol* TypeSymbol::DirectType(Context* context)
-{
-    return this;
+{ 
+    return this; 
 }
 
 TypeSymbol* TypeSymbol::RemoveDerivations(Derivations derivations, Context* context)
@@ -457,7 +457,9 @@ std::unique_ptr<otava::ast::SimpleDeclarationNode> DeclarationToSimpleDeclaratio
             if (templateArg->IsTypeSymbol())
             {
                 TypeSymbol* templateArgType = static_cast<TypeSymbol*>(templateArg);
-                std::pair<std::unique_ptr<otava::ast::Node>, std::unique_ptr<otava::ast::Node>> nodeDeclarator = TypeToAst(templateArgType, fullSpan, context);
+                templateArgType = templateArgType->DirectType(context)->FinalType(fullSpan, context);
+                std::pair<std::unique_ptr<otava::ast::Node>, std::unique_ptr<otava::ast::Node>> nodeDeclarator = TypeToAst(
+                    templateArgType, fullSpan, context);
                 std::unique_ptr<otava::ast::Node> argNode = std::move(nodeDeclarator.first);
                 std::unique_ptr<otava::ast::Node> argDeclarator = std::move(nodeDeclarator.second);
                 std::unique_ptr<otava::ast::TypeSpecifierSequenceNode> typeSpecifiers;

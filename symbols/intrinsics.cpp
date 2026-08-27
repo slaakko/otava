@@ -8,6 +8,7 @@ module otava.symbols.intrinsics;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.function_kind;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
 

@@ -66,7 +66,11 @@ Section* SymbolTable::GetSection(Symbol* forSymbol) const noexcept
 
 ConversionTable* SymbolTable::GetConversionTable() const noexcept
 { 
+#ifdef OTAVA
+    return &conversionTable;
+#else
     return &(const_cast<SymbolTable*>(this)->conversionTable); 
+#endif
 }
 
 NamespaceSymbol* SymbolTable::GetGlobalNs(Context* context)
@@ -170,7 +174,7 @@ void SymbolTable::EndScopeGeneric(Context* context)
 void SymbolTable::PushTopScopeIndex()
 {
     topScopeIndexStack.push(topScopeIndex);
-    topScopeIndex = scopeStack.size() - 1;
+    topScopeIndex = int(scopeStack.size()) - 1;
 }
 
 void SymbolTable::PopTopScopeIndex()
@@ -214,7 +218,7 @@ Symbol* SymbolTable::LookupInScopeStack(const std::string& name, SymbolGroupKind
     Context* context, LookupFlags flags)
 {
     if (topScopeIndex == -1) return nullptr;
-    for (int i = scopeStack.size() - 1; i >= topScopeIndex; --i)
+    for (int i = int(scopeStack.size()) - 1; i >= topScopeIndex; --i)
     {
         Scope* scope = scopeStack[i];
         Symbol* symbol = scope->Lookup(name, symbolGroupKind, ScopeLookup::allScopes, fullSpan, context, flags);
@@ -584,14 +588,6 @@ void SymbolTable::AddFriend(const std::string& name, otava::ast::Node* node, Con
 void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context)
 {
     soul::ast::FullSpan fullSpan = node->GetFullSpan();
-/*
-    EnumGroupSymbol* enumGroup = currentScope->GroupScope(context)->GetOrInsertEnumGroup(name, fullSpan, context);
-    EnumeratedTypeSymbol* enumType = enumGroup->GetEnumType(context);
-    if (enumType)
-    {
-        ThrowException("enumerated type '" + name + "' not unique", fullSpan, context);
-    }
-*/
     EnumeratedTypeSymbol* enumTypeSymbol = new EnumeratedTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::enumTypeSymbol), name);
     enumTypeSymbol->SetAccess(CurrentAccess());
     enumTypeSymbol->SetEnumTypeKind(kind);
@@ -599,7 +595,6 @@ void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind
     enumTypeSymbol->SetFullSpan(fullSpan);
     currentScope->SymbolScope(context)->AddSymbol(enumTypeSymbol, fullSpan, context);
     MapNode(node, enumTypeSymbol, context);
-    //enumGroup->SetEnumType(enumTypeSymbol);
     BeginScope(enumTypeSymbol->GetScope(), context);
 }
 

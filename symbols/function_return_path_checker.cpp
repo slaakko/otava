@@ -9,6 +9,8 @@ import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.evaluator;
 import otava.symbols.value;
+import otava.symbols.concrete_value;
+import otava.symbols.evaluation_context;
 import otava.ast.expression;
 import otava.ast.statement;
 import otava.ast.visitor;

@@ -150,11 +150,24 @@ Value* VariableSymbol::GetValue(Context* context)
 {
     if (value)
     {
+        TypeSymbol* type = GetType(context);
+        if (type->IsEnumeratedTypeSymbol())
+        {
+            value->SetInterfaceType(type);
+        }
         return value;
     }
     if (IsReadOnly() && valueId != zeroSymbolId)
     {
         GetContent(context);
+    }
+    if (value)
+    {
+        TypeSymbol* type = GetType(context);
+        if (type && type->IsEnumeratedTypeSymbol())
+        {
+            value->SetInterfaceType(type);
+        }
     }
     return value;
 }

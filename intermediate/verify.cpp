@@ -330,7 +330,7 @@ void VerifierVisitor::Visit(JmpInstruction& inst)
         Error("code verification error: jump target basic block " + std::to_string(target) + " not found from function '" + function->Name() + "'", inst.Span(), GetContext());
     }
     inst.SetTargetBasicBlock(targetBasicBlock);
-    if (&inst != basicBlock->LastInstruction())
+    if (basicBlock->LastInstruction() != &inst)
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(basicBlock->Id()), inst.Span(), GetContext());
     }
@@ -361,7 +361,7 @@ void VerifierVisitor::Visit(BranchInstruction& inst)
             inst.Span(), GetContext());
     }
     inst.SetFalseTargetBasicBlock(falseTargetBasicBlock);
-    if (&inst != inst.Parent()->LastInstruction())
+    if (inst.Parent()->LastInstruction() != &inst)
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(inst.Parent()->Id()), inst.Span(), GetContext());
     }
@@ -423,7 +423,7 @@ void VerifierVisitor::Visit(RetInstruction& inst)
         Type* returnValueType = GetContext()->GetTypes().GetVoidType();
         CheckSameType("instruction return type", returnValueType, "function return type", functionType->ReturnType(), inst.Span());
     }
-    if (&inst != inst.Parent()->LastInstruction())
+    if (inst.Parent()->LastInstruction() != &inst)
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(inst.Parent()->Id()), inst.Span(), GetContext());
     }
@@ -435,7 +435,7 @@ void VerifierVisitor::Visit(RetInstruction& inst)
 void VerifierVisitor::Visit(SwitchInstruction& inst)
 {
     CheckIntegerOrBooleanType(inst.Cond()->GetType(), "condition type", inst.Span());
-    if (&inst != inst.Parent()->LastInstruction())
+    if (inst.Parent()->LastInstruction() != &inst)
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(inst.Parent()->Id()), inst.Span(), GetContext());
     }

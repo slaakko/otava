@@ -330,7 +330,7 @@ void FunctionSymbol::SetConversionParamType(TypeSymbol* conversionParamType_) no
     conversionParamType = conversionParamType_;
     if (conversionParamType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionParamType->Id(), conversionParamType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionParamType->Id(), conversionParamType->GetModule());
     }
 }
 
@@ -375,7 +375,7 @@ void FunctionSymbol::SetConversionArgType(TypeSymbol* conversionArgType_) noexce
     conversionArgType = conversionArgType_;
     if (conversionArgType->GetModule() != GetModule())
     {
-        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionArgType->Id(), conversionArgType->GetModule()->Id());
+        GetModule()->GetSymbolTable()->AddImportedSymbol(conversionArgType->Id(), conversionArgType->GetModule());
     }
 }
 
@@ -637,7 +637,7 @@ void FunctionSymbol::SetReturnType(TypeSymbol* returnType_, Context* context)
     }
     if (returnType && returnType->GetModule() != context->GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(returnType->Id(), returnType->GetModule()->Id());
+        context->GetModule()->GetSymbolTable()->AddImportedSymbol(returnType->Id(), returnType->GetModule());
     }
 }
 
@@ -673,7 +673,7 @@ bool FunctionSymbol::IsTemplate(Context* context) const noexcept
     return ParentTemplateDeclaration(context) != nullptr && !IsSpecialization();
 }
 
-bool FunctionSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const noexcept
+bool FunctionSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const 
 {
     if (visited.find(this) != visited.end()) return false;
     visited.insert(this);
@@ -1740,7 +1740,7 @@ void FunctionDefinitionSymbol::SetDeclaration(FunctionSymbol* declaration_, Cont
     declaration = declaration_;
     if (declaration->GetModule() != GetModule())
     {
-        context->GetModule()->GetSymbolTable()->AddImportedSymbol(declaration->Id(), declaration->GetModule()->Id());
+        context->GetModule()->GetSymbolTable()->AddImportedSymbol(declaration->Id(), declaration->GetModule());
     }
 }
 
@@ -1868,7 +1868,7 @@ CompileUnitInitFn* MakeCompileUnitInitFn(Module* module, SymbolId id, const std:
     return new CompileUnitInitFn(module, id, name);
 }
 
-bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context) noexcept
+bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* context) 
 {
     if (left->GroupName() != right->GroupName()) return false;
     if (left->IsConst() != right->IsConst()) return false;
@@ -1895,8 +1895,17 @@ bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* conte
     Cardinality n = left->MemFnArity(context);
     for (Index i = Index(0); i < ToIndex(n); ++i)
     {
-        if (!TypesEqual(left->MemFnParameters(context)[ToUnderlying(i)]->GetType(context), 
-            right->MemFnParameters(context)[ToUnderlying(i)]->GetType(context), context)) return false;
+        TypeSymbol* leftType = left->MemFnParameters(context)[ToUnderlying(i)]->GetType(context);
+        TypeSymbol* rightType = right->MemFnParameters(context)[ToUnderlying(i)]->GetType(context);
+        if (!leftType)
+        {
+            ThrowException("type of parameter " + std::to_string(ToUnderlying(i)) + " of function '" + left->FullName(context) + "' not found");
+        }
+        if (!rightType)
+        {
+            ThrowException("type of parameter " + std::to_string(ToUnderlying(i)) + " of function '" + right->FullName(context) + "' not found");
+        }
+        if (!TypesEqual(leftType,  rightType, context)) return false;
     }
     return true;
 }

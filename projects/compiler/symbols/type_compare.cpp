@@ -25,7 +25,7 @@ bool TypeIdLess::operator()(TypeSymbol* left, TypeSymbol* right) const noexcept
     return left->Id() < right->Id();
 }
 
-bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context)
+bool TypesEqual(TypeSymbol* left, TypeSymbol* right, Context* context) 
 {
     if (left->IsForwardClassDeclarationSymbol())
     {

@@ -30,6 +30,7 @@ import otava.symbols.function_group_symbol;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.function_type_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.lookup;
 import otava.symbols.scope;

@@ -9,6 +9,7 @@ import otava.symbols.argument_conversion_table;
 import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.emitter;
+import otava.symbols.evaluation_context;
 import otava.symbols.exception;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
@@ -25,6 +26,7 @@ import otava.symbols.symbol;
 import otava.symbols.symbol_table;
 import otava.symbols.type_resolver;
 import otava.symbols.type_symbol;
+import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
 import otava.ast.error;
@@ -403,7 +405,7 @@ void BoundCompileUnitNode::AddBoundNode(std::unique_ptr<BoundNode>&& node, Conte
     }
     else
     {
-        node->SetIndex(boundNodes.size());
+        node->SetIndex(int(boundNodes.size()));
         boundNodes.push_back(std::move(node));
     }
 }
@@ -423,7 +425,11 @@ void BoundCompileUnitNode::AddBoundNodeForClass(ClassTypeSymbol* cls, const soul
 
 void BoundCompileUnitNode::Sort()
 {
+#ifdef OTAVA
     std::insertion_sort(boundNodes.begin(), boundNodes.end(), BoundNodeLess());
+#else
+    std::sort(boundNodes.begin(), boundNodes.end(), BoundNodeLess());
+#endif
 }
 
 otava::intermediate::Value* BoundCompileUnitNode::CreateBoundGlobalVariable(VariableSymbol* globalVariableSymbol, Emitter& emitter, const soul::ast::FullSpan& fullSpan,
@@ -1395,7 +1401,7 @@ BoundStatementNode* BoundAliasDeclarationStatementNode::Clone() const
 }
 
 BoundLiteralNode::BoundLiteralNode(Value* value_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
-    BoundExpressionNode(BoundNodeKind::boundLiteralNode, fullSpan_, type_), value(value_)
+    BoundExpressionNode(BoundNodeKind::boundLiteralNode, fullSpan_, type_), value(value_), interfaceType(nullptr)
 {
 }
 
@@ -1408,7 +1414,7 @@ void BoundLiteralNode::Load(Emitter& emitter, OperationFlags flags, const soul::
 {
     if (emitter.Line())
     {
-        Value* lineValue = context->GetEvaluationContext()->GetIntegerValue(emitter.Line(), std::to_string(emitter.Line()),
+        Value* lineValue = context->GetEvaluationContext()->GetIntegerValue(emitter.Line(), 
             context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::intType, context), context);
         emitter.Stack().Push(lineValue->IrValue(emitter, fullSpan, context));
     }
@@ -1421,13 +1427,26 @@ void BoundLiteralNode::Load(Emitter& emitter, OperationFlags flags, const soul::
 
 BoundExpressionNode* BoundLiteralNode::Clone() const
 {
-    BoundExpressionNode* clone = new BoundLiteralNode(value, GetFullSpan(), GetType());
+    BoundLiteralNode* clone = new BoundLiteralNode(value, GetFullSpan(), GetType());
     if (Source())
     {
         clone->SetSource(Source()->Clone());
     }
     clone->SetFlags(Flags());
+    if (interfaceType)
+    {
+        clone->SetInterfaceType(interfaceType);
+    }
     return clone;
+}
+
+TypeSymbol* BoundLiteralNode::GetInterfaceType(Context* context) const noexcept
+{
+    if (interfaceType)
+    {
+        return interfaceType;
+    }
+    return BoundExpressionNode::GetInterfaceType(context);
 }
 
 BoundStringLiteralNode::BoundStringLiteralNode(Value* value_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
@@ -2114,6 +2133,11 @@ Value* BoundEnumConstant::ToValue(Context* context)
     return enumConstant->GetValue(context);
 }
 
+TypeSymbol* BoundEnumConstant::GetInterfaceType(Context* context) const noexcept
+{
+    return enumConstant->GetEnumType(context);
+}
+
 BoundFunctionGroupNode::BoundFunctionGroupNode(FunctionGroupSymbol* functionGroupSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
     BoundExpressionNode(BoundNodeKind::boundFunctionGroupNode, fullSpan_, type_), functionGroupSymbol(functionGroupSymbol_)
 {
@@ -2151,8 +2175,8 @@ void BoundFunctionGroupNode::AddTemplateArg(TypeSymbol* templateArg)
 }
 
 const std::vector<TypeSymbol*>& BoundFunctionGroupNode::TemplateArgs() const noexcept
-{ 
-    return templateArgs; 
+{
+    return templateArgs;
 }
 
 BoundClassGroupNode::BoundClassGroupNode(ClassGroupSymbol* classGroupSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
@@ -2191,9 +2215,9 @@ void BoundClassGroupNode::AddTemplateArg(TypeSymbol* templateArg)
     templateArgs.push_back(templateArg);
 }
 
-const std::vector<TypeSymbol*>& BoundClassGroupNode::TemplateArgs() const noexcept 
-{ 
-    return templateArgs; 
+const std::vector<TypeSymbol*>& BoundClassGroupNode::TemplateArgs() const noexcept
+{
+    return templateArgs;
 }
 
 BoundAliasGroupNode::BoundAliasGroupNode(AliasGroupSymbol* aliasGroupSymbol_, const soul::ast::FullSpan& fullSpan_, TypeSymbol* type_) noexcept :
@@ -2232,9 +2256,9 @@ void BoundAliasGroupNode::AddTemplateArg(TypeSymbol* templateArg)
     templateArgs.push_back(templateArg);
 }
 
-const std::vector<TypeSymbol*>& BoundAliasGroupNode::TemplateArgs() const noexcept 
-{ 
-    return templateArgs; 
+const std::vector<TypeSymbol*>& BoundAliasGroupNode::TemplateArgs() const noexcept
+{
+    return templateArgs;
 }
 
 BoundTypeNode::BoundTypeNode(TypeSymbol* type_, const soul::ast::FullSpan& fullSpan_) noexcept :
@@ -3176,7 +3200,7 @@ void BoundDereferenceNode::Load(Emitter& emitter, OperationFlags flags, const so
         }
         else
         {
-            subject->Load(emitter, SetDerefCount(kind, GetDerefCount(flags) + 1), fullSpan, context);
+            subject->Load(emitter, SetDerefCount(kind, std::uint8_t(GetDerefCount(flags) + 1)), fullSpan, context);
         }
     }
     else
@@ -3191,7 +3215,7 @@ void BoundDereferenceNode::Store(Emitter& emitter, OperationFlags flags, const s
 {
     if (!subject->IsBoundAddressOfNode())
     {
-        subject->Store(emitter, SetDerefCount(OperationFlags::deref | (flags & OperationFlags::setPtr), GetDerefCount(flags) + 1), fullSpan, context);
+        subject->Store(emitter, SetDerefCount(OperationFlags::deref | (flags & OperationFlags::setPtr), std::uint8_t(GetDerefCount(flags) + 1)), fullSpan, context);
     }
     else
     {
@@ -3392,7 +3416,7 @@ void BoundTemporaryNode::Load(Emitter& emitter, OperationFlags flags, const soul
     }
     else if ((flags & OperationFlags::deref) != OperationFlags::none)
     {
-        backingStore->Load(emitter, SetDerefCount(OperationFlags::deref, GetDerefCount(flags) + 1), fullSpan, context);
+        backingStore->Load(emitter, SetDerefCount(OperationFlags::deref, std::uint8_t(GetDerefCount(flags) + 1)), fullSpan, context);
     }
     else
     {

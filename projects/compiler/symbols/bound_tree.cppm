@@ -71,6 +71,7 @@ class OperationRepository;
 class ArgumentConversionTable;
 class FunctionTemplateRepository;
 class InlineFunctionRepository;
+class FunctionCompletionRepository;
 
 enum class BoundNodeKind
 {
@@ -87,7 +88,7 @@ enum class BoundNodeKind
     boundTemporaryNode, boundConstructTemporaryNode, boundDestructTemporariesNode, boundCtorInitializerNode, boundDtorTerminatorNode, boundEmptyDestructorNode,
     boundHandlerNode, boundFunctionValueNode, boundVariableAsVoidPtrNode, boundAdjustedThisPtrNode, boundOperatorFnNode
 };
- 
+
 std::string BoundNodeKindStr(BoundNodeKind nodeKind);
 
 class BoundNode
@@ -186,6 +187,7 @@ public:
     inline void SetFlags(BoundExpressionFlags flags_) noexcept { flags = flags_; }
     inline TypeSymbol* GetType() const noexcept { return type; }
     inline void SetType(TypeSymbol* type_) noexcept { type = type_; }
+    virtual TypeSymbol* GetInterfaceType(Context* context) const noexcept { return GetType(); }
     virtual void ModifyTypes(const soul::ast::FullSpan& fullSpan, Context* context);
     Scope* GetMemberScope(otava::ast::Node* op, const soul::ast::FullSpan& fullSpan, Context* context) const override;
     bool BindToRvalueRef() const noexcept { return GetFlag(BoundExpressionFlags::bindToRvalueRef); }
@@ -232,11 +234,12 @@ public:
     BoundCompileUnitNode();
     ~BoundCompileUnitNode();
     void Sort();
-    inline OperationRepository* GetOperationRepository() const { return operationRepository.get(); }
-    inline ArgumentConversionTable* GetArgumentConversionTable() const { return argumentConversionTable.get(); }
-    inline FunctionTemplateRepository* GetFunctionTemplateRepository() const { return functionTemplateRepository.get(); }
-    inline ClassTemplateRepository* GetClassTemplateRepository() const { return classTemplateRepository.get(); }
-    inline InlineFunctionRepository* GetInlineFunctionRepository() const { return inlineFunctionRepository.get(); }
+    inline OperationRepository* GetOperationRepository() const noexcept { return operationRepository.get(); }
+    inline ArgumentConversionTable* GetArgumentConversionTable() const noexcept  { return argumentConversionTable.get(); }
+    inline FunctionTemplateRepository* GetFunctionTemplateRepository() const noexcept { return functionTemplateRepository.get(); }
+    inline ClassTemplateRepository* GetClassTemplateRepository() const noexcept { return classTemplateRepository.get(); }
+    inline InlineFunctionRepository* GetInlineFunctionRepository() const noexcept { return inlineFunctionRepository.get(); }
+    inline FunctionCompletionRepository* GetFunctionCompletionRepository() const noexcept { return functionCompletionRepository.get(); }
     inline BoundFunctionNode* GetCompileUnitInitializationFunction() { return compileUnitInitializationFunction; }
     BoundFunctionNode* GetOrInsertCompileUnitInitializationFunction(const soul::ast::FullSpan& fullSpan, Context* context);
     void AddDynamicInitialization(BoundExpressionNode* dynamicInitialization, BoundExpressionNode* atExitCall, const soul::ast::FullSpan& fullSpan, Context* context);
@@ -258,6 +261,7 @@ private:
     std::unique_ptr<FunctionTemplateRepository> functionTemplateRepository;
     std::unique_ptr<ClassTemplateRepository> classTemplateRepository;
     std::unique_ptr<InlineFunctionRepository> inlineFunctionRepository;
+    std::unique_ptr<FunctionCompletionRepository> functionCompletionRepository;
     std::set<ClassTypeSymbol*> boundClasses;
     BoundFunctionNode* compileUnitInitializationFunction;
     std::vector<ClassTypeSymbol*> generateDestructorList;
@@ -738,8 +742,11 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     Value* ToValue(Context* context) override { return value; }
+    TypeSymbol* GetInterfaceType(Context* context) const noexcept override;
+    void SetInterfaceType(TypeSymbol* interfaceType_) noexcept { interfaceType = interfaceType_; }
 private:
     Value* value;
+    TypeSymbol* interfaceType;
 };
 
 class BoundStringLiteralNode : public BoundExpressionNode
@@ -846,6 +853,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     Value* ToValue(Context* context) override;
+    TypeSymbol* GetInterfaceType(Context* context) const noexcept override;
 private:
     EnumConstantSymbol* enumConstant;
 };
@@ -889,7 +897,7 @@ public:
     void Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context) override;
     BoundExpressionNode* Clone() const override;
     void AddTemplateArg(TypeSymbol* templateArg);
-    inline const std::vector<TypeSymbol*>& TemplateArgs() const noexcept;
+    const std::vector<TypeSymbol*>& TemplateArgs() const noexcept;
 private:
     AliasGroupSymbol* aliasGroupSymbol;
     std::vector<TypeSymbol*> templateArgs;

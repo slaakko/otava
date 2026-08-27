@@ -13,6 +13,7 @@ import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_templates;
 import otava.symbols.function_symbol;
+import otava.symbols.function_completion;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.inline_functions;
@@ -79,16 +80,16 @@ bool BetterArgumentMatch::operator()(const ArgumentMatch& left, const ArgumentMa
     return false;
 }
 
-FunctionMatch::FunctionMatch() noexcept : function(nullptr), numConversions(0), numQualifyingConversions(0), specialization(nullptr), context(nullptr), scopeMatches(false)
+FunctionMatch::FunctionMatch() noexcept : function(nullptr), numConversions(0), numQualifyingConversions(0), scopeMatches(false), specialization(nullptr), context(nullptr)
 {
 }
 
 FunctionMatch::FunctionMatch(FunctionSymbol* function_, Context* context_) noexcept :
-    function(function_), context(context_), numConversions(0), numQualifyingConversions(0), scopeMatches(false), specialization(nullptr), scopeMatches(false)
+    function(function_), context(context_), numConversions(0), numQualifyingConversions(0), scopeMatches(false), specialization(nullptr)
 {
 }
 
-FunctionMatch& FunctionMatch::operator=(const FunctionMatch& that)
+FunctionMatch& FunctionMatch::operator=(const FunctionMatch& that) noexcept
 {
     function = that.function;
     context = that.context;
@@ -1084,7 +1085,7 @@ bool FindConversions(FunctionMatch& functionMatch, const std::vector<std::unique
         else
         {
             arg = args[ToUnderlying(i)].get();
-            argType = arg->GetType();
+            argType = arg->GetInterfaceType(context);
         }
         ParameterSymbol* parameter = functionMatch.function->MemFnParameters(context)[ToUnderlying(i)];
         FlagSetter resolveFlagSetter(context, ContextFlags::resolveDependentTypes | ContextFlags::resolveNestedTypes);
@@ -1257,7 +1258,11 @@ std::unique_ptr<FunctionMatch> SelectBestMatchingFunction(const std::vector<Func
     }
     else if (functionMatches.size() > 1)
     {
+#ifdef OTAVA
         std::insertion_sort(functionMatches.begin(), functionMatches.end(), BetterFunctionMatch(context));
+#else
+        std::sort(functionMatches.begin(), functionMatches.end(), BetterFunctionMatch(context));
+#endif
         if (BetterFunctionMatch(context)(functionMatches[0], functionMatches[1]))
         {
             return std::move(functionMatches.front());
@@ -1314,6 +1319,7 @@ std::vector<Scope*> GetArgumentScopes(BoundExpressionNode* arg, Context* context
             std::vector<Module*> importExportModules = classTemplateModule->ImportExportModules(context);
             for (Module* importedModule : importExportModules)
             {
+                context->AddModule(importedModule);
                 std::vector<NamespaceSymbol*> namespaces;
                 const std::vector<SymbolId>& namespaceIds = importedModule->NamespaceIds();
                 for (SymbolId nsId : namespaceIds)
@@ -1405,6 +1411,7 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         }
         for (Module* importedModule : context->GetModule()->ImportExportModules(context))
         {
+            context->AddModule(importedModule);
             std::vector<NamespaceSymbol*> namespaces;
             const std::vector<SymbolId>& namespaceIds = importedModule->NamespaceIds();
             for (SymbolId nsId : namespaceIds)
@@ -1490,6 +1497,10 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         else if (bestMatch->function->IsInline() && context->ReleaseConfig() && otava::optimizer::HasOptimization(otava::optimizer::Optimizations::inlining))
         {
             bestMatch->function = InstantiateInlineFunction(bestMatch->function, fullSpan, context);
+        }
+        else if (bestMatch->function->HasIncompleteType())
+        {
+            bestMatch->function = CompleteIncompleteFunction(bestMatch->function, fullSpan, context);
         }
     }
     std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = CreateBoundFunctionCall(*bestMatch, args, fullSpan, ex, context);

@@ -23,6 +23,7 @@ import otava.symbols.function_symbol;
 import otava.symbols.function_return_path_checker;
 import otava.symbols.id;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.operation_repository;
 import otava.symbols.overload_resolution;
 import otava.symbols.scope;
@@ -243,7 +244,11 @@ void StatementBinder::GenerateDefaultCtorInitializer(const soul::ast::FullSpan& 
 {
     ctorInitializer.reset(new BoundCtorInitializerNode(fullSpan));
     CompleteBaseInitializers(fullSpan);
+#ifdef OTAVA
     std::insertion_sort(baseInitializers.begin(), baseInitializers.end(), InitializerLess());
+#else
+    std::sort(baseInitializers.begin(), baseInitializers.end(), InitializerLess());
+#endif
     for (auto& initializer : baseInitializers)
     {
         ctorInitializer->AddBaseInitializer(initializer.second.release());
@@ -255,7 +260,11 @@ void StatementBinder::GenerateDefaultCtorInitializer(const soul::ast::FullSpan& 
     }
     setVPtrStatements.clear();
     CompleteMemberInitializers(fullSpan);
+#ifdef OTAVA
     std::insertion_sort(memberInitializers.begin(), memberInitializers.end(), InitializerLess());
+#else
+    std::sort(memberInitializers.begin(), memberInitializers.end(), InitializerLess());
+#endif
     for (auto& initializer : memberInitializers)
     {
         ctorInitializer->AddMemberInitializer(initializer.second.release());
@@ -274,7 +283,11 @@ void StatementBinder::GenerateDestructorTerminator(const soul::ast::FullSpan& fu
     setVPtrStatements.clear();
     GenerateBaseTerminators(fullSpan);
     GenerateMemberTerminators(fullSpan);
+#ifdef OTAVA
     std::insertion_sort(memberTerminators.begin(), memberTerminators.end(), TerminatorGreater());
+#else
+    std::sort(memberTerminators.begin(), memberTerminators.end(), TerminatorGreater());
+#endif
     for (auto& terminator : memberTerminators)
     {
         dtorTerminator->AddMemberTerminator(terminator.second.release());
@@ -405,7 +418,11 @@ void StatementBinder::Visit(otava::ast::MemberInitializerListNode& node)
         initializer->Accept(*this);
     }
     CompleteBaseInitializers(fullSpan);
+#ifdef OTAVA
     std::insertion_sort(baseInitializers.begin(), baseInitializers.end(), InitializerLess());
+#else
+    std::sort(baseInitializers.begin(), baseInitializers.end(), InitializerLess());
+#endif
     for (auto& initializer : baseInitializers)
     {
         ctorInitializer->AddBaseInitializer(initializer.second.release());
@@ -417,7 +434,11 @@ void StatementBinder::Visit(otava::ast::MemberInitializerListNode& node)
     }
     setVPtrStatements.clear();
     CompleteMemberInitializers(fullSpan);
+#ifdef OTAVA
     std::insertion_sort(memberInitializers.begin(), memberInitializers.end(), InitializerLess());
+#else
+    std::sort(memberInitializers.begin(), memberInitializers.end(), InitializerLess());
+#endif
     for (auto& initializer : memberInitializers)
     {
         ctorInitializer->AddMemberInitializer(initializer.second.release());
@@ -1418,6 +1439,8 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
                         }
                         else
                         {
+                            context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
+                                returnType, argumentType, returnValueExpr.get(), fullSpan, argumentMatch, functionMatch, context);
                             ThrowException("no conversion from '" + argumentType->FullName(context) + "' to '" + returnType->FullName(context) + "' found", 
                                 fullSpan, context);
                         }
@@ -2453,7 +2476,7 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
 #ifdef DEBUG_FUNCTIONS
     std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif
-    if (functionDefinitionSymbol->GroupName() == "AddGlobalVariable")
+    if (functionDefinitionSymbol->GroupName() == "main")
     {
         int x = 0;
     }
