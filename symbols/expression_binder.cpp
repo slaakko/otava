@@ -3283,7 +3283,7 @@ void ExpressionBinder::Visit(otava::ast::ThrowExprNode& node)
         SymbolId ext = expr->GetType()->GetBaseType(context)->Id();
         std::string throwExprStr;
         throwExprStr.append("ort_throw((ort_is_bad_alloc(").append(
-            std::to_string(ToUnderlying(ext)).append(") ? ort_get_bad_alloc() : "));
+            std::to_string(ToUnderlying(ext)).append("ull) ? ort_get_bad_alloc() : "));
         std::string exprStr = node.Child()->Str();
         if (expr->IsBoundLiteralNode() ||
             expr->IsBoundVariableNode() || expr->IsBoundParentVariableNode() ||
@@ -3296,7 +3296,7 @@ void ExpressionBinder::Visit(otava::ast::ThrowExprNode& node)
         {
             throwExprStr.append("new ").append(exprStr);
         }
-        throwExprStr.append("), ").append(std::to_string(ToUnderlying(ext)).append(")"));
+        throwExprStr.append("), ").append(std::to_string(ToUnderlying(ext)).append("ull)"));
         std::unique_ptr<otava::ast::Node> invokeThrowExprNode = ParseExpression(throwExprStr, context);
         boundExpression = BindExpression(invokeThrowExprNode.get(), context);
         if (!boundExpression)

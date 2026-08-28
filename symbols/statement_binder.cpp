@@ -1821,7 +1821,7 @@ void StatementBinder::Visit(otava::ast::ExceptionDeclarationNode& node)
         TypeSymbol* baseType = type->GetBaseType(context);
         SymbolId ext = baseType->Id();
         std::string beginCatchStr;
-        beginCatchStr.append("ort_begin_catch(").append(std::to_string(ToUnderlying(ext))).append(")");
+        beginCatchStr.append("ort_begin_catch(").append(std::to_string(ToUnderlying(ext)).append("ull")).append(")");
         std::unique_ptr<otava::ast::Node> beginCatchNode;
         try
         {
@@ -2476,10 +2476,6 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
 #ifdef DEBUG_FUNCTIONS
     std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif
-    if (functionDefinitionSymbol->GroupName() == "main")
-    {
-        int x = 0;
-    }
     functionDefinitionSymbol->SetBound();
     if (context->GetFlag(ContextFlags::debugMemory))
     {

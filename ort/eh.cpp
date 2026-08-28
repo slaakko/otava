@@ -16,13 +16,13 @@ const int numContexts = 16384;
 std::jmp_buf jbufs[numContexts];
 
 void* exception = nullptr;
-std::uint32_t ext = 0;
+std::uint64_t ext = 0;
 void* bad_alloc = nullptr;
-std::uint32_t bad_alloc_ext = 0;
+std::uint64_t bad_alloc_ext = 0;
 int currentContext = 0;
 int stackTrace = -1;
 
-void ort_throw(void* ex, std::uint32_t ext_)
+void ort_throw(void* ex, std::uint64_t ext_)
 {
     if (currentContext > 0)
     {
@@ -101,7 +101,7 @@ void ort_invoke(InvokeFn invokeFn, CleanUpFn cleanupFn, void* parentFrame)
     }
 }
 
-bool ort_begin_catch(std::uint32_t ext_)
+bool ort_begin_catch(std::uint64_t ext_)
 {
     if (ext == ext_)
     {
@@ -159,13 +159,13 @@ void ort_print_exception_stack_trace()
     }
 }
 
-void ort_set_bad_alloc(void* ex, std::uint32_t ext)
+void ort_set_bad_alloc(void* ex, std::uint64_t ext)
 {
     bad_alloc = ex;
     bad_alloc_ext = ext;
 }
 
-bool ort_is_bad_alloc(std::uint32_t ext)
+bool ort_is_bad_alloc(std::uint64_t ext)
 {
     return ext == bad_alloc_ext;
 }
