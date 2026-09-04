@@ -313,6 +313,10 @@ bool ClassTypeSymbol::IsObjectLayoutComplete(Context* context) const noexcept
 
 void ClassTypeSymbol::MakeObjectLayout(const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    if (IsReadOnly())
+    {
+        GetContent(context);
+    }
     if (context->GetFlag(ContextFlags::makeFinalLayout))
     {
         ResetObjectLayoutComputed();
@@ -1099,6 +1103,7 @@ void ClassTypeSymbol::GetContent(Context* context) const
         }
         ++index;
     }
+    SetObjectLayoutComputed();
     for (SymbolId conversionFunctionId : conversionFunctionIds)
     {
         FunctionSymbol* conversionFunction = GetModule()->GetSymbolTable()->GetFunctionSymbol(conversionFunctionId, context);
@@ -2159,13 +2164,13 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
     context->GetBoundFunction()->AddTemporaryDestructorCall(destructorCall);
 }
 
-std::pair<bool, std::int64_t> ClassTypeSymbol::ClsDelta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept
+std::pair<bool, std::int64_t> ClassTypeSymbol::GetDelta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept
 {
     if (TypesEqual(base, this, context)) return std::make_pair(true, static_cast<std::int64_t>(0));
     std::int64_t delta = 0;
     for (ClassTypeSymbol* bc : BaseClasses(context))
     {
-        std::pair<bool, std::int64_t> p = bc->ClsDelta(base, emitter, context);
+        std::pair<bool, std::int64_t> p = bc->GetDelta(base, emitter, context);
         bool bcfound = p.first;
         std::int64_t bcdelta = p.second;
         if (bcfound) return std::make_pair(true, delta + bcdelta);
@@ -2178,11 +2183,11 @@ std::pair<bool, std::int64_t> ClassTypeSymbol::ClsDelta(ClassTypeSymbol* base, E
 
 std::pair<bool, std::int64_t> Delta(ClassTypeSymbol* left, ClassTypeSymbol* right, Emitter& emitter, Context* context) noexcept
 {
-    std::pair<bool, std::int64_t> p = left->ClsDelta(right, emitter, context);
+    std::pair<bool, std::int64_t> p = left->GetDelta(right, emitter, context);
     bool found = p.first;
     std::int64_t delta = p.second;
     if (found) return std::make_pair(true, delta);
-    std::pair<bool, std::int64_t> r = right->ClsDelta(left, emitter, context);
+    std::pair<bool, std::int64_t> r = right->GetDelta(left, emitter, context);
     bool rfound = r.first;
     std::int64_t rdelta = r.second;
     if (rfound) return std::make_pair(true, -rdelta);

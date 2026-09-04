@@ -1,0 +1,5 @@
+project bug;
+target=program;
+interface <parser.cppm>;
+source <parser.cpp>;
+source <main.cpp>;

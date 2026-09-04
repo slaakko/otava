@@ -358,6 +358,10 @@ bool Project::UpToDate(const std::string& config, int optLevel, const std::set<s
 
 bool Project::ReferencesUpToDate() const noexcept
 {
+    if (!util::FileExists(outputFilePath))
+    {
+        return false;
+    }
     for (const auto& referencedProject : referencedProjects)
     {
         Project* reference = referencedProject.get();

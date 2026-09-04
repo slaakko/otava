@@ -1,6 +1,7 @@
 module std.atexit;
 
 import std.new_delete_op;
+import std.rt;
 import std.trace;
 import std.eh;
 

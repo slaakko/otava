@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.simple.type;
+
+[interface]import otava.symbols.context;
+[implementation]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+
+parser SimpleTypeParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    SimpleType : otava::ast::Node*
+        ::= CHAR{ return new otava::ast::CharNode(lexer.GetSpan(pos), lexer.File()); }
+        |   CHAR8_T{ return new otava::ast::Char8Node(lexer.GetSpan(pos), lexer.File()); }
+        |   CHAR16_T{ return new otava::ast::Char16Node(lexer.GetSpan(pos), lexer.File()); }
+        |   CHAR32_T{ return new otava::ast::Char32Node(lexer.GetSpan(pos), lexer.File()); }
+        |   WCHAR_T{ return new otava::ast::WCharNode(lexer.GetSpan(pos), lexer.File()); }
+        |   BOOL{ return new otava::ast::BoolNode(lexer.GetSpan(pos), lexer.File()); }
+        |   SHORT{ return new otava::ast::ShortNode(lexer.GetSpan(pos), lexer.File()); }
+        |   INT{ return new otava::ast::IntNode(lexer.GetSpan(pos), lexer.File()); }
+        |   LONG{ return new otava::ast::LongNode(lexer.GetSpan(pos), lexer.File()); }
+        |   SIGNED{ return new otava::ast::SignedNode(lexer.GetSpan(pos), lexer.File()); }
+        |   UNSIGNED{ return new otava::ast::UnsignedNode(lexer.GetSpan(pos), lexer.File()); }
+        |   FLOAT{ return new otava::ast::FloatNode(lexer.GetSpan(pos), lexer.File()); }
+        |   DOUBLE{ return new otava::ast::DoubleNode(lexer.GetSpan(pos), lexer.File()); }
+        |   VOID{ return new otava::ast::VoidNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+}

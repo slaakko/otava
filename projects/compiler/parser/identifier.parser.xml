@@ -1,0 +1,170 @@
+<parserFile>
+ <grammar name="IdentifierParser">
+  <rule first="{ID}" name="Identifier">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{OPERATOR, ID, TILDE}" name="UnqualifiedId">
+   <choice first="{OPERATOR, ID, TILDE}">
+    <choice first="{OPERATOR, ID}">
+     <choice first="{OPERATOR, ID}">
+      <choice first="{OPERATOR, ID}">
+       <choice first="{OPERATOR, ID}">
+        <action first="{OPERATOR, ID}">
+         <nonterminal first="{OPERATOR, ID}" ruleName="TemplateId"/>
+        </action>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="Identifier"/>
+        </action>
+       </choice>
+       <action first="{OPERATOR}">
+        <nonterminal first="{OPERATOR}" ruleName="OperatorFunctionId"/>
+       </action>
+      </choice>
+      <action first="{OPERATOR}">
+       <nonterminal first="{OPERATOR}" ruleName="ConversionFunctionId"/>
+      </action>
+     </choice>
+     <action first="{OPERATOR}">
+      <nonterminal first="{OPERATOR}" ruleName="LiteralOperatorId"/>
+     </action>
+    </choice>
+    <action first="{TILDE}">
+     <nonterminal first="{TILDE}" ruleName="DestructorId"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, OPERATOR, TEMPLATE, ID, COLON_COLON, TILDE}" name="QualifiedId">
+   <group first="{#, OPERATOR, TEMPLATE, ID, COLON_COLON, TILDE}">
+    <sequence first="{#, OPERATOR, TEMPLATE, ID, COLON_COLON, TILDE}">
+     <action first="{#, TEMPLATE, ID, COLON_COLON}">
+      <nonterminal first="{#, TEMPLATE, ID, COLON_COLON}" ruleName="NestedNameSpecifier"/>
+     </action>
+     <group first="{OPERATOR, TEMPLATE, ID, TILDE}">
+      <choice first="{OPERATOR, TEMPLATE, ID, TILDE}">
+       <sequence first="{TEMPLATE}">
+        <action first="{TEMPLATE}">
+         <nonterminal first="{TEMPLATE}" ruleName="Template"/>
+        </action>
+        <action first="{OPERATOR, ID, TILDE}">
+         <nonterminal first="{OPERATOR, ID, TILDE}" ruleName="UnqualifiedId"/>
+        </action>
+       </sequence>
+       <action first="{OPERATOR, ID, TILDE}">
+        <nonterminal first="{OPERATOR, ID, TILDE}" ruleName="UnqualifiedId"/>
+       </action>
+      </choice>
+     </group>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{TEMPLATE}" name="Template">
+   <action first="{TEMPLATE}">
+    <token first="{TEMPLATE}" name="TEMPLATE"/>
+   </action>
+  </rule>
+  <rule first="{#, TEMPLATE, ID, COLON_COLON}" name="NestedNameSpecifier">
+   <action first="{#, TEMPLATE, ID, COLON_COLON}">
+    <group first="{#, TEMPLATE, ID, COLON_COLON}">
+     <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+      <sequence first="{#, COLON_COLON}">
+       <action first="{#}">
+        <empty first="{#}"/>
+       </action>
+       <optional first="{#, COLON_COLON}">
+        <group first="{COLON_COLON}">
+         <action first="{COLON_COLON}">
+          <token first="{COLON_COLON}" name="COLON_COLON"/>
+         </action>
+        </group>
+       </optional>
+      </sequence>
+      <kleene first="{#, TEMPLATE, ID, COLON_COLON}">
+       <group first="{#, TEMPLATE, ID, COLON_COLON}">
+        <choice first="{#, TEMPLATE, ID, COLON_COLON}">
+         <sequence first="{#, TEMPLATE, ID, COLON_COLON}">
+          <sequence first="{#, TEMPLATE, ID}">
+           <optional first="{#, TEMPLATE}">
+            <group first="{TEMPLATE}">
+             <action first="{TEMPLATE}">
+              <token first="{TEMPLATE}" name="TEMPLATE"/>
+             </action>
+            </group>
+           </optional>
+           <action first="{ID}">
+            <nonterminal first="{ID}" ruleName="SimpleTemplateId"/>
+           </action>
+          </sequence>
+          <action first="{COLON_COLON}">
+           <token first="{COLON_COLON}" name="COLON_COLON"/>
+          </action>
+         </sequence>
+         <sequence first="{ID}">
+          <action first="{ID}">
+           <token first="{ID}" name="ID"/>
+          </action>
+          <action first="{COLON_COLON}">
+           <token first="{COLON_COLON}" name="COLON_COLON"/>
+          </action>
+         </sequence>
+        </choice>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="IdentifierList">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="Identifier"/>
+      </action>
+      <kleene first="{#, COMMA}">
+       <group first="{COMMA}">
+        <sequence first="{COMMA}">
+         <action first="{COMMA}">
+          <nonterminal first="{COMMA}" ruleName="Comma"/>
+         </action>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="Identifier"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ID}" name="TypeIdentifier">
+   <choice first="{#, ID}">
+    <sequence first="{#, ID}">
+     <nonterminal first="{#}" ruleName="AssumeTypeGuard"/>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="TypeIdentifierUnchecked"/>
+     </action>
+    </sequence>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="TypeIdentifierChecked"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="TypeIdentifierUnchecked">
+   <action first="{ID}">
+    <nonterminal first="{ID}" ruleName="Identifier"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="TypeIdentifierChecked">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="Unnamed">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

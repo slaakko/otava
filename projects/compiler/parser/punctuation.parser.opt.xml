@@ -1,0 +1,69 @@
+<parserFile>
+ <grammar name="PunctuationParser">
+  <rule first="{SEMICOLON}" name="Semicolon">
+   <action first="{SEMICOLON}">
+    <token first="{SEMICOLON}" name="SEMICOLON"/>
+   </action>
+  </rule>
+  <rule first="{COMMA}" name="Comma">
+   <action first="{COMMA}">
+    <token first="{COMMA}" name="COMMA"/>
+   </action>
+  </rule>
+  <rule first="{QUEST}" name="Quest">
+   <action first="{QUEST}">
+    <token first="{QUEST}" name="QUEST"/>
+   </action>
+  </rule>
+  <rule first="{COLON}" name="Colon">
+   <action first="{COLON}">
+    <token first="{COLON}" name="COLON"/>
+   </action>
+  </rule>
+  <rule first="{COLON_COLON}" name="ColonColon">
+   <action first="{COLON_COLON}">
+    <token first="{COLON_COLON}" name="COLON_COLON"/>
+   </action>
+  </rule>
+  <rule first="{ELLIPSIS}" name="Ellipsis">
+   <action first="{ELLIPSIS}">
+    <token first="{ELLIPSIS}" name="ELLIPSIS"/>
+   </action>
+  </rule>
+  <rule first="{LPAREN}" name="LParen">
+   <action first="{LPAREN}">
+    <token first="{LPAREN}" name="LPAREN"/>
+   </action>
+  </rule>
+  <rule first="{RPAREN}" name="RParen">
+   <action first="{RPAREN}">
+    <token first="{RPAREN}" name="RPAREN"/>
+   </action>
+  </rule>
+  <rule first="{LBRACKET}" name="LBracket">
+   <action first="{LBRACKET}">
+    <token first="{LBRACKET}" name="LBRACKET"/>
+   </action>
+  </rule>
+  <rule first="{RBRACKET}" name="RBracket">
+   <action first="{RBRACKET}">
+    <token first="{RBRACKET}" name="RBRACKET"/>
+   </action>
+  </rule>
+  <rule first="{LBRACE}" name="LBrace">
+   <action first="{LBRACE}">
+    <token first="{LBRACE}" name="LBRACE"/>
+   </action>
+  </rule>
+  <rule first="{RBRACE}" name="RBrace">
+   <action first="{RBRACE}">
+    <token first="{RBRACE}" name="RBRACE"/>
+   </action>
+  </rule>
+  <rule first="{ASSIGN}" name="Assign">
+   <action first="{ASSIGN}">
+    <token first="{ASSIGN}" name="ASSIGN"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

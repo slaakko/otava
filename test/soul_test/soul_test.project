@@ -1,0 +1,5 @@
+project soul_test;
+target=program;
+reference <../../projects/util/util.project>;
+reference <../../projects/soul/ast/ast.project>;
+source <main.cpp>;

@@ -1301,7 +1301,7 @@ void Evaluator::Visit(otava::ast::IdentifierNode& node)
             case SymbolKind::variableSymbol:
             {
                 VariableSymbol* variableSymbol = static_cast<VariableSymbol*>(symbol);
-                if (variableSymbol->GetValue(context))
+                if ((variableSymbol->GetDeclarationFlags() & DeclarationFlags::constExprFlag) != DeclarationFlags::none && variableSymbol->GetValue(context))
                 {
                     value = variableSymbol->GetValue(context);
                 }

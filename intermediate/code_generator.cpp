@@ -1,4 +1,5 @@
 // =================================
+// =================================
 // Copyright (c) 2026 Seppo Laakko
 // Distributed under the MIT license
 // =================================
@@ -2539,6 +2540,7 @@ void EmitElemAddr(ElemAddrInstruction& inst, CodeGenerator& codeGenerator)
     {
         otava::assembly::Register* indexReg = MakeIntegerRegOperand(
             inst.IndexValue(), assemblyContext->GetGlobalReg(8, otava::assembly::RegisterGroupKind::rbx), codeGenerator);
+
         std::int64_t indexFactor = GetElementSize(inst.Ptr()->GetType(), codeGenerator);
         otava::assembly::Instruction* movInst = new otava::assembly::Instruction(otava::assembly::OpCode::MOV);
         otava::assembly::Register* rax = assemblyContext->GetGlobalReg(8, otava::assembly::RegisterGroupKind::rax);

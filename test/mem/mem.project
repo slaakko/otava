@@ -1,0 +1,3 @@
+project mem;
+target=program;
+source <main.cpp>;

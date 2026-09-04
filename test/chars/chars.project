@@ -1,0 +1,3 @@
+project chars;
+target=program;
+source <main.cpp>;

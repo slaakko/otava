@@ -1,0 +1,67 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.punctuation;
+
+[implementation]import otava.ast;
+[implementation]import otava.token;
+[implementation]import otava.lexer;
+
+parser PunctuationParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    Semicolon : otava::ast::Node*
+        ::= SEMICOLON{ return new otava::ast::SemicolonNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    Comma : otava::ast::Node*
+        ::= COMMA{ return new otava::ast::CommaNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+    
+    Quest : otava::ast::Node*
+        ::= QUEST{ return new otava::ast::QuestNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+    
+    Colon : otava::ast::Node*
+        ::= COLON{ return new otava::ast::ColonNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    ColonColon : otava::ast::Node*
+        ::= COLON_COLON{ return new otava::ast::ColonColonNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+    
+    Ellipsis : otava::ast::Node*
+        ::= ELLIPSIS{ return new otava::ast::EllipsisNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+    
+    LParen : otava::ast::Node*
+        ::= LPAREN{ return new otava::ast::LParenNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+    
+    RParen : otava::ast::Node*
+        ::= RPAREN{ return new otava::ast::RParenNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+    
+    LBracket : otava::ast::Node*
+        ::= LBRACKET{ return new otava::ast::LBracketNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    RBracket : otava::ast::Node*
+        ::= RBRACKET{ return new otava::ast::RBracketNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    LBrace : otava::ast::Node*
+        ::= LBRACE{ return new otava::ast::LBraceNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    RBrace : otava::ast::Node*
+        ::= RBRACE{ return new otava::ast::RBraceNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+
+    Assign : otava::ast::Node*
+        ::= ASSIGN{ return new otava::ast::AssignNode(lexer.GetSpan(pos), lexer.File()); }
+        ;
+}

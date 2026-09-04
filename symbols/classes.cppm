@@ -96,10 +96,10 @@ public:
     TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
     bool IsTemplate(Context* context) const noexcept;
     inline bool GetFlag(ClassTypeSymbolFlags flag) const noexcept { return (flags & flag) != ClassTypeSymbolFlags::none; }
-    inline void SetFlag(ClassTypeSymbolFlags flag) noexcept { flags = flags | flag; }
+    inline void SetFlag(ClassTypeSymbolFlags flag) const noexcept { flags = flags | flag; }
     inline void ResetFlag(ClassTypeSymbolFlags flag) noexcept { flags = flags & ~flag; }
     inline bool ObjectLayoutComputed() const noexcept { return GetFlag(ClassTypeSymbolFlags::objectLayoutComputed); }
-    inline void SetObjectLayoutComputed() noexcept { SetFlag(ClassTypeSymbolFlags::objectLayoutComputed); }
+    inline void SetObjectLayoutComputed() const noexcept { SetFlag(ClassTypeSymbolFlags::objectLayoutComputed); }
     inline void ResetObjectLayoutComputed() noexcept { ResetFlag(ClassTypeSymbolFlags::objectLayoutComputed); }
     inline bool HasUserDefinedDestructor() const noexcept { return GetFlag(ClassTypeSymbolFlags::hasUserDefinedDestructor); }
     inline void SetHasUserDefinedDestructor() noexcept { SetFlag(ClassTypeSymbolFlags::hasUserDefinedDestructor); }
@@ -161,10 +161,10 @@ public:
     FunctionSymbol* GetConversionFunction(TypeSymbol* type, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    std::pair<bool, std::int64_t> ClsDelta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept;
+    std::pair<bool, std::int64_t> GetDelta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept;
     std::string VTabName(Context* context) const;
 private:
-    ClassTypeSymbolFlags flags;
+    mutable ClassTypeSymbolFlags flags;
     ClassKind classKind;
     mutable std::vector<ClassTypeSymbol*> baseClasses;
     std::vector<SymbolId> baseClassIds;

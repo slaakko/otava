@@ -1,0 +1,44 @@
+<parserFile>
+ <grammar name="GuardParser">
+  <rule first="{#}" name="ConceptGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="NotDefiningTypeSpecifierGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="AssumeTypeGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="MemberFunctionGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="SavedMemberFunctionBodyGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="SavedCtorInitializerGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="NoDeclSpecFunctionDeclarationGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+  <rule first="{#}" name="NoDeclSpecFunctionDefinitionGuard">
+   <action first="{#}">
+    <empty first="{#}"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

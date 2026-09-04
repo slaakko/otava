@@ -1,0 +1,12 @@
+project otava.lexer;
+target=library;
+reference <../../util/util.project>;
+reference <../../soul/ast/ast.project>;
+reference <../../soul/lexer/lexer.project>;
+interface <line_tokenizer.cppm>;
+source <line_tokenizer.cpp>;
+interface <otava.lexer.cppm>;
+source <otava.lexer.cpp>;
+interface <otava.token.cppm>;
+interface <otava.token.line.lexer.cppm>;
+source <otava.token.line.lexer.cpp>;
