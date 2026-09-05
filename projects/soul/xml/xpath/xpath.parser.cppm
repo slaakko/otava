@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/soul-mod/tools/otava/projects/soul/xml/xpath/xpath.parser' using soul parser generator ospg version 5.0.0
+// this file has been automatically generated from 'D:/work/otava/projects/soul/xml/xpath/xpath.parser' using soul parser generator ospg version 0.1.0
 
 export module soul.xml.xpath.parser;
 

@@ -8,6 +8,7 @@ import soul.ast.common;
 import soul.ast.spg;
 import soul.ast.source_pos;
 import soul.ast.span;
+import soul.ast.span;
 import otava.token;
 import otava.lexer;
 import otava.symbols.concepts;

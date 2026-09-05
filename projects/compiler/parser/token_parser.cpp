@@ -719,8 +719,10 @@ otava::ast::RawStringLiteralNode* ParseRawStringLiteral(const soul::ast::Span& s
     }
     if (valid)
     {
-        lexer.CurrentToken().match.end = p;
-        lexer.CurrentLexeme().end = p;
+        auto& token = lexer.CurrentToken();
+        token.match.end = p;
+        auto& lexeme = lexer.CurrentLexeme();
+        lexeme.end = p;
         lexer.SetCurrentMatchEnd(p);
         lexer.EraseTail();
         lexer.SetPos(p);

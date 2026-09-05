@@ -1096,6 +1096,7 @@ void CodeGeneratorVisitor::Visit(soul::ast::spg::ParserFile& parserFile)
     formatter->WriteLine("import soul.ast.common;");
     formatter->WriteLine("import soul.ast.spg;");
     formatter->WriteLine("import soul.ast.source_pos;");
+    formatter->WriteLine("import soul.ast.span;");
 
     for (const auto& imprt : parserFile.Imports())
     {

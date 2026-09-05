@@ -505,6 +505,10 @@ void TypeResolver::Visit(otava::ast::DeclTypeSpecifierNode& node)
 void TypeResolver::Visit(otava::ast::QualifiedIdNode& node)
 {
     if (failed) return;
+    if (node.Str() == "Machine::Vars")
+    {
+        int x = 0;
+    }
     context->GetSymbolTable()->PushTopScopeIndex();
     ScopesPtr scopesPtr(GetScopes(node.Left(), context), context);
     Scopes& scopes = context->GetScopes();

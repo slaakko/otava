@@ -7,6 +7,7 @@ import util;
 import soul.ast.common;
 import soul.ast.spg;
 import soul.ast.source_pos;
+import soul.ast.span;
 import otava.ast.translation_unit;
 import otava.ast.modules;
 import otava.ast.declaration;

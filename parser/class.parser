@@ -13,6 +13,7 @@ export module otava.parser.classes;
 [implementation]import otava.lexer;
 [implementation]import otava.symbols.classes;
 [implementation]import otava.symbols.declaration;
+[implementation]import otava.symbols.scope;
 [implementation]import otava.symbols.scope_ptr;
 [implementation]import otava.symbols.symbol_table;
 [implementation]import otava.parser.attribute;

@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/intermediate/intermediate.lexer' using soul lexer generator oslg version 0.1.0
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/intermediate/intermediate.lexer' using soul lexer generator oslg version 0.2.4
 
 export module otava.intermediate.lexer;
 
@@ -18,15 +18,6 @@ export namespace otava::intermediate::lexer {
 
 std::mutex& MakeLexerMtx();
 
-template<typename Char>
-struct IntermediateLexer;
-
-template<typename Char>
-soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);
-
-template<typename Char>
-soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
-
 soul::ast::common::TokenCollection* GetTokens();
 
 struct IntermediateLexer_Variables : public soul::lexer::Variables
@@ -37,7 +28,7 @@ struct IntermediateLexer_Variables : public soul::lexer::Variables
 template<typename Char>
 struct IntermediateLexer
 {
-    using Variables = IntermediateLexer_Variables;
+    using Vars = IntermediateLexer_Variables;
 
     static std::int32_t NextState(std::int32_t state, Char chr, soul::lexer::LexerBase<Char>& lexer)
     {

@@ -5,6 +5,8 @@
 
 module otava.parser.decl_specifier_seq;
 
+import soul.lexer;
+import soul.parser;
 import otava.lexer;
 import otava.parser.declaration;
 import otava.symbols.context;

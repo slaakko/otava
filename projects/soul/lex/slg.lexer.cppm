@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/soul-mod/tools/otava/projects/soul/lex/slg.lexer' using soul lexer generator oslg version 5.0.0
+// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/soul/lex/slg.lexer' using soul lexer generator oslg version 0.2.4
 
 export module soul.lex.slg;
 
@@ -21,15 +21,6 @@ export namespace soul::lex::slg {
 
 std::mutex& MakeLexerMtx();
 
-template<typename Char>
-struct SlgLexer;
-
-template<typename Char>
-soul::lexer::Lexer<SlgLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);
-
-template<typename Char>
-soul::lexer::Lexer<SlgLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
-
 soul::ast::common::TokenCollection* GetTokens();
 
 struct SlgLexer_Variables : public soul::lexer::Variables
@@ -42,7 +33,7 @@ struct SlgLexer_Variables : public soul::lexer::Variables
 template<typename Char>
 struct SlgLexer
 {
-    using Variables = SlgLexer_Variables;
+    using Vars = SlgLexer_Variables;
 
     static std::int32_t NextState(std::int32_t state, Char chr, soul::lexer::LexerBase<Char>& lexer)
     {
@@ -17018,7 +17009,7 @@ struct SlgLexer
             }
             case 21:
             {
-                auto vars = static_cast<Variables*>(lexer.GetVariables());
+                auto vars = static_cast<Vars*>(lexer.GetVariables());
                 if (vars->leftAngleCount > 0) return soul::lexer::INVALID_TOKEN;
                 lexer.Retract();
                 return soul::cpp::op::token::SHIFT_RIGHT;
@@ -17236,7 +17227,7 @@ struct SlgLexer
             }
             case 57:
             {
-                auto vars = static_cast<Variables*>(lexer.GetVariables());
+                auto vars = static_cast<Vars*>(lexer.GetVariables());
                 if (!vars->matchFilePath) return soul::lexer::INVALID_TOKEN;
                 lexer.Retract();
                 return soul::tool::token::FILEPATH;
@@ -17282,6 +17273,7 @@ soul::lexer::Lexer<SlgLexer<Char>, Char> MakeLexer(const Char* start, const Char
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lxr = soul::lexer::Lexer<SlgLexer<Char>, Char>(start, end, fileName);
     lxr.SetClassMap(GetClassMap<Char>());
+    lxr.SetTokenCollection(GetTokens());
     lxr.SetKeywordMap(GetKeywords<Char>());
     return lxr;
 }
@@ -17292,6 +17284,7 @@ soul::lexer::Lexer<SlgLexer<Char>, Char> MakeLexer(const std::string& moduleFile
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lxr = soul::lexer::Lexer<SlgLexer<Char>, Char>(start, end, fileName);
     lxr.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
+    lxr.SetTokenCollection(GetTokens());
     lxr.SetKeywordMap(GetKeywords<Char>());
     return lxr;
 }

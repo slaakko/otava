@@ -17,7 +17,7 @@ void SetEx()
 
 std::string OtavaVersionStr()
 {
-    return "0.2.3";
+    return "0.2.4";
 }
 
 std::string OtavaRoot()

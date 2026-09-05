@@ -11,7 +11,6 @@ import otava.symbols.exception;
 import otava.symbols.recorded_parse;
 import otava.parser.statement;
 import otava.parser.classes;
-import otava.lexer;
 
 namespace otava::parser::recorded::parse {
 
@@ -25,61 +24,61 @@ void Init()
     otava::symbols::SetRecordedParseCtorInitializerFn(RecordedParseCtorInitializer);
 }
     
-soul::ast::lexer::pos::pair::LexerPosPair RecordCompoundStatement(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>& lexer)
+soul::ast::lexer::pos::pair::LexerPosPair RecordCompoundStatement(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>& lxr)
 {
-    std::int64_t start = lexer.GetPos();
+    std::int64_t start = lxr.GetPos();
     int braceCount = 0;
-    while (*lexer != soul::lexer::END_TOKEN)
+    while (*lxr != soul::lexer::END_TOKEN)
     {
-        if (*lexer == otava::token::LBRACE)
+        if (*lxr == otava::token::LBRACE)
         {
             ++braceCount;
         }
-        else if (*lexer == otava::token::RBRACE)
+        else if (*lxr == otava::token::RBRACE)
         {
             if (braceCount > 0)
             {
                 --braceCount;
                 if (braceCount == 0)
                 {
-                    ++lexer;
-                    std::int64_t end = lexer.GetPos();
+                    ++lxr;
+                    std::int64_t end = lxr.GetPos();
                     return soul::ast::lexer::pos::pair::LexerPosPair(start, end);
                 }
             }
             else
             {
-                lexer.SetPos(start);
+                lxr.SetPos(start);
                 return soul::ast::lexer::pos::pair::LexerPosPair();
             }
         }
         else if (braceCount == 0)
         {
-            lexer.SetPos(start);
+            lxr.SetPos(start);
             return soul::ast::lexer::pos::pair::LexerPosPair();
         }
-        ++lexer;
+        ++lxr;
     }
-    lexer.SetPos(start);
+    lxr.SetPos(start);
     return soul::ast::lexer::pos::pair::LexerPosPair();
 }
 
-soul::ast::lexer::pos::pair::LexerPosPair RecordCtorInitializer(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>& lexer)
+soul::ast::lexer::pos::pair::LexerPosPair RecordCtorInitializer(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>& lxr)
 {
-    std::int64_t start = lexer.GetPos();
-    while (*lexer != soul::lexer::END_TOKEN)
+    std::int64_t start = lxr.GetPos();
+    while (*lxr != soul::lexer::END_TOKEN)
     {
-        if (*lexer == otava::token::LBRACE)
+        if (*lxr == otava::token::LBRACE)
         {
-            std::int64_t end = lexer.GetPos();
+            std::int64_t end = lxr.GetPos();
             return soul::ast::lexer::pos::pair::LexerPosPair(start, end);
         }
         else
         {
-            ++lexer;
+            ++lxr;
         }
     }
-    lexer.SetPos(start);
+    lxr.SetPos(start);
     return soul::ast::lexer::pos::pair::LexerPosPair();
 }
 

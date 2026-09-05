@@ -9,8 +9,8 @@ import std;
 import soul.ast.span;
 import otava.ast.identifier;
 import otava.ast.literal;
-import soul.lexer.token;
-import soul.lexer.base;
+import soul.lexer;
+import soul.parser;
 
 export namespace otava::parser::token {
 

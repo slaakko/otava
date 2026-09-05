@@ -9,6 +9,7 @@ import soul.ast.spg;
 import otava.ast;
 import otava.token;
 import otava.lexer;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.scope_resolver;
 import otava.symbols.classes;

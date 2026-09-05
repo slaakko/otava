@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/lexer/otava.token.line.lexer' using soul lexer generator oslg version 0.2.2
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/lexer/otava.token.line.lexer' using soul lexer generator oslg version 0.2.4
 
 export module otava.token.line.lexer;
 
@@ -18,15 +18,6 @@ export namespace otava::token::line::lexer {
 
 std::mutex& MakeLexerMtx();
 
-template<typename Char>
-struct OtavaTokenLineLexer;
-
-template<typename Char>
-soul::lexer::Lexer<OtavaTokenLineLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);
-
-template<typename Char>
-soul::lexer::Lexer<OtavaTokenLineLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
-
 soul::ast::common::TokenCollection* GetTokens();
 
 struct OtavaTokenLineLexer_Variables : public soul::lexer::Variables
@@ -38,7 +29,7 @@ struct OtavaTokenLineLexer_Variables : public soul::lexer::Variables
 template<typename Char>
 struct OtavaTokenLineLexer
 {
-    using Variables = OtavaTokenLineLexer_Variables;
+    using Vars = OtavaTokenLineLexer_Variables;
 
     static std::int32_t NextState(std::int32_t state, Char chr, soul::lexer::LexerBase<Char>& lexer)
     {
@@ -18251,7 +18242,7 @@ struct OtavaTokenLineLexer
             }
             case 40:
             {
-                auto vars = static_cast<Variables*>(lexer.GetVariables());
+                auto vars = static_cast<Vars*>(lexer.GetVariables());
                 if (vars->langleCount > 0) return soul::lexer::INVALID_TOKEN;
                 lexer.Retract();
                 return otava::token::OTHER;

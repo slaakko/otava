@@ -106,7 +106,7 @@ public:
     using CharType = Char;
     using TokenType = soul::lexer::Token<Char, LexerBase<Char>>;
     using TokenLineType = soul::lexer::TokenLine<Char, LexerBase<Char>>;
-    using VariableClassType = Machine::Variables;
+    using VariableClassType = Machine::Vars;
     using PPHook = void (*)(LexerType* lexer, TokenType* token);
 
     Lexer(const Char* start_, const Char* end_, const std::string& fileName_) :
@@ -223,6 +223,10 @@ public:
         const auto& token = GetToken(pos);
         return soul::ast::Span(static_cast<int>(token.match.begin - start), token.match.Length());
     }
+    soul::ast::FullSpan GetFullSpan(std::int64_t pos) const override
+    {
+        return soul::ast::FullSpan(file, GetSpan(pos));
+    }
     const TokenType& GetToken(std::int64_t pos) const override
     {
         std::int32_t tokenIndex = static_cast<std::int32_t>(pos);
@@ -299,7 +303,7 @@ public:
     {
         ruleContext.pop_back();
     }
-    std::int64_t GetKeywordToken(const Lexeme<Char>& lexeme) const noexcept override
+    std::int64_t GetKeywordToken(const soul::lexer::Lexeme<Char>& lexeme) const noexcept override
     {
         if (keywordMap)
         {
@@ -322,11 +326,11 @@ public:
     {
         tokens.erase(current + 1, tokens.end());
     }
-    const Lexeme<Char>& CurrentLexeme() const noexcept override
+    const soul::lexer::Lexeme<Char>& CurrentLexeme() const noexcept override
     {
         return lexeme;
     }
-    Lexeme<Char>& CurrentLexeme() noexcept override
+    soul::lexer::Lexeme<Char>& CurrentLexeme() noexcept override
     {
         return lexeme;
     }

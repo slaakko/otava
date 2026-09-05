@@ -1,11 +1,11 @@
-// this file has been automatically generated from 'D:/work/test_soul/tools/otava/projects/soul/xml/xpath/xpath.lexer' using soul lexer generator oslg version 5.0.0
+// this file has been automatically generated from 'D:/work/otava/projects/soul/xml/xpath/xpath.lexer' using soul lexer generator oslg version 0.2.4
 
 module soul.xml.xpath.lexer;
 
 
 namespace soul::xml::xpath::lexer {
 
-soul::ast::common::TokenCollection* GetTokens(soul::xml::xpath::lexer::Tag tag)
+soul::ast::common::TokenCollection* GetTokens()
 {
     static soul::ast::common::TokenCollection tokens("soul.xml.xpath.lexer.tokens");
     if (!tokens.Initialized())
@@ -72,7 +72,7 @@ std::mutex mtx;
 std::mutex& MakeLexerMtx() { return mtx; }
 
 template<>
-soul::lexer::KeywordMap<char>* GetKeywords<char>(soul::xml::xpath::lexer::Tag tag)
+soul::lexer::KeywordMap<char>* GetKeywords<char>()
 {
     static const soul::lexer::Keyword<char> keywords[] = {
          { "or", soul::xml::xpath::token::OR },
@@ -103,7 +103,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>(soul::xml::xpath::lexer::Tag ta
 }
 
 template<>
-soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>(soul::xml::xpath::lexer::Tag tag)
+soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
 {
     static const soul::lexer::Keyword<char8_t> keywords[] = {
          { u8"or", soul::xml::xpath::token::OR },
@@ -134,7 +134,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>(soul::xml::xpath::lexer::
 }
 
 template<>
-soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>(soul::xml::xpath::lexer::Tag tag)
+soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
 {
     static const soul::lexer::Keyword<char16_t> keywords[] = {
          { u"or", soul::xml::xpath::token::OR },
@@ -165,7 +165,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>(soul::xml::xpath::lexer
 }
 
 template<>
-soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>(soul::xml::xpath::lexer::Tag tag)
+soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
 {
     static const soul::lexer::Keyword<char32_t> keywords[] = {
          { U"or", soul::xml::xpath::token::OR },

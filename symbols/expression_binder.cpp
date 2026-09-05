@@ -1400,6 +1400,10 @@ void ExpressionBinder::Visit(otava::ast::DoubleNode& node)
 void ExpressionBinder::Visit(otava::ast::IdentifierNode& node)
 {
     if (failed) return;
+    if (node.Str() == "langleCount")
+    {
+        int x = 0;
+    }
     soul::ast::FullSpan fullSpan = node.GetFullSpan();
     bool invokeOrTryCatch = context->GetFlag(ContextFlags::invoke | ContextFlags::tryCatch);
     bool foundFromParentFn = false;

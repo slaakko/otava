@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/soul-mod/tools/otava/projects/soul/lex/re.lexer' using soul lexer generator oslg version 5.0.0
+// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/soul/lex/re.lexer' using soul lexer generator oslg version 0.2.4
 
 export module soul.lex.re;
 
@@ -21,15 +21,6 @@ export namespace soul::lex::re {
 
 std::mutex& MakeLexerMtx();
 
-template<typename Char>
-struct RegExLexer;
-
-template<typename Char>
-soul::lexer::Lexer<RegExLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);
-
-template<typename Char>
-soul::lexer::Lexer<RegExLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
-
 soul::ast::common::TokenCollection* GetTokens();
 
 struct RegExLexer_Variables : public soul::lexer::Variables
@@ -40,7 +31,7 @@ struct RegExLexer_Variables : public soul::lexer::Variables
 template<typename Char>
 struct RegExLexer
 {
-    using Variables = RegExLexer_Variables;
+    using Vars = RegExLexer_Variables;
 
     static std::int32_t NextState(std::int32_t state, Char chr, soul::lexer::LexerBase<Char>& lexer)
     {
@@ -3292,20 +3283,22 @@ template<typename Char>
 soul::lexer::Lexer<RegExLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
-    auto lexer = soul::lexer::Lexer<RegExLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>());
-    lexer.SetKeywordMap(GetKeywords<Char>());
-    return lexer;
+    auto lxr = soul::lexer::Lexer<RegExLexer<Char>, Char>(start, end, fileName);
+    lxr.SetClassMap(GetClassMap<Char>());
+    lxr.SetTokenCollection(GetTokens());
+    lxr.SetKeywordMap(GetKeywords<Char>());
+    return lxr;
 }
 
 template<typename Char>
 soul::lexer::Lexer<RegExLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
-    auto lexer = soul::lexer::Lexer<RegExLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
-    lexer.SetKeywordMap(GetKeywords<Char>());
-    return lexer;
+    auto lxr = soul::lexer::Lexer<RegExLexer<Char>, Char>(start, end, fileName);
+    lxr.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
+    lxr.SetTokenCollection(GetTokens());
+    lxr.SetKeywordMap(GetKeywords<Char>());
+    return lxr;
 }
 
 } // namespace soul::lex::re

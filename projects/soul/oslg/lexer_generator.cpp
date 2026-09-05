@@ -517,16 +517,6 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine();
     interfaceFormatter.WriteLine("std::mutex& MakeLexerMtx();");
     interfaceFormatter.WriteLine();
-    interfaceFormatter.WriteLine("template<typename Char>");
-    interfaceFormatter.WriteLine("struct " + lexer->Name() + ";");
-    interfaceFormatter.WriteLine();
-    interfaceFormatter.WriteLine("template<typename Char>");
-    interfaceFormatter.WriteLine("soul::lexer::Lexer<" + lexer->Name() + "<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);");
-    interfaceFormatter.WriteLine();
-    interfaceFormatter.WriteLine("template<typename Char>");
-    interfaceFormatter.WriteLine("soul::lexer::Lexer<" + lexer->Name() +
-        "<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);");
-    interfaceFormatter.WriteLine();
     interfaceFormatter.WriteLine("soul::ast::common::TokenCollection* GetTokens();");
     interfaceFormatter.WriteLine();
     sourceFormatter.WriteLine("namespace " + soul::ast::common::ToNamespaceName(moduleName) + " {");
@@ -555,7 +545,7 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("struct " + lexer->Name());
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
-    interfaceFormatter.WriteLine("using Variables = " + lexer->VariableClassName() + ";");
+    interfaceFormatter.WriteLine("using Vars = " + lexer->VariableClassName() + ";");
     interfaceFormatter.WriteLine();
     interfaceFormatter.WriteLine("static std::int32_t NextState(std::int32_t state, Char chr, soul::lexer::LexerBase<Char>& lexer)");
     interfaceFormatter.WriteLine("{");
@@ -688,7 +678,7 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
                         new soul::ast::cpp::InitDeclaratorNode(sourcePos, "auto vars",
                             new soul::ast::cpp::InitializerNode(sourcePos,
                                 new soul::ast::cpp::AssignInitNode(sourcePos,
-                                    new soul::ast::cpp::IdExprNode(sourcePos, "static_cast<Variables*>(lexer.GetVariables())")))));
+                                    new soul::ast::cpp::IdExprNode(sourcePos, "static_cast<Vars*>(lexer.GetVariables())")))));
                     rule->Code()->InsertFront(declarationStmt);
                 }
             }

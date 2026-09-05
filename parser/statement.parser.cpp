@@ -12,6 +12,7 @@ import otava.token;
 import otava.lexer;
 import otava.symbols.block;
 import otava.symbols.classes;
+import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.symbol_table;
 import otava.parser.attribute;

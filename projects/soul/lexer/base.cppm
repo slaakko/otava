@@ -22,13 +22,14 @@ public:
     LexerBase() noexcept {}
     virtual ~LexerBase() {}
     virtual void Retract() noexcept = 0;
-    virtual std::int64_t GetKeywordToken(const Lexeme<Char>& lexeme) const noexcept = 0;
+    virtual std::int64_t GetKeywordToken(const soul::lexer::Lexeme<Char>& lexeme) const noexcept = 0;
     virtual void EraseTail() = 0;
     virtual soul::lexer::Token<Char, Self>& CurrentToken() noexcept = 0;
-    virtual const Lexeme<Char>& CurrentLexeme() const noexcept = 0;
-    virtual Lexeme<Char>& CurrentLexeme() noexcept = 0;
+    virtual const soul::lexer::Lexeme<Char>& CurrentLexeme() const noexcept = 0;
+    virtual soul::lexer::Lexeme<Char>& CurrentLexeme() noexcept = 0;
     virtual soul::ast::Span GetSpan() const = 0;
     virtual soul::ast::Span GetSpan(std::int64_t pos) const = 0;
+    virtual soul::ast::FullSpan GetFullSpan(std::int64_t pos) const = 0;
     virtual const soul::lexer::Token<Char, Self>& GetToken(std::int64_t pos) const = 0;
     virtual const std::string& FileName() const noexcept = 0;
     virtual int File() const noexcept = 0;
@@ -36,7 +37,7 @@ public:
     virtual void SetLine(std::int32_t line_) noexcept = 0;
     virtual soul::lexer::ClassMap<Char>* GetClassMap() const noexcept = 0;
     virtual void SetClassMap(soul::lexer::ClassMap<Char>* classMap) noexcept = 0;
-    virtual Variables* GetVariables() const noexcept = 0;
+    virtual soul::lexer::Variables* GetVariables() const noexcept = 0;
     virtual std::vector<int> GetLineStartIndeces() const = 0;
     virtual soul::ast::common::TokenCollection* GetTokenCollection() const noexcept = 0;
     virtual void SetTokenCollection(soul::ast::common::TokenCollection* tokenCollection_) noexcept = 0;

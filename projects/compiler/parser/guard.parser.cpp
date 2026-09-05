@@ -7,6 +7,7 @@ import util;
 import soul.ast.common;
 import soul.ast.spg;
 import soul.ast.source_pos;
+import soul.ast.span;
 import otava.lexer;
 
 namespace otava::parser::guard {

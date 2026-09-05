@@ -39,7 +39,7 @@ public:
             ++kw;
         }
     }
-    std::int64_t GetKeywordToken(const Lexeme<Char>& lexeme) const noexcept
+    std::int64_t GetKeywordToken(const soul::lexer::Lexeme<Char>& lexeme) const noexcept
     {
         auto it = keywordMap.find(lexeme);
         if (it != keywordMap.cend())

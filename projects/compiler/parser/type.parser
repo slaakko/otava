@@ -9,6 +9,7 @@ export module otava.parser.type;
 [implementation]import otava.ast;
 [implementation]import otava.token;
 [implementation]import otava.lexer;
+[implementation]import otava.symbols.scope;
 [implementation]import otava.symbols.scope_ptr;
 [implementation]import otava.symbols.scope_resolver;
 [implementation]import otava.symbols.classes;

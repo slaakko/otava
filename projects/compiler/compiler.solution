@@ -10,3 +10,4 @@ project <optimizer/optimizer.project>;
 project <ast/ast.project>;
 project <symbols/symbols.project>;
 project <lexer/lexer.project>;
+project <parser/parser.project>;
