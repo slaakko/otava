@@ -500,6 +500,8 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("import soul.ast.slg;");
     interfaceFormatter.WriteLine("import soul.ast.common;");
     interfaceFormatter.WriteLine("import util.binary_resource_ptr;");
+    interfaceFormatter.WriteLine("import util.system;");
+    interfaceFormatter.WriteLine("import util.path;");
     for (const auto& imprt : lexerFile->Imports())
     {
         soul::ast::common::Collection* collection = slgFile->GetCollection(imprt->ModuleName());
@@ -737,11 +739,11 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("soul::lexer::Lexer<" + lexer->Name() + "<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)");
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
-    interfaceFormatter.WriteLine("std::lock_guard<std::mutex> lock(MakeLexerMtx());");
+    interfaceFormatter.WriteLine("std::lock_guard<std::mutex> lock(" + soul::ast::common::ToNamespaceName(moduleName) + "::MakeLexerMtx()); ");
     interfaceFormatter.WriteLine("auto lxr = soul::lexer::Lexer<" + lexer->Name() + "<Char>, Char>(start, end, fileName);");
-    interfaceFormatter.WriteLine("lxr.SetClassMap(GetClassMap<Char>());");
-    interfaceFormatter.WriteLine("lxr.SetTokenCollection(GetTokens());");
-    interfaceFormatter.WriteLine("lxr.SetKeywordMap(GetKeywords<Char>());");
+    interfaceFormatter.WriteLine("lxr.SetClassMap(" + soul::ast::common::ToNamespaceName(moduleName) + "::GetClassMap<Char>());");
+    interfaceFormatter.WriteLine("lxr.SetTokenCollection(" + soul::ast::common::ToNamespaceName(moduleName) + "::GetTokens());");
+    interfaceFormatter.WriteLine("lxr.SetKeywordMap(" + soul::ast::common::ToNamespaceName(moduleName) + "::GetKeywords<Char>());");
     interfaceFormatter.WriteLine("return lxr;");
     interfaceFormatter.DecIndent();
     interfaceFormatter.WriteLine("}");
@@ -752,11 +754,11 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
         "<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)");
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
-    interfaceFormatter.WriteLine("std::lock_guard<std::mutex> lock(MakeLexerMtx());");
+    interfaceFormatter.WriteLine("std::lock_guard<std::mutex> lock(" + soul::ast::common::ToNamespaceName(moduleName) + "::MakeLexerMtx());");
     interfaceFormatter.WriteLine("auto lxr = soul::lexer::Lexer<" + lexer->Name() + "<Char>, Char>(start, end, fileName);");
-    interfaceFormatter.WriteLine("lxr.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));");
-    interfaceFormatter.WriteLine("lxr.SetTokenCollection(GetTokens());");
-    interfaceFormatter.WriteLine("lxr.SetKeywordMap(GetKeywords<Char>());");
+    interfaceFormatter.WriteLine("lxr.SetClassMap(" + soul::ast::common::ToNamespaceName(moduleName) + "::GetClassMap<Char>(moduleFileName, resourceFlags));");
+    interfaceFormatter.WriteLine("lxr.SetTokenCollection(" + soul::ast::common::ToNamespaceName(moduleName) + "::GetTokens());");
+    interfaceFormatter.WriteLine("lxr.SetKeywordMap(" + soul::ast::common::ToNamespaceName(moduleName) + "::GetKeywords<Char>());");
     interfaceFormatter.WriteLine("return lxr;");
     interfaceFormatter.DecIndent();
     interfaceFormatter.WriteLine("}");

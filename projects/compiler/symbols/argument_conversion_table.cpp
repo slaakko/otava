@@ -1062,8 +1062,10 @@ FunctionSymbol* FunctionToFunctionPtrArgumentConversion::Get(TypeSymbol* paramTy
                     bool found = true;
                     for (Index i = Index(0); i < ToIndex(n); ++i)
                     {
-                        TypeSymbol* leftType = functionType->ParameterTypes(context)[ToUnderlying(i)]->DirectType(context)->FinalType(fullSpan, context);;
-                        TypeSymbol* rightType = functionSymbol->Parameters(context)[ToUnderlying(i)]->GetType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        //TypeSymbol* leftType = functionType->ParameterTypes(context)[ToUnderlying(i)]->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* leftType = functionType->ParameterTypes(context)[ToUnderlying(i)];
+                        //TypeSymbol* rightType = functionSymbol->Parameters(context)[ToUnderlying(i)]->GetType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* rightType = functionSymbol->Parameters(context)[ToUnderlying(i)]->GetType(context);
                         FunctionSymbol* conversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                             leftType, rightType, fullSpan, context);
                         if (!conversion)
@@ -1074,8 +1076,10 @@ FunctionSymbol* FunctionToFunctionPtrArgumentConversion::Get(TypeSymbol* paramTy
                     }
                     if (found)
                     {
-                        TypeSymbol* leftType = functionType->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
-                        TypeSymbol* rightType = functionSymbol->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        //TypeSymbol* leftType = functionType->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* leftType = functionType->ReturnType(context);
+                        //TypeSymbol* rightType = functionSymbol->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* rightType = functionSymbol->ReturnType(context);
                         FunctionSymbol* conversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                             leftType, rightType, fullSpan, context);
                         if (conversion)
@@ -1093,9 +1097,11 @@ FunctionSymbol* FunctionToFunctionPtrArgumentConversion::Get(TypeSymbol* paramTy
                     bool found = true;
                     for (Index i = Index(0); i < ToIndex(n); ++i)
                     {
-                        TypeSymbol* leftType = functionType->ParameterTypes(context)[ToUnderlying(i)]->DirectType(context)->FinalType(fullSpan, context);
-                        TypeSymbol* rightType = functionDefinitionSymbol->Parameters(
-                            context)[ToUnderlying(i)]->GetType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        //TypeSymbol* leftType = functionType->ParameterTypes(context)[ToUnderlying(i)]->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* leftType = functionType->ParameterTypes(context)[ToUnderlying(i)];
+                        //TypeSymbol* rightType = functionDefinitionSymbol->Parameters(
+                        // context)[ToUnderlying(i)]->GetType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* rightType = functionDefinitionSymbol->Parameters(context)[ToUnderlying(i)]->GetType(context);
                         FunctionSymbol* conversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                             leftType, rightType, fullSpan, context);
                         if (!conversion)
@@ -1106,8 +1112,10 @@ FunctionSymbol* FunctionToFunctionPtrArgumentConversion::Get(TypeSymbol* paramTy
                     }
                     if (found)
                     {
-                        TypeSymbol* leftType = functionType->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
-                        TypeSymbol* rightType = functionDefinitionSymbol->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        //TypeSymbol* leftType = functionType->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* leftType = functionType->ReturnType(context);
+                        //TypeSymbol* rightType = functionDefinitionSymbol->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context);
+                        TypeSymbol* rightType = functionDefinitionSymbol->ReturnType(context);
                         FunctionSymbol* conversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                             leftType, rightType, fullSpan, context);
                         if (conversion)

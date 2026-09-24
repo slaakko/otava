@@ -423,6 +423,11 @@ std::int64_t ort_current_ms()
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - std::chrono::steady_clock::time_point()).count();
 }
 
+std::int64_t ort_now()
+{
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - std::chrono::steady_clock::time_point()).count();
+}
+
 void* ort_get_std_output_handle()
 {
     return GetStdHandle(STD_OUTPUT_HANDLE);

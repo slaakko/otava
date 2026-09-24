@@ -133,7 +133,9 @@ public:
     AliasTypeSymbol* AddAliasType(otava::ast::Node* idNnode, otava::ast::Node* aliasTypeNode, TypeSymbol* type, Context* context);
     void AddUsingDeclaration(otava::ast::Node* node, Symbol* symbol, Context* context);
     void AddUsingDirective(NamespaceSymbol* ns, otava::ast::Node* node, Context* context);
+    SymbolId GetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context) const noexcept;
     void SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context);
+    void MapIrId(CompoundTypeSymbol* compoundTypeSymbol, SymbolId irId, Context* context);
     TypeSymbol* GetCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context);
     TypeSymbol* MakeCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context);
     ArrayTypeSymbol* GetArrayType(TypeSymbol* elementType, std::int64_t size, Context* context);
@@ -149,7 +151,9 @@ public:
         Context* context);
     ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
         Context* context);
+    SymbolId GetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context) const noexcept;
     void SetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context);
+    void MapIrId(ClassTemplateSpecializationSymbol* specialization, SymbolId irId, Context* context);
     ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
         const soul::ast::FullSpan& fullSpan, Context* context);
     ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
@@ -161,6 +165,9 @@ public:
     FunctionTypeSymbol* MakeFunctionTypeSymbol(TypeSymbol* returnType, const std::vector<TypeSymbol*>& parameterTypes, Module* functionModule, bool makePtrType, 
         Context* context);
     FunctionTypeSymbol* MakeFunctionTypeSymbol(FunctionSymbol* functionSymbol, Context* context);
+    SymbolId GetIrId(FunctionTypeSymbol* functionTypeSymbol, Context* context) const noexcept;
+    void SetIrId(FunctionTypeSymbol* functionTypeSymbol, Context* context);
+    void MapIrId(FunctionTypeSymbol* functionTypeSymbol, SymbolId irId, Context* context);
     DependentTypeSymbol* MakeDependentTypeSymbol(otava::ast::Node* node, Context* context);
     ClassGroupTypeSymbol* MakeClassGroupTypeSymbol(ClassGroupSymbol* classGroup, Context* context);
     AliasGroupTypeSymbol* MakeAliasGroupTypeSymbol(AliasGroupSymbol* aliasGroup, Context* context);
@@ -234,9 +241,9 @@ public:
     void WriteExplicitInstantiationMap(Writer& writer);
     void ReadExplicitInstantiationMap();
     void ReadExplicitInstantiationMap(Reader& reader);
-    void WriteFunctionTypeMap(Writer& writer);
-    void ReadFunctionTypeMap();
-    void ReadFunctionTypeMap(Reader& reader);
+    void WriteFunctionTypeMaps(Writer& writer);
+    void ReadFunctionTypeMaps();
+    void ReadFunctionTypeMaps(Reader& reader);
     void MapImportedSymbolId(SymbolId symbolId, ModuleId moduleId);
     ModuleId GetModuleIdOfImportedSymbol(SymbolId symbolId) const;
     void WriteSymbolIdVector(Writer& writer);
@@ -246,6 +253,8 @@ public:
     std::int64_t GetArgumentId(int index);
     void AddImportedSymbol(SymbolId symbolId, Module* module);
     const std::unordered_map<SymbolId, ModuleId>& AddedImportedSymbolMap() const { return addedImportedSymbolMap; }
+    void MapClassTypeSymbol(ClassTypeSymbol* cls, Context* context);
+    ClassTypeSymbol* GetClassTypeSymbolByIrId(SymbolId irId) const noexcept;
 private:
     Module* module;
     std::unique_ptr<NamespaceSymbol> globalNs;
@@ -277,6 +286,8 @@ private:
     std::unordered_map<SpecializationKey, SymbolId, SpecializationKeyHash, SpecializationKeyEqual> explicitInstantiationMap;
     bool functionTypeMapRead;
     std::unordered_map<FunctionTypeSymbolKey, SymbolId, FunctionTypeSymbolKeyHash, FunctionTypeSymbolKeyEqual> functionTypeMap;
+    std::unordered_map<FunctionTypeSymbolKey, SymbolId, FunctionTypeSymbolKeyHash, FunctionTypeSymbolKeyEqual> irFunctionTypeMap;
+    std::unordered_map<SymbolId, ClassTypeSymbol*> irIdClassMap;
     Linkage currentLinkage;
     bool arrayTypeMapRead;
     std::unordered_map<ArrayTypeKey, SymbolId, ArrayTypeKeyHash, ArrayTypeKeyEqual> arrayTypeMap;

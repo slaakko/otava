@@ -933,11 +933,11 @@ private:
     std::vector<std::uint32_t> extendedPageStarts;
 };
 
-const int soul_ucd_version_1 = 1;
-const int soul_ucd_version_2 = 2;
-const int soul_ucd_version_3 = 3;
-const int soul_ucd_version_4 = 4;
-const int current_soul_ucd_version = soul_ucd_version_4;
+constexpr int soul_ucd_version_1 = 1;
+constexpr int soul_ucd_version_2 = 2;
+constexpr int soul_ucd_version_3 = 3;
+constexpr int soul_ucd_version_4 = 4;
+constexpr int current_soul_ucd_version = soul_ucd_version_4;
 
 enum class CharacterTableDataSource
 {

@@ -802,6 +802,8 @@ void StatementBinder::Visit(otava::ast::IfStatementNode& node)
         condition.reset(MakeBoundBooleanConversionNode(condition.release(), context));
     }
     boundIfStatement->SetCondition(condition.release());
+    flagSetter.Reset();
+    flagResetter.Reset();
     std::unique_ptr<BoundStatementNode> boundThenStatement = BindStatement(node.ThenStatement(), functionDefinitionSymbol, context);
     if (boundThenStatement)
     {
@@ -856,6 +858,8 @@ void StatementBinder::Visit(otava::ast::SwitchStatementNode& node)
     }
     TypeSymbol* switchCondType = condition->GetType();
     boundSwitchStatement->SetCondition(condition.release());
+    flagSetter.Reset();
+    flagResetter.Reset();
     context->PushSwitchCondType(switchCondType);
     FlagSetter skipFlagSetter(context, ContextFlags::skipInvokeChecking);
     std::unique_ptr<BoundStatementNode> boundStmt = BindStatement(node.Statement(), functionDefinitionSymbol, context);
@@ -981,6 +985,8 @@ void StatementBinder::Visit(otava::ast::WhileStatementNode& node)
         {
             condition.reset(MakeBoundBooleanConversionNode(condition.release(), context));
         }
+        flagSetter.Reset();
+        flagResetter.Reset();
         boundWhileStatement->SetCondition(condition.release());
         std::unique_ptr<BoundStatementNode> boundStmt = BindStatement(node.Statement(), functionDefinitionSymbol, context);
         if (boundStmt)
@@ -1046,6 +1052,8 @@ void StatementBinder::Visit(otava::ast::DoStatementNode& node)
     {
         condition.reset(MakeBoundBooleanConversionNode(condition.release(), context));
     }
+    flagSetter.Reset();
+    flagResetter.Reset();
     boundDoStatement->SetExpr(condition.release());
     std::unique_ptr<BoundStatementNode> boundStmt = BindStatement(node.Statement(), functionDefinitionSymbol, context);
     if (boundStmt)
@@ -1331,8 +1339,8 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
                 {
                     call = static_cast<BoundFunctionPtrCallNode*>(expression.get());
                     fnType = static_cast<FunctionTypeSymbol*>(call->GetType()->GetBaseType(context));
-                    fnType->AddParameterType(returnValueParam->GetReferredType(context));
-                    fnType->SetReturnType(voidType);
+                    fnType->AddParameterType(returnValueParam->GetReferredType(context), context);
+                    fnType->SetReturnType(voidType, context);
                     expression->SetType(voidType);
                     call->AddArgument(new BoundParameterNode(returnValueParam,
                         fullSpan, returnValueParam->GetReferredType(context)));
@@ -1441,7 +1449,7 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
                         {
                             context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                                 returnType, argumentType, returnValueExpr.get(), fullSpan, argumentMatch, functionMatch, context);
-                            ThrowException("no conversion from '" + argumentType->FullName(context) + "' to '" + returnType->FullName(context) + "' found", 
+                            ThrowException("no conversion from '" + argumentType->FullName(context) + "' to '" + returnType->FullName(context) + "' found",
                                 fullSpan, context);
                         }
                     }
@@ -1451,9 +1459,9 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
         }
         else if (context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ReturnType(context) &&
             !TypesEqual(context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ReturnType(context)->DirectType(context)->FinalType(fullSpan, context),
-                voidType, context))
-        {
-            ThrowException("must return a value", fullSpan, context);
+            voidType, context))
+            {
+                ThrowException("must return a value", fullSpan, context);
         }
         SetStatement(boundReturnStatement.release());
     }
@@ -2499,6 +2507,10 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
         !hasNoReturnAttribute)
     {
         CheckFunctionReturnPaths(functionDefinitionNode, context);
+    }
+    if (functionDefinitionSymbol->FullName(context) == "otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)")
+    {
+        functionDefinitionSymbol->SetSkipInvokeChecking();
     }
     bool skipInvokeChecking = functionDefinitionSymbol->SkipInvokeChecking();
     bool containsStatics = functionDefinitionSymbol->ContainsStatics();

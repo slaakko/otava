@@ -1,0 +1,22 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.build.solution_lexer;
+
+import otava.build.solution_token;
+import otava.build.solution_keyword;
+import otava.build.solution_expr;
+
+lexer SolutionLexer
+{
+    rules
+    {
+		"{separators}" {}
+		"{id}" { std::int64_t kw = lexer.GetKeywordToken(lexer.CurrentToken().match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
+        "{filepath}" { return FILEPATH; }
+        ";" { return SEMICOLON; }
+        "\." { return DOT; }
+    }
+}

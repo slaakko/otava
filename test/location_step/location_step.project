@@ -1,0 +1,3 @@
+project location_step;
+target=program;
+source <main.cpp>;

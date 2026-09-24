@@ -44,7 +44,7 @@ Context::Context() :
     boundFunctionSerial(0), trySerial(0), invokeSerial(0), cleanupSerial(0), resultSerial(0), labelSerial(0), ehReturnFromSerial(0), childControlResultSerial(0),
     conditionVariableSerial(0), streamInitVarSerial(0), instantiationQueue(nullptr), switchCondType(nullptr), declaredInitializerType(nullptr),
     parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateScope(nullptr), hasException(false), initializer(nullptr), 
-    incompleteClassesCompleted(false)
+    incompleteClassesCompleted(false), hasUnresolvedForwardDeclaration(false)
 {
 }
 
@@ -331,9 +331,13 @@ void Context::AddBoundVTabFunction(BoundFunctionNode* node)
     boundVTabFunctions.push_back(std::unique_ptr<BoundFunctionNode>(node));
 }
 
-void Context::ClearBoundVTabFunctions()
+void Context::AddBoundClass(ClassTypeSymbol* cls)
 {
-    boundVTabFunctions.clear();
+    for (const auto& boundClass : boundClasses)
+    {
+        if (cls == boundClass->GetClass()) return;
+    }
+    boundClasses.push_back(std::unique_ptr<BoundClassNode>(new BoundClassNode(cls, cls->GetFullSpan())));
 }
 
 BoundFunctionNode* Context::GetBoundFunction() const noexcept

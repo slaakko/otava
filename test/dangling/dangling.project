@@ -1,0 +1,3 @@
+project dangling;
+target=program;
+source <main.cpp>;

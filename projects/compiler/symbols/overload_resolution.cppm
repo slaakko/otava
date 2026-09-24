@@ -65,6 +65,7 @@ struct FunctionMatch
     int numConversions;
     int numQualifyingConversions;
     bool scopeMatches;
+    std::string namespaceScopeName;
     std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess> templateParameterMap;
     ClassTemplateSpecializationSymbol* specialization;
     std::vector<std::unique_ptr<BoundExpressionNode>> defaultArgs;

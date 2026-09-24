@@ -124,7 +124,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
             {
                 inlineFunctionFullName = inlineFn->FullName(context);
             }
-            PrintWarning("failed to instantiating inline function '" + inlineFunctionFullName +
+            PrintWarning("failed to instantiate inline function '" + inlineFunctionFullName +
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);
             return fn;
         }

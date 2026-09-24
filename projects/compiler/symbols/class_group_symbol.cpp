@@ -13,6 +13,7 @@ import otava.symbols.derivations;
 import otava.symbols.exception;
 import otava.symbols.lookup;
 import otava.symbols.modules;
+import otava.symbols.project;
 import otava.symbols.scope_resolver;
 import otava.symbols.symbol_table;
 import otava.symbols.templates;
@@ -157,11 +158,15 @@ ClassGroupSymbol::ClassGroupSymbol(Module* module_, SymbolId id_, const std::str
 {
 }
 
-void ClassGroupSymbol::AddClass(ClassTypeSymbol* cls, Context* context)
+void ClassGroupSymbol::AddClass(ClassTypeSymbol* cls, Context* context, bool setGroup)
 {
     if (std::find(classes.begin(), classes.end(), cls) == classes.end())
     {
-        cls->SetGroup(this);
+        if (setGroup)
+        {
+            cls->SetGroup(this);
+            cls->SetIrId(GetIrId(cls->Arity(context), context), context);
+        }
         classes.push_back(cls);
         for (ForwardClassDeclarationSymbol* fwd : forwardDeclarations)
         {
@@ -173,7 +178,7 @@ void ClassGroupSymbol::AddClass(ClassTypeSymbol* cls, Context* context)
     }
 }
 
-void ClassGroupSymbol::AddForwardDeclaration(ForwardClassDeclarationSymbol* fwd)
+void ClassGroupSymbol::AddForwardDeclaration(ForwardClassDeclarationSymbol* fwd, Context* context)
 {
     if (std::find(forwardDeclarations.begin(), forwardDeclarations.end(), fwd) == forwardDeclarations.end())
     {
@@ -432,6 +437,13 @@ void ClassGroupSymbol::Write(Writer& writer)
     {
         writer.GetBinaryStreamWriter().Write(ToUnderlying(fwd->Id()));
     }
+    Cardinality n = Cardinality(arityMap.size());
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(n));
+    for (const auto& a : arityMap)
+    {
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(a.first));
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(a.second));
+    }
 }
 
 void ClassGroupSymbol::Read(Reader& reader)
@@ -448,6 +460,13 @@ void ClassGroupSymbol::Read(Reader& reader)
     {
         SymbolId fwdId = SymbolId(reader.CurrentReader().ReadULong());
         fwdDeclIds.push_back(fwdId);
+    }
+    Cardinality n = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < ToIndex(n); ++i)
+    {
+        Cardinality arity = Cardinality(reader.CurrentReader().ReadUInt());
+        SymbolId irId = SymbolId(reader.CurrentReader().ReadULong());
+        arityMap[arity] = irId;
     }
 }
 
@@ -499,6 +518,20 @@ bool ClassGroupSymbol::ContainsExportClassOrFwdDeclaration(Context* context) con
         if (fwd->IsExportSymbol(context)) return true;
     }
     return false;
+}
+
+SymbolId ClassGroupSymbol::GetIrId(Cardinality arity, Context* context)
+{
+    SymbolsProject* currentProject = context->CurrentProject();
+    std::string fullName = FullName(context);
+    SymbolId irId = currentProject->GetIrId(fullName, arity);
+    if (irId != zeroSymbolId)
+    {
+        return irId;
+    }
+    irId = context->GetNextSymbolId(SymbolKind::classTypeSymbol);
+    currentProject->SetIrId(fullName, arity, irId);
+    return irId;
 }
 
 } // namespace otava::symbols

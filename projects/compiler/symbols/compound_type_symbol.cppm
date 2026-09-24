@@ -48,8 +48,8 @@ class CompoundTypeSymbol : public TypeSymbol
 public:
     CompoundTypeSymbol(Module* module_, SymbolId id_);
     CompoundTypeSymbol(Module* module_, SymbolId id_, const std::string& name_);
-    SymbolId IrId() const noexcept override { return irId; }
-    inline void SetIrId(SymbolId irId_) noexcept { irId = irId_; }
+    SymbolId IrId(Context* context) noexcept override;
+    void SetIrId(SymbolId irId_, Context* context) noexcept;
     TypeSymbol* GetBaseType(Context* context) override;
     void SetBaseType(TypeSymbol* baseType_) noexcept;
     TypeSymbol* PlainType(Context* context) override;
@@ -60,6 +60,7 @@ public:
     bool IsComplete(std::set<const TypeSymbol*>& visited, const TypeSymbol*& incompleteType, Context* context) const override;
     TypeSymbol* FinalType(const soul::ast::FullSpan& fullSpan, Context* context) override;
     TypeSymbol* DirectType(Context* context) override;
+    bool HasForwardClassDeclarationSymbol(Context* context) override;
     void ResolveBaseType(Context* context);
     std::string FullName(Context* context) const override;
     TypeSymbol* Unify(TypeSymbol* argType, Context* context) override;
@@ -73,7 +74,7 @@ private:
     TypeSymbol* baseType;
     SymbolId baseTypeId;
     Derivations derivations;
-    SymbolId irId;
+    mutable SymbolId irId;
 };
 
 } // namespace otava::symbols

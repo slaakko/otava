@@ -42,8 +42,8 @@ public:
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
     Symbol* GetSingleSymbol(Context* context) override;
     ClassTypeSymbol* GetBestMatchingClass(const std::vector<Symbol*>& templateArgs, TemplateMatchInfo& matchInfo, Context* context);
-    void AddClass(ClassTypeSymbol* cls, Context* context);
-    void AddForwardDeclaration(ForwardClassDeclarationSymbol* fwd);
+    void AddClass(ClassTypeSymbol* cls, Context* context, bool setGroup);
+    void AddForwardDeclaration(ForwardClassDeclarationSymbol* fwd, Context* context);
     const std::vector<ClassTypeSymbol*>& Classes(Context* context) const;
     const std::vector<ClassTypeSymbol*>& Classes(Symbol* parent, Context* context) const;
     const std::vector<ForwardClassDeclarationSymbol*>& ForwardDeclarations(Context* context) const;
@@ -61,8 +61,10 @@ private:
     bool contentFetched;
     mutable bool classesSet;
     mutable bool forwardDeclarationsSet;
+    std::map<Cardinality, SymbolId> arityMap;
     void GetContent(Context* context);
     bool ContainsExportClassOrFwdDeclaration(Context* context) const noexcept;
+    SymbolId GetIrId(Cardinality arity, Context* context);
 };
 
 } // namespace otava::symbols

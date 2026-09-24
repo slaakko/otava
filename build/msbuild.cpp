@@ -76,14 +76,14 @@ void MSBuild(const std::string& projectFilePath, const std::string& config, cons
     if (util::FileExists(projectDir + "/build.out.log"))
     {
         std::string buildOutLog = util::ReadFile(projectDir + "/build.out.log");
-        std::cout << buildOutLog << std::endl;
+        std::cout << buildOutLog << "\n";
     }
     if (util::FileExists(projectDir + "/build.error.log"))
     {
         std::string buildErrorLog = util::ReadFile(projectDir + "/build.error.log");
         if (!buildErrorLog.empty())
         {
-            std::cout << buildErrorLog << std::endl;
+            std::cout << buildErrorLog << "\n";
         }
     }
     if (buildExitCode != 0)

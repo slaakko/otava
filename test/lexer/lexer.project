@@ -1,0 +1,3 @@
+project lexer;
+target=program;
+source <main.cpp>;

@@ -2415,6 +2415,10 @@ void UsingDirectiveNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+Visitor::Visitor()
+{
+}
+
 Visitor::~Visitor()
 {
 }

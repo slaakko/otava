@@ -85,6 +85,7 @@ public:
     inline const std::vector<bool>& TemplateArgKinds() const noexcept { return templateArgKinds; }
     void SetTemplateArgKinds(const std::vector<bool>& templateArgKinds_);
     std::string Str() const override;
+    inline int Arity() const noexcept { return int(Items().size()); }
 private:
     std::unique_ptr<Node> templateName;
     std::vector<bool> templateArgKinds;

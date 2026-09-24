@@ -402,6 +402,11 @@ void BoundCompileUnitNode::AddBoundNode(std::unique_ptr<BoundNode>&& node, Conte
         {
             context->AddBoundVTabFunction(static_cast<BoundFunctionNode*>(node.release()));
         }
+        else
+        {
+            BoundClassNode* boundClass = static_cast<BoundClassNode*>(node.get());
+            context->AddBoundClass(boundClass->GetClass());
+        }
     }
     else
     {
@@ -421,6 +426,11 @@ void BoundCompileUnitNode::AddBoundNodeForClass(ClassTypeSymbol* cls, const soul
     {
         AddBoundNodeForClass(base, fullSpan, context);
     }
+}
+
+bool BoundCompileUnitNode::HasBoundClass(ClassTypeSymbol* cls) const noexcept
+{
+    return boundClasses.find(cls) != boundClasses.end();
 }
 
 void BoundCompileUnitNode::Sort()
@@ -492,6 +502,16 @@ void BoundCompileUnitNode::AddClassToGenerateDestructorList(ClassTypeSymbol* cla
     {
         generateDestructorList.push_back(classType);
     }
+}
+
+bool BoundCompileUnitNode::VTabInitialized(ClassTypeSymbol* cls) const
+{
+    return vtabInitialized.find(cls) != vtabInitialized.end();
+}
+
+void BoundCompileUnitNode::AddVTabInitialized(ClassTypeSymbol* cls)
+{
+    vtabInitialized.insert(cls);
 }
 
 BoundCompileUnitNode* MakeBoundCompileUnit()
@@ -656,6 +676,11 @@ void BoundFunctionNode::AddTemporaryDestructorCall(BoundFunctionCallNode* tempor
 std::vector<std::unique_ptr<BoundFunctionCallNode>> BoundFunctionNode::GetTemporaryDestructorCalls()
 {
     return std::move(temporaryDestructorCalls);
+}
+
+BoundFunctionNode* GetCompileUnitInitFunction(BoundCompileUnitNode* compileUnit)
+{
+    return compileUnit->GetCompileUnitInitializationFunction();
 }
 
 BoundStatementNode::BoundStatementNode(BoundNodeKind kind_, const soul::ast::FullSpan& fullSpan_) noexcept :

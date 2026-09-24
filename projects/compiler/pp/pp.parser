@@ -1,0 +1,244 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.pp.parser;
+
+[interface]import otava.pp.state;
+[implementation]import otava.token;
+[implementation]import otava.pp.lexer;
+
+parser PPParser
+{
+    lexer otava::pp::lexer::PPLexer<char32_t>;
+
+    main;
+
+    PPLIne(otava::pp::state::State* state) 
+        ::= HASH PPCommand(state):ppCommand
+        ;
+
+    PPCommand(otava::pp::state::State* state)
+        ::= IfCommand(state):ifCommand
+        |   ElifCommand(state):elifCommand
+        |   IfdefCommand(state):ifdefCommand
+        |   IfndefCommand(state):ifndefCommand
+        |   ElseCommand(state):elseCommand
+        |   EndifCommand(state):endifCommand
+        |   DefineCommand(state):defineCommand
+        |   UndefCommand(state):undefCommand
+        |   IncludeCommand(state):includeCommand
+        |   PragmaCommand(state):pragmaCommand
+        |   any*
+        ;
+
+    IfCommand(otava::pp::state::State* state) 
+        ::= IF Expression(state):value{ state->If(value != 0); }
+        ;
+
+    ElifCommand(otava::pp::state::State* state) 
+        ::= ELIF Expression(state):value{ state->Elif(value != 0); }
+        ;
+
+    IfdefCommand(otava::pp::state::State* state) 
+        ::= IFDEF ID{ state->Ifdef(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    IfndefCommand(otava::pp::state::State* state) 
+        ::= IFNDEF ID{ state->Ifndef(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    ElseCommand(otava::pp::state::State* state) 
+        ::= ELSE{ state->Else(); }
+        ;
+
+    EndifCommand(otava::pp::state::State* state) 
+        ::= ENDIF{ state->Endif(); }
+        ;
+
+    DefineCommand(otava::pp::state::State* state, var std::string symbol) 
+        ::= DEFINE ID{ symbol = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+            (   INTEGER_LITERAL{ std::int64_t value = std::stoll(util::ToUtf8(lexer.GetToken(pos).ToString())); state->Define(symbol, value); } 
+            |   empty{ state->Define(symbol, 1); } 
+            )
+        ;
+
+    UndefCommand(otava::pp::state::State* state) 
+        ::= UNDEF ID{ state->Undef(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    IncludeCommand(otava::pp::state::State* state) 
+        ::= INCLUDE Header:header{ state->Include(); }
+        ;
+
+    PragmaCommand(otava::pp::state::State* state) 
+        ::= PRAGMA (any - RPAREN)* RPAREN
+        ;
+
+    Header
+        ::= ANGLE_HEADER_NAME
+        |   QUOTE_HEADER_NAME
+        ;
+
+    Expression(otava::pp::state::State* state) : std::int64_t 
+        ::= LogicalOrExpr(state):expr{ return expr; }
+        ;
+
+    LogicalOrExpr(otava::pp::state::State* state, var std::int64_t value) : std::int64_t 
+        ::= 
+        (
+            LogicalAndExpr(state):left{ value = left; }
+            (
+                OR_OR LogicalAndExpr(state):right{ value = static_cast<std::int64_t>(value != 0 || right != 0); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    LogicalAndExpr(otava::pp::state::State* state, var std::int64_t value) : std::int64_t 
+        ::= 
+        (
+            InclusiveOrExpression(state):left{ value = left; }
+            (
+                AMP_AMP InclusiveOrExpression(state):right{ value = static_cast<std::int64_t>(value != 0 && right != 0); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    InclusiveOrExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (
+            ExclusiveOrExpression(state):left{ value = left; }
+            (
+                OR ExclusiveOrExpression(state):right{ value = value | right; }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    ExclusiveOrExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (
+            AndExpression(state):left{ value = left; }
+            (
+                XOR AndExpression(state):right{ value = value ^ right; }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    AndExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (
+            EqualityExpression(state):left{ value = left; }
+            (
+                AMP EqualityExpression(state):right{ value = value & right; }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    EqualityExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (
+            RelationalExpression(state):left{ value = left; }
+            (   EQ RelationalExpression(state):rightEq{ value = static_cast<std::int64_t>(value == rightEq); }
+            |   NEQ RelationalExpression(state):rightNeq{ value = static_cast<std::int64_t>(value != rightNeq); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    RelationalExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (
+            ShiftExpression(state):left{ value = left; }
+            (   LANGLE ShiftExpression(state):rightLess{ value = static_cast<std::int64_t>(value < rightLess); }
+            |   RANGLE ShiftExpression(state):rightGreater{ value = static_cast<std::int64_t>(value > rightGreater); }
+            |   LEQ ShiftExpression(state):rightLessEq{ value = static_cast<std::int64_t>(value <= rightLessEq); }
+            |   GEQ ShiftExpression(state):rightGreaterEq{ value = static_cast<std::int64_t>(value >= rightGreaterEq); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    ShiftExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::=
+        (
+            AdditiveExpression(state):left{ value = left; }
+            (   SHIFT_LEFT AdditiveExpression(state):rightLShift{ value = value << rightLShift; }
+            |   SHIFT_RIGHT AdditiveExpression(state):rightRShift{ value = value >> rightRShift; }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    AdditiveExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (   
+            MultiplicativeExpression(state):left{ value = left; }
+            (   PLUS MultiplicativeExpression(state):rightPlus{ value = value + rightPlus; }
+            |   MINUS MultiplicativeExpression(state):rightMinus{ value = value - rightMinus; }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    MultiplicativeExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (
+            UnaryExpression(state):left{ value = left; }
+            (   STAR UnaryExpression(state):rightMul{ value = value * rightMul; }
+            |   DIV UnaryExpression(state):rightDiv{ value = value / rightDiv; }
+            |   MOD UnaryExpression(state):rightMod{ value = value / rightMod; }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    UnaryExpression(otava::pp::state::State* state, var std::int64_t value) : std::int64_t
+        ::= 
+        (   PLUS UnaryExpression(state):plusExpr{ return plusExpr; }
+        |   MINUS UnaryExpression(state):minusExpr{ return -minusExpr; }
+        |   EXCLAMATION UnaryExpression(state):notExpr{ return static_cast<std::int64_t>(!(notExpr != 0)); }
+        |   TILDE UnaryExpression(state):complementExpr{ return ~complementExpr; }
+        |   PrimaryExpr(state):primaryExpr{ return primaryExpr; }
+        )
+        ;
+
+    PrimaryExpr(otava::pp::state::State* state) : std::int64_t
+        ::= DefinedExpr(state):defined{ return defined; }
+        |   LPAREN Expression(state):value RPAREN{ return value; }
+        |   INTEGER_LITERAL{ return std::stoll(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   ID{ return state->GetSymbolValue(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    DefinedExpr(otava::pp::state::State* state, var std::string symbol) : std::int64_t
+        ::= DEFINED
+        (   LPAREN ID{ symbol = util::ToUtf8(lexer.GetToken(pos).ToString()); } RPAREN{ if (state->Defined(symbol)) { return 1; } else { return 0; } }
+        |   ID{ symbol = util::ToUtf8(lexer.GetToken(pos).ToString()); if (state->Defined(symbol)) { return 1; } else { return 0; } }
+        )
+        ;
+}

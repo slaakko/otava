@@ -11,6 +11,8 @@ import otava.lexer;
 import otava.parser.expression;
 import otava.symbols.context;
 import util.unicode;
+import util.system;
+import util.path;
 
 namespace otava::parser {
 

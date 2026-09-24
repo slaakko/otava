@@ -42,11 +42,15 @@ class FunctionTypeSymbol : public TypeSymbol
 public:
     FunctionTypeSymbol(Module* module_, SymbolId id_);
     FunctionTypeSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    FunctionTypeSymbolKey IrKey(Context* context);
+    SymbolId IrId(Context* context) noexcept override;
+    inline void SetIrId(SymbolId irId_) noexcept { irId = irId_; }
     inline void SetPtrIndex(int ptrIndex_) noexcept { ptrIndex = ptrIndex_; }
     int PtrIndex() const noexcept override { return ptrIndex; }
-    inline void SetReturnType(TypeSymbol* returnType_) noexcept { returnType = returnType_; }
+    bool HasForwardClassDeclarationSymbol(Context* context) override;
+    void SetReturnType(TypeSymbol* returnType_, Context* context) noexcept;
     TypeSymbol* ReturnType(Context* context);
-    void AddParameterType(TypeSymbol* parameterType);
+    void AddParameterType(TypeSymbol* parameterType, Context* context);
     const std::vector<TypeSymbol*>& ParameterTypes(Context* context);
     bool IsFunctionType() const noexcept override { return true; }
     otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
@@ -59,6 +63,7 @@ private:
     std::vector<SymbolId> parameterTypeIds;
     int ptrIndex;
     bool contentFetched;
+    SymbolId irId;
     void GetContent(Context* context);
 };
 

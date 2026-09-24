@@ -192,7 +192,7 @@ public:
     inline StringOffset NameOffset() const noexcept { return nameOffset; }
     std::string Name() const;
     const char* NameCStr() const noexcept { return name; }
-    virtual SymbolId IrId() const noexcept { return Id(); }
+    virtual SymbolId IrId(Context* context) noexcept { return Id(); }
     virtual std::string SimpleName(Context* context);
     void SetName(const std::string& name_);
     virtual std::string FullName(Context* context) const;

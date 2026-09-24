@@ -58,7 +58,7 @@ TemplateParameterSymbol* TemplateParamGroupSymbol::GetTemplateParam(Context* con
         templateParameterSymbol = context->GetSymbolTable()->GetTemplateParameterSymbol(templateParamId, context);
         if (!templateParameterSymbol)
         {
-            ThrowException("templte parameter symbol " + std::to_string(ToUnderlying(templateParamId)) + " not found");
+            ThrowException("template parameter symbol " + std::to_string(ToUnderlying(templateParamId)) + " not found");
         }
     }
     return templateParameterSymbol;

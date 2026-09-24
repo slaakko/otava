@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/soul/lex/spg.lexer' using soul lexer generator oslg version 0.2.4
+// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/soul/lex/spg.lexer' using soul lexer generator oslg version 0.2.5
 
 export module soul.lex.spg;
 
@@ -12,6 +12,8 @@ import soul.lexer.keyword;
 import soul.ast.slg;
 import soul.ast.common;
 import util.binary_resource_ptr;
+import util.system;
+import util.path;
 import soul.cpp.token;
 import soul.cpp.op.token;
 import soul.punctuation.token;
@@ -17307,22 +17309,22 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>();
 template<typename Char>
 soul::lexer::Lexer<SpgLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)
 {
-    std::lock_guard<std::mutex> lock(MakeLexerMtx());
+    std::lock_guard<std::mutex> lock(soul::lex::spg::MakeLexerMtx()); 
     auto lxr = soul::lexer::Lexer<SpgLexer<Char>, Char>(start, end, fileName);
-    lxr.SetClassMap(GetClassMap<Char>());
-    lxr.SetTokenCollection(GetTokens());
-    lxr.SetKeywordMap(GetKeywords<Char>());
+    lxr.SetClassMap(soul::lex::spg::GetClassMap<Char>());
+    lxr.SetTokenCollection(soul::lex::spg::GetTokens());
+    lxr.SetKeywordMap(soul::lex::spg::GetKeywords<Char>());
     return lxr;
 }
 
 template<typename Char>
 soul::lexer::Lexer<SpgLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)
 {
-    std::lock_guard<std::mutex> lock(MakeLexerMtx());
+    std::lock_guard<std::mutex> lock(soul::lex::spg::MakeLexerMtx());
     auto lxr = soul::lexer::Lexer<SpgLexer<Char>, Char>(start, end, fileName);
-    lxr.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
-    lxr.SetTokenCollection(GetTokens());
-    lxr.SetKeywordMap(GetKeywords<Char>());
+    lxr.SetClassMap(soul::lex::spg::GetClassMap<Char>(moduleFileName, resourceFlags));
+    lxr.SetTokenCollection(soul::lex::spg::GetTokens());
+    lxr.SetKeywordMap(soul::lex::spg::GetKeywords<Char>());
     return lxr;
 }
 

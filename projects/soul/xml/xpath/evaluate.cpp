@@ -1,6 +1,8 @@
 module soul.xml.xpath.evaluate;
 
 import util.unicode;
+import util.system;
+import util.path;
 import soul.xml.xpath.lexer;
 import soul.xml.xpath.expr;
 import soul.xml.xpath.parser;

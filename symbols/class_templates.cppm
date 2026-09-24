@@ -8,7 +8,9 @@ export module otava.symbols.class_templates;
 import otava.symbols.id;
 import otava.symbols.classes;
 import otava.symbols.scope;
+import otava.symbols.symbol;
 import otava.symbols.template_param_compare;
+import otava.symbols.type_symbol;
 import otava.ast.node;
 import soul.ast.span;
 import std;
@@ -17,8 +19,9 @@ export namespace otava::symbols {
 
 class Context;
 class Module;
+class FunctionSymbol;
+class FunctionDefinitionSymbol;
 class CompoundTypeSymbol;
-class TypeSymbol;
 class TemplateParameterSymbol;
 
 class ClassTemplateSpecializationSymbol : public ClassTypeSymbol
@@ -31,8 +34,8 @@ public:
     bool IsComplete(std::set<const TypeSymbol*>& visited, const TypeSymbol*& incompleteType, Context* context) const override;
     ClassTypeSymbol* ClassTemplate(Context* context) const;
     std::string SimpleName(Context* context) override;
-    SymbolId IrId() const noexcept override { return irId; }
-    inline void SetIrId(SymbolId irId_) noexcept { irId = irId_; }
+    SymbolId IrId(Context* context) noexcept override;
+    void SetIrId(SymbolId irId_, Context* context) noexcept;
     std::string GroupName(Context* context) override;
     std::string FullName(Context* context) const override;
     std::string IrName(Context* context) const override;
@@ -50,7 +53,7 @@ public:
     inline void SetDestructor(FunctionSymbol* destructor_) noexcept { destructor = destructor_; }
     inline bool InstantiatingDestructor() const noexcept { return instantiatingDestructor; }
     inline void SetInstantiatingDestructor(bool instantiating) noexcept { instantiatingDestructor = instantiating; }
-    bool HasForwardClassDeclarationSymbol(Context* context) const override;
+    bool HasForwardClassDeclarationSymbol(Context* context) override;
     bool IsReplaceableIncompleteType(Context* context) const noexcept override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
@@ -59,7 +62,7 @@ private:
     mutable std::vector<Symbol*> templateArguments;
     SymbolId classTemplateId;
     std::vector<SymbolId> templateArgumentIds;
-    SymbolId irId;
+    mutable SymbolId irId;
     mutable bool templateArgumentsSet;
     bool instantiated;
     std::vector<FunctionSymbol*> instantiatedVirtualFunctionSpecializations;

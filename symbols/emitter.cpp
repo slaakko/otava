@@ -11,7 +11,7 @@ import util.unicode;
 
 namespace otava::symbols {
 
-Emitter::Emitter() : context(new otava::intermediate::IntermediateContext()), stack(new IrValueStack()), line(0), check(false), retValue(nullptr)
+Emitter::Emitter() : context(new otava::intermediate::IntermediateContext()), stack(new IrValueStack()), line(0), check(false), retValue(nullptr), vtabGen(nullptr)
 {
 }
 

@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/intermediate/intermediate.lexer' using soul lexer generator oslg version 0.2.4
+// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/compiler/intermediate/intermediate.lexer' using soul lexer generator oslg version 0.2.5
 
 export module otava.intermediate.lexer;
 
@@ -12,6 +12,8 @@ import soul.lexer.keyword;
 import soul.ast.slg;
 import soul.ast.common;
 import util.binary_resource_ptr;
+import util.system;
+import util.path;
 import otava.intermediate.token;
 
 export namespace otava::intermediate::lexer {
@@ -2192,22 +2194,22 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>();
 template<typename Char>
 soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)
 {
-    std::lock_guard<std::mutex> lock(MakeLexerMtx());
+    std::lock_guard<std::mutex> lock(otava::intermediate::lexer::MakeLexerMtx()); 
     auto lxr = soul::lexer::Lexer<IntermediateLexer<Char>, Char>(start, end, fileName);
-    lxr.SetClassMap(GetClassMap<Char>());
-    lxr.SetTokenCollection(GetTokens());
-    lxr.SetKeywordMap(GetKeywords<Char>());
+    lxr.SetClassMap(otava::intermediate::lexer::GetClassMap<Char>());
+    lxr.SetTokenCollection(otava::intermediate::lexer::GetTokens());
+    lxr.SetKeywordMap(otava::intermediate::lexer::GetKeywords<Char>());
     return lxr;
 }
 
 template<typename Char>
 soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)
 {
-    std::lock_guard<std::mutex> lock(MakeLexerMtx());
+    std::lock_guard<std::mutex> lock(otava::intermediate::lexer::MakeLexerMtx());
     auto lxr = soul::lexer::Lexer<IntermediateLexer<Char>, Char>(start, end, fileName);
-    lxr.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
-    lxr.SetTokenCollection(GetTokens());
-    lxr.SetKeywordMap(GetKeywords<Char>());
+    lxr.SetClassMap(otava::intermediate::lexer::GetClassMap<Char>(moduleFileName, resourceFlags));
+    lxr.SetTokenCollection(otava::intermediate::lexer::GetTokens());
+    lxr.SetKeywordMap(otava::intermediate::lexer::GetKeywords<Char>());
     return lxr;
 }
 

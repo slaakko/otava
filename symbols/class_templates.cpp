@@ -6,6 +6,7 @@
 module otava.symbols.class_templates;
 
 import otava.symbols.bound_tree;
+import otava.symbols.compound_type_symbol;
 import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.function_kind;
@@ -31,14 +32,14 @@ namespace otava::symbols {
 
 ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(Module* module_, SymbolId id_) : 
     ClassTypeSymbol(module_, id_), classTemplateId(zeroSymbolId), templateArgumentsSet(false), instantiated(false), destructor(nullptr), destructorId(zeroSymbolId),
-    instantiatingDestructor(false), irId(id_), classTemplate(nullptr)
+    instantiatingDestructor(false), irId(zeroSymbolId), classTemplate(nullptr)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
 
 ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     ClassTypeSymbol(module_, id_, name_), classTemplateId(zeroSymbolId), templateArgumentsSet(false), instantiated(false), destructor(nullptr), destructorId(zeroSymbolId),
-    instantiatingDestructor(false), irId(id_), classTemplate(nullptr)
+    instantiatingDestructor(false), irId(zeroSymbolId), classTemplate(nullptr)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
@@ -81,6 +82,48 @@ std::string ClassTemplateSpecializationSymbol::SimpleName(Context* context)
     return ClassTemplate(context)->SimpleName(context); 
 }
 
+void ClassTemplateSpecializationSymbol::SetIrId(SymbolId irId_, Context* context) noexcept
+{ 
+    irId = irId_; 
+    if (!HasForwardClassDeclarationSymbol(context))
+    {
+        context->CurrentProject()->SetIrId(FullName(context), Cardinality(0), irId);
+    }
+}
+
+SymbolId ClassTemplateSpecializationSymbol::IrId(Context* context) noexcept
+{
+    if (irId != zeroSymbolId)
+    {
+        return irId;
+    }
+    if (!HasForwardClassDeclarationSymbol(context))
+    {
+        SymbolId projectIrId = context->CurrentProject()->GetIrId(FullName(context), Cardinality(0));
+        if (projectIrId != zeroSymbolId)
+        {
+            irId = projectIrId;
+            return irId;
+        }
+    }
+    context->ResetHasUnresolvedForwardDeclaration();
+    SymbolId stabIrId = context->GetSymbolTable()->GetIrId(this, context);
+    if (stabIrId == zeroSymbolId)
+    {
+        stabIrId = context->GetNextSymbolId(SymbolKind::classTemplateSpecializationSymbol);
+    }
+    if (!context->HasUnresolvedForwardDeclaration())
+    {
+        SetIrId(stabIrId, context);
+        context->GetSymbolTable()->MapIrId(this, stabIrId, context);
+    }
+    else
+    {
+        context->GetSymbolTable()->MapIrId(this, stabIrId, context);
+    }
+    return stabIrId;
+}
+
 void ClassTemplateSpecializationSymbol::SetClassTemplate(ClassTypeSymbol* classTemplate_, Context* context) noexcept
 {
     classTemplate = classTemplate_;
@@ -105,25 +148,30 @@ FunctionSymbol* ClassTemplateSpecializationSymbol::Destructor(Context* context)
 
 TypeSymbol* ClassTemplateSpecializationSymbol::FinalType(const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    std::vector<Symbol*> templateArgs;
-    for (Symbol* templateArg : TemplateArguments(context))
+    if (HasForwardClassDeclarationSymbol(context))
     {
-        if (templateArg->IsTypeSymbol())
+        std::vector<Symbol*> templateArgs;
+        for (Symbol* templateArg : TemplateArguments(context))
         {
-            TypeSymbol* typeTemplateArg = static_cast<TypeSymbol*>(templateArg);
-            typeTemplateArg = typeTemplateArg->DirectType(context)->FinalType(fullSpan, context);
-            templateArgs.push_back(typeTemplateArg);
+            if (templateArg->IsTypeSymbol())
+            {
+                TypeSymbol* typeTemplateArg = static_cast<TypeSymbol*>(templateArg);
+                typeTemplateArg = typeTemplateArg->DirectType(context)->FinalType(fullSpan, context);
+                templateArgs.push_back(typeTemplateArg);
+            }
+            else
+            {
+                templateArgs.push_back(templateArg);
+            }
         }
-        else
-        {
-            templateArgs.push_back(templateArg);
-        }
+        ClassTypeSymbol* classTemplate = ClassTemplate(context);
+        ClassTemplateSpecializationSymbol* specialization = InstantiateClassTemplate(classTemplate, templateArgs, fullSpan, context);
+        return specialization;
     }
-    ClassTemplateSpecializationSymbol* specialization = InstantiateClassTemplate(ClassTemplate(context), templateArgs, fullSpan, context);
-    return specialization;
+    return this;
 }
 
-bool ClassTemplateSpecializationSymbol::HasForwardClassDeclarationSymbol(Context* context) const
+bool ClassTemplateSpecializationSymbol::HasForwardClassDeclarationSymbol(Context* context) 
 {
     for (Symbol* templateArgument : templateArguments)
     {
@@ -581,6 +629,10 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     {
         return specialization;
     }
+    if (arity == m && specialization->GetModule() != context->GetModule() && specialization->IsReadOnly())
+    {
+        return InstantiateClassTemplate(classTemplate, templateArgs, fullSpan, context, true);
+    }
     SpecializationKey key;
     key.typeSymbolId = specialization->ClassTemplate(context)->Id();
     for (Symbol* templateArgument : specialization->TemplateArguments(context))
@@ -716,9 +768,18 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
         std::set<const Symbol*> visited;
         if (!specialization->IsTemplateParameterInstantiation(context, visited))
         {
-            InstantiateDestructor(specialization, fullSpan, context);
+            if (specialization->IsPolymorphic(context))
+            {
+                GenerateDestructor(specialization, fullSpan, context);
+            }
+            else
+            {
+                InstantiateDestructor(specialization, fullSpan, context);
+            }
             InstantiateVirtualFunctions(specialization, fullSpan, context);
-            context->GetSymbolTable()->AddClass(specialization); 
+            MakeObjectLayouts(specialization, context, fullSpan);
+            InitVTabs(specialization, context, fullSpan);
+            context->GetSymbolTable()->AddClass(specialization);
         }
     }
     catch (const std::exception& ex)
@@ -813,6 +874,10 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
             classTemplateSpecialization->TemplateArguments(context), fullSpan, context, true);
     }
     classTemplateSpecialization = static_cast<ClassTemplateSpecializationSymbol*>(classTemplateSpecialization->FinalType(fullSpan, context));
+    if (classTemplateSpecialization->Name() == "vector<LexerState<char32_t, LexerBase<char32_t>>>")
+    {
+        int x = 0;
+    }
     context->GetBoundCompileUnit()->AddBoundNodeForClass(classTemplateSpecialization, fullSpan, context);
     ClassTemplateRepository* classTemplateRepository = context->GetBoundCompileUnit()->GetClassTemplateRepository();
     std::vector<TypeSymbol*> templateArgumentTypes;

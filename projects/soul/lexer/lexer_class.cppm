@@ -102,12 +102,13 @@ template<typename Machine, typename Char>
 class Lexer : public LexerBase<Char>
 {
 public:
-    using LexerType = Lexer<Machine, Char>;
+    using MachineType = Machine;
     using CharType = Char;
-    using TokenType = soul::lexer::Token<Char, LexerBase<Char>>;
-    using TokenLineType = soul::lexer::TokenLine<Char, LexerBase<Char>>;
+    using Self = Lexer<MachineType, CharType>;
+    using TokenType = soul::lexer::Token<CharType, LexerBase<CharType>>;
+    using TokenLineType = soul::lexer::TokenLine<CharType, LexerBase<CharType>>;
     using VariableClassType = Machine::Vars;
-    using PPHook = void (*)(LexerType* lexer, TokenType* token);
+    using PPHook = void (*)(Self* lxr, TokenType* token);
 
     Lexer(const Char* start_, const Char* end_, const std::string& fileName_) :
         flags(LexerFlags::none),
@@ -536,7 +537,8 @@ public:
     }
     void PreprocessCurrentToken() override
     {
-        if (ppHook)
+        void* p = ppHook;
+        if (p)
         {
             ppHook(this, &token);
         }

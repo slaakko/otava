@@ -1,0 +1,3 @@
+project pphook;
+target=program;
+source <main.cpp>;

@@ -439,82 +439,82 @@ bool ValuesEqual(Value* left, Value* right, Context* context)
     ValueKind valueKind = CommonValueKind(left->GetValueKind(), right->GetValueKind());
     switch (valueKind)
     {
-    case ValueKind::boolValue:
-    {
-        BoolValue* leftBool = static_cast<BoolValue*>(left);
-        BoolValue* rightBool = static_cast<BoolValue*>(right);
-        return leftBool->GetValue() == rightBool->GetValue();
-    }
-    case ValueKind::byteValue:
-    {
-        FundamentalTypeValue<std::uint8_t>* leftByte = static_cast<FundamentalTypeValue<std::uint8_t>*>(left);
-        FundamentalTypeValue<std::uint8_t>* rightByte = static_cast<FundamentalTypeValue<std::uint8_t>*>(right);
-        return leftByte->GetValue() == rightByte->GetValue();
-    }
-    case ValueKind::sbyteValue:
-    {
-        FundamentalTypeValue<std::int8_t>* leftSByte = static_cast<FundamentalTypeValue<std::int8_t>*>(left);
-        FundamentalTypeValue<std::int8_t>* rightSByte = static_cast<FundamentalTypeValue<std::int8_t>*>(right);
-        return leftSByte->GetValue() == rightSByte->GetValue();
-    }
-    case ValueKind::shortValue:
-    {
-        FundamentalTypeValue<std::int16_t>* lefShort = static_cast<FundamentalTypeValue<std::int16_t>*>(left);
-        FundamentalTypeValue<std::int16_t>* rightShort = static_cast<FundamentalTypeValue<std::int16_t>*>(right);
-        return lefShort->GetValue() == rightShort->GetValue();
-    }
-    case ValueKind::ushortValue:
-    {
-        FundamentalTypeValue<std::uint16_t>* leftUShort = static_cast<FundamentalTypeValue<std::uint16_t>*>(left);
-        FundamentalTypeValue<std::uint16_t>* rightUShort = static_cast<FundamentalTypeValue<std::uint16_t>*>(right);
-        return leftUShort->GetValue() == rightUShort->GetValue();
-    }
-    case ValueKind::intValue:
-    {
-        FundamentalTypeValue<std::int32_t>* leftInt = static_cast<FundamentalTypeValue<std::int32_t>*>(left);
-        FundamentalTypeValue<std::int32_t>* rightInt = static_cast<FundamentalTypeValue<std::int32_t>*>(right);
-        return leftInt->GetValue() == rightInt->GetValue();
-    }
-    case ValueKind::uintValue:
-    {
-        FundamentalTypeValue<std::uint32_t>* leftUInt = static_cast<FundamentalTypeValue<std::uint32_t>*>(left);
-        FundamentalTypeValue<std::uint32_t>* rightUInt = static_cast<FundamentalTypeValue<std::uint32_t>*>(right);
-        return leftUInt->GetValue() == rightUInt->GetValue();
-    }
-    case ValueKind::longValue:
-    {
-        FundamentalTypeValue<std::int64_t>* leftLong = static_cast<FundamentalTypeValue<std::int64_t>*>(left);
-        FundamentalTypeValue<std::int64_t>* rightLong = static_cast<FundamentalTypeValue<std::int64_t>*>(right);
-        return leftLong->GetValue() == rightLong->GetValue();
-    }
-    case ValueKind::ulongValue:
-    {
-        FundamentalTypeValue<std::uint64_t>* leftULong = static_cast<FundamentalTypeValue<std::uint64_t>*>(left);
-        FundamentalTypeValue<std::uint64_t>* rightULong = static_cast<FundamentalTypeValue<std::uint64_t>*>(right);
-        return leftULong->GetValue() == rightULong->GetValue();
-    }
-    case ValueKind::floatValue:
-    {
-        FundamentalTypeValue<float>* leftFloat = static_cast<FundamentalTypeValue<float>*>(left);
-        FundamentalTypeValue<float>* rightFloat = static_cast<FundamentalTypeValue<float>*>(right);
-        return leftFloat->GetValue() == rightFloat->GetValue();
-    }
-    case ValueKind::doubleValue:
-    {
-        FundamentalTypeValue<double>* leftDouble = static_cast<FundamentalTypeValue<double>*>(left);
-        FundamentalTypeValue<double>* rightDouble = static_cast<FundamentalTypeValue<double>*>(right);
-        return leftDouble->GetValue() == rightDouble->GetValue();
-    }
-    case ValueKind::nullPtrValue:
-    {
-        return true;
-    }
-    case ValueKind::stringValue:
-    {
-        StringValue* leftString = static_cast<StringValue*>(left);
-        StringValue* rightString = static_cast<StringValue*>(right);
-        return leftString->GetValue() == rightString->GetValue();
-    }
+        case ValueKind::boolValue: 
+        {
+            BoolValue* leftBool = static_cast<BoolValue*>(left);
+            BoolValue* rightBool = static_cast<BoolValue*>(right);
+            return leftBool->GetValue() == rightBool->GetValue();
+        }
+        case ValueKind::byteValue:
+        {
+            FundamentalTypeValue<std::uint8_t>* leftByte = static_cast<FundamentalTypeValue<std::uint8_t>*>(left);
+            FundamentalTypeValue<std::uint8_t>* rightByte = static_cast<FundamentalTypeValue<std::uint8_t>*>(right);
+            return leftByte->GetValue() == rightByte->GetValue();
+        }
+        case ValueKind::sbyteValue:
+        {
+            FundamentalTypeValue<std::int8_t>* leftSByte = static_cast<FundamentalTypeValue<std::int8_t>*>(left);
+            FundamentalTypeValue<std::int8_t>* rightSByte = static_cast<FundamentalTypeValue<std::int8_t>*>(right);
+            return leftSByte->GetValue() == rightSByte->GetValue();
+        }
+        case ValueKind::shortValue:
+        {
+            FundamentalTypeValue<std::int16_t>* lefShort = static_cast<FundamentalTypeValue<std::int16_t>*>(left);
+            FundamentalTypeValue<std::int16_t>* rightShort = static_cast<FundamentalTypeValue<std::int16_t>*>(right);
+            return lefShort->GetValue() == rightShort->GetValue();
+        }
+        case ValueKind::ushortValue:
+        {
+            FundamentalTypeValue<std::uint16_t>* leftUShort = static_cast<FundamentalTypeValue<std::uint16_t>*>(left);
+            FundamentalTypeValue<std::uint16_t>* rightUShort = static_cast<FundamentalTypeValue<std::uint16_t>*>(right);
+            return leftUShort->GetValue() == rightUShort->GetValue();
+        }
+        case ValueKind::intValue:
+        {
+            FundamentalTypeValue<std::int32_t>* leftInt = static_cast<FundamentalTypeValue<std::int32_t>*>(left);
+            FundamentalTypeValue<std::int32_t>* rightInt = static_cast<FundamentalTypeValue<std::int32_t>*>(right);
+            return leftInt->GetValue() == rightInt->GetValue();
+        }
+        case ValueKind::uintValue:
+        {
+            FundamentalTypeValue<std::uint32_t>* leftUInt = static_cast<FundamentalTypeValue<std::uint32_t>*>(left);
+            FundamentalTypeValue<std::uint32_t>* rightUInt = static_cast<FundamentalTypeValue<std::uint32_t>*>(right);
+            return leftUInt->GetValue() == rightUInt->GetValue();
+        }
+        case ValueKind::longValue:
+        {
+            FundamentalTypeValue<std::int64_t>* leftLong = static_cast<FundamentalTypeValue<std::int64_t>*>(left);
+            FundamentalTypeValue<std::int64_t>* rightLong = static_cast<FundamentalTypeValue<std::int64_t>*>(right);
+            return leftLong->GetValue() == rightLong->GetValue();
+        }
+        case ValueKind::ulongValue:
+        {
+            FundamentalTypeValue<std::uint64_t>* leftULong = static_cast<FundamentalTypeValue<std::uint64_t>*>(left);
+            FundamentalTypeValue<std::uint64_t>* rightULong = static_cast<FundamentalTypeValue<std::uint64_t>*>(right);
+            return leftULong->GetValue() == rightULong->GetValue();
+        }
+        case ValueKind::floatValue:
+        {
+            FundamentalTypeValue<float>* leftFloat = static_cast<FundamentalTypeValue<float>*>(left);
+            FundamentalTypeValue<float>* rightFloat = static_cast<FundamentalTypeValue<float>*>(right);
+            return leftFloat->GetValue() == rightFloat->GetValue();
+        }
+        case ValueKind::doubleValue:
+        {
+            FundamentalTypeValue<double>* leftDouble = static_cast<FundamentalTypeValue<double>*>(left);
+            FundamentalTypeValue<double>* rightDouble = static_cast<FundamentalTypeValue<double>*>(right);
+            return leftDouble->GetValue() == rightDouble->GetValue();
+        }
+        case ValueKind::nullPtrValue:
+        {
+            return true;
+        }
+        case ValueKind::stringValue:
+        {
+            StringValue* leftString = static_cast<StringValue*>(left);
+            StringValue* rightString = static_cast<StringValue*>(right);
+            return leftString->GetValue() == rightString->GetValue();
+        }
     }
     return false;
 }

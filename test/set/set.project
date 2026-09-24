@@ -1,0 +1,4 @@
+project set;
+target=program;
+interface <ctx.cppm>;
+source <main.cpp>;

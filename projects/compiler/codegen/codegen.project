@@ -1,0 +1,17 @@
+project otava.codegen;
+target=library;
+reference <../../util/util.project>;
+reference <../../soul/ast/ast.project>;
+reference <../../soul/lexer/lexer.project>;
+reference <../../soul/parser/parser.project>;
+reference <../assembly/assembly.project>;
+reference <../intermediate/intermediate.project>;
+reference <../optimizer/optimizer.project>;
+reference <../ast/ast.project>;
+reference <../lexer/lexer.project>;
+reference <../symbols/symbols.project>;
+reference <../parser/parser.project>;
+interface <codegen.cppm>;
+source <codegen.cpp>;
+interface <goto_target_map_builder.cppm>;
+source <goto_target_map_builder.cpp>;

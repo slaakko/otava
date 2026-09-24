@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/lexer/otava.lexer' using soul lexer generator oslg version 0.2.4
+// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/compiler/lexer/otava.lexer' using soul lexer generator oslg version 0.2.5
 
 export module otava.lexer;
 
@@ -12,6 +12,8 @@ import soul.lexer.keyword;
 import soul.ast.slg;
 import soul.ast.common;
 import util.binary_resource_ptr;
+import util.system;
+import util.path;
 import otava.token;
 
 export namespace otava::lexer {
@@ -21748,22 +21750,22 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>();
 template<typename Char>
 soul::lexer::Lexer<OtavaLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)
 {
-    std::lock_guard<std::mutex> lock(MakeLexerMtx());
+    std::lock_guard<std::mutex> lock(otava::lexer::MakeLexerMtx()); 
     auto lxr = soul::lexer::Lexer<OtavaLexer<Char>, Char>(start, end, fileName);
-    lxr.SetClassMap(GetClassMap<Char>());
-    lxr.SetTokenCollection(GetTokens());
-    lxr.SetKeywordMap(GetKeywords<Char>());
+    lxr.SetClassMap(otava::lexer::GetClassMap<Char>());
+    lxr.SetTokenCollection(otava::lexer::GetTokens());
+    lxr.SetKeywordMap(otava::lexer::GetKeywords<Char>());
     return lxr;
 }
 
 template<typename Char>
 soul::lexer::Lexer<OtavaLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)
 {
-    std::lock_guard<std::mutex> lock(MakeLexerMtx());
+    std::lock_guard<std::mutex> lock(otava::lexer::MakeLexerMtx());
     auto lxr = soul::lexer::Lexer<OtavaLexer<Char>, Char>(start, end, fileName);
-    lxr.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
-    lxr.SetTokenCollection(GetTokens());
-    lxr.SetKeywordMap(GetKeywords<Char>());
+    lxr.SetClassMap(otava::lexer::GetClassMap<Char>(moduleFileName, resourceFlags));
+    lxr.SetTokenCollection(otava::lexer::GetTokens());
+    lxr.SetKeywordMap(otava::lexer::GetKeywords<Char>());
     return lxr;
 }
 

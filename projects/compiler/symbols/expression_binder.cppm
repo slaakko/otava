@@ -10,6 +10,7 @@ import otava.symbols.bound_tree;
 import otava.ast.node;
 import otava.symbols.scope;
 import otava.symbols.symbol;
+import otava.symbols.variable_symbol;
 import soul.ast.span;
 
 export namespace otava::symbols {
@@ -17,7 +18,6 @@ export namespace otava::symbols {
 class Context;
 class Scope;
 class StatementBinder;
-class VariableSymbol;
 
 class OperatorGroupNameMap
 {

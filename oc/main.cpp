@@ -27,7 +27,7 @@ import util.time;
 
 std::string Version()
 {
-    return "0.2.4";
+    return "0.2.5";
 }
 
 void PrintHelp()

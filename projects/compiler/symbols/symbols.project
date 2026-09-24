@@ -168,5 +168,7 @@ interface <variable_group_symbol.cppm>;
 source <variable_group_symbol.cpp>;
 interface <variable_symbol.cppm>;
 source <variable_symbol.cpp>;
+interface <vtabgen.cppm>;
+source <vtabgen.cpp>;
 interface <writer.cppm>;
 source <writer.cpp>;

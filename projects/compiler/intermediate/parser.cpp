@@ -18,6 +18,8 @@ import soul.lexer.classmap;
 import soul.lexer.keyword;
 import util.file_stream;
 import util.unicode;
+import util.system;
+import util.path;
 
 namespace otava::intermediate {
 

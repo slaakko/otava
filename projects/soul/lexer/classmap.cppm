@@ -7,6 +7,7 @@ import util.compression;
 import util.deflate_stream;
 import util.memory_stream;
 import util.path;
+import util.system;
 
 export namespace soul::lexer {
 

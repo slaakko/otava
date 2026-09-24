@@ -6,15 +6,14 @@
 export module otava.symbols.block;
 
 import std;
+import otava.symbols.bound_tree;
 import otava.symbols.container_symbol;
+import otava.symbols.variable_symbol;
 import otava.symbols.id;
 import otava.ast.node;
 import soul.ast.span;
 
 export namespace otava::symbols {
-
-class BoundExpressionNode;
-class VariableSymbol;
 
 class BlockSymbol : public ContainerSymbol
 {

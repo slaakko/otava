@@ -65,11 +65,11 @@ Section* SymbolTable::GetSection(Symbol* forSymbol) const noexcept
 }
 
 ConversionTable* SymbolTable::GetConversionTable() const noexcept
-{
+{ 
 #ifdef OTAVA
     return &conversionTable;
 #else
-    return &(const_cast<SymbolTable*>(this)->conversionTable);
+    return &(const_cast<SymbolTable*>(this)->conversionTable); 
 #endif
 }
 
@@ -505,7 +505,7 @@ void SymbolTable::BeginClass(const std::string& name, ClassKind classKind, TypeS
     classTypeSymbol->SetSpecialization(specialization, context);
     classTypeSymbol->SetAstNodeId(node->Id());
     currentScope->SymbolScope(context)->AddSymbol(classTypeSymbol, fullSpan, context);
-    classGroup->AddClass(classTypeSymbol, context);
+    classGroup->AddClass(classTypeSymbol, context, true);
     MapNode(node, classTypeSymbol, context);
     SetSpecifierNode(classTypeSymbol, node);
     BeginScope(classTypeSymbol->GetScope(), context);
@@ -567,7 +567,7 @@ void SymbolTable::AddForwardClassDeclaration(const std::string& name, ClassKind 
     ForwardClassDeclarationSymbol* fwdDeclaration = classGroup->GetForwardDeclaration(forwardDeclarationSymbol->Arity(context), context);
     if (!fwdDeclaration)
     {
-        classGroup->AddForwardDeclaration(forwardDeclarationSymbol.get());
+        classGroup->AddForwardDeclaration(forwardDeclarationSymbol.get(), context);
         Symbol* sym = forwardDeclarationSymbol.release();
         MapNode(node, sym, context);
         currentScope->SymbolScope(context)->AddSymbol(sym, fullSpan, context);
@@ -924,9 +924,9 @@ TypeSymbol* SymbolTable::GetCompoundType(TypeSymbol* baseType, Derivations deriv
     return nullptr;
 }
 
-void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context)
+SymbolId SymbolTable::GetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context) const noexcept
 {
-    CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(), compoundTypeSymbol->GetDerivations());
+    CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(context), compoundTypeSymbol->GetDerivations());
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
         context->AddModule(importedModule);
@@ -934,7 +934,30 @@ void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* conte
         if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
         {
             SymbolId irId = it->second;
-            compoundTypeSymbol->SetIrId(irId);
+            return irId;
+        }
+    }
+    auto it = irCompoundTypeMap.find(irKey);
+    if (it != irCompoundTypeMap.end())
+    {
+        SymbolId irId = it->second;
+        return irId;
+    }
+    return zeroSymbolId;
+}
+
+void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context)
+{
+    if (compoundTypeSymbol->HasForwardClassDeclarationSymbol(context)) return;
+    CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(context), compoundTypeSymbol->GetDerivations());
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    {
+        context->AddModule(importedModule);
+        auto it = importedModule->GetSymbolTable()->irCompoundTypeMap.find(irKey);
+        if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
+        {
+            SymbolId irId = it->second;
+            compoundTypeSymbol->SetIrId(irId, context);
             return;
         }
     }
@@ -942,14 +965,20 @@ void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* conte
     if (it != irCompoundTypeMap.end())
     {
         SymbolId irId = it->second;
-        compoundTypeSymbol->SetIrId(irId);
+        compoundTypeSymbol->SetIrId(irId, context);
     }
     else
     {
         SymbolId irId = context->GetNextSymbolId(SymbolKind::compoundTypeSymbol);
         irCompoundTypeMap[irKey] = irId;
-        compoundTypeSymbol->SetIrId(irId);
+        compoundTypeSymbol->SetIrId(irId, context);
     }
+}
+
+void SymbolTable::MapIrId(CompoundTypeSymbol* compoundTypeSymbol, SymbolId irId, Context* context)
+{
+    CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(context), compoundTypeSymbol->GetDerivations());
+    irCompoundTypeMap[irKey] = irId;
 }
 
 TypeSymbol* SymbolTable::MakeCompoundType(TypeSymbol* baseType, Derivations derivations, Context* context)
@@ -1083,13 +1112,13 @@ ClassTemplateSpecializationSymbol* SymbolTable::GetClassTemplateSpecialization(C
     return nullptr;
 }
 
-void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context)
+SymbolId SymbolTable::GetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context) const noexcept
 {
     SpecializationKey irKey;
-    irKey.typeSymbolId = specialization->ClassTemplate(context)->IrId();
+    irKey.typeSymbolId = specialization->ClassTemplate(context)->IrId(context);
     for (Symbol* templateArg : specialization->TemplateArguments(context))
     {
-        irKey.templateArgumentIds.push_back(templateArg->IrId());
+        irKey.templateArgumentIds.push_back(templateArg->IrId(context));
     }
     for (Module* importedModule : GetModule()->ImportExportModules(context))
     {
@@ -1098,7 +1127,35 @@ void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Con
         if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
         {
             SymbolId irId = it->second;
-            specialization->SetIrId(irId);
+            return irId;
+        }
+    }
+    auto it = irClassTemplateSpecializationMap.find(irKey);
+    if (it != irClassTemplateSpecializationMap.end())
+    {
+        SymbolId irId = it->second;
+        return irId;
+    }
+    return zeroSymbolId;
+}
+
+void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Context* context)
+{
+    if (specialization->HasForwardClassDeclarationSymbol(context)) return;
+    SpecializationKey irKey;
+    irKey.typeSymbolId = specialization->ClassTemplate(context)->IrId(context);
+    for (Symbol* templateArg : specialization->TemplateArguments(context))
+    {
+        irKey.templateArgumentIds.push_back(templateArg->IrId(context));
+    }
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    {
+        context->AddModule(importedModule);
+        auto it = importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.find(irKey);
+        if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
+        {
+            SymbolId irId = it->second;
+            specialization->SetIrId(irId, context);
             return;
         }
     }
@@ -1106,14 +1163,25 @@ void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Con
     if (it != irClassTemplateSpecializationMap.end())
     {
         SymbolId irId = it->second;
-        specialization->SetIrId(irId);
+        specialization->SetIrId(irId, context);
     }
     else
     {
         SymbolId irId = context->GetNextSymbolId(SymbolKind::classTemplateSpecializationSymbol);
         irClassTemplateSpecializationMap[irKey] = irId;
-        specialization->SetIrId(irId);
+        specialization->SetIrId(irId, context);
     }
+}
+
+void SymbolTable::MapIrId(ClassTemplateSpecializationSymbol* specialization, SymbolId irId, Context* context)
+{
+    SpecializationKey irKey;
+    irKey.typeSymbolId = specialization->ClassTemplate(context)->IrId(context);
+    for (Symbol* templateArg : specialization->TemplateArguments(context))
+    {
+        irKey.templateArgumentIds.push_back(templateArg->IrId(context));
+    }
+    irClassTemplateSpecializationMap[irKey] = irId;
 }
 
 ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArguments,
@@ -1139,7 +1207,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
         classTemplateSpecialization = classTemplateModule->GetSymbolTable()->GetClassTemplateSpecialization(classTemplate, templateArguments, context);
         if (classTemplateSpecialization)
         {
-            if (!classTemplateSpecialization->IsReadOnly() || !createNew)
+            if (classTemplateSpecialization->Instantiated() && (!classTemplateSpecialization->IsReadOnly() || !createNew))
             {
                 return classTemplateSpecialization;
             }
@@ -1151,7 +1219,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
         classTemplateSpecialization = importedModule->GetSymbolTable()->GetClassTemplateSpecialization(classTemplate, templateArguments, context);
         if (classTemplateSpecialization)
         {
-            if (!classTemplateSpecialization->IsReadOnly() || !createNew)
+            if (classTemplateSpecialization->Instantiated() && (!classTemplateSpecialization->IsReadOnly() || !createNew))
             {
                 return classTemplateSpecialization;
             }
@@ -1225,7 +1293,7 @@ void SymbolTable::AddExplicitInstantiation(ExplicitInstantiationSymbol* explicit
 
 FunctionTypeSymbol* SymbolTable::GetFunctionTypeSymbol(const FunctionTypeSymbolKey& key, Context* context)
 {
-    ReadFunctionTypeMap();
+    ReadFunctionTypeMaps();
     auto it = functionTypeMap.find(key);
     if (it != functionTypeMap.end())
     {
@@ -1244,14 +1312,7 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
     bool makePtrType, Context* context)
 {
     FunctionTypeSymbolKey key;
-    if (returnType)
-    {
-        key.returnTypeId = returnType->Id();
-    }
-    else
-    {
-        ThrowException("return type expected");
-    }
+    key.returnTypeId = returnType->Id();
     for (TypeSymbol* parameterType : parameterTypes)
     {
         key.parameterTypeIds.push_back(parameterType->Id());
@@ -1283,11 +1344,12 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
     int ptrIndex = -1;
     functionTypeSymbol = new FunctionTypeSymbol(module, symbolId, MakeFunctionTypeName(returnType, parameterTypes, ptrIndex, makePtrType));
     functionTypeSymbol->SetPtrIndex(ptrIndex);
-    functionTypeSymbol->SetReturnType(returnType);
+    functionTypeSymbol->SetReturnType(returnType, context);
     for (TypeSymbol* parameterType : parameterTypes)
     {
-        functionTypeSymbol->AddParameterType(parameterType);
+        functionTypeSymbol->AddParameterType(parameterType, context);
     }
+    SetIrId(functionTypeSymbol, context);
     GlobalNs()->GetScope()->AddSymbol(functionTypeSymbol, soul::ast::FullSpan(), context);
     return functionTypeSymbol;
 }
@@ -1295,13 +1357,21 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
 FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(FunctionSymbol* functionSymbol, Context* context)
 {
     TypeSymbol* returnType = functionSymbol->ReturnType(context);
+    if (!returnType || returnType->IsClassTypeSymbol())
+    {
+        returnType = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::voidType, context);
+    }
     std::vector<TypeSymbol*> parameterTypes;
-    Cardinality n = Cardinality(functionSymbol->Parameters(context).size());
+    Cardinality n = Cardinality(functionSymbol->MemFnParameters(context).size());
     for (Index i = Index(0); i < ToIndex(n); ++i)
     {
-        TypeSymbol* parameterType = functionSymbol->Parameters(context)[ToUnderlying(i)]->GetType(context);
+        TypeSymbol* parameterType = functionSymbol->MemFnParameters(context)[ToUnderlying(i)]->GetType(context);
         if (parameterType)
         {
+            if (parameterType->IsClassTypeSymbol())
+            {
+                parameterType = parameterType->AddConst(context)->AddLValueRef(context);
+            }
             parameterTypes.push_back(parameterType);
         }
         else
@@ -1309,7 +1379,67 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(FunctionSymbol* function
             ThrowException("parameter type expected");
         }
     }
+    if (functionSymbol->ReturnsClass())
+    {
+        parameterTypes.push_back(functionSymbol->ReturnValueParam(context)->GetType(context));
+    }
     return MakeFunctionTypeSymbol(returnType, parameterTypes, functionSymbol->GetModule(), false, context);
+}
+
+SymbolId SymbolTable::GetIrId(FunctionTypeSymbol* functionTypeSymbol, Context* context) const noexcept
+{
+    FunctionTypeSymbolKey irKey = functionTypeSymbol->IrKey(context);
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    {
+        context->AddModule(importedModule);
+        auto it = importedModule->GetSymbolTable()->irFunctionTypeMap.find(irKey);
+        if (it != importedModule->GetSymbolTable()->irFunctionTypeMap.end())
+        {
+            SymbolId irId = it->second;
+            return irId;
+        }
+    }
+    auto it = irFunctionTypeMap.find(irKey);
+    if (it != irFunctionTypeMap.end())
+    {
+        SymbolId irId = it->second;
+        return irId;
+    }
+    return zeroSymbolId;
+}
+
+void SymbolTable::SetIrId(FunctionTypeSymbol* functionTypeSymbol, Context* context)
+{
+    if (functionTypeSymbol->HasForwardClassDeclarationSymbol(context)) return;
+    FunctionTypeSymbolKey irKey = functionTypeSymbol->IrKey(context);
+    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    {
+        context->AddModule(importedModule);
+        auto it = importedModule->GetSymbolTable()->irFunctionTypeMap.find(irKey);
+        if (it != importedModule->GetSymbolTable()->irFunctionTypeMap.end())
+        {
+            SymbolId irId = it->second;
+            functionTypeSymbol->SetIrId(irId);
+            return;
+        }
+    }
+    auto it = irFunctionTypeMap.find(irKey);
+    if (it != irFunctionTypeMap.end())
+    {
+        SymbolId irId = it->second;
+        functionTypeSymbol->SetIrId(irId);
+    }
+    else
+    {
+        SymbolId irId = context->GetNextSymbolId(SymbolKind::functionTypeSymbol);
+        irFunctionTypeMap[irKey] = irId;
+        functionTypeSymbol->SetIrId(irId);
+    }
+}
+
+void SymbolTable::MapIrId(FunctionTypeSymbol* functionTypeSymbol, SymbolId irId, Context* context)
+{
+    irFunctionTypeMap[functionTypeSymbol->IrKey(context)] = irId;
 }
 
 TypeSymbol* SymbolTable::MakeConstCharPtrType(Context* context)
@@ -1756,7 +1886,7 @@ void SymbolTable::ReadExplicitInstantiationMap(Reader& reader)
     reader.PopCurrentReader();
 }
 
-void SymbolTable::WriteFunctionTypeMap(Writer& writer)
+void SymbolTable::WriteFunctionTypeMaps(Writer& writer)
 {
     writer.GetBinaryStreamWriter().Write(ToUnderlying(Cardinality(functionTypeMap.size())));
     for (const auto& f : functionTypeMap)
@@ -1766,17 +1896,25 @@ void SymbolTable::WriteFunctionTypeMap(Writer& writer)
         key.Write(writer);
         writer.GetBinaryStreamWriter().Write(ToUnderlying(symbolId));
     }
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(Cardinality(irFunctionTypeMap.size())));
+    for (const auto& a : irFunctionTypeMap)
+    {
+        FunctionTypeSymbolKey key = a.first;
+        SymbolId symbolId = a.second;
+        key.Write(writer);
+        writer.GetBinaryStreamWriter().Write(ToUnderlying(symbolId));
+    }
 }
 
-void SymbolTable::ReadFunctionTypeMap()
+void SymbolTable::ReadFunctionTypeMaps()
 {
     if (functionTypeMapRead || !IsReadOnly()) return;
     functionTypeMapRead = true;
     Reader reader(GetModule()->GetFileMapping());
-    ReadFunctionTypeMap(reader);
+    ReadFunctionTypeMaps(reader);
 }
 
-void SymbolTable::ReadFunctionTypeMap(Reader& reader)
+void SymbolTable::ReadFunctionTypeMaps(Reader& reader)
 {
     reader.PushCurrentReader(util::Advance(reader.Start(), ToUnderlying(module->GetFunctionTypeMapOffset())), module->GetFunctionTypeMapLength());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
@@ -1786,6 +1924,14 @@ void SymbolTable::ReadFunctionTypeMap(Reader& reader)
         key.Read(reader);
         SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
         functionTypeMap[key] = symbolId;
+    }
+    Cardinality irCount = Cardinality(reader.CurrentReader().ReadUInt());
+    for (Index i = Index(0); i < ToIndex(irCount); ++i)
+    {
+        FunctionTypeSymbolKey key;
+        key.Read(reader);
+        SymbolId symbolId = SymbolId(reader.CurrentReader().ReadULong());
+        irFunctionTypeMap[key] = symbolId;
     }
     reader.PopCurrentReader();
 }
@@ -1836,6 +1982,21 @@ void SymbolTable::AddImportedSymbol(SymbolId symbolId, Module* module)
 {
     addedImportedSymbolMap[symbolId] = module->Id();
     GetModule()->AddImportedModule(module);
+}
+
+void SymbolTable::MapClassTypeSymbol(ClassTypeSymbol* cls, Context* context)
+{
+    irIdClassMap[cls->IrId(context)] = cls;
+}
+
+ClassTypeSymbol* SymbolTable::GetClassTypeSymbolByIrId(SymbolId irId) const noexcept
+{
+    auto it = irIdClassMap.find(irId);
+    if (it != irIdClassMap.end())
+    {
+        return it->second;
+    }
+    return nullptr;
 }
 
 void SymbolTable::ReadSymbolIdVector()

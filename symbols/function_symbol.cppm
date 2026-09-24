@@ -9,6 +9,7 @@ import std;
 import otava.symbols.bound_tree;
 import otava.symbols.container_symbol;
 import otava.symbols.function_kind;
+import otava.symbols.variable_symbol;
 import otava.symbols.id;
 import otava.intermediate.types;
 import otava.ast.function;
@@ -23,7 +24,6 @@ class Emitter;
 class BoundExpressionNode;
 class FunctionTypeSymbol;
 class Module;
-class ParameterSymbol;
 class TemplateDeclarationSymbol;
 class TypeSymbol;
 
@@ -143,11 +143,11 @@ public:
     void SetFixedIrName(const std::string& fixedIrName_);
     std::string FixedIrName() const;
     std::string IrName(Context* context) const override;
-    virtual otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) const;
+    virtual otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
     virtual void GenerateCode(Emitter& emitter, std::vector<BoundExpressionNode*>& args, OperationFlags flags,
         const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
     void GenerateVirtualFunctionCall(Emitter& emitter, std::vector<BoundExpressionNode*>& args, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
-    inline void SetVTabIndex(std::int32_t vtabIndex_) noexcept { vtabIndex = vtabIndex_; }
+    virtual void SetVTabIndex(std::int32_t vtabIndex_) noexcept { vtabIndex = vtabIndex_; }
     virtual std::int32_t VTabIndex() const noexcept { return vtabIndex; }
     std::string NextTemporaryName();
     VariableSymbol* CreateTemporary(TypeSymbol* type, std::int64_t nodeId, Context* context);
@@ -262,8 +262,9 @@ public:
     ClassParsingMap* GetClassParsingMap() const noexcept override;
     void SetClassParsingMap(ClassParsingMap* classParsingMap_) noexcept override;
     std::string IrName(Context* context) const override;
-    otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) const override;
+    otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     void SetReturnType(TypeSymbol* returnType_, Context* context) override;
+    void SetVTabIndex(std::int32_t vtabIndex_) noexcept override;
 private:
     FunctionSymbol* declaration;
     SymbolId declarationId;
@@ -285,7 +286,7 @@ public:
     ExplicitlyInstantiatedFunctionDefinitionSymbol(Module* module_, SymbolId id_, FunctionDefinitionSymbol* functionDefinitionSymbol_, 
         const soul::ast::FullSpan& fullSpan, Context* context);
     std::string IrName(Context* context) const override { return irName; }
-    otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) const override;
+    otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:

@@ -12,6 +12,7 @@ import otava.symbols.modules;
 import otava.symbols.reader;
 import otava.symbols.writer;
 import otava.symbols.symbol;
+import otava.symbols.symbol_table;
 
 namespace otava::symbols {
 
@@ -86,13 +87,55 @@ void CompoundTypeKey::Read(Reader& reader)
 }
 
 CompoundTypeSymbol::CompoundTypeSymbol(Module* module_, SymbolId id_) : 
-    TypeSymbol(module_, id_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId), irId(id_)
+    TypeSymbol(module_, id_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId), irId(zeroSymbolId)
 {
 }
 
 CompoundTypeSymbol::CompoundTypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    TypeSymbol(module_, id_, name_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId), irId(id_)
+    TypeSymbol(module_, id_, name_), baseType(nullptr), derivations(Derivations::none), baseTypeId(zeroSymbolId), irId(zeroSymbolId)
 {
+}
+
+void CompoundTypeSymbol::SetIrId(SymbolId irId_, Context* context) noexcept
+{
+    irId = irId_;
+    if (!HasForwardClassDeclarationSymbol(context))
+    {
+        context->CurrentProject()->SetIrId(FullName(context), Cardinality(0), irId);
+    }
+}
+
+SymbolId CompoundTypeSymbol::IrId(Context* context) noexcept
+{
+    if (irId != zeroSymbolId)
+    {
+        return irId;
+    }
+    if (!HasForwardClassDeclarationSymbol(context))
+    {
+        SymbolId projectIrId = context->CurrentProject()->GetIrId(FullName(context), Cardinality(0));
+        if (projectIrId != zeroSymbolId)
+        {
+            irId = projectIrId;
+            return irId;
+        }
+    }
+    context->ResetHasUnresolvedForwardDeclaration();
+    SymbolId stabIrId = context->GetSymbolTable()->GetIrId(this, context);
+    if (stabIrId == zeroSymbolId)
+    {
+        stabIrId = context->GetNextSymbolId(SymbolKind::compoundTypeSymbol);
+    }
+    if (!context->HasUnresolvedForwardDeclaration())
+    {
+        SetIrId(stabIrId, context);
+        context->GetSymbolTable()->MapIrId(this, stabIrId, context);
+    }
+    else
+    {
+        context->GetSymbolTable()->MapIrId(this, stabIrId, context);
+    }
+    return stabIrId;
 }
 
 TypeSymbol* CompoundTypeSymbol::GetBaseType(Context* context) 
@@ -169,8 +212,12 @@ TypeSymbol* CompoundTypeSymbol::FinalType(const soul::ast::FullSpan& fullSpan, C
     {
         ThrowException("CompoundTypeSymbol::FinalType: base type not resolved");
     }
-    TypeSymbol* finalBaseType = baseType->FinalType(fullSpan, context);
-    return context->GetSymbolTable()->MakeCompoundType(finalBaseType, derivations, context);
+    if (baseType->HasForwardClassDeclarationSymbol(context))
+    {
+        TypeSymbol* finalBaseType = baseType->FinalType(fullSpan, context);
+        return context->GetSymbolTable()->MakeCompoundType(finalBaseType, derivations, context);
+    }
+    return this;
 }
 
 TypeSymbol* CompoundTypeSymbol::DirectType(Context* context)
@@ -185,6 +232,11 @@ TypeSymbol* CompoundTypeSymbol::DirectType(Context* context)
     }
     TypeSymbol* directBaseType = baseType->DirectType(context);
     return context->GetSymbolTable()->MakeCompoundType(directBaseType, derivations, context);
+}
+
+bool CompoundTypeSymbol::HasForwardClassDeclarationSymbol(Context* context) 
+{
+    return GetBaseType(context)->HasForwardClassDeclarationSymbol(context);
 }
 
 void CompoundTypeSymbol::ResolveBaseType(Context* context)
@@ -293,7 +345,7 @@ void CompoundTypeSymbol::Read(Reader& reader)
 
 otava::intermediate::Type* CompoundTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    SymbolId irId = IrId();
+    SymbolId irId = IrId(context);
     otava::intermediate::Type* type = emitter.GetType(irId);
     if (!type)
     {

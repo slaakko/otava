@@ -52,7 +52,7 @@ ModuleHeader::ModuleHeader() :
     length(Length(0)), nameOffset(StringOffset(0)), id(ModuleId(zeroModuleId)),
     stringTableOffset(FileOffset(0)), stringTableLength(Length(0)), namespaceIdTableOffset(FileOffset(0)), namespaceIdTableLength(Length(0)),
     symbolTableOffset(FileOffset(0)), symbolTableLength(Length(0)), evaluationContextOffset(FileOffset(0)), evaluationContextLength(Length(0)),
-    symbolIndexMapOffset(FileOffset(0)), symbolIndexMapLength(Length(0)), importedSymbolsOffset(FileOffset(0)), importedSymbolsLength(Length(0)), 
+    importedSymbolsOffset(FileOffset(0)), importedSymbolsLength(Length(0)), 
     conversionTableOffset(FileOffset(0)), conversionTableLength(Length(0)), symbolIdVectorOffset(FileOffset(0)), symbolIdVectorLength(Length(0)),
     fundamentalTypeTableOffset(FileOffset(0)), fundamentalTypeTableLength(Length(0)),
     compoundTypeMapOffset(FileOffset(0)), compoundTypeMapLength(Length(0)), aliasTypeTemplateMapOffset(FileOffset(0)), aliasTypeTemplateMapLength(Length(0)),
@@ -99,8 +99,6 @@ void ModuleHeader::Write(Writer& writer)
     {
         sectionHeader.Write(writer);
     }
-    binaryStreamWriter.Write(ToUnderlying(symbolIndexMapOffset));
-    binaryStreamWriter.Write(ToUnderlying(symbolIndexMapLength));
     binaryStreamWriter.Write(ToUnderlying(importedSymbolsOffset));
     binaryStreamWriter.Write(ToUnderlying(importedSymbolsLength));
     binaryStreamWriter.Write(ToUnderlying(conversionTableOffset));
@@ -168,8 +166,6 @@ void ModuleHeader::Read(Reader& reader)
     {
         sectionHeader.Read(reader);
     }
-    symbolIndexMapOffset = FileOffset(reader.CurrentReader().ReadUInt());
-    symbolIndexMapLength = Length(reader.CurrentReader().ReadUInt());
     importedSymbolsOffset = FileOffset(reader.CurrentReader().ReadUInt());
     importedSymbolsLength = Length(reader.CurrentReader().ReadUInt());
     conversionTableOffset = FileOffset(reader.CurrentReader().ReadUInt());
@@ -212,7 +208,7 @@ void ImportedModuleTableEntry::Read(Reader& reader)
 
 Module::Module(util::FileMapping* fileMapping_) :
     kind(ModuleKind::none), id(zeroModuleId), 
-    stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""), symbolIndexMap(this), symbolTable(this, true),
+    stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""), symbolTable(this, true),
     evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1),
     index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false),
     namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false)
@@ -223,7 +219,7 @@ Module::Module(util::FileMapping* fileMapping_) :
 Module::Module(const std::string& name_) :
     kind(ModuleKind::none), id(zeroModuleId), stringTable(this), nameOffset(stringTable.AddString(name_)), name(stringTable.CharPtr(nameOffset)),
     interfaceUnitNameOffset(), interfaceUnitName(""),
-    symbolIndexMap(this), symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false),
+    symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false),
     importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false),
     importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false)
 {
@@ -504,11 +500,6 @@ void Module::Write(Writer& writer)
     symbolTable.Write(writer);
     Length symbolTableLength = Length(writer.Position() - ToUnderlying(header.symbolTableOffset));
     header.symbolTableLength = symbolTableLength;
-    symbolIndexMap.Import(*context->GetSymbolIndexMap());
-    header.symbolIndexMapOffset = FileOffset(writer.Position());
-    symbolIndexMap.Write(writer);
-    Length symbolIndexMapLength = Length(writer.Position() - ToUnderlying(header.symbolIndexMapOffset));
-    header.symbolIndexMapLength = symbolIndexMapLength;
     header.importedSymbolsOffset = FileOffset(writer.Position());
     WriteImportedSymbols(writer);
     header.importedSymbolsLength = Length(FileOffset(writer.Position()) - header.importedSymbolsOffset);
@@ -539,7 +530,7 @@ void Module::Write(Writer& writer)
     Length explicitInstantiationMapLength = Length(writer.Position() - ToUnderlying(header.explicitInstantiationMapOffset));
     header.explicitInstantiationMapLength = explicitInstantiationMapLength;
     header.functionTypeMapOffset = FileOffset(writer.Position());
-    symbolTable.WriteFunctionTypeMap(writer);
+    symbolTable.WriteFunctionTypeMaps(writer);
     Length functionTypeMapLength = Length(writer.Position() - ToUnderlying(header.functionTypeMapOffset));
     header.functionTypeMapLength = functionTypeMapLength;
     header.astNodeHeaderOffset = FileOffset(writer.Position());
@@ -777,7 +768,6 @@ void Module::Read()
     nameOffset = header.nameOffset;
     name = stringTable.CharPtr(nameOffset);
     id = header.id;
-    symbolIndexMap.Read(reader);
 }
 
 SectionHeader* Module::GetSectionHeader(SectionKind sectionKind) noexcept
@@ -827,7 +817,11 @@ bool Module::UpToDate() const noexcept
 
 ModuleMapper::ModuleMapper()
 {
+#ifdef OTAVA
+    roots.push_back(util::GetFullPath(util::Path::Combine(util::OtavaRoot(), "ooc/std")));
+#else
     roots.push_back(util::GetFullPath(util::Path::Combine(util::OtavaRoot(), "std")));
+#endif
 }
 
 void ModuleMapper::AddRoot(const std::string& root)
@@ -856,7 +850,6 @@ Module* ModuleMapper::LoadModule(const std::string& moduleName, const std::strin
         if (util::FileExists(moduleFilePath))
         {
             Module* m = new Module(new util::FileMapping(moduleFilePath));
-            symbolIndexMap.Import(m->GetSymbolIndexMap());
             moduleNameMap[moduleName] = m;
             MapModule(m);
             modules.push_back(std::unique_ptr<Module>(m));

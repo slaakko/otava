@@ -48,8 +48,6 @@ struct ModuleHeader
     FileOffset evaluationContextOffset;
     Length evaluationContextLength;
     std::vector<SectionHeader> sectionHeaders;
-    FileOffset symbolIndexMapOffset;
-    Length symbolIndexMapLength;
     FileOffset importedSymbolsOffset;
     Length importedSymbolsLength;
     FileOffset conversionTableOffset;
@@ -124,8 +122,6 @@ public:
     inline FileOffset GetEvaluationContextOffset() const noexcept { return header.evaluationContextOffset; }
     inline Length GetEvaluationContextLength() const noexcept { return header.evaluationContextLength; }
     SectionHeader* GetSectionHeader(SectionKind sectionKind) noexcept;
-    inline FileOffset GetSymbolIndexMapOffset() const noexcept { return header.symbolIndexMapOffset; }
-    inline Length GetSymbolIndexMapLength() const noexcept { return header.symbolIndexMapLength; }
     inline FileOffset GetConversionTableOffset() const noexcept { return header.conversionTableOffset; }
     inline Length GetConversionTableLength() const noexcept { return header.conversionTableLength; }
     inline FileOffset GetSymbolIdVectorOffset() const noexcept { return header.symbolIdVectorOffset; }
@@ -175,7 +171,6 @@ public:
     void Write(Writer& writer);
     void WriteImportedSymbols(Writer& writer);
     void ReadImportedSymbols();
-    inline const SymbolIndexMap& GetSymbolIndexMap() const noexcept { return symbolIndexMap; }
     inline void ResetNode(otava::ast::Node* astNode_) noexcept { astNode.reset(astNode_); }
     void ReadAstNode();
     inline otava::ast::NodeMap* GetAstNodeMap() const noexcept { return const_cast<otava::ast::NodeMap*>(&astNodeMap); }
@@ -212,7 +207,6 @@ private:
     const char* interfaceUnitName;
     SymbolTable symbolTable;
     EvaluationContext evaluationContext;
-    SymbolIndexMap symbolIndexMap;
     std::string filePath;
     std::unique_ptr<util::FileMapping> fileMapping;
     ModuleHeader header;

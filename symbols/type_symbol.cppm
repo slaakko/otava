@@ -85,7 +85,7 @@ public:
     virtual bool IsSignedIntegerType() const noexcept { return false; }
     virtual bool IsUnsignedIntegerType() const noexcept { return false; }
     virtual int PointerCount() const noexcept { return 0; }
-    virtual bool HasForwardClassDeclarationSymbol(Context* context) const { return false; }
+    virtual bool HasForwardClassDeclarationSymbol(Context* context) { return false; }
     virtual bool IsReplaceableIncompleteType(Context* context) const noexcept { return IsPointerType() || IsReferenceType(); }
     virtual otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context);
     virtual Derivations GetDerivations() const noexcept { return Derivations::none; }

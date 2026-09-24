@@ -10,6 +10,7 @@ import otava.symbols.id;
 import otava.symbols.scope;
 import otava.symbols.type_symbol;
 import otava.symbols.function_kind;
+import otava.symbols.function_symbol;
 import otava.intermediate.types;
 import otava.ast.node;
 import otava.ast.statement;
@@ -30,8 +31,6 @@ const std::int32_t destructorIndex = -6;
 const std::int32_t vtabClassIdElementCount = 1;
 
 class Context;
-class FunctionSymbol;
-class FunctionDefinitionSymbol;
 class ClassGroupSymbol;
 class Emitter;
 class VariableSymbol;
@@ -88,6 +87,8 @@ class ClassTypeSymbol : public TypeSymbol
 public:
     ClassTypeSymbol(Module* module__, SymbolId id_);
     ClassTypeSymbol(Module* module__, SymbolId id_, const std::string& name_);
+    SymbolId IrId(Context* context) noexcept override { return irId; }
+    void SetIrId(SymbolId irId_, Context* context) noexcept;
     ~ClassTypeSymbol();
     std::string FullName(Context* context) const override;
     inline void SetClassKind(ClassKind classKind_) noexcept { classKind = classKind_; }
@@ -163,6 +164,9 @@ public:
     void Read(Reader& reader) override;
     std::pair<bool, std::int64_t> GetDelta(ClassTypeSymbol* base, Emitter& emitter, Context* context) noexcept;
     std::string VTabName(Context* context) const;
+    inline std::int32_t DtorVTabIndex() const noexcept { return dtorVTabIndex; }
+    inline void SetDtorVTabIndex(std::int32_t dtorVTabIndex_) noexcept { dtorVTabIndex = dtorVTabIndex_; }
+    int GetVTabIndexFromVMap(const std::string& functionFullName) const noexcept;
 private:
     mutable ClassTypeSymbolFlags flags;
     ClassKind classKind;
@@ -182,10 +186,12 @@ private:
     SymbolId groupId;
     mutable ClassGroupSymbol* group;
     mutable std::vector<FunctionSymbol*> vtab;
+    std::map<std::string, int> vmap;
     std::vector<SymbolId> vtabIds;
     std::int32_t vptrIndex;
     std::int32_t deltaIndex;
     std::int32_t currentFunctionIndex;
+    std::int32_t dtorVTabIndex;
     mutable std::map<std::int32_t, FunctionSymbol*> functionIndexMap;
     mutable bool functionIndexMapResolved;
     std::map<std::int32_t, SymbolId> functionIndexSymbolIdMap;
@@ -196,6 +202,7 @@ private:
     int32_t nextMemFnDefIndex;
     FunctionSymbol* copyCtor;
     std::vector<std::unique_ptr<Symbol>> tempVars;
+    SymbolId irId;
     mutable bool contentFetched;
     bool destructing;
     void GetContent(Context* context) const;
@@ -206,10 +213,11 @@ class ForwardClassDeclarationSymbol : public TypeSymbol
 public:
     ForwardClassDeclarationSymbol(Module* module__, SymbolId id_);
     ForwardClassDeclarationSymbol(Module* module__, SymbolId id_, const std::string& name_);
+    SymbolId IrId(Context* context) noexcept override;
     bool IsValidDeclarationScope(ScopeKind scopeKind) const noexcept override;
     bool IsComplete(std::set<const TypeSymbol*>& visited, const TypeSymbol*& incompleteType, Context* context) const override;
     TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
-    Cardinality Arity(Context* context) noexcept;
+    Cardinality Arity(Context* context) const noexcept;
     ClassGroupSymbol* Group(Context* context) const;
     void SetGroup(ClassGroupSymbol* group_) noexcept;
     inline void SetClassKind(ClassKind classKind_) noexcept { classKind = classKind_; }
@@ -221,7 +229,7 @@ public:
     TypeSymbol* Specialization(Context* context);
     void SetSpecialization(TypeSymbol* specialization_, Context* context) noexcept;
     std::string IrName(Context* context) const override;
-    bool HasForwardClassDeclarationSymbol(Context* context) const override { return true; }
+    bool HasForwardClassDeclarationSymbol(Context* context) override { return true; }
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
 private:
@@ -262,6 +270,8 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
 void ThrowMemberDeclarationParsingError(const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
 void ThrowStatementParsingError(const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context);
 void CompleteIncompleteClasses(Context* context);
+void MakeObjectLayouts(ClassTypeSymbol* classTypeSymbol, Context* context, const soul::ast::FullSpan& fullSpan);
+void InitVTabs(ClassTypeSymbol* classTypeSymbol, Context* context, const soul::ast::FullSpan& fullSpan);
 
 struct ClassLess
 {

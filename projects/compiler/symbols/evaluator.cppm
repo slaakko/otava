@@ -10,10 +10,10 @@ import otava.ast.node;
 import otava.ast.function;
 import otava.ast.literal;
 import soul.ast.span;
+import otava.symbols.value;
 
 export namespace otava::symbols {
 
-class Value;
 class Context;
 class TypeSymbol;
 class FunctionSymbol;

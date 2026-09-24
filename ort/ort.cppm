@@ -49,6 +49,7 @@ export extern "C" void ort_current_date(int& yyyy, int& month, int& day);
 export extern "C" void ort_current_date_time(int& yyyy, int& month, int& day, int& seconds);
 export extern "C" std::int64_t ort_make_time(int yyyy, int month, int day, int seconds);
 export extern "C" std::int64_t ort_current_ms();
+export extern "C" std::int64_t ort_now();
 export extern "C" void* ort_get_std_output_handle();
 export extern "C" void* ort_get_std_error_handle();
 export extern "C" std::uint16_t ort_get_console_attrs(void* handle);

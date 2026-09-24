@@ -20,12 +20,14 @@ import otava.symbols.overload_resolution;
 import otava.symbols.project;
 import otava.symbols.scope_ptr;
 import otava.symbols.symbol;
+import otava.symbols.symbol_table;
 import otava.symbols.recorded_parse;
 import otava.symbols.statement_binder;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
 import otava.symbols.variable_symbol;
+import otava.symbols.vtabgen;
 import otava.symbols.writer;
 import otava.symbols.reader;
 import otava.intermediate.metadata;
@@ -75,7 +77,8 @@ std::int32_t GetSpecialFunctionIndex(SpecialFunctionKind specialFunctionKind) no
 ClassTypeSymbol::ClassTypeSymbol(Module* module_, SymbolId id_) : 
     TypeSymbol(module_, id_), flags(ClassTypeSymbolFlags::none), classKind(ClassKind::class_), level(0), group(nullptr), 
     groupId(zeroSymbolId), vptrIndex(-1), deltaIndex(-1), currentFunctionIndex(1), specialization(nullptr), specializationId(zeroSymbolId),
-    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset), functionIndexMapResolved(false)
+    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset), functionIndexMapResolved(false),
+    dtorVTabIndex(-1), irId(zeroSymbolId)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
@@ -83,7 +86,8 @@ ClassTypeSymbol::ClassTypeSymbol(Module* module_, SymbolId id_) :
 ClassTypeSymbol::ClassTypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     TypeSymbol(module_, id_, name_), flags(ClassTypeSymbolFlags::none), classKind(ClassKind::class_), level(0), group(nullptr), 
     groupId(zeroSymbolId), vptrIndex(-1), deltaIndex(-1), currentFunctionIndex(1), specialization(nullptr), specializationId(zeroSymbolId),
-    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset), functionIndexMapResolved(false)
+    nextMemFnDefIndex(0), copyCtor(nullptr), contentFetched(false), destructing(false), vtabNameOffset(notFoundOffset), functionIndexMapResolved(false),
+    dtorVTabIndex(-1), irId(zeroSymbolId)
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
@@ -121,6 +125,12 @@ ClassTypeSymbol::~ClassTypeSymbol()
         fn->SetDefIndex(-1);
         fn->RemoveClass(this);
     }
+}
+
+void ClassTypeSymbol::SetIrId(SymbolId irId_, Context* context) noexcept 
+{
+    irId = irId_;
+    context->GetSymbolTable()->MapClassTypeSymbol(this, context);
 }
 
 std::string ClassTypeSymbol::FullName(Context* context) const
@@ -500,7 +510,7 @@ FunctionSymbol* ClassTypeSymbol::GetFunctionByIndex(std::int32_t functionIndex, 
 
 otava::intermediate::Type* ClassTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    SymbolId irId = IrId();
+    SymbolId irId = IrId(context);
     otava::intermediate::Type* irType = emitter.GetType(irId);
     if (!irType)
     {
@@ -529,7 +539,16 @@ otava::intermediate::Type* ClassTypeSymbol::IrType(Emitter& emitter, const soul:
 
 void ClassTypeSymbol::MakeVTab(Context* context, const soul::ast::FullSpan& fullSpan)
 {
-    if (!IsClassTemplateSpecializationSymbol())
+    if (IsClassTemplateSpecializationSymbol())
+    {
+        BoundCompileUnitNode* boundCompileUnit = context->GetBoundCompileUnit();
+        if (boundCompileUnit->VTabInitialized(this))
+        {
+            return;
+        }
+        boundCompileUnit->AddVTabInitialized(this);
+    }
+    else 
     {
         if (VTabInitialized()) return;
         SetVTabInitialized();
@@ -580,6 +599,15 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
         }
     }
     std::vector<FunctionSymbol*> fns;
+    Symbol* s = GenerateDestructor(this, fullSpan, context);
+    if (s && s->IsFunctionSymbol())
+    {
+        FunctionSymbol* fn = static_cast<FunctionSymbol*>(s);
+        if (!fn->IsTrivialDestructor())
+        {
+            fns.push_back(fn);
+        }
+    }
     for (FunctionSymbol* function : MemberFunctions(context))
     {
         FunctionSymbol* fn = function;
@@ -655,6 +683,14 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
                 {
                     f->Group(context)->SetVTabIndex(f, j, context);
                 }
+                if (f->IsDestructor())
+                {
+                    SetDtorVTabIndex(j);
+                }
+                if (IsClassTemplateSpecializationSymbol())
+                {
+                    vmap[f->FullName(context)] = j;
+                }
                 found = true;
                 break;
             }
@@ -672,7 +708,15 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
                 {
                     f->Group(context)->SetVTabIndex(f, m, context);
                 }
+                if (f->IsDestructor())
+                {
+                    SetDtorVTabIndex(m);
+                }
                 vtab.push_back(f);
+                if (IsClassTemplateSpecializationSymbol())
+                {
+                    vmap[f->FullName(context)] = m;
+                }
             }
         }
     }
@@ -686,7 +730,7 @@ void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* cont
     }
     catch (const std::exception& ex)
     {
-        ThrowException("could not generate v-table for class '" + FullName(context) + "': " + std::string(ex.what()), fullSpan, context);
+        ThrowException("could not generate vtable for class '" + FullName(context) + "': " + std::string(ex.what()), fullSpan, context);
     }
 }
 
@@ -762,6 +806,14 @@ std::string ClassTypeSymbol::GroupName(Context* context)
 
 otava::intermediate::Value* ClassTypeSymbol::GetVTabVariable(Emitter& emitter, Context* context)
 {
+    if (context->GetBoundCompileUnit()->HasBoundClass(this))
+    {
+        VTabGenerator* vtabGenerator = emitter.GetVTabGenerator();
+        if (vtabGenerator)
+        {
+            vtabGenerator->GenerateVTab(this, GetFullSpan());
+        }
+    }
     otava::intermediate::Value* vtabVariable = emitter.GetVTabVariable(FullName(context));
     if (!vtabVariable)
     {
@@ -775,7 +827,18 @@ otava::intermediate::Value* ClassTypeSymbol::GetVTabVariable(Emitter& emitter, C
 
 std::string ClassTypeSymbol::VTabName(Context* context) const
 {
-    return GetModule()->GetStringTable()->GetString(vtabNameOffset);
+    std::string vtabName = GetModule()->GetStringTable()->GetString(vtabNameOffset);
+    return vtabName;
+}
+
+int ClassTypeSymbol::GetVTabIndexFromVMap(const std::string& functionFullName) const noexcept
+{
+    auto it = vmap.find(functionFullName);
+    if (it != vmap.end())
+    {
+        return it->second;
+    }
+    return -1;
 }
 
 std::vector<ClassTypeSymbol*> ClassTypeSymbol::VPtrHolderClasses(Context* context) const
@@ -949,6 +1012,7 @@ void ClassTypeSymbol::Write(Writer& writer)
     }
     writer.GetBinaryStreamWriter().Write(vptrIndex);
     writer.GetBinaryStreamWriter().Write(deltaIndex);
+    writer.GetBinaryStreamWriter().Write(dtorVTabIndex);
     Cardinality n = Cardinality(functionIndexMap.size());
     writer.GetBinaryStreamWriter().Write(ToUnderlying(n));
     for (const auto& p : functionIndexMap)
@@ -972,6 +1036,7 @@ void ClassTypeSymbol::Write(Writer& writer)
         writer.GetBinaryStreamWriter().Write(ToUnderlying(zeroSymbolId));
     }
     writer.GetBinaryStreamWriter().Write(nextMemFnDefIndex);
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(irId));
 }
 
 void ClassTypeSymbol::Read(Reader& reader)
@@ -1018,6 +1083,7 @@ void ClassTypeSymbol::Read(Reader& reader)
     }
     vptrIndex = reader.CurrentReader().ReadInt();
     deltaIndex = reader.CurrentReader().ReadInt();
+    dtorVTabIndex = reader.CurrentReader().ReadInt();
     Cardinality n = Cardinality(reader.CurrentReader().ReadUInt());
     for (Index i = Index(0); i < ToIndex(n); ++i)
     {
@@ -1028,6 +1094,7 @@ void ClassTypeSymbol::Read(Reader& reader)
     vtabNameOffset = StringOffset(reader.CurrentReader().ReadUInt());
     specializationId = SymbolId(reader.CurrentReader().ReadULong());
     nextMemFnDefIndex = reader.CurrentReader().ReadInt();
+    irId = SymbolId(reader.CurrentReader().ReadULong());
 }
 
 void ClassTypeSymbol::GetContent(Context* context) const
@@ -1137,16 +1204,32 @@ void ClassTypeSymbol::GetContent(Context* context) const
 
 ForwardClassDeclarationSymbol::ForwardClassDeclarationSymbol(Module* module_, SymbolId id_) : 
     TypeSymbol(module_, id_), classTypeSymbol(nullptr), classKind(ClassKind::class_), specialization(nullptr), group(nullptr), groupId(zeroSymbolId),
-    classTypeSymbolId(zeroSymbolId), specializationId(zeroSymbolId)
+    classTypeSymbolId(zeroSymbolId), specializationId(zeroSymbolId) 
 {
     GetScope()->SetKind(ScopeKind::classScope);
 }
 
 ForwardClassDeclarationSymbol::ForwardClassDeclarationSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     TypeSymbol(module_, id_, name_), classTypeSymbol(nullptr), classKind(ClassKind::class_), specialization(nullptr), group(nullptr), groupId(zeroSymbolId),
-    classTypeSymbolId(zeroSymbolId), specializationId(zeroSymbolId)
+    classTypeSymbolId(zeroSymbolId), specializationId(zeroSymbolId) 
 {
     GetScope()->SetKind(ScopeKind::classScope);
+}
+
+SymbolId ForwardClassDeclarationSymbol::IrId(Context* context) noexcept
+{
+    SymbolId irId = context->CurrentProject()->GetIrId(Group(context)->FullName(context), Arity(context));
+    if (irId == zeroSymbolId)
+    {
+        context->SetHasUnresolvedForwardDeclaration();
+        return Id();
+    }
+    ClassTypeSymbol* cls = context->GetSymbolTable()->GetClassTypeSymbolByIrId(irId);
+    if (cls)
+    {
+        Group(context)->AddClass(cls, context, false);
+    }
+    return irId;
 }
 
 bool ForwardClassDeclarationSymbol::IsValidDeclarationScope(ScopeKind scopeKind) const noexcept
@@ -1225,7 +1308,7 @@ void ForwardClassDeclarationSymbol::SetGroup(ClassGroupSymbol* group_) noexcept
     }
 }
 
-Cardinality ForwardClassDeclarationSymbol::Arity(Context* context) noexcept
+Cardinality ForwardClassDeclarationSymbol::Arity(Context* context) const noexcept
 {
     TemplateDeclarationSymbol* templateDeclaration = ParentTemplateDeclaration(context);
     if (templateDeclaration)
@@ -1786,10 +1869,7 @@ void InitVTabs(ClassTypeSymbol* classTypeSymbol, Context* context, const soul::a
     {
         InitVTabs(baseClass, context, fullSpan);
     }
-    if (!classTypeSymbol->VTabInitialized())
-    {
-        classTypeSymbol->MakeVTab(context, fullSpan);
-    }
+    classTypeSymbol->MakeVTab(context, fullSpan);
 }
 
 Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context)
@@ -2043,7 +2123,10 @@ Symbol* GenerateDestructor(ClassTypeSymbol* classTypeSymbol, const soul::ast::Fu
     classTypeSymbol->AddSymbol(destructorDefinitionSymbol.release(), fullSpan, context);
     BoundCompoundStatementNode* body = new BoundCompoundStatementNode(fullSpan);
     MakeObjectLayouts(classTypeSymbol, context, fullSpan);
-    InitVTabs(classTypeSymbol, context, fullSpan);
+    if (!classTypeSymbol->IsClassTemplateSpecializationSymbol())
+    {
+        InitVTabs(classTypeSymbol, context, fullSpan);
+    }
     if (classTypeSymbol->IsPolymorphic(context))
     {
         if (classTypeSymbol->HasPolymorphicBaseClass(context))

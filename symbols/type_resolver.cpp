@@ -505,10 +505,6 @@ void TypeResolver::Visit(otava::ast::DeclTypeSpecifierNode& node)
 void TypeResolver::Visit(otava::ast::QualifiedIdNode& node)
 {
     if (failed) return;
-    if (node.Str() == "Machine::Vars")
-    {
-        int x = 0;
-    }
     context->GetSymbolTable()->PushTopScopeIndex();
     ScopesPtr scopesPtr(GetScopes(node.Left(), context), context);
     Scopes& scopes = context->GetScopes();
@@ -700,7 +696,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
                 { 
                     type = nullptr;
                     failed = true;
-                    context->SetException(MakeException("symbol '" +symbol->Name() + "' is not a type symbol", fullSpan, context));
+                    context->SetException(MakeException("symbol '" + symbol->Name() + "' is not a type symbol", fullSpan, context));
                     return;
                 }
             }
@@ -732,7 +728,7 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
                 NestedTypeSymbol* nestedTypeSymbol = new NestedTypeSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::nestedTypeSymbol), node.Str());
                 if (containerSymbol->IsReadOnly())
                 {
-                    context->GetModule()->GetSymbolTable()->GetGlobalNs(context)->AddSymbol(nestedTypeSymbol, fullSpan, context);
+                    context->GetCompileUnitModule()->GetSymbolTable()->GetGlobalNs(context)->AddSymbol(nestedTypeSymbol, fullSpan, context);
                     nestedTypeSymbol->SetParent(containerSymbol);
                 }
                 else

@@ -371,8 +371,10 @@ bool Symbol::IsTypeSymbol() const noexcept
     switch (kind)
     {
     case SymbolKind::aliasTypeSymbol:
+    case SymbolKind::aliasGroupTypeSymbol:
     case SymbolKind::arrayTypeSymbol:
     case SymbolKind::classTypeSymbol:
+    case SymbolKind::classGroupTypeSymbol:
     case SymbolKind::forwardClassDeclarationSymbol:
     case SymbolKind::classTemplateSpecializationSymbol:
     case SymbolKind::aliasTypeTemplateSpecializationSymbol:

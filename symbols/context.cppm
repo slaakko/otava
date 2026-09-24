@@ -249,8 +249,9 @@ public:
     inline int NextConditionVariableSerial() noexcept { return conditionVariableSerial++; }
     inline int NextStreamInitVarSerial() noexcept { return streamInitVarSerial++; }
     void AddBoundVTabFunction(BoundFunctionNode* node);
-    inline const std::vector<std::unique_ptr<BoundFunctionNode>>& BoundVTabFunctions() const noexcept { return boundVTabFunctions; }
-    void ClearBoundVTabFunctions();
+    std::vector<std::unique_ptr<BoundFunctionNode>> GetBoundVTabFunctions() { return std::move(boundVTabFunctions); }
+    void AddBoundClass(ClassTypeSymbol* cls);
+    std::vector<std::unique_ptr<BoundClassNode>> GetBoundClasses() { return std::move(boundClasses); }
     inline int ArgIndex() const noexcept { return argIndex; }
     void SetArgIndex(int argIndex_) noexcept { argIndex = argIndex_; }
     void SetInstantiationIrName(const std::string& instantiationIrName_);
@@ -314,6 +315,9 @@ public:
     inline bool IncompleteClassesCompleted() const noexcept { return incompleteClassesCompleted; }
     inline void SetIncompleterClassesCompleted() { incompleteClassesCompleted = true; }
     void AddModule(Module* module);
+    inline void SetHasUnresolvedForwardDeclaration() noexcept { hasUnresolvedForwardDeclaration = true; }
+    inline void ResetHasUnresolvedForwardDeclaration() { hasUnresolvedForwardDeclaration = false; }
+    inline bool HasUnresolvedForwardDeclaration() const noexcept { return hasUnresolvedForwardDeclaration; }
 private:
     Module* module;
     Module* compileUnitModule;
@@ -360,6 +364,7 @@ private:
     std::string childControlResultVariableName;
     std::stack<std::string> childControlResultVariableNameStack;
     std::vector<std::unique_ptr<BoundFunctionNode>> boundVTabFunctions;
+    std::vector<std::unique_ptr<BoundClassNode>> boundClasses;
     std::map<otava::ast::Node*, FunctionSymbol*> specializationMap;
     std::map<otava::ast::Node*, ClassTemplateSpecializationSymbol*> classTemplateSpecializationMap;
     int totalFunctionsCompiled;
@@ -402,6 +407,7 @@ private:
     Value* initializer;
     bool incompleteClassesCompleted;
     std::vector<Module*> modules;
+    bool hasUnresolvedForwardDeclaration;
 };
 
 class FlagSetter

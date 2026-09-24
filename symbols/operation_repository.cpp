@@ -13,6 +13,7 @@ import otava.symbols.exception;
 import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
+import otava.symbols.function_type_symbol;
 import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;

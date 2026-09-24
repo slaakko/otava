@@ -17,7 +17,7 @@ void SetEx()
 
 std::string OtavaVersionStr()
 {
-    return "0.2.4";
+    return "0.2.5";
 }
 
 std::string OtavaRoot()
@@ -37,7 +37,8 @@ std::string OtavaRoot()
 
 std::string OtavaUcdFilePath()
 {
-    return GetFullPath(Path::Combine(Path::Combine(OtavaRoot(), "unicode"), "otava_ucd.bin"));
+    std::string p = util::GetFullPath(util::Path::Combine(util::Path::Combine(OtavaRoot(), "unicode"), "otava_ucd.bin"));
+    return p;
 }
 
 std::u32string ToUpper(const std::u32string& s)
@@ -1619,7 +1620,7 @@ CharacterTable::CharacterTable() :
 
 std::string CharacterTable::FilePath() const
 {
-    std::string ucdFilePath = SoulUcdFilePath();
+    std::string ucdFilePath = OtavaUcdFilePath();
     return ucdFilePath;
 }
 
@@ -1710,12 +1711,12 @@ void CharacterTable::ReadHeader(BinaryStreamReader& reader)
     {
         if (magic[i] != headerMagic[i])
         {
-            throw UnicodeException("invalid soul_ucd.bin header magic: 'SOULUCD' expected");
+            throw UnicodeException("invalid otava_ucd.bin header magic: 'SOULUCD' expected");
         }
     }
     if (magic[7] != headerMagic[7])
     {
-        std::string msg("invalid soul_ucd.bin version: version ");
+        std::string msg("invalid otava_ucd.bin version: version ");
         msg.append(std::string(1, headerMagic[7]));
         msg.append(" expected, version ");
         msg.append(std::string(1, magic[7]));

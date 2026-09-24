@@ -246,6 +246,7 @@ public:
     void Accept(BoundTreeVisitor& visitor) override;
     void AddBoundNode(std::unique_ptr<BoundNode>&& node, Context* context);
     void AddBoundNodeForClass(ClassTypeSymbol* cls, const soul::ast::FullSpan& fullSpan, Context* context);
+    bool HasBoundClass(ClassTypeSymbol* cls) const noexcept;
     inline const std::vector<std::unique_ptr<BoundNode>>& BoundNodes() const { return boundNodes; }
     inline void SetId(const std::string& id_) { id = id_; }
     inline const std::string& Id() const { return id; }
@@ -253,6 +254,8 @@ public:
         VariableSymbol* globalVariableSymbol, Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context, bool definition);
     void AddClassToGenerateDestructorList(ClassTypeSymbol* classType);
     inline const std::vector<ClassTypeSymbol*>& GenerateDestructorList() const { return generateDestructorList; }
+    bool VTabInitialized(ClassTypeSymbol* cls) const;
+    void AddVTabInitialized(ClassTypeSymbol* cls);
 private:
     std::string id;
     std::vector<std::unique_ptr<BoundNode>> boundNodes;
@@ -265,6 +268,7 @@ private:
     std::set<ClassTypeSymbol*> boundClasses;
     BoundFunctionNode* compileUnitInitializationFunction;
     std::vector<ClassTypeSymbol*> generateDestructorList;
+    std::set<ClassTypeSymbol*> vtabInitialized;
 };
 
 BoundCompileUnitNode* MakeBoundCompileUnit();
@@ -356,6 +360,8 @@ private:
     std::unique_ptr<BoundStatementNode> boundSetLineStatement;
     std::vector<std::unique_ptr<BoundFunctionCallNode>> temporaryDestructorCalls;
 };
+
+BoundFunctionNode* GetCompileUnitInitFunction(BoundCompileUnitNode* compileUnit);
 
 class BoundStatementNode : public BoundNode
 {

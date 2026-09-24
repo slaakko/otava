@@ -22,7 +22,7 @@ void SetEx()
 
 std::string OtavaVersionStr()
 {
-    return "0.2.4";
+    return "0.2.5";
 }
 
 std::string OtavaRoot()
@@ -43,10 +43,8 @@ std::string OtavaRoot()
 
 std::string OtavaUcdFilePath()
 {
-    std::filesystem::path p(OtavaRoot());
-    p /= std::filesystem::path("unicode");
-    p /= std::filesystem::path("otava_ucd.bin");
-    return p.generic_string();
+    std::string p = util::GetFullPath(util::Path::Combine(util::Path::Combine(OtavaRoot(), "unicode"), "otava_ucd.bin"));
+    return p;
 }
 
 std::u32string ToUpper(const std::u32string& s)

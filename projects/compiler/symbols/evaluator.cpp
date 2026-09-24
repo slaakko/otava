@@ -24,7 +24,6 @@ import otava.symbols.scope_ptr;
 import otava.symbols.symbol;
 import otava.symbols.type_resolver;
 import otava.symbols.concrete_value;
-import otava.symbols.value;
 import otava.intermediate.types;
 import otava.ast.identifier;
 import otava.ast.declaration;
@@ -1301,7 +1300,7 @@ void Evaluator::Visit(otava::ast::IdentifierNode& node)
             case SymbolKind::variableSymbol:
             {
                 VariableSymbol* variableSymbol = static_cast<VariableSymbol*>(symbol);
-                if (variableSymbol->GetValue(context))
+                if ((variableSymbol->GetDeclarationFlags() & DeclarationFlags::constExprFlag) != DeclarationFlags::none && variableSymbol->GetValue(context))
                 {
                     value = variableSymbol->GetValue(context);
                 }

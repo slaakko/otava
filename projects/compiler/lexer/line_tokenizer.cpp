@@ -2,6 +2,8 @@ module otava.lexer.line_tokenizer;
 
 import otava.token.line.lexer;
 import util.unicode;
+import util.system;
+import util.path;
 
 namespace otava::lexer {
 

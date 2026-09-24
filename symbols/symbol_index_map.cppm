@@ -15,17 +15,11 @@ class SymbolIndexMap
 {
 public:
     SymbolIndexMap();
-    SymbolIndexMap(Module* module_);
-    void Write(Writer& writer);
-    void Read(Reader& reader);
     Index GetNextIndex(SymbolKind symbolKind);
     inline Index GetIndex(SymbolKind symbolKind) const noexcept
     {
         return indexMap[ToUnderlying(symbolKind)];
     }
-    void Import(const SymbolIndexMap& that);
-private:
-    Module* module;
 #ifdef OTAVA
     std::vector<Index> indexMap;
 #else

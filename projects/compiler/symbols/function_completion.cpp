@@ -122,6 +122,10 @@ FunctionSymbol* CompleteIncompleteFunction(FunctionSymbol* fn, const soul::ast::
             {
                 completedFunctionFullName = completedFn->FullName(context);
             }
+            else
+            {
+                completedFunctionFullName = fn->FullName(context);
+            }
             PrintWarning("failed to complete function '" + completedFunctionFullName +
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);
             context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);

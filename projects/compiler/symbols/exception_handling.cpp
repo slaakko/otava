@@ -608,13 +608,13 @@ void InvokeAndCleanupGenerator::Visit(BoundCompoundStatementNode& node)
     }
     context->PopParentStatementIndex();
     context->PopParentBlockId();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -684,13 +684,13 @@ void InvokeAndCleanupGenerator::Visit(BoundIfStatementNode& node)
     }
     context->PopParentStatementIndex();
     context->PopParentBlockId();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -745,13 +745,13 @@ void InvokeAndCleanupGenerator::Visit(BoundSwitchStatementNode& node)
     }
     context->PopParentStatementIndex();
     context->PopParentBlockId();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -787,13 +787,13 @@ void InvokeAndCleanupGenerator::Visit(BoundCaseStatementNode& node)
         ThrowException("statement node expected", sn->GetFullSpan(), context);
     }
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -815,13 +815,13 @@ void InvokeAndCleanupGenerator::Visit(BoundDefaultStatementNode& node)
         ThrowException("statement node expected", n->GetFullSpan(), context);
     }
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -876,13 +876,13 @@ void InvokeAndCleanupGenerator::Visit(BoundWhileStatementNode& node)
     }
     context->PopParentStatementIndex();
     context->PopParentBlockId();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -917,13 +917,13 @@ void InvokeAndCleanupGenerator::Visit(BoundDoStatementNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1011,13 +1011,13 @@ void InvokeAndCleanupGenerator::Visit(BoundForStatementNode& node)
     }
     context->PopParentStatementIndex();
     context->PopParentBlockId();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1063,13 +1063,13 @@ void InvokeAndCleanupGenerator::Visit(BoundBreakStatementNode& node)
     context->PushParentStatementIndex(node.StatementIndex());
     BoundBreakStatementNode* clone = new BoundBreakStatementNode(node.GetFullSpan());
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1079,13 +1079,13 @@ void InvokeAndCleanupGenerator::Visit(BoundContinueStatementNode& node)
     context->PushParentStatementIndex(node.StatementIndex());
     BoundContinueStatementNode* clone = new BoundContinueStatementNode(node.GetFullSpan());
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1110,13 +1110,13 @@ void InvokeAndCleanupGenerator::Visit(BoundReturnStatementNode& node)
         }
     }
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1128,13 +1128,13 @@ void InvokeAndCleanupGenerator::Visit(BoundGotoStatementNode& node)
     clone->SetTarget(node.Target());
     clone->SetLabeledStatement(node.GetLabeledStatement());
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1157,13 +1157,13 @@ void InvokeAndCleanupGenerator::Visit(BoundLabeledStatementNode& node)
         ThrowException("statement node expected", sn->GetFullSpan(), context);
     }
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1186,13 +1186,13 @@ void InvokeAndCleanupGenerator::Visit(BoundSetVPtrStatementNode& node)
     clone->SetForClass(node.GetClass());
     clone->SetVPtrHolderClass(node.GetVPtrHolderClass());
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1202,13 +1202,13 @@ void InvokeAndCleanupGenerator::Visit(BoundAliasDeclarationStatementNode& node)
     context->PushParentStatementIndex(node.StatementIndex());
     BoundAliasDeclarationStatementNode* clone = new BoundAliasDeclarationStatementNode(node.GetFullSpan());
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1247,13 +1247,13 @@ void InvokeAndCleanupGenerator::Visit(BoundConstructionStatementNode& node)
     }
     clone->SetVariable(node.Variable());
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1278,13 +1278,13 @@ void InvokeAndCleanupGenerator::Visit(BoundExpressionStatementNode& node)
         }
     }
     context->PopParentStatementIndex();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1297,13 +1297,13 @@ void InvokeAndCleanupGenerator::Visit(BoundValueExpressionNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundLiteralNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1311,13 +1311,13 @@ void InvokeAndCleanupGenerator::Visit(BoundLiteralNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundStringLiteralNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1340,13 +1340,13 @@ void InvokeAndCleanupGenerator::Visit(BoundVariableNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1370,13 +1370,13 @@ void InvokeAndCleanupGenerator::Visit(BoundParentVariableNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1385,13 +1385,13 @@ void InvokeAndCleanupGenerator::Visit(BoundParameterNode& node)
 {
     BoundParameterNode* clone = new BoundParameterNode(node.GetParameter(), node.GetFullSpan(), node.GetType());
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1407,13 +1407,13 @@ void InvokeAndCleanupGenerator::Visit(BoundParentParameterNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundEnumConstant& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1421,13 +1421,13 @@ void InvokeAndCleanupGenerator::Visit(BoundEnumConstant& node)
 void InvokeAndCleanupGenerator::Visit(BoundFunctionGroupNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1435,13 +1435,13 @@ void InvokeAndCleanupGenerator::Visit(BoundFunctionGroupNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundClassGroupNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1449,13 +1449,13 @@ void InvokeAndCleanupGenerator::Visit(BoundClassGroupNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundAliasGroupNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1463,13 +1463,13 @@ void InvokeAndCleanupGenerator::Visit(BoundAliasGroupNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundTypeNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1503,13 +1503,13 @@ void InvokeAndCleanupGenerator::Visit(BoundMemberExprNode& node)
     }
     clone->SetOp(node.Op());
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1548,13 +1548,13 @@ void InvokeAndCleanupGenerator::Visit(BoundFunctionCallNode& node)
             }
         }
         clone->SetFlags(node.Flags());
-        if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-        {
-            clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-        }
-        else if (node.DestructTemporariesNode())
+        if (node.DestructTemporariesNode())
         {
             clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+        }
+        else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+        {
+            clone->SetDestructTemporariesNode(destructTemporariesNode.release());
         }
         s.Push(clone);
     }
@@ -1563,13 +1563,13 @@ void InvokeAndCleanupGenerator::Visit(BoundFunctionCallNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundEmptyFunctionCallNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1592,13 +1592,13 @@ void InvokeAndCleanupGenerator::Visit(BoundFunctionPtrCallNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1639,13 +1639,13 @@ void InvokeAndCleanupGenerator::Visit(BoundExpressionSequenceNode& node)
         ThrowException("expression node expected", rn->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1668,13 +1668,13 @@ void InvokeAndCleanupGenerator::Visit(BoundExpressionListNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1721,13 +1721,13 @@ void InvokeAndCleanupGenerator::Visit(BoundConjunctionNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1774,13 +1774,13 @@ void InvokeAndCleanupGenerator::Visit(BoundDisjunctionNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1840,13 +1840,13 @@ void InvokeAndCleanupGenerator::Visit(BoundConditionalExprNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1867,13 +1867,13 @@ void InvokeAndCleanupGenerator::Visit(BoundConversionNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1894,13 +1894,13 @@ void InvokeAndCleanupGenerator::Visit(BoundAddressOfNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1922,13 +1922,13 @@ void InvokeAndCleanupGenerator::Visit(BoundDereferenceNode& node)
     }
     clone->SetKind(node.Kind());
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1949,13 +1949,13 @@ void InvokeAndCleanupGenerator::Visit(BoundRefToPtrNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -1976,13 +1976,13 @@ void InvokeAndCleanupGenerator::Visit(BoundPtrToRefNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2003,13 +2003,13 @@ void InvokeAndCleanupGenerator::Visit(BoundDefaultInitNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2048,13 +2048,13 @@ void InvokeAndCleanupGenerator::Visit(BoundTemporaryNode& node)
         }
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2116,13 +2116,13 @@ void InvokeAndCleanupGenerator::Visit(BoundConstructTemporaryNode& node)
         ThrowException("expression node expected", nt->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2156,13 +2156,13 @@ void InvokeAndCleanupGenerator::Visit(BoundConstructExpressionNode& node)
     }
     clone->SetHasPlacement(node.HasPlacement());
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2176,13 +2176,13 @@ void InvokeAndCleanupGenerator::Visit(BoundGlobalVariableDefinitionNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundEmptyDestructorNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2190,13 +2190,13 @@ void InvokeAndCleanupGenerator::Visit(BoundEmptyDestructorNode& node)
 void InvokeAndCleanupGenerator::Visit(BoundFunctionValueNode& node)
 {
     BoundExpressionNode* clone = node.Clone();
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
@@ -2217,13 +2217,13 @@ void InvokeAndCleanupGenerator::Visit(BoundVariableAsVoidPtrNode& node)
         ThrowException("expression node expected", n->GetFullSpan(), context);
     }
     clone->SetFlags(node.Flags());
-    if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
-    {
-        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
-    }
-    else if (node.DestructTemporariesNode())
+    if (node.DestructTemporariesNode())
     {
         clone->SetDestructTemporariesNode(static_cast<BoundDestructTemporariesNode*>(node.DestructTemporariesNode()->Clone()));
+    }
+    else if (node.TemporaryDestructorCallsObtained() && destructTemporariesNode)
+    {
+        clone->SetDestructTemporariesNode(destructTemporariesNode.release());
     }
     s.Push(clone);
 }
