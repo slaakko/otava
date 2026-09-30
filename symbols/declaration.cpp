@@ -34,6 +34,7 @@ import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.instantiation_queue;
+import otava.symbols.lookup;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
 import otava.symbols.scope;

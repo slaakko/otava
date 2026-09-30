@@ -18,6 +18,7 @@ import otava.symbols.fundamental_type_symbol;
 import otava.symbols.instantiator;
 import otava.symbols.scope;
 import otava.symbols.statement_binder;
+import otava.symbols.symbol;
 import otava.symbols.symbol_table;
 import otava.symbols.type_symbol;
 import otava.ast.node;

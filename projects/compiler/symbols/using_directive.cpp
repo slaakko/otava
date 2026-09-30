@@ -7,6 +7,7 @@ module otava.symbols.using_directive;
 
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.lookup;
 import otava.symbols.namespaces;
 import otava.symbols.scope;
 import otava.symbols.scope_resolver;

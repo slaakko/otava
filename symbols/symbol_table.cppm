@@ -256,6 +256,15 @@ public:
     void MapClassTypeSymbol(ClassTypeSymbol* cls, Context* context);
     ClassTypeSymbol* GetClassTypeSymbolByIrId(SymbolId irId) const noexcept;
 private:
+    std::unordered_map<CompoundTypeKey, SymbolId, CompoundTypeKeyHash, CompoundTypeKeyEqual>& IrCompoundTypeMap() { return irCompoundTypeMap; }
+    std::unordered_map<SpecializationKey, SymbolId, SpecializationKeyHash, SpecializationKeyEqual>& IrClassTemplateSpecializationMap()
+    {
+        return irClassTemplateSpecializationMap;
+    }
+    std::unordered_map<FunctionTypeSymbolKey, SymbolId, FunctionTypeSymbolKeyHash, FunctionTypeSymbolKeyEqual>& IrFunctionTypeMap()
+    {
+        return irFunctionTypeMap;
+    }
     Module* module;
     std::unique_ptr<NamespaceSymbol> globalNs;
     std::vector<Symbol*> symbolVec;

@@ -7,6 +7,7 @@ module otava.symbols.operation_repository;
 
 import otava.symbols.argument_conversion_table;
 import otava.symbols.bound_tree;
+import otava.symbols.classes;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;

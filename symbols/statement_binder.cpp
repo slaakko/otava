@@ -21,6 +21,7 @@ import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.function_return_path_checker;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.id;
 import otava.symbols.instantiator;
 import otava.symbols.modules;
@@ -33,6 +34,7 @@ import otava.symbols.symbol;
 import otava.symbols.trace;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
+import otava.symbols.type_symbol;
 import otava.ast.classes;
 import otava.ast.declaration;
 import otava.ast.expression;
@@ -1116,13 +1118,31 @@ void StatementBinder::Visit(otava::ast::RangeForStatementNode& node)
     {
         rangeForCompound->AddNode(node.InitStatement()->Clone());
     }
+    otava::ast::Node* initializerDeclarator = nullptr;
+    if (node.Initializer()->IsInvokeExprNode())
+    {
+        otava::ast::DeclSpecifierSequenceNode* initializerDeclSpecifiers = new otava::ast::DeclSpecifierSequenceNode(fullSpan.span, fullSpan.fileIndex);
+        initializerDeclSpecifiers->AddNode(new otava::ast::PlaceholderTypeSpecifierNode(fullSpan.span, fullSpan.fileIndex));
+        otava::ast::InitDeclaratorListNode* initializerDeclarators = new otava::ast::InitDeclaratorListNode(fullSpan.span, fullSpan.fileIndex);
+        initializerDeclarator = new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "@initializer");
+        otava::ast::AssignmentInitNode* initializerAssignmentInit = new otava::ast::AssignmentInitNode(fullSpan.span, fullSpan.fileIndex, node.Initializer()->Clone());
+        otava::ast::InitDeclaratorNode* initializerInitDeclarator = new otava::ast::InitDeclaratorNode(fullSpan.span, fullSpan.fileIndex, initializerDeclarator,
+            initializerAssignmentInit);
+        initializerDeclarators->AddNode(initializerInitDeclarator);
+        otava::ast::SimpleDeclarationNode* initializerDeclaration = new otava::ast::SimpleDeclarationNode(
+            fullSpan.span, fullSpan.fileIndex, initializerDeclSpecifiers, initializerDeclarators, nullptr, nullptr);
+        rangeForCompound->AddNode(initializerDeclaration);
+    }
+    else
+    {
+        initializerDeclarator = node.Initializer();
+    }
     otava::ast::DeclSpecifierSequenceNode* endIteratorDeclSpecifiers = new otava::ast::DeclSpecifierSequenceNode(fullSpan.span, fullSpan.fileIndex);
     endIteratorDeclSpecifiers->AddNode(new otava::ast::PlaceholderTypeSpecifierNode(fullSpan.span, fullSpan.fileIndex));
     otava::ast::InitDeclaratorListNode* endIteratorDeclarators = new otava::ast::InitDeclaratorListNode(fullSpan.span, fullSpan.fileIndex);
     otava::ast::IdentifierNode* endIteratorDeclarator = new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "@end");
-    otava::ast::Node* invokeChild = node.Initializer()->Clone();
     otava::ast::IdentifierNode* invokeId = new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "end");
-    otava::ast::MemberExprNode* invokeSubject = new otava::ast::MemberExprNode(fullSpan.span, fullSpan.fileIndex, invokeChild,
+    otava::ast::MemberExprNode* invokeSubject = new otava::ast::MemberExprNode(fullSpan.span, fullSpan.fileIndex, initializerDeclarator->Clone(),
         new otava::ast::DotNode(fullSpan.span, fullSpan.fileIndex), invokeId);
     otava::ast::InvokeExprNode* endIteratorInitializer = new otava::ast::InvokeExprNode(fullSpan.span, fullSpan.fileIndex, invokeSubject);
     otava::ast::AssignmentInitNode* endIteratorAssignmentInitializer = new otava::ast::AssignmentInitNode(fullSpan.span, fullSpan.fileIndex, endIteratorInitializer);
@@ -1135,7 +1155,7 @@ void StatementBinder::Visit(otava::ast::RangeForStatementNode& node)
     otava::ast::DeclSpecifierSequenceNode* forInitDeclSpecifiers = new otava::ast::DeclSpecifierSequenceNode(fullSpan.span, fullSpan.fileIndex);
     forInitDeclSpecifiers->AddNode(new otava::ast::PlaceholderTypeSpecifierNode(fullSpan.span, fullSpan.fileIndex));
     otava::ast::InitDeclaratorListNode* forInitDeclarators = new otava::ast::InitDeclaratorListNode(fullSpan.span, fullSpan.fileIndex);
-    otava::ast::Node* forInitInvokeChild = node.Initializer()->Clone();
+    otava::ast::Node* forInitInvokeChild = initializerDeclarator->Clone();
     otava::ast::MemberExprNode* forInitInvokeSubject = new otava::ast::MemberExprNode(fullSpan.span, fullSpan.fileIndex,
         forInitInvokeChild, new otava::ast::DotNode(fullSpan.span, fullSpan.fileIndex),
         new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "begin"));
@@ -1925,6 +1945,15 @@ void StatementBinder::Visit(otava::ast::SimpleDeclarationNode& node)
                     }
                     context->SetDeclaredInitializerType(variable->GetDeclaredType(context));
                     initializer = BindExpression(declaration.initializer, context);
+                    if (!initializer)
+                    {
+                        if (context->HasException())
+                        {
+                            Exception ex = context->ReleaseException();
+                            ThrowException("could not bind variable initializer: " + std::string(ex.what()), declaration.initializer->GetFullSpan(), context);
+                        }
+                        ThrowException("could not bind variable initializer", declaration.initializer->GetFullSpan(), context);
+                    }
                     context->SetDeclaredInitializerType(nullptr);
                 }
                 if (initializer && initializer->GetType())

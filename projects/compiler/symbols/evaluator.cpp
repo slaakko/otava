@@ -16,6 +16,7 @@ import otava.symbols.function_group_symbol;
 import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
+import otava.symbols.lookup;
 import otava.symbols.modules;
 import otava.symbols.overload_resolution;
 import otava.symbols.scope;
@@ -23,6 +24,7 @@ import otava.symbols.scope_resolver;
 import otava.symbols.scope_ptr;
 import otava.symbols.symbol;
 import otava.symbols.type_resolver;
+import otava.symbols.type_symbol;
 import otava.symbols.concrete_value;
 import otava.intermediate.types;
 import otava.ast.identifier;
@@ -2029,7 +2031,9 @@ void Evaluator::Visit(otava::ast::InvokeExprNode& node)
         std::vector<std::unique_ptr<BoundExpressionNode>> arguments = ValuesToLiterals(argumentValues, node.GetFullSpan(), context);
         if (groupName == "@constructor")
         {
-            arguments.insert(arguments.begin(), std::unique_ptr<BoundExpressionNode>(boundTypeNode));
+            BoundExpressionNode* btn = boundTypeNode;
+            std::unique_ptr<BoundExpressionNode> arg(btn);
+            arguments.insert(arguments.begin(), std::move(arg));
         }
         Exception exception;
         std::vector<TypeSymbol*> templateArguments;

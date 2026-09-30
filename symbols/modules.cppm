@@ -200,12 +200,12 @@ public:
 private:
     ModuleKind kind;
     ModuleId id;
+    SymbolTable symbolTable;
     StringTable stringTable;
     StringOffset nameOffset;
     const char* name;
     StringOffset interfaceUnitNameOffset;
     const char* interfaceUnitName;
-    SymbolTable symbolTable;
     EvaluationContext evaluationContext;
     std::string filePath;
     std::unique_ptr<util::FileMapping> fileMapping;

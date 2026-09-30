@@ -207,8 +207,8 @@ void ImportedModuleTableEntry::Read(Reader& reader)
 }
 
 Module::Module(util::FileMapping* fileMapping_) :
-    kind(ModuleKind::none), id(zeroModuleId), 
-    stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""), symbolTable(this, true),
+    kind(ModuleKind::none), id(zeroModuleId), symbolTable(this, true),
+    stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""),
     evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1),
     index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false),
     namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false)
@@ -217,9 +217,10 @@ Module::Module(util::FileMapping* fileMapping_) :
 }
 
 Module::Module(const std::string& name_) :
-    kind(ModuleKind::none), id(zeroModuleId), stringTable(this), nameOffset(stringTable.AddString(name_)), name(stringTable.CharPtr(nameOffset)),
+    kind(ModuleKind::none), id(zeroModuleId), symbolTable(this, false), stringTable(this), nameOffset(stringTable.AddString(name_)), 
+    name(stringTable.CharPtr(nameOffset)),
     interfaceUnitNameOffset(), interfaceUnitName(""),
-    symbolTable(this, false), evaluationContext(this, false), fileMapping(), header(), headerRead(false),
+    evaluationContext(this, false), fileMapping(), header(), headerRead(false),
     importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false),
     importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false)
 {
@@ -551,7 +552,8 @@ void Module::Write(Writer& writer)
     writer.Seek(ToUnderlying(end));
     if (header.length != headerLength)
     {
-        ThrowException("module '" + Name() + "' header length mismatch");
+        ThrowException("module '" + Name() + "' header length mismatch: " + std::to_string(ToUnderlying(header.length)) + " vs " + 
+            std::to_string(ToUnderlying(headerLength)));
     }
 }
 

@@ -11,6 +11,7 @@ import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.function_group_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.modules;
 import otava.symbols.project;
 import otava.symbols.reader;

@@ -1,0 +1,3 @@
+project process_declarator;
+target=library;
+source <process.cppm>;

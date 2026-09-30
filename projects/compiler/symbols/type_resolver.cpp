@@ -6,6 +6,7 @@
 module otava.symbols.type_resolver;
 
 import otava.symbols.alias_group_symbol;
+import otava.symbols.alias_type_templates;
 import otava.symbols.class_group_symbol;
 import otava.symbols.classes;
 import otava.symbols.class_templates;
@@ -18,6 +19,8 @@ import otava.symbols.declarator;
 import otava.symbols.derivations;
 import otava.symbols.evaluator;
 import otava.symbols.expression_binder;
+import otava.symbols.function_kind;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.lookup;

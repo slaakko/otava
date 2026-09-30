@@ -200,8 +200,8 @@ public:
         bucket_ptr bkt = position.get_bucket();
         if (bkt)
         {
+            if (empty()) return end();
             size_type index = do_hash(key_of(bkt->value()));
-            if (index == -1) return end();
             bucket_ptr b = buckets[index];
             bucket_ptr prev = nullptr;
             while (b != bkt && b != nullptr)
@@ -249,8 +249,8 @@ public:
         bucket_ptr bkt = position.get_non_const_bucket();
         if (bkt)
         {
+            if (empty()) return end();
             size_type index = do_hash(key_of(bkt->value()));
-            if (index == -1) return end();
             bucket_ptr b = buckets[index];
             bucket_ptr prev = nullptr;
             while (b != bkt && b != nullptr)
@@ -316,9 +316,9 @@ public:
     }
     iterator find(const key_type& key) noexcept
     {
-        size_type index = do_hash(key);
-        if (index >= 0)
+        if (!empty())
         {
+            size_type index = do_hash(key);
             bucket_ptr bkt = buckets[index];
             while (bkt)
             {
@@ -333,9 +333,9 @@ public:
     }
     const_iterator find(const key_type& key) const noexcept
     {
-        size_type index = do_hash(key);
-        if (index >= 0)
+        if (!empty())
         {
+            size_type index = do_hash(key);
             bucket_ptr bkt = buckets[index];
             while (bkt)
             {
@@ -360,7 +360,6 @@ private:
     }
     inline size_type do_hash(const key_type& key) const noexcept
     {
-        if (buckets.empty()) return size_type(-1);
         return hash_function(key) % size_type(buckets.size());
     }
     bucket_ptr first_bucket() noexcept

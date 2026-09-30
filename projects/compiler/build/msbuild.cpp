@@ -6,13 +6,14 @@ import util.path;
 import util.code_formatter;
 import util.file_stream;
 import util.process;
+import util.unicode;
 
 namespace otava::build {
 
 void MSBuild(const std::string& projectFilePath, const std::string& config, const std::set<std::string>& configurations)
 {
     std::string vcvars64Path = GetVCVars64Path();
-    std::string configFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::SoulRoot(), "config"), "otava.config"));
+    std::string configFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::OtavaRoot(), "config"), "otava.config"));
     if (vcvars64Path.empty())
     {
         otava::symbols::SetExceptionThrown();

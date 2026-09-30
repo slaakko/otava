@@ -442,6 +442,10 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         {
             std::string filePath = fileMap->GetFilePath(file);
             std::cout << "> " << filePath << "\n";
+            if (filePath == "D:/work/otava/ooc/std/std.rt.cppm")
+            {
+                ort_debug_break();
+            }
             files.push_back(std::make_pair(file, filePath));
             soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t> lexer = otava::lexer::MakeLexer(
                 fileMap->GetFileContent(file).c_str(),

@@ -5,7 +5,6 @@
 
 module otava.symbols.symbol_table;
 
-import otava.symbols.fundamental_type_symbol;
 import otava.symbols.fundamental_type_operation;
 import otava.symbols.modules;
 import otava.symbols.context;
@@ -927,11 +926,13 @@ TypeSymbol* SymbolTable::GetCompoundType(TypeSymbol* baseType, Derivations deriv
 SymbolId SymbolTable::GetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* context) const noexcept
 {
     CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(context), compoundTypeSymbol->GetDerivations());
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
-        auto it = importedModule->GetSymbolTable()->irCompoundTypeMap.find(irKey);
-        if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
+        auto& irctm = importedModule->GetSymbolTable()->IrCompoundTypeMap();
+        auto it = irctm.find(irKey);
+        if (it != irctm.end())
         {
             SymbolId irId = it->second;
             return irId;
@@ -950,11 +951,13 @@ void SymbolTable::SetIrId(CompoundTypeSymbol* compoundTypeSymbol, Context* conte
 {
     if (compoundTypeSymbol->HasForwardClassDeclarationSymbol(context)) return;
     CompoundTypeKey irKey = CompoundTypeKey(compoundTypeSymbol->GetBaseType(context)->IrId(context), compoundTypeSymbol->GetDerivations());
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
-        auto it = importedModule->GetSymbolTable()->irCompoundTypeMap.find(irKey);
-        if (it != importedModule->GetSymbolTable()->irCompoundTypeMap.end())
+        auto& irctm = importedModule->GetSymbolTable()->IrCompoundTypeMap();
+        auto it = irctm.find(irKey);
+        if (it != irctm.end())
         {
             SymbolId irId = it->second;
             compoundTypeSymbol->SetIrId(irId, context);
@@ -1061,7 +1064,8 @@ AliasTypeTemplateSpecializationSymbol* SymbolTable::MakeAliasTypeTemplateSpecial
             return aliasTypeTemplateSpecialization;
         }
     }
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
         aliasTypeTemplateSpecialization = importedModule->GetSymbolTable()->GetAliasTypeTemplateSpecialization(aliasTypeTemplate, templateArguments, context);
@@ -1120,11 +1124,13 @@ SymbolId SymbolTable::GetIrId(ClassTemplateSpecializationSymbol* specialization,
     {
         irKey.templateArgumentIds.push_back(templateArg->IrId(context));
     }
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
-        auto it = importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.find(irKey);
-        if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
+        auto& irctsm = importedModule->GetSymbolTable()->IrClassTemplateSpecializationMap();
+        auto it = irctsm.find(irKey);
+        if (it != irctsm.end())
         {
             SymbolId irId = it->second;
             return irId;
@@ -1148,11 +1154,13 @@ void SymbolTable::SetIrId(ClassTemplateSpecializationSymbol* specialization, Con
     {
         irKey.templateArgumentIds.push_back(templateArg->IrId(context));
     }
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
-        auto it = importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.find(irKey);
-        if (it != importedModule->GetSymbolTable()->irClassTemplateSpecializationMap.end())
+        auto& irctsm = importedModule->GetSymbolTable()->IrClassTemplateSpecializationMap();
+        auto it = irctsm.find(irKey);
+        if (it != irctsm.end())
         {
             SymbolId irId = it->second;
             specialization->SetIrId(irId, context);
@@ -1213,7 +1221,8 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
             }
         }
     }
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
         classTemplateSpecialization = importedModule->GetSymbolTable()->GetClassTemplateSpecialization(classTemplate, templateArguments, context);
@@ -1265,7 +1274,8 @@ ExplicitInstantiationSymbol* SymbolTable::GetExplicitInstantiation(const Special
     }
     if (level > 0)
     {
-        for (Module* importedModule : GetModule()->ImportExportModules(context))
+        std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+        for (Module* importedModule : importExportModules)
         {
             context->AddModule(importedModule);
             ExplicitInstantiationSymbol* explicitInstantiationSymbol = importedModule->GetSymbolTable()->GetExplicitInstantiation(key, context, level - 1);
@@ -1330,7 +1340,8 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(TypeSymbol* returnType, 
             return functionTypeSymbol;
         }
     }
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
         functionTypeSymbol = importedModule->GetSymbolTable()->GetFunctionTypeSymbol(key, context);
@@ -1389,11 +1400,13 @@ FunctionTypeSymbol* SymbolTable::MakeFunctionTypeSymbol(FunctionSymbol* function
 SymbolId SymbolTable::GetIrId(FunctionTypeSymbol* functionTypeSymbol, Context* context) const noexcept
 {
     FunctionTypeSymbolKey irKey = functionTypeSymbol->IrKey(context);
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
-        auto it = importedModule->GetSymbolTable()->irFunctionTypeMap.find(irKey);
-        if (it != importedModule->GetSymbolTable()->irFunctionTypeMap.end())
+        auto& irftm = importedModule->GetSymbolTable()->IrFunctionTypeMap();
+        auto it = irftm.find(irKey);
+        if (it != irftm.end())
         {
             SymbolId irId = it->second;
             return irId;
@@ -1412,11 +1425,13 @@ void SymbolTable::SetIrId(FunctionTypeSymbol* functionTypeSymbol, Context* conte
 {
     if (functionTypeSymbol->HasForwardClassDeclarationSymbol(context)) return;
     FunctionTypeSymbolKey irKey = functionTypeSymbol->IrKey(context);
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
-        auto it = importedModule->GetSymbolTable()->irFunctionTypeMap.find(irKey);
-        if (it != importedModule->GetSymbolTable()->irFunctionTypeMap.end())
+        auto& irftm = importedModule->GetSymbolTable()->IrFunctionTypeMap();
+        auto it = irftm.find(irKey);
+        if (it != irftm.end())
         {
             SymbolId irId = it->second;
             functionTypeSymbol->SetIrId(irId);
@@ -1506,7 +1521,8 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, std::int64_
     {
         return arrayTypeSymbol;
     }
-    for (Module* importedModule : GetModule()->ImportExportModules(context))
+    std::vector<Module*> importExportModules = GetModule()->ImportExportModules(context);
+    for (Module* importedModule : importExportModules)
     {
         context->AddModule(importedModule);
         arrayTypeSymbol = importedModule->GetSymbolTable()->GetArrayType(elementType, size, context);

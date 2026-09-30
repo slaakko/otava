@@ -7,6 +7,7 @@ module otava.symbols.fundamental_type_operation;
 
 import otava.symbols.fundamental_type_conversion_init;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.exception;
 import otava.symbols.symbol;
 import otava.symbols.symbol_table;

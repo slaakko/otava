@@ -13,6 +13,7 @@ import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
 import otava.symbols.instantiation_queue;
+import otava.symbols.lookup;
 import otava.symbols.modules;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;

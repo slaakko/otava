@@ -8,6 +8,7 @@ module otava.symbols.type_symbol;
 import otava.symbols.compound_type_symbol;
 import otava.symbols.context;
 import otava.symbols.exception;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.namespaces;
 import otava.symbols.symbol_table;

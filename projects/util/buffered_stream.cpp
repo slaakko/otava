@@ -96,6 +96,7 @@ void BufferedStream::Seek(std::int64_t pos, Origin origin)
     Flush();
     bytesAvailable = 0;
     baseStream.Seek(pos, origin);
+    SetPosition(pos);
 }
 
 std::int64_t BufferedStream::Tell()

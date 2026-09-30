@@ -6,6 +6,7 @@ export import soul.lexer.file_map;
 export import soul.lexer.keyword;
 export import soul.lexer.lexeme;
 export import soul.lexer.cls;
+export import soul.lexer.error;
 export import soul.lexer.lexing_util;
 export import soul.lexer.parsing_log;
 export import soul.lexer.test;

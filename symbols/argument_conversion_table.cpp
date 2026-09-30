@@ -8,6 +8,7 @@ module otava.symbols.argument_conversion_table;
 import otava.symbols.array_type_symbol;
 import otava.symbols.bound_tree;
 import otava.symbols.classes;
+import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.enums;

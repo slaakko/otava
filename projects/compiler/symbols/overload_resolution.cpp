@@ -14,6 +14,7 @@ import otava.symbols.expression_binder;
 import otava.symbols.function_templates;
 import otava.symbols.function_symbol;
 import otava.symbols.function_completion;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.id;
 import otava.symbols.inline_functions;
@@ -1409,7 +1410,8 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
             scopeLookups.push_back(std::make_pair(scope, ScopeLookup::allScopes));
             AddArgumentScopes(scopeLookups, args, context);
         }
-        for (Module* importedModule : context->GetModule()->ImportExportModules(context))
+        std::vector<Module*> importExportModules = context->GetModule()->ImportExportModules(context);
+        for (Module* importedModule : importExportModules)
         {
             context->AddModule(importedModule);
             std::vector<NamespaceSymbol*> namespaces;

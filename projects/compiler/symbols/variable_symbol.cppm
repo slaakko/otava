@@ -11,6 +11,7 @@ import otava.symbols.symbol;
 import otava.symbols.type_symbol;
 import otava.symbols.value;
 import otava.ast.node;
+import soul.ast.span;
 import std;
 
 export namespace otava::symbols {

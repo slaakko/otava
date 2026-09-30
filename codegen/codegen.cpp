@@ -541,7 +541,7 @@ void CodeGenerator::GenerateVTab(otava::symbols::ClassTypeSymbol* cls, const sou
     otava::intermediate::Type* arrayPtrType = emitter->MakePtrType(arrayType);
     std::vector<otava::intermediate::Value*> elements;
     otava::symbols::SymbolId classId = cls->Id();
-    otava::intermediate::Value* classIdValue = emitter->EmitConversionValue(voidPtrIrType, emitter->EmitULong(ToUnderlying(classId)));
+    otava::intermediate::Value* classIdValue = emitter->EmitConversionValue(voidPtrIrType, emitter->EmitULong(otava::symbols::ToUnderlying(classId)));
     elements.push_back(classIdValue);
     for (otava::symbols::FunctionSymbol* functionSymbol : cls->VTab())
     {
@@ -906,7 +906,7 @@ void CodeGenerator::AddClassInfo(otava::symbols::ClassTypeSymbol* cls)
 {
     std::set<const otava::symbols::Symbol*> visited;
     if (cls->IsTemplate(&context) || cls->IsTemplateParameterInstantiation(&context, visited)) return;
-    otava::symbols::class_id classId = otava::symbols::class_id(ToUnderlying(cls->Id()));
+    otava::symbols::class_id classId = otava::symbols::class_id(otava::symbols::ToUnderlying(cls->Id()));
     otava::symbols::SymbolTable* symbolTable = context.GetSymbolTable();
     otava::symbols::class_index& index = symbolTable->ClassIndex();
     if (index.get_class_info(classId)) return;

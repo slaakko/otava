@@ -8,6 +8,7 @@ module otava.symbols.fundamental_type_conversion_init;
 import otava.symbols.context;
 import otava.symbols.function_kind;
 import otava.symbols.fundamental_type_symbol;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_conversion;
 import otava.symbols.id;
 import otava.symbols.modules;

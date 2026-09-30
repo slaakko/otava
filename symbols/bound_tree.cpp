@@ -14,6 +14,7 @@ import otava.symbols.exception;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.symbols.function_templates;
+import otava.symbols.fundamental_type_kind;
 import otava.symbols.bound_tree_visitor;
 import otava.symbols.classes;
 import otava.symbols.enums;

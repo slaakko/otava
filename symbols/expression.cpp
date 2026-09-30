@@ -7,6 +7,8 @@ module otava.symbols.expression;
 
 import otava.symbols.symbol;
 import otava.symbols.context;
+import otava.symbols.lookup;
+import otava.symbols.scope;
 import otava.symbols.symbol_table;
 import otava.ast.expression;
 import otava.ast.identifier;
