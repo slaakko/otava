@@ -37,7 +37,6 @@ public:
         TemplateDeclarationSymbol* templateDeclaration, bool hasSpecialization, Context* context);
     void CollectViableFunctions(Cardinality arity, const std::vector<TypeSymbol*>& templateArgs, std::vector<FunctionSymbol*>& viableFunctions, Context* context);
     FunctionSymbol* GetMatchingSpecialization(FunctionSymbol* specialization, Context* context);
-    void SetVTabIndex(FunctionSymbol* function, int vtabIndex, Context* context);
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     bool IsExportSymbol(Context* context) const noexcept override;

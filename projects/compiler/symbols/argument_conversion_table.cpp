@@ -53,7 +53,7 @@ IdentityConversion::IdentityConversion(TypeSymbol* type_, Context* context) :
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(type, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(type, context);
@@ -128,7 +128,7 @@ DerivedToBaseConversion::DerivedToBaseConversion(TypeSymbol* derivedTypePtr_, Ty
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(derivedTypePtr, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(baseTypePtr, context);
@@ -219,7 +219,7 @@ BaseToDerivedConversion::BaseToDerivedConversion(TypeSymbol* baseTypePtr_, TypeS
     SetConversion();
     SetConversionKind(ConversionKind::explicitConversion);
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(baseTypePtr, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(derivedTypePtr, context);
@@ -309,7 +309,7 @@ DynamicPtrCast::DynamicPtrCast(ClassTypeSymbol* baseClassType_, ClassTypeSymbol*
     SetConversion();
     SetAccess(Access::public_);
     SetConversionKind(ConversionKind::explicitConversion);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(baseClassType->AddPointer(context), context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(derivedClassType->AddPointer(context), context);
@@ -378,7 +378,7 @@ NullPtrToPtrConversion::NullPtrToPtrConversion(TypeSymbol* argType_, TypeSymbol*
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(argType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(pointerType, context);
@@ -431,7 +431,7 @@ VoidPtrToPtrConversion::VoidPtrToPtrConversion(TypeSymbol* voidPtrType_, TypeSym
     SetConversion();
     SetConversionKind(ConversionKind::explicitConversion);
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(voidPtrType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(targetPointerType, context);
@@ -482,7 +482,7 @@ PtrToVoidPtrConversion::PtrToVoidPtrConversion(TypeSymbol* ptrType_, TypeSymbol*
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(ptrType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(voidPtrType, context);
@@ -535,7 +535,7 @@ PtrToPtrConversion::PtrToPtrConversion(TypeSymbol* sourcePtrType_, TypeSymbol* t
     SetConversion();
     SetConversionKind(ConversionKind::explicitConversion);
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(sourcePtrType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(targetPtrType, context);
@@ -590,7 +590,7 @@ VoidPtrToUInt64Conversion::VoidPtrToUInt64Conversion(TypeSymbol* ptrType_, TypeS
     SetConversion();
     SetConversionKind(ConversionKind::explicitConversion);
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(ptrType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(uint64Type, context);
@@ -643,7 +643,7 @@ UInt64ToVoidPtrConversion::UInt64ToVoidPtrConversion(TypeSymbol* uint64Type_, Ty
     SetConversion();
     SetConversionKind(ConversionKind::explicitConversion);
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(uint64Type, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(ptrType, context);
@@ -695,7 +695,7 @@ PtrToBooleanConversion::PtrToBooleanConversion(TypeSymbol* ptrType_, TypeSymbol*
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(ptrType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(boolType, context);
@@ -754,7 +754,7 @@ ArrayToPtrConversion::ArrayToPtrConversion(ArrayTypeSymbol* arrayType_, Context*
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(arrayType->AddPointer(context), context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(elementPtrType, context);
@@ -862,7 +862,7 @@ EnumTypeToUnderlyingTypeConversion::EnumTypeToUnderlyingTypeConversion(Enumerate
     SetConversion();
     SetAccess(Access::public_);
     SetConversionKind(ConversionKind::explicitConversion);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(enumType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(underlyingType, context);
@@ -927,7 +927,7 @@ UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(Enumerate
     SetConversion();
     SetAccess(Access::public_);
     SetConversionKind(ConversionKind::explicitConversion);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(underlyingType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(enumType, context);
@@ -1002,7 +1002,7 @@ FunctionToFunctionPtrConversion::FunctionToFunctionPtrConversion(TypeSymbol* fun
 {
     SetConversion();
     SetAccess(Access::public_);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(functionType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(functionPtrType, context);
@@ -1153,7 +1153,7 @@ AdjustDeletePtrConversionFn::AdjustDeletePtrConversionFn(TypeSymbol* thisPtrBase
     SetConversionKind(ConversionKind::explicitConversion);
     TypeSymbol* voidType = context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::voidType, context);
     TypeSymbol* voidPtrType = voidType->AddPointer(context);
-    ParameterSymbol* arg = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
+    ParameterSymbol* arg = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "arg");
     arg->SetType(voidPtrType, context);
     AddSymbol(arg, soul::ast::FullSpan(), context);
     SetReturnType(voidPtrType, context);

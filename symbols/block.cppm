@@ -25,18 +25,22 @@ public:
     void AddDestructorCall(int statementIndex, BoundExpressionNode* destructorCall);
     bool HasDestructorCalls(int statementIndex) const;
     std::vector<BoundExpressionNode*> GetDestructorCalls(int statementIndex);
-    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    inline int Index() const noexcept { return index; }
+    inline void SetIndex(int index_) noexcept { index = index_; }
+    void RemoveLocalVariables(Context* context);
 private:
     int blockId;
     std::vector<VariableSymbol*> localVariables;
     std::map<int, std::vector<BoundExpressionNode*>> destructorCallMap;
+    int index;
 };
 
 class Context;
 
 BlockSymbol* BeginBlock(const soul::ast::FullSpan& fullSpan, int blockId, Context* context);
 void EndBlock(Context* context);
-void RemoveBlock(Context* context);
+void RemoveBlock(Context* context, int index);
 void MapNode(otava::ast::Node* node, Context* context);
 
 } // namespace otava::symbols

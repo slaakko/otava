@@ -39,7 +39,8 @@ public:
     inline FileOffset ScopeOffset() const noexcept { return header.scopeOffset; }
     inline Length ScopeLength() const noexcept { return header.scopeLength; }
     Symbol* GetMember(Index index, Context* context);
-    virtual void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
+    virtual int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
+    std::unique_ptr<Symbol> RemoveSymbol(int index);
     bool IsContainerSymbol() const noexcept override { return true; }
     inline const std::vector<BlockSymbol*>& Blocks() const noexcept { return blocks; }
 private:

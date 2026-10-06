@@ -32,12 +32,12 @@ void LiteralNode::Read(Reader& reader)
 }
 
 IntegerLiteralNode::IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept : 
-    LiteralNode(NodeKind::integerLiteralNode, span_, fileIndex_), value(), suffix(), base()
+    LiteralNode(NodeKind::integerLiteralNode, span_, fileIndex_), value(), suffix(), base(), negative(false)
 {
 }
 
 IntegerLiteralNode::IntegerLiteralNode(const soul::ast::Span& span_, int fileIndex_, std::uint64_t value_, Suffix suffix_, Base base_, const std::string& rep_) :
-    LiteralNode(NodeKind::integerLiteralNode, span_, fileIndex_, rep_), value(value_), suffix(suffix_), base(base_)
+    LiteralNode(NodeKind::integerLiteralNode, span_, fileIndex_, rep_), value(value_), suffix(suffix_), base(base_), negative(false)
 {
 }
 
@@ -45,6 +45,10 @@ Node* IntegerLiteralNode::Clone() const
 {
     IntegerLiteralNode* clone = new IntegerLiteralNode(GetSpan(), FileIndex(), value, suffix, base, Rep());
     clone->SetId(Id());
+    if (negative)
+    {
+        clone->SetNegative();
+    }
     return clone;
 }
 
@@ -59,6 +63,7 @@ void IntegerLiteralNode::Write(Writer& writer)
     writer.GetBinaryStreamWriter().Write(value);
     writer.GetBinaryStreamWriter().Write(static_cast<std::uint8_t>(suffix));
     writer.GetBinaryStreamWriter().Write(static_cast<std::uint8_t>(base));
+    writer.GetBinaryStreamWriter().Write(negative);
 }
 
 void IntegerLiteralNode::Read(Reader& reader)
@@ -67,6 +72,7 @@ void IntegerLiteralNode::Read(Reader& reader)
     value = reader.GetMemoryReader().ReadULong();
     suffix = static_cast<Suffix>(reader.GetMemoryReader().ReadByte());
     base = static_cast<Base>(reader.GetMemoryReader().ReadByte());
+    negative = reader.GetMemoryReader().ReadBool();
 }
 
 FloatingLiteralNode::FloatingLiteralNode(const soul::ast::Span& span_, int fileIndex_) noexcept :

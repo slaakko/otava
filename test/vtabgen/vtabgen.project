@@ -1,0 +1,3 @@
+project vtabgen;
+target=program;
+source <main.cpp>;

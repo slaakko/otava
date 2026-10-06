@@ -112,7 +112,7 @@ public:
     virtual bool IsIdentityConversion() const noexcept { return false; }
     virtual bool IsDerivedToBaseConversion() const noexcept { return false; }
     std::string FullName(Context* context) const override;
-    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
     const std::vector<ParameterSymbol*>& Parameters(Context* context) const;
     const std::vector<ParameterSymbol*>& MemFnParameters(Context* context) const;
     void AddTemporaryParameter(TypeSymbol* paramType, int index, Context* context);
@@ -153,6 +153,7 @@ public:
     VariableSymbol* CreateTemporary(TypeSymbol* type, std::int64_t nodeId, Context* context);
     VariableSymbol* GetTemporary(std::int64_t nodeId) const noexcept;
     void AddLocalVariable(VariableSymbol* localVariable, Context* context);
+    void RemoveLocalVariable(int functionIndex);
     inline FunctionDefinitionSymbol* Destructor() const noexcept { return destructor; }
     inline void SetDestructor(FunctionDefinitionSymbol* destructor_) noexcept { destructor = destructor_; }
     FunctionTypeSymbol* GetFunctionType(otava::symbols::Context* context);

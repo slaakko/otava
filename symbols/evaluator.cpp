@@ -875,7 +875,7 @@ void PopulateEvaluationMap(FunctionSymbol* fn, const std::vector<Value*>& args, 
     }
 }
 
-TypeSymbol* GetIntegerType(otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context)
+TypeSymbol* GetIntegerType(std::int64_t value, bool negative, otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     DeclarationFlags flags = DeclarationFlags::intFlag;
     if ((suffix & otava::ast::Suffix::u) != otava::ast::Suffix::none)
@@ -890,10 +890,27 @@ TypeSymbol* GetIntegerType(otava::ast::Suffix suffix, const soul::ast::FullSpan&
     {
         flags = flags | DeclarationFlags::longLongFlag;
     }
+    if (value < std::int64_t(std::numeric_limits<std::int32_t>::min()) || value > std::int64_t(std::numeric_limits<std::uint32_t>::max()))
+    {
+        flags = flags | DeclarationFlags::longLongFlag;
+    }
+    if (!negative)
+    {
+        std::uint64_t uvalue = static_cast<std::uint64_t>(value);
+        if (uvalue > std::uint64_t(std::numeric_limits<std::int32_t>::max()))
+        {
+            flags = flags | DeclarationFlags::unsignedFlag;
+        }
+        if (uvalue > std::uint64_t(std::numeric_limits<std::int64_t>::max()))
+        {
+            flags = flags | DeclarationFlags::longLongFlag;
+            flags = flags | DeclarationFlags::unsignedFlag;
+        }
+    }
     return GetFundamentalType(flags, fullSpan, context);
 }
 
-TypeSymbol* GetFloatingPointType(otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context)
+TypeSymbol* GetFloatingPointType(double value, otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     DeclarationFlags flags = DeclarationFlags::doubleFlag;
     if ((suffix & otava::ast::Suffix::l) != otava::ast::Suffix::none)
@@ -1216,13 +1233,13 @@ void Evaluator::Visit(otava::ast::DoubleNode& node)
 
 void Evaluator::Visit(otava::ast::IntegerLiteralNode& node)
 {
-    TypeSymbol* type = GetIntegerType(node.GetSuffix(), node.GetFullSpan(), context);
+    TypeSymbol* type = GetIntegerType(static_cast<std::int64_t>(node.GetValue()), node.Negative(), node.GetSuffix(), node.GetFullSpan(), context);
     value = context->GetEvaluationContext()->GetIntegerValue(node.GetValue(), type, context);
 }
 
 void Evaluator::Visit(otava::ast::FloatingLiteralNode& node)
 {
-    TypeSymbol* type = GetFloatingPointType(node.GetSuffix(), node.GetFullSpan(), context);
+    TypeSymbol* type = GetFloatingPointType(node.GetValue(), node.GetSuffix(), node.GetFullSpan(), context);
     value = context->GetEvaluationContext()->GetFloatingValue(node.GetValue(), type, context);
 }
 

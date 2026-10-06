@@ -192,6 +192,7 @@ Symbol::Symbol(Module* module_, SymbolId id_, const std::string& name_) :
 
 Symbol::~Symbol()
 {
+    //std::cout << "~symbol: " << SymbolKindStr(kind) << ":" << Name() << ":" << ToUnderlying(id) << "\n";
     if (module)
     {
         module->RemoveSymbol(this);
@@ -230,7 +231,11 @@ bool Symbol::IsExtern() const noexcept
 
 std::string Symbol::Name() const
 {
-    return GetModule()->GetStringTable()->GetString(nameOffset);
+    if (GetModule())
+    {
+        return GetModule()->GetStringTable()->GetString(nameOffset);
+    }
+    return std::string();
 }
 
 void Symbol::SetName(const std::string& name_)

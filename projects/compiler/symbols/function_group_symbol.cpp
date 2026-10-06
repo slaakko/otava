@@ -319,26 +319,6 @@ std::vector<FunctionDefinitionSymbol*> FunctionGroupSymbol::Definitions(Context*
     return defs;
 }
 
-void FunctionGroupSymbol::SetVTabIndex(FunctionSymbol* function, int vtabIndex, Context* context)
-{
-    std::vector<FunctionSymbol*> fns = Functions(context);
-    for (FunctionSymbol* decl : fns)
-    {
-        if (decl != function && FunctionMatches(decl, function, context))
-        {
-            decl->SetVTabIndex(vtabIndex);
-        }
-    }
-    std::vector<FunctionDefinitionSymbol*> defs = Definitions(context);
-    for (FunctionDefinitionSymbol* def : defs)
-    {
-        if (function != def && FunctionMatches(def, function, context))
-        {
-            def->SetVTabIndex(vtabIndex);
-        }
-    }
-}
-
 struct FunctionScoreGreater
 {
     bool operator()(const std::pair<FunctionSymbol*, int>& left, const std::pair<FunctionSymbol*, int>& right) const

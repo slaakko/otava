@@ -95,6 +95,7 @@ public:
     Module(util::FileMapping* fileMapping_);
     Module(const std::string& name_);
     ~Module();
+    void Reset();
     void AddFunction(FunctionSymbol* fn);
     void RemoveFunction(FunctionSymbol* fn);
     void AddScope(Scope* scope);
@@ -236,6 +237,7 @@ private:
     std::string moduleFilePath;
     std::vector<ImportedModuleTableEntry> importedModuleTable;
     bool importedModuleTableRead;
+    bool reset;
     void Read();
     void GetAllExportedModules(std::vector<Module*>& targetExportedModules, Context* context);
     void GetAllImportedModules(std::vector<Module*>& targetImportedModules, Context* context);
@@ -245,6 +247,8 @@ class ModuleMapper
 {
 public:
     ModuleMapper();
+    ~ModuleMapper();
+    void ResetModules();
     void AddRoot(const std::string& root);
     Module* GetModule(const std::string& moduleName, const std::string& config, int optLevel, const std::set<std::string>& configurations, Context* context);
     Module* LoadModule(const std::string& moduleName, const std::string& config, int optLevel, const std::set<std::string>& configurations, Context* context);
@@ -267,6 +271,7 @@ private:
     SymbolIndexMap symbolIndexMap;
     std::vector<std::unique_ptr<Module>> builtModules;
     std::set<ProjectId> projectIds;
+    bool reset;
 };
 
 class ModulePtr

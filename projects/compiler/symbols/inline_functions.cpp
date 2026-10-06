@@ -43,6 +43,42 @@ FunctionSymbol* InlineFunctionRepository::GetInlineFunction(FunctionSymbol* fn) 
     }
 }
 
+FunctionSymbol* TryInstantiateInlineFunction(Context* context, Instantiator& instantiator, otava::ast::FunctionDefinitionNode* functionDefinitionNode, 
+    FunctionSymbol* inlineFn, FunctionSymbol* fn, InlineFunctionRepository* inlineFunctionRepository, const soul::ast::FullSpan& fullSpan, otava::ast::Node* node)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    instantiator.SetFunctionNode(functionDefinitionNode);
+    functionDefinitionNode->Accept(instantiator);
+    inlineFn = instantiator.GetSpecialization();
+    context->RemoveSpecialization(functionDefinitionNode);
+    if (inlineFn && inlineFn->IsFunctionDefinitionSymbol())
+    {
+        inlineFn->SetSpecialization();
+        FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(inlineFn);
+        ParentScopeCleaner parentScopeClearn(functionDefinition->GetScope());
+        functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
+        functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
+        functionDefinition->SetParent(fn->Parent(context));
+        std::string irName = functionDefinition->IrName(context);
+        inlineFunctionRepository->AddInlineFunction(fn, inlineFn);
+        context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
+        inlineFn = functionDefinition;
+        inlineFn->SetSkip();
+        if (functionDefinition->IsBound())
+        {
+            std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+            context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
+        }
+        context->PopBoundFunction();
+    }
+    else
+    {
+        ThrowException("otava.symbols.inline_functions: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
+    }
+    return inlineFn;
+}
+
 FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     if (fn->IsGenerated()) return fn;
@@ -85,37 +121,7 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
         FunctionSymbol* inlineFn = nullptr;
         try
         {
-            FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
-            instantiator.SetFunctionNode(functionDefinitionNode);
-            functionDefinitionNode->Accept(instantiator);
-            inlineFn = instantiator.GetSpecialization();
-            context->RemoveSpecialization(functionDefinitionNode);
-            if (inlineFn && inlineFn->IsFunctionDefinitionSymbol())
-            {
-                inlineFn->SetSpecialization();
-                FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(inlineFn);
-                ParentScopeCleaner parentScopeClearn(functionDefinition->GetScope());
-                functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
-                functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
-                functionDefinition->SetParent(fn->Parent(context));
-                std::string irName = functionDefinition->IrName(context);
-                inlineFunctionRepository->AddInlineFunction(fn, inlineFn);
-                context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
-                functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
-                inlineFn = functionDefinition;
-                inlineFn->SetSkip();
-                if (functionDefinition->IsBound())
-                {
-                    std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
-                    context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
-                }
-                context->PopBoundFunction();
-
-            }
-            else
-            {
-                ThrowException("otava.symbols.inline_functions: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
-            }
+            inlineFn = TryInstantiateInlineFunction(context, instantiator, functionDefinitionNode, inlineFn, fn, inlineFunctionRepository, fullSpan, node);
         }
         catch (const std::exception& ex)
         {

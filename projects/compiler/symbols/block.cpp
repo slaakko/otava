@@ -14,14 +14,19 @@ import otava.symbols.scope;
 
 namespace otava::symbols {
 
-BlockSymbol::BlockSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), blockId(-1)
+BlockSymbol::BlockSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), blockId(-1), index(-1)
 {
     GetScope()->SetKind(ScopeKind::blockScope);
 }
 
-BlockSymbol::BlockSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_), blockId(-1)
+BlockSymbol::BlockSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_), blockId(-1), index(-1)
 {
     GetScope()->SetKind(ScopeKind::blockScope);
+}
+
+BlockSymbol::~BlockSymbol()
+{
+    //std::cout << "~block:" << ToUnderlying(Id()) << " : " << blockId << " : " << index << "\n";
 }
 
 void BlockSymbol::AddDestructorCall(int statementIndex, BoundExpressionNode* destructorCall)
@@ -34,9 +39,9 @@ bool BlockSymbol::HasDestructorCalls(int statementIndex) const
     return destructorCallMap.find(statementIndex) != destructorCallMap.end();
 }
 
-void BlockSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int BlockSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    ContainerSymbol::AddSymbol(symbol, fullSpan, context);
+    int index = ContainerSymbol::AddSymbol(symbol, fullSpan, context);
     if (symbol->IsVariableSymbol())
     {
         VariableSymbol* variable = static_cast<VariableSymbol*>(symbol);
@@ -48,6 +53,19 @@ void BlockSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan,
             {
                 function->AddLocalVariable(variable, context);
             }
+        }
+    }
+    return index;
+}
+
+void BlockSymbol::RemoveLocalVariables(Context* context)
+{
+    FunctionSymbol* functionParent = ParentFunction(context);
+    if (functionParent)
+    {
+        for (VariableSymbol* localVariable : localVariables)
+        {
+            functionParent->RemoveLocalVariable(localVariable->FunctionIndex());
         }
     }
 }
@@ -70,15 +88,14 @@ void EndBlock(Context* context)
     context->GetSymbolTable()->EndBlock(context);
 }
 
-void RemoveBlock(Context* context)
+void RemoveBlock(Context* context, int index)
 {
-    context->GetSymbolTable()->RemoveBlock(context);
+    context->GetSymbolTable()->RemoveBlock(context, index);
 }
 
 void MapNode(otava::ast::Node* node, Context* context)
 {
     context->GetSymbolTable()->MapNode(node, context);
 }
-
 
 } // namespace otava::symbols

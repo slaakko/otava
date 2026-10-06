@@ -276,12 +276,13 @@ void Scope::Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, Sc
     }
 }
 
-void Scope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int Scope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     ThrowException("cannot declare symbol '" + symbol->Name() + "' in " + ScopeKindStr(kind) + " '" + FullName(context) + "'", fullSpan, context);
+    return -1;
 }
 
-std::unique_ptr<Symbol> Scope::RemoveSymbol(Symbol* symbol)
+std::unique_ptr<Symbol> Scope::RemoveSymbol(int index)
 {
     SetExceptionThrown();
     throw std::runtime_error("could not remove symbol");
@@ -826,8 +827,9 @@ void ContainerScope::Lookup(const std::string& name, SymbolGroupKind symbolGroup
     }
 }
 
-void ContainerScope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int ContainerScope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    int index = -1;
     if (!symbol->IsValidDeclarationScope(Kind()))
     {
         ThrowException("cannot declare symbol '" + symbol->Name() + "' in " + ScopeKindStr(Kind()) + " '" + FullName(context) + "'", fullSpan, context);
@@ -839,14 +841,14 @@ void ContainerScope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSp
     }
     else
     {
-        containerSymbol->AddSymbol(symbol, fullSpan, context);
+        index = containerSymbol->AddSymbol(symbol, fullSpan, context);
     }
+    return index;
 }
 
-std::unique_ptr<Symbol> ContainerScope::RemoveSymbol(Symbol* symbol)
+std::unique_ptr<Symbol> ContainerScope::RemoveSymbol(int index)
 {
-    // TODO
-    return std::unique_ptr<Symbol>();
+    return containerSymbol->RemoveSymbol(index);
 }
 
 NamespaceSymbol* ContainerScope::GetOrInsertNamespace(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)

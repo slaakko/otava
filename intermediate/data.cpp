@@ -775,11 +775,7 @@ Value* Data::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const s
     case ulongTypeId:
     {
         std::uint64_t value = std::stoull(strValue);
-        if (value < std::numeric_limits<std::uint64_t>::min() || value > std::numeric_limits<std::uint64_t>::max())
-        {
-            Error("error making literal: range error: ulong value expected", span, context);
-        }
-        return GetULongValue(static_cast<std::int64_t>(value), types);
+        return GetULongValue(value, types);
     }
     case floatTypeId:
     {

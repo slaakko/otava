@@ -44,7 +44,7 @@ import otava.symbols.type_resolver;
 import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
-import otava.symbols.vtabgen;
+import otava.symbols.codegen;
 import otava.ast.identifier;
 import soul.ast.span;
 import util.path;
@@ -323,7 +323,7 @@ void BlockExit::Execute(otava::symbols::Emitter& emitter, const soul::ast::FullS
     }
 }
 
-class CodeGenerator : public otava::symbols::DefaultBoundTreeVisitor, public otava::symbols::VTabGenerator
+class CodeGenerator : public otava::symbols::CodeGen
 {
 public:
     CodeGenerator(otava::symbols::Context& context_, const std::string& config_, int optLevel_, bool verbose_, std::string& mainIrName_,
@@ -440,7 +440,7 @@ CodeGenerator::CodeGenerator(otava::symbols::Context& context_, const std::strin
     compileUnitInitFnNames(compileUnitInitFnNames_), latestRet(nullptr), boundFunction(nullptr), currentBlock(nullptr), currentBlockSymbol(nullptr),
     currentStatement(nullptr), line(0), inLineNumberCode(false), emitLineNumbers(false)
 {
-    emitter->SetVTabGenerator(this);
+    emitter->SetCodeGenerator(this);
     //otava::symbols::SetCurrentContext(&context);
     std::string intermediateCodeFilePath;
     if (configurations.find("release") != configurations.end())

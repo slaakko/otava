@@ -83,6 +83,82 @@ void FunctionTemplateRepository::AddFunctionDefinition(const FunctionTemplateKey
     functionDefinitionNodes.push_back(std::unique_ptr<otava::ast::Node>(functionDefinitionNode));
 }
 
+FunctionSymbol* TryInstantiateFunctionTemplate(Context* context, Instantiator& instantiator, otava::ast::FunctionDefinitionNode* functionDefinitionNode,
+    FunctionSymbol* specialization, FunctionSymbol* functionTemplate, FunctionTemplateRepository* functionTemplateRepository, const FunctionTemplateKey& key,
+    std::unique_ptr<otava::ast::Node>& clonedNode, const soul::ast::FullSpan& fullSpan, otava::ast::Node* node)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateFunctionTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    instantiator.SetFunctionNode(functionDefinitionNode);
+    functionDefinitionNode->Accept(instantiator);
+    specialization = instantiator.GetSpecialization();
+    context->RemoveSpecialization(functionDefinitionNode);
+    if (specialization && specialization->IsFunctionDefinitionSymbol())
+    {
+        specialization->SetSpecialization();
+        FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(specialization);
+        ParentScopeCleaner parentScopeCleaner(functionDefinition->GetScope());
+        functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
+        if (!context->InstantiationIrName().empty())
+        {
+            functionDefinition->SetFixedIrName(context->InstantiationIrName());
+            context->SetInstantiationIrName(std::string());
+        }
+        else
+        {
+            functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
+        }
+        std::string irName = functionDefinition->IrName(context);
+        functionDefinition->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
+        functionTemplateRepository->AddFunctionDefinition(key, functionDefinition, clonedNode.release());
+        context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
+        specialization = functionDefinition;
+        if (functionDefinition->IsBound())
+        {
+            std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+            context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
+        }
+        context->PopBoundFunction();
+    }
+    else
+    {
+        ThrowException("otava.symbols.function_templates: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
+    }
+    return specialization;
+}
+
+FunctionSymbol* TryInstantiateFunctionTemplateDecl(Context* context, Instantiator& instantiator, otava::ast::Node* node, FunctionSymbol* specialization,
+    FunctionSymbol* functionTemplate, const soul::ast::FullSpan& fullSpan)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateFunctionTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    instantiator.SetFunctionNode(node);
+    node->Accept(instantiator);
+    specialization = instantiator.GetSpecialization();
+    ParentScopeCleaner parentScopeCleaner(specialization->GetScope());
+    specialization->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
+    context->RemoveSpecialization(node);
+    if (specialization)
+    {
+        specialization->SetSpecialization();
+        specialization->SetFlag(FunctionSymbolFlags::fixedIrName);
+        if (functionTemplate->IsExplicitSpecializationDeclaration(context))
+        {
+            Symbol* symbol = functionTemplate->Parent(context)->GetScope()->GetNamespaceScope(context)->Lookup(specialization->GroupName(),
+                SymbolGroupKind::functionSymbolGroup, ScopeLookup::thisScope, fullSpan, context, LookupFlags::none);
+            if (symbol && symbol->IsFunctionGroupSymbol())
+            {
+                FunctionGroupSymbol* functionGroup = static_cast<FunctionGroupSymbol*>(symbol);
+                FunctionSymbol* functionSymbol = functionGroup->GetMatchingSpecialization(specialization, context);
+                if (functionSymbol)
+                {
+                    specialization->SetFixedIrName(functionSymbol->IrName(context));
+                }
+            }
+        }
+    }
+    return specialization;
+}
+
 FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate, 
     const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap,
     const soul::ast::FullSpan& fullSpan, Context* context)
@@ -198,43 +274,8 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
         FunctionSymbol* specialization = nullptr;
         try
         {
-            FlagSetter flagSetter(context, ContextFlags::instantiateFunctionTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
-            instantiator.SetFunctionNode(functionDefinitionNode);
-            functionDefinitionNode->Accept(instantiator);
-            specialization = instantiator.GetSpecialization();
-            context->RemoveSpecialization(functionDefinitionNode);
-            if (specialization && specialization->IsFunctionDefinitionSymbol())
-            {
-                specialization->SetSpecialization();
-                FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(specialization);
-                ParentScopeCleaner parentScopeCleaner(functionDefinition->GetScope());
-                functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
-                if (!context->InstantiationIrName().empty())
-                {
-                    functionDefinition->SetFixedIrName(context->InstantiationIrName());
-                    context->SetInstantiationIrName(std::string());
-                }
-                else
-                {
-                    functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
-                }
-                std::string irName = functionDefinition->IrName(context);
-                functionDefinition->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
-                functionTemplateRepository->AddFunctionDefinition(key, functionDefinition, clonedNode.release());
-                context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
-                functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
-                specialization = functionDefinition;
-                if (functionDefinition->IsBound())
-                {
-                    std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
-                    context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
-                }
-                context->PopBoundFunction();
-            }
-            else
-            {
-                ThrowException("otava.symbols.function_templates: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
-            }
+            specialization = TryInstantiateFunctionTemplate(context, instantiator, functionDefinitionNode, specialization, functionTemplate, functionTemplateRepository,
+                key, clonedNode, fullSpan, node);
         }
         catch (const std::exception& ex)
         {
@@ -303,37 +344,7 @@ FunctionSymbol* InstantiateFunctionTemplate(FunctionSymbol* functionTemplate,
         FunctionSymbol* specialization = nullptr;
         try
         {
-            FlagSetter flagSetter(context, ContextFlags::instantiateFunctionTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
-            instantiator.SetFunctionNode(node);
-            node->Accept(instantiator);
-            specialization = instantiator.GetSpecialization();
-            ParentScopeCleaner parentScopeCleaner(specialization->GetScope());
-            specialization->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
-            context->RemoveSpecialization(node);
-            if (specialization)
-            {
-                specialization->SetSpecialization();
-                specialization->SetFlag(FunctionSymbolFlags::fixedIrName);
-                if (functionTemplate->IsExplicitSpecializationDeclaration(context))
-                {
-                    Symbol* symbol = functionTemplate->Parent(context)->GetScope()->GetNamespaceScope(context)->Lookup(specialization->GroupName(),
-                        SymbolGroupKind::functionSymbolGroup, ScopeLookup::thisScope, fullSpan, context, LookupFlags::none);
-                    if (symbol && symbol->IsFunctionGroupSymbol())
-                    {
-                        FunctionGroupSymbol* functionGroup = static_cast<FunctionGroupSymbol*>(symbol);
-                        FunctionSymbol* functionSymbol = functionGroup->GetMatchingSpecialization(specialization, context);
-                        if (functionSymbol)
-                        {
-                            specialization->SetFixedIrName(functionSymbol->IrName(context));
-                        }
-                    }
-                }
-                std::string irName = specialization->IrName(context);
-            }
-            else
-            {
-                ThrowException("otava.symbols.function_templates: function symbol expected", node->GetFullSpan(), fullSpan, context);
-            }
+            specialization = TryInstantiateFunctionTemplateDecl(context, instantiator, node, specialization, functionTemplate, fullSpan);
         }
         catch (const std::exception& ex)
         {

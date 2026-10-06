@@ -1530,6 +1530,12 @@ BoundVariableNode* GetVariableFromArgument(BoundExpressionNode* arg)
     return nullptr;
 }
 
+void TryParseStatement(StatementBinder* statementBinder, const std::string& stmtStr, Context* context)
+{
+    std::unique_ptr<otava::ast::Node> stmtNode = ParseStatement(stmtStr, context);
+    stmtNode->Accept(*statementBinder);
+}
+
 void GenerateInitStreamCall(BoundExpressionNode* expr, StatementBinder* statementBinder, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     if (!expr->IsBoundFunctionCallNode()) return;
@@ -1548,8 +1554,7 @@ void GenerateInitStreamCall(BoundExpressionNode* expr, StatementBinder* statemen
     stmtStr.append(".init();");
     try
     {
-        std::unique_ptr<otava::ast::Node> stmtNode = ParseStatement(stmtStr, context);
-        stmtNode->Accept(*statementBinder);
+        TryParseStatement(statementBinder, stmtStr, context);
     }
     catch (const std::exception& ex)
     {

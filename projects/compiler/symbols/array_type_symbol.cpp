@@ -168,7 +168,7 @@ ArrayTypeDefaultCtor::ArrayTypeDefaultCtor(Module* module_, SymbolId id_, ArrayT
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetNoExcept();
@@ -237,10 +237,10 @@ ArrayTypeCopyCtor::ArrayTypeCopyCtor(Module* module_, SymbolId id_, ArrayTypeSym
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(arrayType->AddConst(context)->AddLValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
@@ -310,10 +310,10 @@ ArrayTypeMoveCtor::ArrayTypeMoveCtor(Module* module_, SymbolId id_, ArrayTypeSym
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(arrayType->AddRValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
@@ -382,10 +382,10 @@ ArrayTypeCopyAssignment::ArrayTypeCopyAssignment(Module* module_, SymbolId id_, 
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(arrayType->AddConst(context)->AddLValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetReturnType(arrayType->AddLValueRef(context), context);
@@ -457,10 +457,10 @@ ArrayTypeMoveAssignment::ArrayTypeMoveAssignment(Module* module_, SymbolId id_, 
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(arrayType->AddConst(context)->AddRValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetReturnType(arrayType->AddLValueRef(context), context);
@@ -532,7 +532,7 @@ ArrayTypeBegin::ArrayTypeBegin(Module* module_, SymbolId id_, ArrayTypeSymbol* a
 {
     SetFunctionKind(FunctionKind::function);;
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetReturnType(arrayType->ElementType(context)->AddPointer(context), context);
@@ -582,7 +582,7 @@ ArrayTypeEnd::ArrayTypeEnd(Module* module_, SymbolId id_, ArrayTypeSymbol* array
 {
     SetFunctionKind(FunctionKind::function);;
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(arrayType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetReturnType(arrayType->ElementType(context)->AddPointer(context), context);

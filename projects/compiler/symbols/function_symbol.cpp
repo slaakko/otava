@@ -457,9 +457,9 @@ std::string FunctionSymbol::FullName(Context* context) const
     return fullName;
 }
 
-void FunctionSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) 
+int FunctionSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) 
 {
-    ContainerSymbol::AddSymbol(symbol, fullSpan, context);
+    int index = ContainerSymbol::AddSymbol(symbol, fullSpan, context);
     if (symbol->IsParameterSymbol())
     {
         ParameterSymbol* parameterSymbol = static_cast<ParameterSymbol*>(symbol);
@@ -472,6 +472,7 @@ void FunctionSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSp
     {
         localVariables.push_back(static_cast<VariableSymbol*>(symbol));
     }
+    return index;
 }
 
 const std::vector<ParameterSymbol*>& FunctionSymbol::Parameters(Context* context) const
@@ -498,7 +499,7 @@ const std::vector<ParameterSymbol*>& FunctionSymbol::Parameters(Context* context
 void FunctionSymbol::AddTemporaryParameter(TypeSymbol* paramType, int index, Context* context)
 {
     std::string paramName = "p" + std::to_string(index);
-    std::unique_ptr<ParameterSymbol> temporaryParam(new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), paramName));
+    std::unique_ptr<ParameterSymbol> temporaryParam(new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), paramName));
     temporaryParam->SetType(paramType, context);
     parameters.push_back(temporaryParam.get());
     temporaryParams.push_back(std::move(temporaryParam));
@@ -1251,7 +1252,7 @@ std::string FunctionSymbol::NextTemporaryName()
 
 VariableSymbol* FunctionSymbol::CreateTemporary(TypeSymbol* type, std::int64_t nodeId, Context* context)
 {
-    VariableSymbol* temporary = new VariableSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::variableSymbol), NextTemporaryName());
+    VariableSymbol* temporary = new VariableSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::variableSymbol), NextTemporaryName());
     temporary->SetTemporary();
     temporary->SetDeclaredType(type, context);
     AddLocalVariable(temporary, context);
@@ -1287,7 +1288,16 @@ void FunctionSymbol::AddLocalVariable(VariableSymbol* localVariable, Context* co
     {
         localVariable->SetParent(this);
     }
+    localVariable->SetFunctionIndex(int(localVariables.size()));
     localVariables.push_back(localVariable);
+}
+
+void FunctionSymbol::RemoveLocalVariable(int functionIndex)
+{
+    if (functionIndex != -1)
+    {
+        localVariables.erase(localVariables.begin() + functionIndex);
+    }
 }
 
 void FunctionSymbol::CheckGenerateClassCopyCtor(const soul::ast::FullSpan& fullSpan, Context* context)

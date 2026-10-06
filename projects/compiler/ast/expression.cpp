@@ -8,6 +8,7 @@ module otava.ast.expression;
 import otava.ast.visitor;
 import otava.ast.reader;
 import otava.ast.writer;
+import otava.ast.literal;
 import otava.ast.type;
 
 namespace otava::ast {
@@ -59,6 +60,11 @@ UnaryExprNode::UnaryExprNode(const soul::ast::Span& span_, int fileIndex_) noexc
 UnaryExprNode::UnaryExprNode(const soul::ast::Span& span_, int fileIndex_, Node* op_, Node* child_) noexcept :
     UnaryNode(NodeKind::unaryExprNode, span_, fileIndex_, child_), op(op_)
 {
+    if (op->IsMinusNode() && Child()->IsIntegerLiteralNode())
+    {
+        otava::ast::IntegerLiteralNode* integerLiteralNode = static_cast<otava::ast::IntegerLiteralNode*>(Child());
+        integerLiteralNode->SetNegative();
+    }
 }
 
 Node* UnaryExprNode::Clone() const

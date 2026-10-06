@@ -3,19 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-export module otava.symbols.vtabgen;
+export module otava.symbols.codegen;
 
-import soul.ast.span;
 import std;
+import soul.ast.span;
+import otava.symbols.bound_tree_visitor;
 
 export namespace otava::symbols {
 
 class ClassTypeSymbol;
 
-class VTabGenerator
+class CodeGen : public DefaultBoundTreeVisitor
 {
 public:
-    virtual ~VTabGenerator();
     virtual void GenerateVTab(ClassTypeSymbol* cls, const soul::ast::FullSpan& fullSpan) = 0;
 };
 

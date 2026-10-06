@@ -42,13 +42,14 @@ TemplateParameterSymbol::TemplateParameterSymbol(Module* module_, SymbolId id_, 
 {
 }
 
-void TemplateParameterSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int TemplateParameterSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    TypeSymbol::AddSymbol(symbol, fullSpan, context);
+    int index = TypeSymbol::AddSymbol(symbol, fullSpan, context);
     if (symbol->IsTemplateParameterSymbol())
     {
         parameterSymbol = static_cast<ParameterSymbol*>(symbol);
     }
+    return index;
 }
 
 void TemplateParameterSymbol::SetDefaultTemplateArg(otava::ast::Node* defaultTemplateArgNode_) noexcept
@@ -132,23 +133,25 @@ BoundTemplateParameterSymbol::BoundTemplateParameterSymbol(Module* module_, Symb
 {
 }
 
-TemplateDeclarationSymbol::TemplateDeclarationSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), read(false)
+TemplateDeclarationSymbol::TemplateDeclarationSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), read(false), index(-1)
 {
     GetScope()->SetKind(ScopeKind::templateDeclarationScope);
 }
 
-TemplateDeclarationSymbol::TemplateDeclarationSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_), read(false)
+TemplateDeclarationSymbol::TemplateDeclarationSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
+    ContainerSymbol(module_, id_, name_), read(false), index(-1)
 {
     GetScope()->SetKind(ScopeKind::templateDeclarationScope);
 }
 
-void TemplateDeclarationSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int TemplateDeclarationSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    ContainerSymbol::AddSymbol(symbol, fullSpan, context);
+    int index = ContainerSymbol::AddSymbol(symbol, fullSpan, context);
     if (symbol->IsTemplateParameterSymbol())
     {
         templateParameters.push_back(static_cast<TemplateParameterSymbol*>(symbol));
     }
+    return index;
 }
 
 void TemplateDeclarationSymbol::Write(Writer& writer)
@@ -166,7 +169,7 @@ void TemplateDeclarationSymbol::Read(Reader& reader)
 {
     ContainerSymbol::Read(reader);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (Index i = Index(0); i < ToIndex(count); ++i)
+    for (otava::symbols::Index i = otava::symbols::Index(0); i < ToIndex(count); ++i)
     {
         SymbolId templateParameterId = SymbolId(reader.CurrentReader().ReadULong());
         templateParameterIds.push_back(templateParameterId);

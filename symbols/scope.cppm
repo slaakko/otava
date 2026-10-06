@@ -134,8 +134,8 @@ public:
     virtual ClassTemplateSpecializationSymbol* GetClassTemplateSpecialization(std::set<Scope*>& visited) const;
     virtual void Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context);
-    virtual void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
-    virtual std::unique_ptr<Symbol> RemoveSymbol(Symbol* symbol);
+    virtual int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
+    virtual std::unique_ptr<Symbol> RemoveSymbol(int index);
     virtual const std::vector<Scope*>& ParentScopes(Context* context);
     virtual void AddParentScope(Scope* parentScope_);
     virtual void RemoveParentScope(Scope* parentScope);
@@ -196,8 +196,8 @@ public:
     std::string FullName(Context* context) const override;
     void Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
-    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    std::unique_ptr<Symbol> RemoveSymbol(Symbol* symbol) override;
+    int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    std::unique_ptr<Symbol> RemoveSymbol(int index) override;
     NamespaceSymbol* GetOrInsertNamespace(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     ClassGroupSymbol* GetOrInsertClassGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     FunctionGroupSymbol* GetOrInsertFunctionGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;

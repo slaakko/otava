@@ -44,7 +44,7 @@ import otava.symbols.type_resolver;
 import otava.symbols.concrete_value;
 import otava.symbols.value;
 import otava.symbols.variable_symbol;
-import otava.symbols.vtabgen;
+import otava.symbols.codegen;
 import otava.ast.identifier;
 import soul.ast.span;
 import util.path;
@@ -323,7 +323,7 @@ void BlockExit::Execute(otava::symbols::Emitter& emitter, const soul::ast::FullS
     }
 }
 
-class CodeGenerator : public otava::symbols::DefaultBoundTreeVisitor, public otava::symbols::VTabGenerator
+class CodeGenerator : public otava::symbols::CodeGen
 {
 public:
     CodeGenerator(otava::symbols::Context& context_, const std::string& config_, int optLevel_, bool verbose_, std::string& mainIrName_,
@@ -440,7 +440,7 @@ CodeGenerator::CodeGenerator(otava::symbols::Context& context_, const std::strin
     compileUnitInitFnNames(compileUnitInitFnNames_), latestRet(nullptr), boundFunction(nullptr), currentBlock(nullptr), currentBlockSymbol(nullptr),
     currentStatement(nullptr), line(0), inLineNumberCode(false), emitLineNumbers(false)
 {
-    emitter->SetVTabGenerator(this);
+    emitter->SetCodeGenerator(this);
     //otava::symbols::SetCurrentContext(&context);
     std::string intermediateCodeFilePath;
     if (configurations.find("release") != configurations.end())
@@ -528,13 +528,6 @@ void CodeGenerator::GenJumpingBoolCode()
 void CodeGenerator::GenerateVTab(otava::symbols::ClassTypeSymbol* cls, const soul::ast::FullSpan& fullSpan)
 {
     if (!cls->IsPolymorphic(&context)) return;
-/*
-    if (!cls->IsClassTemplateSpecializationSymbol())
-    {
-        if (cls->GetFlag(otava::symbols::ClassTypeSymbolFlags::vtabGenerated)) return;
-        cls->SetFlag(otava::symbols::ClassTypeSymbolFlags::vtabGenerated);
-    }
-*/
     if (cls->GetFlag(otava::symbols::ClassTypeSymbolFlags::vtabGenerated)) return;
     cls->SetFlag(otava::symbols::ClassTypeSymbolFlags::vtabGenerated);
     cls->ComputeVTabName(&context);
@@ -938,6 +931,7 @@ void CodeGenerator::AddClassInfo(otava::symbols::ClassTypeSymbol* cls)
 void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
 {
     boundFunction = &node;
+    soul::ast::FullSpan fullSpan = node.GetFullSpan();
     functionDefinition = node.GetFunctionDefinitionSymbol();
     if ((functionDefinition->Qualifiers() & otava::symbols::FunctionQualifiers::isDeleted) != otava::symbols::FunctionQualifiers::none)
     {
@@ -1053,9 +1047,10 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
     for (int i = 0; i < np; ++i)
     {
         otava::symbols::ParameterSymbol* parameter = functionDefinition->MemFnParameters(&context)[i];
-        if (parameter->GetType(&context)->IsClassTypeSymbol())
+        otava::symbols::TypeSymbol* type = parameter->GetReferredType(&context);
+        if (type && type->IsClassTypeSymbol())
         {
-            otava::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<otava::symbols::ClassTypeSymbol*>(parameter->GetType(&context));
+            otava::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<otava::symbols::ClassTypeSymbol*>(type);
             if (classTypeSymbol->IsClassTemplateSpecializationSymbol() && classTypeSymbol->IsReadOnly() && !classTypeSymbol->CopyCtor())
             {
                 otava::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<otava::symbols::ClassTemplateSpecializationSymbol*>(classTypeSymbol);
@@ -1068,7 +1063,6 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
                 classTypeSymbol->GenerateCopyCtor(node.GetFullSpan(), &context);
             }
         }
-        otava::symbols::TypeSymbol* type = parameter->GetReferredType(&context);
         if (type)
         {
             otava::intermediate::Value* local = emitter->EmitLocal(type->IrType(*emitter, node.GetFullSpan(), &context));
@@ -1085,7 +1079,7 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
         otava::symbols::TypeSymbol* type = parameter->GetReferredType(&context);
         if (type)
         {
-            otava::intermediate::Value* local = emitter->EmitLocal(parameter->GetReferredType(&context)->IrType(*emitter, node.GetFullSpan(), &context));
+            otava::intermediate::Value* local = emitter->EmitLocal(type->IrType(*emitter, node.GetFullSpan(), &context));
             emitter->SetIrObject(parameter, local);
         }
         else
@@ -1113,9 +1107,10 @@ void CodeGenerator::Visit(otava::symbols::BoundFunctionNode& node)
     {
         otava::intermediate::Value* param = emitter->GetParam(i);
         otava::symbols::ParameterSymbol* parameter = functionDefinition->MemFnParameters(&context)[i];
-        if (parameter->GetType(&context)->IsClassTypeSymbol())
+        otava::symbols::TypeSymbol* type = parameter->GetType(&context);
+        if (type && type->IsClassTypeSymbol())
         {
-            otava::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<otava::symbols::ClassTypeSymbol*>(parameter->GetType(&context));
+            otava::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<otava::symbols::ClassTypeSymbol*>(type);
             if (classTypeSymbol->CopyCtor())
             {
                 otava::intermediate::FunctionType* copyCtorType = static_cast<otava::intermediate::FunctionType*>(classTypeSymbol->CopyCtor()->IrType(

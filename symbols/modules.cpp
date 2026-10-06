@@ -211,7 +211,7 @@ Module::Module(util::FileMapping* fileMapping_) :
     stringTable(this), nameOffset(), name(""), interfaceUnitNameOffset(), interfaceUnitName(""),
     evaluationContext(this, true), fileMapping(fileMapping_), header(), headerRead(false), importedSymbolsRead(false), fileId(-1),
     index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false), importedModulesAdded(false), astNodeRead(false),
-    namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false)
+    namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false), reset(false)
 {
     Read();
 }
@@ -222,13 +222,21 @@ Module::Module(const std::string& name_) :
     interfaceUnitNameOffset(), interfaceUnitName(""),
     evaluationContext(this, false), fileMapping(), header(), headerRead(false),
     importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false),
-    importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false)
+    importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), 
+    importedModuleTableRead(false), reset(false)
 {
 }
 
 Module::~Module()
 {
+    Reset();
+}
+
+void Module::Reset()
+{
     destructing = true;
+    if (reset) return;
+    reset = true;
     for (FunctionSymbol* fn : fns)
     {
         fn->ResetModule();
@@ -817,13 +825,28 @@ bool Module::UpToDate() const noexcept
     return true;
 }
 
-ModuleMapper::ModuleMapper()
+ModuleMapper::ModuleMapper() : reset(false)
 {
 #ifdef OTAVA
     roots.push_back(util::GetFullPath(util::Path::Combine(util::OtavaRoot(), "ooc/std")));
 #else
     roots.push_back(util::GetFullPath(util::Path::Combine(util::OtavaRoot(), "std")));
 #endif
+}
+
+ModuleMapper::~ModuleMapper()
+{
+    ResetModules();
+}
+
+void ModuleMapper::ResetModules()
+{
+    if (reset) return;
+    reset = true;
+    for (auto& module : modules)
+    {
+        module->Reset();
+    }
 }
 
 void ModuleMapper::AddRoot(const std::string& root)

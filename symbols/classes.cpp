@@ -28,7 +28,7 @@ import otava.symbols.templates;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
 import otava.symbols.variable_symbol;
-import otava.symbols.vtabgen;
+import otava.symbols.codegen;
 import otava.symbols.writer;
 import otava.symbols.reader;
 import otava.intermediate.metadata;
@@ -555,7 +555,7 @@ void ClassTypeSymbol::MakeVTab(Context* context, const soul::ast::FullSpan& full
         SetVTabInitialized();
     }
     ComputeVTabName(context);
-    InitVTab(vtab, context, fullSpan, IsClassTemplateSpecializationSymbol());
+    InitVTab(vtab, context, fullSpan, IsClassTemplateSpecializationSymbol(), true);
 }
 
 bool Overrides(FunctionSymbol* f, FunctionSymbol* g, Context* context) noexcept
@@ -582,7 +582,7 @@ bool Overrides(FunctionSymbol* f, FunctionSymbol* g, Context* context) noexcept
     return false;
 }
 
-void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear)
+void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear, bool setVTabIndex)
 {
     if (!IsPolymorphic(context)) return;
     if (clear)
@@ -596,7 +596,7 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
         for (ClassTypeSymbol* baseClass : baseClasses)
         {
             std::string bname = baseClass->FullName(context);
-            baseClass->InitVTab(vtab, context, fullSpan, false);
+            baseClass->InitVTab(vtab, context, fullSpan, false, false);
         }
     }
     std::vector<FunctionSymbol*> fns;
@@ -679,10 +679,9 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
                         f->GetFullSpan(), v->GetFullSpan(), context);
                 }
                 vtab[j] = f;
-                f->SetVTabIndex(j);
-                if (f->Group(context))
+                if (setVTabIndex)
                 {
-                    f->Group(context)->SetVTabIndex(f, j, context);
+                    f->SetVTabIndex(j);
                 }
                 if (f->IsDestructor())
                 {
@@ -704,10 +703,9 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
             }
             else if (f->IsVirtual() || f->IsPure())
             {
-                f->SetVTabIndex(m);
-                if (f->Group(context))
+                if (setVTabIndex)
                 {
-                    f->Group(context)->SetVTabIndex(f, m, context);
+                    f->SetVTabIndex(m);
                 }
                 if (f->IsDestructor())
                 {
@@ -723,11 +721,11 @@ void ClassTypeSymbol::TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* c
     }
 }
 
-void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear)
+void ClassTypeSymbol::InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear, bool setVTabIndex)
 {
     try
     {
-        TryInitVTab(vtab, context, fullSpan, clear);
+        TryInitVTab(vtab, context, fullSpan, clear, setVTabIndex);
     }
     catch (const std::exception& ex)
     {
@@ -809,10 +807,10 @@ otava::intermediate::Value* ClassTypeSymbol::GetVTabVariable(Emitter& emitter, C
 {
     if (context->GetBoundCompileUnit()->HasBoundClass(this))
     {
-        VTabGenerator* vtabGenerator = emitter.GetVTabGenerator();
-        if (vtabGenerator)
+        CodeGen* codeGenerator = emitter.GetCodeGenerator();
+        if (codeGenerator)
         {
-            vtabGenerator->GenerateVTab(this, GetFullSpan());
+            codeGenerator->GenerateVTab(this, GetFullSpan());
         }
     }
     otava::intermediate::Value* vtabVariable = emitter.GetVTabVariable(FullName(context));
@@ -885,9 +883,9 @@ void ClassTypeSymbol::AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::
     }
 }
 
-void ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
-    TypeSymbol::AddSymbol(symbol, fullSpan, context);
+    int index = TypeSymbol::AddSymbol(symbol, fullSpan, context);
     if (symbol->IsVariableSymbol())
     {
         VariableSymbol* memberVariable = static_cast<VariableSymbol*>(symbol);
@@ -916,6 +914,7 @@ void ClassTypeSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
         FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(symbol);
         SetMemFnDefSymbol(memFnDefSymbol, context);
     }
+    return index;
 }
 
 const std::vector<ClassTypeSymbol*>& ClassTypeSymbol::BaseClasses(Context* context) const
@@ -1706,13 +1705,13 @@ void ClassTypeSymbol::GenerateCopyCtor(const soul::ast::FullSpan& fullSpan, Cont
 {
     if (copyCtor) return;
     std::vector<std::unique_ptr<BoundExpressionNode>> args;
-    VariableSymbol* classTempVar = new VariableSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::variableSymbol), "@class_temp");
+    VariableSymbol* classTempVar = new VariableSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::variableSymbol), "@class_temp");
     classTempVar->SetDeclaredType(this, context);
     tempVars.push_back(std::unique_ptr<Symbol>(classTempVar));
     args.push_back(std::unique_ptr<BoundExpressionNode>(
         new BoundAddressOfNode(new BoundVariableNode(classTempVar, fullSpan, classTempVar->GetReferredType(context)), 
             fullSpan, classTempVar->GetType(context)->AddPointer(context))));
-    VariableSymbol* constLvalueRefTempVar = new VariableSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::variableSymbol), "@const_lvalue_ref_temp");
+    VariableSymbol* constLvalueRefTempVar = new VariableSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::variableSymbol), "@const_lvalue_ref_temp");
     constLvalueRefTempVar->SetDeclaredType(this->AddConst(context)->AddLValueRef(context), context);
     tempVars.push_back(std::unique_ptr<Symbol>(constLvalueRefTempVar));
     args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundVariableNode(constLvalueRefTempVar, fullSpan, constLvalueRefTempVar->GetReferredType(context))));

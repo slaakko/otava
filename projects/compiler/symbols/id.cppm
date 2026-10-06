@@ -111,7 +111,7 @@ enum class Index : std::int32_t {};
 
 constexpr std::int32_t ToUnderlying(Index index) noexcept { return std::int32_t(index); }
 
-constexpr Index ToIndex(Cardinality n)
+constexpr Index ToIndex(Cardinality n) noexcept
 {
     return Index(std::int32_t(ToUnderlying(n)));
 }

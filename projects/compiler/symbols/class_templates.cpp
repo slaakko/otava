@@ -603,6 +603,35 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     return InstantiateClassTemplate(classTemplate, templateArgs, fullSpan, context, false);
 }
 
+void TryInstantiateClassTemplate(Context* context, ClassTypeSymbol* classTemplate, otava::ast::Node* classNode, Instantiator& instantiator, 
+    ClassTemplateSpecializationSymbol* specialization, const soul::ast::FullSpan& fullSpan)
+{
+    FlagSetter flagSetter(context, ContextFlags::dontBind | ContextFlags::skipFunctionDefinitions);
+    TemplateModulePtr classTemplateModulePtr(context, classTemplate->GetModule());
+    classNode->Accept(instantiator);
+    std::vector<ClassTypeSymbol*> baseClasses = instantiator.GetBaseClasses();
+    for (ClassTypeSymbol* baseClass : baseClasses)
+    {
+        specialization->AddBaseClass(baseClass, fullSpan, context);
+    }
+    std::set<const Symbol*> visited;
+    if (!specialization->IsTemplateParameterInstantiation(context, visited))
+    {
+        if (specialization->IsPolymorphic(context))
+        {
+            GenerateDestructor(specialization, fullSpan, context);
+        }
+        else
+        {
+            InstantiateDestructor(specialization, fullSpan, context);
+        }
+        InstantiateVirtualFunctions(specialization, fullSpan, context);
+        MakeObjectLayouts(specialization, context, fullSpan);
+        InitVTabs(specialization, context, fullSpan);
+        context->GetSymbolTable()->AddClass(specialization);
+    }
+}
+
 ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* classTemplate, const std::vector<Symbol*>& templateArgs,
     const soul::ast::FullSpan& fullSpan, Context* context, bool createNew)
 {
@@ -758,30 +787,7 @@ ClassTemplateSpecializationSymbol* InstantiateClassTemplate(ClassTypeSymbol* cla
     Instantiator instantiator(context, &instantiationScope);
     try
     {
-        FlagSetter flagSetter(context, ContextFlags::dontBind | ContextFlags::skipFunctionDefinitions);
-        TemplateModulePtr classTemplateModulePtr(context, classTemplate->GetModule());
-        classNode->Accept(instantiator);
-        std::vector<ClassTypeSymbol*> baseClasses = instantiator.GetBaseClasses();
-        for (ClassTypeSymbol* baseClass : baseClasses)
-        {
-            specialization->AddBaseClass(baseClass, fullSpan, context);
-        }
-        std::set<const Symbol*> visited;
-        if (!specialization->IsTemplateParameterInstantiation(context, visited))
-        {
-            if (specialization->IsPolymorphic(context))
-            {
-                GenerateDestructor(specialization, fullSpan, context);
-            }
-            else
-            {
-                InstantiateDestructor(specialization, fullSpan, context);
-            }
-            InstantiateVirtualFunctions(specialization, fullSpan, context);
-            MakeObjectLayouts(specialization, context, fullSpan);
-            InitVTabs(specialization, context, fullSpan);
-            context->GetSymbolTable()->AddClass(specialization);
-        }
+        TryInstantiateClassTemplate(context, classTemplate, classNode, instantiator, specialization, fullSpan);
     }
     catch (const std::exception& ex)
     {
@@ -844,9 +850,118 @@ TypeSymbol* GetSpecializationArgType(TypeSymbol* specialization, Index index, Co
     return nullptr;
 }
 
+FunctionSymbol* TryInstantiateMemFnDefinition(Context* context, FunctionSymbol* memFn, Instantiator& instantiator, 
+    otava::ast::FunctionDefinitionNode* functionDefinitionNode, ClassTemplateSpecializationSymbol* classTemplateSpecialization, 
+    FunctionSymbol* specialization, std::string& memFnName, ScopePtr& instantiationScopePtr, bool prevInternallyMapped, bool prevParseMemberFunction,
+    ClassTemplateRepository* classTemplateRepository, const MemFnKey& key, const soul::ast::FullSpan& fullSpan, InstantiationScope& instantiationScope, 
+    otava::ast::Node* node)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateMemFnOfClassTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    if (memFn->IsFunctionDefinitionSymbol())
+    {
+        FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(memFn);
+        context->SetMemFunDefSymbolIndex(memFnDefSymbol->DefIndex());
+    }
+    instantiator.SetFunctionNode(functionDefinitionNode);
+    context->SetClassTemplateSpecialization(functionDefinitionNode, classTemplateSpecialization);
+    FlagResetter flagResetter(context, ContextFlags::skipFunctionDefinitions);
+    Scope* nsScope = classTemplateSpecialization->ClassTemplate(context)->GetScope()->GetNamespaceScope(context);
+    TemplateScopePtr classTemplateScopePtr(context, nsScope);
+    TemplateModulePtr classTemplateModulePtr(context, classTemplateSpecialization->ClassTemplate(context)->GetModule());
+    functionDefinitionNode->Accept(instantiator);
+    context->SetMemFunDefSymbolIndex(-1);
+    specialization = instantiator.GetSpecialization();
+    context->RemoveSpecialization(functionDefinitionNode);
+    context->RemoveClassTemplateSpecialization(functionDefinitionNode);
+    if (classTemplateSpecialization->ContainsVirtualFunctionSpecialization(specialization))
+    {
+        instantiationScopePtr.Reset();
+        context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
+        if (prevParseMemberFunction)
+        {
+            context->SetFlag(ContextFlags::parseMemberFunction);
+        }
+        return specialization;
+    }
+    if (specialization && specialization->IsFunctionDefinitionSymbol())
+    {
+        if (specialization->IsVirtual())
+        {
+            classTemplateSpecialization->AddInstantiatedVirtualFunctionSpecialization(specialization);
+        }
+        memFnName = specialization->Name();
+        FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(specialization);
+        ParentScopeCleaner parentScopeCleaner(functionDefinition->GetScope());
+        functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
+        functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
+        std::string irName = functionDefinition->IrName(context);
+        classTemplateRepository->AddFunctionDefinition(key, functionDefinition);
+        context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        Scope* nsScope = classTemplateSpecialization->ClassTemplate(context)->GetScope()->GetNamespaceScope(context);
+        TemplateScopePtr classTemplateScopePtr(context, nsScope);
+        ParentScopeAdder parentScopeAdder(&instantiationScope, nsScope);
+        functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
+        specialization = functionDefinition;
+        if (specialization->IsBound())
+        {
+            std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+            BoundCompileUnitNode* boundCompileUnit = context->GetBoundCompileUnit();
+            boundCompileUnit->AddBoundNode(std::move(boundNode), context);
+        }
+        context->PopBoundFunction();
+    }
+    else
+    {
+        ThrowException("otava.symbols.class_templates: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
+    }
+    return specialization;
+}
+
+FunctionSymbol* TryInstantiateDecl(Context* context, FunctionSymbol* memFn, Instantiator& instantiator, ClassTemplateSpecializationSymbol* classTemplateSpecialization,
+    FunctionSymbol* specialization, std::string& memFnName, bool prevInternallyMapped, bool prevParseMemberFunction, ScopePtr& instantiationScopePtr, 
+    const soul::ast::FullSpan& fullSpan, otava::ast::Node* node)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateMemFnOfClassTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    if (memFn->IsFunctionDefinitionSymbol())
+    {
+        FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(memFn);
+        context->SetMemFunDefSymbolIndex(memFnDefSymbol->DefIndex());
+    }
+    instantiator.SetFunctionNode(node);
+    context->SetClassTemplateSpecialization(node, classTemplateSpecialization);
+    node->Accept(instantiator);
+    context->SetMemFunDefSymbolIndex(-1);
+    specialization = instantiator.GetSpecialization();
+    context->RemoveSpecialization(node);
+    context->RemoveClassTemplateSpecialization(node);
+    if (specialization)
+    {
+        memFnName = specialization->FullName(context);
+        if (classTemplateSpecialization->ContainsVirtualFunctionSpecialization(specialization))
+        {
+            instantiationScopePtr.Reset();
+            context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
+            if (prevParseMemberFunction)
+            {
+                context->SetFlag(ContextFlags::parseMemberFunction);
+            }
+            return specialization;
+        }
+        if (specialization->IsVirtual())
+        {
+            classTemplateSpecialization->AddInstantiatedVirtualFunctionSpecialization(specialization);
+        }
+    }
+    else
+    {
+        ThrowException("otava.symbols.class_templates: function symbol expected", node->GetFullSpan(), fullSpan, context);
+    }
+    return specialization;
+}
+
 FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemplateSpecializationSymbol* classTemplateSpecialization,
-    const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>&
-    templateParameterMap, const soul::ast::FullSpan& fullSpan, Context* context)
+    const std::map<TemplateParameterSymbol*, TypeSymbol*, TemplateParamLess>& templateParameterMap, 
+    const soul::ast::FullSpan& fullSpan, Context* context)
 {
     std::string memFnName = memFn->Name();
     if (!classTemplateSpecialization)
@@ -875,10 +990,6 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
             classTemplateSpecialization->TemplateArguments(context), fullSpan, context, true);
     }
     classTemplateSpecialization = static_cast<ClassTemplateSpecializationSymbol*>(classTemplateSpecialization->FinalType(fullSpan, context));
-    if (classTemplateSpecialization->Name() == "vector<LexerState<char32_t, LexerBase<char32_t>>>")
-    {
-        int x = 0;
-    }
     context->GetBoundCompileUnit()->AddBoundNodeForClass(classTemplateSpecialization, fullSpan, context);
     ClassTemplateRepository* classTemplateRepository = context->GetBoundCompileUnit()->GetClassTemplateRepository();
     std::vector<TypeSymbol*> templateArgumentTypes;
@@ -1012,64 +1123,9 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
                 FunctionSymbol* specialization = nullptr;
                 try
                 {
-                    FlagSetter flagSetter(context, ContextFlags::instantiateMemFnOfClassTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
-                    if (memFn->IsFunctionDefinitionSymbol())
-                    {
-                        FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(memFn);
-                        context->SetMemFunDefSymbolIndex(memFnDefSymbol->DefIndex());
-                    }
-                    instantiator.SetFunctionNode(functionDefinitionNode);
-                    context->SetClassTemplateSpecialization(functionDefinitionNode, classTemplateSpecialization);
-                    FlagResetter flagResetter(context, ContextFlags::skipFunctionDefinitions);
-                    Scope* nsScope = classTemplateSpecialization->ClassTemplate(context)->GetScope()->GetNamespaceScope(context);
-                    TemplateScopePtr classTemplateScopePtr(context, nsScope);
-                    TemplateModulePtr classTemplateModulePtr(context, classTemplateSpecialization->ClassTemplate(context)->GetModule());
-                    functionDefinitionNode->Accept(instantiator);
-                    context->SetMemFunDefSymbolIndex(-1);
-                    specialization = instantiator.GetSpecialization();
-                    context->RemoveSpecialization(functionDefinitionNode);
-                    context->RemoveClassTemplateSpecialization(functionDefinitionNode);
-                    if (classTemplateSpecialization->ContainsVirtualFunctionSpecialization(specialization))
-                    {
-                        instantiationScopePtr.Reset();
-                        context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
-                        if (prevParseMemberFunction)
-                        {
-                            context->SetFlag(ContextFlags::parseMemberFunction);
-                        }
-                        return specialization;
-                    }
-                    if (specialization && specialization->IsFunctionDefinitionSymbol())
-                    {
-                        if (specialization->IsVirtual())
-                        {
-                            classTemplateSpecialization->AddInstantiatedVirtualFunctionSpecialization(specialization);
-                        }
-                        memFnName = specialization->Name();
-                        FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(specialization);
-                        ParentScopeCleaner parentScopeCleaner(functionDefinition->GetScope());
-                        functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
-                        functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
-                        std::string irName = functionDefinition->IrName(context);
-                        classTemplateRepository->AddFunctionDefinition(key, functionDefinition);
-                        context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
-                        Scope* nsScope = classTemplateSpecialization->ClassTemplate(context)->GetScope()->GetNamespaceScope(context);                        
-                        TemplateScopePtr classTemplateScopePtr(context, nsScope);
-                        ParentScopeAdder parentScopeAdder(&instantiationScope, nsScope);
-                        functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
-                        specialization = functionDefinition;
-                        if (specialization->IsBound())
-                        {
-                            std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
-                            BoundCompileUnitNode* boundCompileUnit = context->GetBoundCompileUnit();
-                            boundCompileUnit->AddBoundNode(std::move(boundNode), context);
-                        }
-                        context->PopBoundFunction();
-                    }
-                    else
-                    {
-                        ThrowException("otava.symbols.class_templates: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
-                    }
+                    specialization = TryInstantiateMemFnDefinition(context, memFn, instantiator, functionDefinitionNode, classTemplateSpecialization, specialization, 
+                        memFnName, instantiationScopePtr, prevInternallyMapped, prevParseMemberFunction, classTemplateRepository, key, fullSpan, 
+                        instantiationScope, node);
                 }
                 catch (const std::exception& ex)
                 {
@@ -1153,41 +1209,8 @@ FunctionSymbol* InstantiateMemFnOfClassTemplate(FunctionSymbol* memFn, ClassTemp
                 FunctionSymbol* specialization = nullptr;
                 try
                 {
-                    FlagSetter flagSetter(context, ContextFlags::instantiateMemFnOfClassTemplate | ContextFlags::saveDeclarations | ContextFlags::dontBind);
-                    if (memFn->IsFunctionDefinitionSymbol())
-                    {
-                        FunctionDefinitionSymbol* memFnDefSymbol = static_cast<FunctionDefinitionSymbol*>(memFn);
-                        context->SetMemFunDefSymbolIndex(memFnDefSymbol->DefIndex());
-                    }
-                    instantiator.SetFunctionNode(node);
-                    context->SetClassTemplateSpecialization(node, classTemplateSpecialization);
-                    node->Accept(instantiator);
-                    context->SetMemFunDefSymbolIndex(-1);
-                    specialization = instantiator.GetSpecialization();
-                    context->RemoveSpecialization(node);
-                    context->RemoveClassTemplateSpecialization(node);
-                    if (specialization)
-                    {
-                        memFnName = specialization->FullName(context);
-                        if (classTemplateSpecialization->ContainsVirtualFunctionSpecialization(specialization))
-                        {
-                            instantiationScopePtr.Reset();
-                            context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
-                            if (prevParseMemberFunction)
-                            {
-                                context->SetFlag(ContextFlags::parseMemberFunction);
-                            }
-                            return specialization;
-                        }
-                        if (specialization->IsVirtual())
-                        {
-                            classTemplateSpecialization->AddInstantiatedVirtualFunctionSpecialization(specialization);
-                        }
-                    }
-                    else
-                    {
-                        ThrowException("otava.symbols.class_templates: function symbol expected", node->GetFullSpan(), fullSpan, context);
-                    }
+                    specialization = TryInstantiateDecl(context, memFn, instantiator, classTemplateSpecialization, specialization, 
+                        memFnName, prevInternallyMapped, prevParseMemberFunction, instantiationScopePtr, fullSpan, node);
                 }
                 catch (const std::exception& ex)
                 {

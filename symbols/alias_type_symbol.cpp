@@ -17,12 +17,12 @@ import otava.ast.visitor;
 namespace otava::symbols {
 
 AliasTypeSymbol::AliasTypeSymbol(Module* module_, SymbolId id_) : 
-    TypeSymbol(module_, id_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr)
+    TypeSymbol(module_, id_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr), index(-1)
 {
 }
 
 AliasTypeSymbol::AliasTypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    TypeSymbol(module_, id_, name_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr)
+    TypeSymbol(module_, id_, name_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr), index(-1)
 {
 }
 
@@ -203,11 +203,12 @@ void RemoveTemporaryAliasTypeSymbols(Context* context)
 {
     for (AliasTypeSymbol* temporaryAlias : context->TemporaryAliasTypes())
     {
+        int index = temporaryAlias->Index();
         temporaryAlias->Group()->RemoveAliasType(temporaryAlias);
         Scope* scope = temporaryAlias->Parent(context)->GetScope()->SymbolScope(context);
         if (scope->IsContainerScope())
         {
-            scope->RemoveSymbol(temporaryAlias);
+            scope->RemoveSymbol(index);
         }
     }
     context->ClearTemporaryAliasTypes();

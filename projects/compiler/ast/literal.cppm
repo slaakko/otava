@@ -72,10 +72,13 @@ public:
     inline void SetValue(std::uint64_t value_) noexcept { value = value_; }
     inline Suffix GetSuffix() const noexcept { return suffix; }
     inline Base GetBase() const noexcept { return base; }
+    inline bool Negative() const noexcept { return negative; }
+    inline void SetNegative() noexcept { negative = true; }
 private:
     std::uint64_t value;
     Suffix suffix;
     Base base;
+    bool negative;
 };
 
 class FloatingLiteralNode : public LiteralNode

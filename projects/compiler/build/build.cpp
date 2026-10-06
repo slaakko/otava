@@ -442,10 +442,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         {
             std::string filePath = fileMap->GetFilePath(file);
             std::cout << "> " << filePath << "\n";
-            if (filePath == "D:/work/otava/ooc/std/std.rt.cppm")
-            {
-                ort_debug_break();
-            }
             files.push_back(std::make_pair(file, filePath));
             soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t> lexer = otava::lexer::MakeLexer(
                 fileMap->GetFileContent(file).c_str(),
@@ -459,6 +455,10 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             lexer.SetFile(file);
             lexer.SetRuleNameMapPtr(otava::parser::spg::rules::GetRuleNameMapPtr());
             std::unique_ptr<otava::symbols::Context> context(new otava::symbols::Context());
+            if (filePath == "D:/work/otava/ooc/std/std.cow_string.cppm")
+            {
+                context->SetFlag(otava::symbols::ContextFlags::debug);
+            }
             otava::symbols::Emitter emitter;
             context->SetEmitter(&emitter);
             context->SetModuleMapper(&moduleMapper);

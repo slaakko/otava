@@ -410,7 +410,8 @@ AliasTypeSymbol* SymbolTable::AddAliasType(otava::ast::Node* idNode, otava::ast:
     aliasTypeSymbol->SetReferredType(type);
     aliasTypeSymbol->SetAccess(currentAccess);
     aliasTypeSymbol->SetAstNodeId(aliasTypeNode->Id());
-    currentScope->SymbolScope(context)->AddSymbol(aliasTypeSymbol, idNode->GetFullSpan(), context);
+    int index = currentScope->SymbolScope(context)->AddSymbol(aliasTypeSymbol, idNode->GetFullSpan(), context);
+    aliasTypeSymbol->SetIndex(index);
     aliasGroup->AddAliasTypeSymbol(aliasTypeSymbol, context);
     MapNode(aliasTypeNode, aliasTypeSymbol, context);
     return aliasTypeSymbol;
@@ -663,7 +664,8 @@ BlockSymbol* SymbolTable::BeginBlock(const soul::ast::FullSpan& fullSpan, Contex
 {
     BlockSymbol* blockSymbol = new BlockSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::blockSymbol), std::string());
     blockSymbol->SetFullSpan(fullSpan);
-    currentScope->SymbolScope(context)->AddSymbol(blockSymbol, fullSpan, context);
+    int index = currentScope->SymbolScope(context)->AddSymbol(blockSymbol, fullSpan, context);
+    blockSymbol->SetIndex(index);
     BeginScopeGeneric(blockSymbol->GetScope(), context);
     return blockSymbol;
 }
@@ -673,18 +675,25 @@ void SymbolTable::EndBlock(Context* context)
     EndScopeGeneric(context);
 }
 
-void SymbolTable::RemoveBlock(Context* context)
+void SymbolTable::RemoveBlock(Context* context, int index)
 {
-    Symbol* symbol = currentScope->GetSymbol();
+    Symbol* symbol = currentScope->SymbolScope(context)->GetSymbol();
     if (symbol && symbol->IsBlockSymbol())
     {
+        BlockSymbol* block = static_cast<BlockSymbol*>(symbol);
+        block->RemoveLocalVariables(context);
         EndScope(context);
-        currentScope->RemoveSymbol(symbol);
+        currentScope->RemoveSymbol(index);
     }
     else
     {
         otava::ast::SetExceptionThrown();
-        throw std::runtime_error("otava.symbols.symbol_table: block expected");
+        std::string symbolKindStr = "null";
+        if (symbol)
+        {
+            symbolKindStr = SymbolKindStr(symbol->Kind());
+        }
+        throw std::runtime_error("otava.symbols.symbol_table: block expected: note: symbol is " + symbolKindStr);
     }
 }
 
@@ -693,7 +702,8 @@ void SymbolTable::BeginTemplateDeclaration(otava::ast::Node* node, Context* cont
     TemplateDeclarationSymbol* templateDeclarationSymbol = new TemplateDeclarationSymbol(GetModule(), 
         context->GetNextSymbolId(SymbolKind::templateDeclarationSymbol), std::string());
     templateDeclarationSymbol->SetFullSpan(node->GetFullSpan());
-    currentScope->SymbolScope(context)->AddSymbol(templateDeclarationSymbol, node->GetFullSpan(), context);
+    int index = currentScope->SymbolScope(context)->AddSymbol(templateDeclarationSymbol, node->GetFullSpan(), context);
+    templateDeclarationSymbol->SetIndex(index);
     BeginScope(templateDeclarationSymbol->GetScope(), context);
 }
 
@@ -707,8 +717,10 @@ void SymbolTable::RemoveTemplateDeclaration(Context* context)
     Symbol* symbol = currentScope->GetSymbol();
     if (symbol && symbol->IsTemplateDeclarationSymbol())
     {
+        TemplateDeclarationSymbol* templateDeclaration = static_cast<TemplateDeclarationSymbol*>(symbol);
+        int index = templateDeclaration->Index();
         EndScope(context);
-        currentScope->RemoveSymbol(symbol);
+        currentScope->SymbolScope(context)->RemoveSymbol(index);
     }
 }
 

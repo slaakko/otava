@@ -46,7 +46,7 @@ PointerDefaultCtor::PointerDefaultCtor(TypeSymbol* type_, const soul::ast::FullS
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, fullSpan, context);
     SetNoExcept();
@@ -118,10 +118,10 @@ PointerCopyCtor::PointerCopyCtor(TypeSymbol* type_, const soul::ast::FullSpan& f
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, fullSpan, context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(type, context);
     AddSymbol(thatParam, fullSpan, context);
     SetNoExcept();
@@ -196,10 +196,10 @@ PointerMoveCtor::PointerMoveCtor(TypeSymbol* type_, const soul::ast::FullSpan& f
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, fullSpan, context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(type->AddRValueRef(context), context);
     AddSymbol(thatParam, fullSpan, context);
     SetNoExcept();
@@ -273,10 +273,10 @@ PointerCopyAssignment::PointerCopyAssignment(TypeSymbol* type_, const soul::ast:
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, fullSpan, context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(type, context);
     AddSymbol(thatParam, fullSpan, context);
     SetNoExcept();
@@ -343,10 +343,10 @@ PointerMoveAssignment::PointerMoveAssignment(TypeSymbol* type_, const soul::ast:
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, fullSpan, context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(type->AddRValueRef(context), context);
     AddSymbol(thatParam, fullSpan, context);
     SetReturnType(type->AddLValueRef(context), context);
@@ -413,10 +413,10 @@ PointerPlusOffset::PointerPlusOffset(TypeSymbol* pointerType_, TypeSymbol* longL
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(pointerType, context);
     AddSymbol(leftParam, fullSpan, context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(longLongIntType, context);
     AddSymbol(rightParam, fullSpan, context);
     SetReturnType(pointerType, context);
@@ -492,10 +492,10 @@ OffsetPlusPointer::OffsetPlusPointer(TypeSymbol* pointerType_, TypeSymbol* longL
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(longLongIntType, context);
     AddSymbol(leftParam, fullSpan, context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(pointerType, context);
     AddSymbol(rightParam, fullSpan, context);
     SetReturnType(pointerType, context);
@@ -569,10 +569,10 @@ PointerMinusOffset::PointerMinusOffset(TypeSymbol* pointerType_, TypeSymbol* lon
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(pointerType, context);
     AddSymbol(leftParam, fullSpan, context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(longLongIntType, context);
     AddSymbol(rightParam, fullSpan, context);
     SetReturnType(pointerType, context);
@@ -649,10 +649,10 @@ PointerMinusPointer::PointerMinusPointer(TypeSymbol* pointerType_, TypeSymbol* l
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(pointerType, context);
     AddSymbol(leftParam, fullSpan, context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(pointerType, context);
     AddSymbol(rightParam, fullSpan, context);
     SetReturnType(longLongIntType, context);
@@ -718,10 +718,10 @@ PointerEqual::PointerEqual(TypeSymbol* pointerType_, const soul::ast::FullSpan& 
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(pointerType, context);
     AddSymbol(leftParam, fullSpan, context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(pointerType, context);
     AddSymbol(rightParam, fullSpan, context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context), context);
@@ -785,10 +785,10 @@ PointerLess::PointerLess(TypeSymbol* pointerType_, const soul::ast::FullSpan& fu
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(pointerType, context);
     AddSymbol(leftParam, fullSpan, context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(pointerType, context);
     AddSymbol(rightParam, fullSpan, context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context), context);
@@ -853,7 +853,7 @@ PointerArrow::PointerArrow(TypeSymbol* type_, const soul::ast::FullSpan& fullSpa
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* operandParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "operand");
+    ParameterSymbol* operandParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "operand");
     operandParam->SetType(type->AddPointer(context), context);
     AddSymbol(operandParam, fullSpan, context);
     SetReturnType(type, context);
@@ -913,10 +913,10 @@ CopyRef::CopyRef(TypeSymbol* type_, const soul::ast::FullSpan& fullSpan, otava::
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(type->AddPointer(context), context);
     AddSymbol(thisParam, fullSpan, context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(type, context);
     AddSymbol(thatParam, fullSpan, context);
     SetNoExcept();
@@ -1056,7 +1056,8 @@ void ClassDefaultCtorOperation::GenerateImplementation(ClassDefaultCtor* classDe
         {
             std::vector<TypeSymbol*> templateArgs;
             TypeSymbol* type = conversion->ReturnType(context);
-            args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, type)));
+            std::unique_ptr<BoundExpressionNode> arg(new BoundConversionNode(thisPtr, conversion, fullSpan, type));
+            args.push_back(std::move(arg));
             std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
                 context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context);
             if (boundFunctionCall->MayThrow())
@@ -1117,8 +1118,8 @@ void ClassDefaultCtorOperation::GenerateImplementation(ClassDefaultCtor* classDe
             classDefaultCtor->ThisParam(context)->GetReferredType(context)));
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
         std::vector<TypeSymbol*> templateArgs;
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundMemberVariable, fullSpan,
-            boundMemberVariable->GetType()->AddPointer(context))));
+        std::unique_ptr<BoundExpressionNode> arg(new BoundAddressOfNode(boundMemberVariable, fullSpan, boundMemberVariable->GetType()->AddPointer(context)));
+        args.push_back(std::move(arg));
         std::unique_ptr<BoundFunctionCallNode> memberConstructorCall = ResolveOverloadThrow(classType->GetScope(), "@constructor", templateArgs,
             args, fullSpan, context);
         if (memberConstructorCall->MayThrow())
@@ -1173,7 +1174,7 @@ ClassCopyCtor::ClassCopyCtor(ClassTypeSymbol* classType_, const soul::ast::FullS
     SetAccess(Access::public_);
     SetParent(classType);
     ParameterSymbol* thisParam = ThisParam(context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(classType->AddConst(context)->AddLValueRef(context), context);
     AddSymbol(thatParam, fullSpan, context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::voidType, context), context);
@@ -1262,7 +1263,8 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
         if (conversion)
         {
             TypeSymbol* type = conversion->ReturnType(context);
-            args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, type)));
+            std::unique_ptr<BoundExpressionNode> arg(new BoundConversionNode(thisPtr, conversion, fullSpan, type));
+            args.push_back(std::move(arg));
             ParameterSymbol* thatParam = classCopyCtor->MemFnParameters(context)[1];
             FunctionSymbol* thatConversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                 baseClass->AddConst(context)->AddLValueRef(context), thatParam->GetType(context), fullSpan, context);
@@ -1270,7 +1272,8 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
             {
                 BoundExpressionNode* thatPtr = new BoundParameterNode(thatParam, fullSpan, thatParam->GetType(context));
                 TypeSymbol* type = thatConversion->ReturnType(context);
-                args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thatPtr, thatConversion, fullSpan, type)));
+                std::unique_ptr<BoundExpressionNode> thatArg(new BoundConversionNode(thatPtr, thatConversion, fullSpan, type));
+                args.push_back(std::move(thatArg));
                 std::vector<TypeSymbol*> templateArgs;
                 std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
                     context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context);
@@ -1335,14 +1338,15 @@ void ClassCopyCtorOperation::GenerateImplementation(ClassCopyCtor* classCopyCtor
         BoundVariableNode* boundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
         boundMemberVariable->SetThisPtr(new BoundParameterNode(classCopyCtor->ThisParam(context), fullSpan, classCopyCtor->ThisParam(context)->GetReferredType(context)));
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundMemberVariable, fullSpan,
-            boundMemberVariable->GetType()->AddPointer(context))));
+        std::unique_ptr<BoundExpressionNode> arg(new BoundAddressOfNode(boundMemberVariable, fullSpan, boundMemberVariable->GetType()->AddPointer(context)));
+        args.push_back(std::move(arg));
         ParameterSymbol* thatParam = classCopyCtor->MemFnParameters(context)[1];
         BoundVariableNode* thatBoundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
         thatBoundMemberVariable->SetThisPtr(new BoundRefToPtrNode(
             new BoundParameterNode(thatParam, fullSpan, thatParam->GetReferredType(context)), fullSpan,
             thatParam->GetType(context)->RemoveReference(context)->AddPointer(context)));
-        args.push_back(std::unique_ptr<BoundExpressionNode>(thatBoundMemberVariable));
+        std::unique_ptr<BoundExpressionNode> thatArg(thatBoundMemberVariable);
+        args.push_back(std::move(thatArg));
         std::vector<TypeSymbol*> templateArgs;
         std::unique_ptr<BoundFunctionCallNode> memberConstructorCall = ResolveOverloadThrow(classType->GetScope(), "@constructor", templateArgs, args,
             fullSpan, context);
@@ -1397,7 +1401,7 @@ ClassMoveCtor::ClassMoveCtor(ClassTypeSymbol* classType_, const soul::ast::FullS
     SetAccess(Access::public_);
     SetParent(classType);
     ParameterSymbol* thisParam = ThisParam(context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(classType->AddRValueRef(context), context);
     AddSymbol(thatParam, fullSpan, context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::voidType, context), context);
@@ -1478,7 +1482,8 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
         if (conversion)
         {
             TypeSymbol* type = conversion->ReturnType(context);
-            args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, type)));
+            std::unique_ptr<BoundExpressionNode> arg(new BoundConversionNode(thisPtr, conversion, fullSpan, type));
+            args.push_back(std::move(arg));
             ParameterSymbol* thatParam = classMoveCtor->MemFnParameters(context)[1];
             FunctionSymbol* thatParamConversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                 baseClass->AddRValueRef(context), thatParam->GetType(context), fullSpan, context);
@@ -1486,7 +1491,8 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
             {
                 BoundExpressionNode* thatPtr = new BoundParameterNode(thatParam, fullSpan, thatParam->GetType(context));
                 TypeSymbol* type = thatParamConversion->ReturnType(context);
-                args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thatPtr, thatParamConversion, fullSpan, type)));
+                std::unique_ptr<BoundExpressionNode> thatArg(new BoundConversionNode(thatPtr, thatParamConversion, fullSpan, type));
+                args.push_back(std::move(thatArg));
                 std::vector<TypeSymbol*> templateArgs;
                 std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
                     context->GetSymbolTable()->CurrentScope(), "@constructor", templateArgs, args, fullSpan, context);
@@ -1548,8 +1554,8 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
         boundMemberVariable->SetThisPtr(new BoundParameterNode(classMoveCtor->ThisParam(context), fullSpan, classMoveCtor->ThisParam(context)->GetReferredType(context)));
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
         std::vector<TypeSymbol*> templateArgs;
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundMemberVariable, fullSpan,
-            boundMemberVariable->GetType()->AddPointer(context))));
+        std::unique_ptr<BoundExpressionNode> arg(new BoundAddressOfNode(boundMemberVariable, fullSpan, boundMemberVariable->GetType()->AddPointer(context)));
+        args.push_back(std::move(arg));
         ParameterSymbol* thatParam = classMoveCtor->MemFnParameters(context)[1];
         BoundVariableNode* thatBoundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
         thatBoundMemberVariable->SetThisPtr(new BoundRefToPtrNode(
@@ -1557,16 +1563,18 @@ void ClassMoveCtorOperation::GenerateImplementation(ClassMoveCtor* classMoveCtor
             thatParam->GetType(context)->RemoveReference(context)->AddPointer(context)));
         if (thatBoundMemberVariable->GetType()->IsFunctionPtrType(context) || thatBoundMemberVariable->GetType()->IsArrayType())
         {
-            args.push_back(std::unique_ptr<BoundExpressionNode>(thatBoundMemberVariable));
+            std::unique_ptr<BoundExpressionNode> thatArg(thatBoundMemberVariable);
+            args.push_back(std::move(thatArg));
         }
         else
         {
             std::vector<std::unique_ptr<BoundExpressionNode>> moveArgs;
-            moveArgs.push_back(std::unique_ptr<BoundExpressionNode>(thatBoundMemberVariable));
+            std::unique_ptr<BoundExpressionNode> thatArg(thatBoundMemberVariable);
+            moveArgs.push_back(std::move(thatArg));
             Scope* currentScope = context->GetSymbolTable()->CurrentScope();
-            std::unique_ptr<BoundFunctionCallNode> moveThat(ResolveOverloadThrow(
-                currentScope, "move", templateArgs, moveArgs, fullSpan, context));
-            args.push_back(std::unique_ptr<BoundExpressionNode>(moveThat.release()));
+            std::unique_ptr<BoundFunctionCallNode> moveThat(ResolveOverloadThrow(currentScope, "move", templateArgs, moveArgs, fullSpan, context));
+            std::unique_ptr<BoundExpressionNode> arg(moveThat.release());
+            args.push_back(std::move(arg));
         }
         std::unique_ptr<BoundFunctionCallNode> memberConstructorCall = ResolveOverloadThrow(classType->GetScope(), "@constructor",
             templateArgs, args, fullSpan, context);
@@ -1613,7 +1621,7 @@ ClassCopyAssignment::ClassCopyAssignment(ClassTypeSymbol* classType_, const soul
     SetAccess(Access::public_);
     SetParent(classType);
     ParameterSymbol* thisParam = ThisParam(context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(classType->AddConst(context)->AddLValueRef(context), context);
     AddSymbol(thatParam, fullSpan, context);
     SetReturnType(classType->AddLValueRef(context), context);
@@ -1688,7 +1696,8 @@ void ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
         if (conversion)
         {
             TypeSymbol* type = conversion->ReturnType(context);
-            args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, type)));
+            std::unique_ptr<BoundExpressionNode> arg(new BoundConversionNode(thisPtr, conversion, fullSpan, type));
+            args.push_back(std::move(arg));
             ParameterSymbol* thatParam = classCopyAssignment->MemFnParameters(context)[1];
             BoundExpressionNode* thatPtr = new BoundParameterNode(thatParam, fullSpan, thatParam->GetType(context));
             FunctionSymbol* thatConversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
@@ -1696,7 +1705,8 @@ void ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
             if (thatConversion)
             {
                 TypeSymbol* type = thatConversion->ReturnType(context);
-                args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thatPtr, thatConversion, fullSpan, type)));
+                std::unique_ptr<BoundExpressionNode> thatArg(new BoundConversionNode(thatPtr, thatConversion, fullSpan, type));
+                args.push_back(std::move(thatArg));
                 std::vector<TypeSymbol*> templateArgs;
                 std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
                     context->GetSymbolTable()->CurrentScope(), "operator=", templateArgs, args, fullSpan, context);
@@ -1726,14 +1736,15 @@ void ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
         boundMemberVariable->SetThisPtr(new BoundParameterNode(classCopyAssignment->ThisParam(context), fullSpan,
             classCopyAssignment->ThisParam(context)->GetReferredType(context)));
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
-        args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundAddressOfNode(boundMemberVariable, fullSpan,
-            boundMemberVariable->GetType()->AddPointer(context))));
+        std::unique_ptr<BoundExpressionNode> arg(new BoundAddressOfNode(boundMemberVariable, fullSpan, boundMemberVariable->GetType()->AddPointer(context)));
+        args.push_back(std::move(arg));
         ParameterSymbol* thatParam = classCopyAssignment->MemFnParameters(context)[1];
         BoundVariableNode* thatBoundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
         thatBoundMemberVariable->SetThisPtr(new BoundRefToPtrNode(
             new BoundParameterNode(thatParam, fullSpan, thatParam->GetReferredType(context)), fullSpan,
             thatParam->GetType(context)->RemoveReference(context)->AddPointer(context)));
-        args.push_back(std::unique_ptr<BoundExpressionNode>(thatBoundMemberVariable));
+        std::unique_ptr<BoundExpressionNode> thatArg(thatBoundMemberVariable);
+        args.push_back(std::move(thatArg));
         std::vector<TypeSymbol*> templateArgs;
         std::unique_ptr<BoundFunctionCallNode> memberAssignmentrCall = ResolveOverloadThrow(classType->GetScope(), "operator=", templateArgs, args, fullSpan, context);
         if (memberAssignmentrCall->MayThrow())
@@ -1793,7 +1804,7 @@ ClassMoveAssignment::ClassMoveAssignment(ClassTypeSymbol* classType_, const soul
     SetAccess(Access::public_);
     SetParent(classType);
     ParameterSymbol* thisParam = ThisParam(context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(classType->AddRValueRef(context), context);
     AddSymbol(thatParam, fullSpan, context);
     SetReturnType(classType->AddLValueRef(context), context);
@@ -1869,20 +1880,22 @@ void ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* c
         if (conversion)
         {
             TypeSymbol* type = conversion->ReturnType(context);
-            args.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thisPtr, conversion, fullSpan, type)));
+            std::unique_ptr<BoundExpressionNode> arg(new BoundConversionNode(thisPtr, conversion, fullSpan, type));
+            args.push_back(std::move(arg));
             ParameterSymbol* thatParam = classMoveAssignment->MemFnParameters(context)[1];
             BoundExpressionNode* thatPtr = new BoundParameterNode(thatParam, fullSpan, thatParam->GetType(context));
             FunctionSymbol* thatConversion = context->GetBoundCompileUnit()->GetArgumentConversionTable()->GetArgumentConversion(
                 baseClass->AddRValueRef(context), thatParam->GetType(context), fullSpan, context);
             std::vector<std::unique_ptr<BoundExpressionNode>> moveArgs;
             TypeSymbol* thatType = thatConversion->ReturnType(context);
-            moveArgs.push_back(std::unique_ptr<BoundExpressionNode>(new BoundConversionNode(thatPtr, thatConversion, fullSpan, thatType)));
+            std::unique_ptr<BoundExpressionNode> moveArg(new BoundConversionNode(thatPtr, thatConversion, fullSpan, thatType));
+            moveArgs.push_back(std::move(moveArg));
             Scope* currentScope = context->GetSymbolTable()->CurrentScope();
             //Scope* stdScope = context->GetSymbolTable()->GetNamespaceScope("std", fullSpan, context);
             std::vector<TypeSymbol*> templateArgs;
-            std::unique_ptr<BoundFunctionCallNode> moveThat(ResolveOverloadThrow(
-                currentScope, "move", templateArgs, moveArgs, fullSpan, context));
-            args.push_back(std::unique_ptr<BoundExpressionNode>(moveThat.release()));
+            std::unique_ptr<BoundFunctionCallNode> moveThat(ResolveOverloadThrow(currentScope, "move", templateArgs, moveArgs, fullSpan, context));
+            std::unique_ptr<BoundExpressionNode> moveThatExpr(moveThat.release());
+            args.push_back(std::move(moveThatExpr));
             std::unique_ptr<BoundFunctionCallNode> boundFunctionCall = ResolveOverloadThrow(
                 context->GetSymbolTable()->CurrentScope(), "operator=", templateArgs, args, fullSpan, context);
             BoundExpressionStatementNode* expressionStatement = new BoundExpressionStatementNode(fullSpan);
@@ -1902,13 +1915,15 @@ void ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* c
         boundMemberVariable->SetThisPtr(new BoundParameterNode(classMoveAssignment->ThisParam(context), fullSpan,
             classMoveAssignment->ThisParam(context)->GetReferredType(context)));
         std::vector<std::unique_ptr<BoundExpressionNode>> args;
-        args.push_back(std::unique_ptr<BoundExpressionNode>(boundMemberVariable));
+        std::unique_ptr<BoundExpressionNode> arg(boundMemberVariable);
+        args.push_back(std::move(arg));
         ParameterSymbol* thatParam = classMoveAssignment->MemFnParameters(context)[1];
         BoundVariableNode* thatBoundMemberVariable = new BoundVariableNode(memberVariableSymbol, fullSpan, memberVariableSymbol->GetReferredType(context));
         thatBoundMemberVariable->SetThisPtr(new BoundRefToPtrNode(
             new BoundParameterNode(thatParam, fullSpan, thatParam->GetReferredType(context)), fullSpan,
             thatParam->GetType(context)->RemoveReference(context)->AddPointer(context)));
-        args.push_back(std::unique_ptr<BoundExpressionNode>(thatBoundMemberVariable));
+        std::unique_ptr<BoundExpressionNode> thatArg(thatBoundMemberVariable);
+        args.push_back(std::move(thatArg));
         Scope* currentScope = context->GetSymbolTable()->CurrentScope();
         //Scope* stdScope = context->GetSymbolTable()->GetNamespaceScope("std", fullSpan, context);
         std::vector<TypeSymbol*> templateArgs;
@@ -1959,12 +1974,12 @@ FunctionPtrApply::FunctionPtrApply(FunctionTypeSymbol* functionType_, const soul
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* parameter = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "fn");
+    ParameterSymbol* parameter = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "fn");
     parameter->SetType(functionType->AddPointer(context), context);
     AddSymbol(parameter, fullSpan, context);
     for (TypeSymbol* parameterType : functionType->ParameterTypes(context))
     {
-        ParameterSymbol* parameter = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "@param");
+        ParameterSymbol* parameter = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "@param");
         parameter->SetType(parameterType, context);
         AddSymbol(parameter, fullSpan, context);
     }
@@ -2014,7 +2029,8 @@ FunctionSymbol* FunctionPtrApplyOperation::Get(std::vector<std::unique_ptr<Bound
     if (!pointeeType->IsFunctionTypeSymbol()) return nullptr;
     FunctionTypeSymbol* functionType = static_cast<FunctionTypeSymbol*>(pointeeType);
     FunctionPtrApply* apply = new FunctionPtrApply(functionType, fullSpan, context);
-    functions.push_back(std::unique_ptr<FunctionSymbol>(apply));
+    std::unique_ptr<FunctionSymbol> fn(apply);
+    functions.push_back(std::move(fn));
     return apply;
 }
 

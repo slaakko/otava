@@ -23,14 +23,14 @@ namespace otava::symbols {
 VariableSymbol::VariableSymbol(Module* module_, SymbolId id_) : 
     Symbol(module_, id_), level(0), foundFromParent(false), nodeId(-1), temporary(false), value(nullptr), global(nullptr), layoutIndex(-1), 
     declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), valueId(zeroSymbolId),
-    index(-1), globalId(zeroSymbolId), groupId(zeroSymbolId), group(nullptr)
+    index(-1), globalId(zeroSymbolId), groupId(zeroSymbolId), group(nullptr), functionIndex(-1)
 {
 }
 
 VariableSymbol::VariableSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
     Symbol(module_, id_, name_), level(0), foundFromParent(false), nodeId(-1), temporary(false), value(nullptr), global(nullptr), layoutIndex(-1),
     declaredType(nullptr), declaredTypeId(zeroSymbolId), initializerType(nullptr), initializerTypeId(zeroSymbolId), valueId(zeroSymbolId),
-    index(-1), globalId(zeroSymbolId), groupId(zeroSymbolId), group(nullptr)
+    index(-1), globalId(zeroSymbolId), groupId(zeroSymbolId), group(nullptr), functionIndex(-1)
 {
 }
 

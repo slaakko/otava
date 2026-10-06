@@ -26,8 +26,8 @@ struct EvaluationMapSetter
     Context* context;
 };
 
-TypeSymbol* GetIntegerType(otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context);
-TypeSymbol* GetFloatingPointType(otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context);
+TypeSymbol* GetIntegerType(std::int64_t value, bool negative, otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context);
+TypeSymbol* GetFloatingPointType(double value, otava::ast::Suffix suffix, const soul::ast::FullSpan& fullSpan, Context* context);
 TypeSymbol* GetStringType(otava::ast::EncodingPrefix encodingPrefix, const soul::ast::FullSpan& fullSpan, Context* context);
 TypeSymbol* GetCharacterType(otava::ast::EncodingPrefix encodingPrefix, const soul::ast::FullSpan& fullSpan, Context* context);
 otava::ast::FunctionDefinitionNode* GetFunctionDefinitionNode(FunctionSymbol* fn, Context* context);

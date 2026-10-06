@@ -131,8 +131,8 @@ public:
     inline void SetGroup(ClassGroupSymbol* group_) noexcept { group = group_; }
     bool IsPolymorphic(Context* context) const override;
     void MakeVTab(Context* context, const soul::ast::FullSpan& fullSpan);
-    void TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear);
-    void InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear);
+    void TryInitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear, bool setVTabIndex);
+    void InitVTab(std::vector<FunctionSymbol*>& vtab, Context* context, const soul::ast::FullSpan& fullSpan, bool clear, bool setVTabIndex);
     const std::vector<FunctionSymbol*>& VTab() const noexcept { return vtab; }
     std::vector<ClassTypeSymbol*> VPtrHolderClasses(Context* context) const;
     otava::intermediate::Value* GetVTabVariable(Emitter& emitter, Context* context);
@@ -144,7 +144,7 @@ public:
     inline int32_t NextMemFnDefIndex() const noexcept { return nextMemFnDefIndex; }
     otava::intermediate::Type* VPtrType(Emitter& emitter) const noexcept;
     void AddBaseClass(ClassTypeSymbol* baseClass, const soul::ast::FullSpan& fullSpan, Context* context);
-    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
     const std::vector<ClassTypeSymbol*>& BaseClasses(Context* context) const;
     const std::vector<VariableSymbol*>& MemberVariables(Context* context) const;
     const std::vector<VariableSymbol*>& StaticMemberVariables(Context* context) const;

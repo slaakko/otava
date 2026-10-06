@@ -59,6 +59,8 @@ public:
     inline void ResetGroup() noexcept { group = nullptr; }
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
+    inline int FunctionIndex() const noexcept { return functionIndex; }
+    inline void SetFunctionIndex(int functionIndex_) noexcept { functionIndex = functionIndex_; }
 private:
     TypeSymbol* declaredType;
     SymbolId declaredTypeId;
@@ -77,6 +79,7 @@ private:
     VariableGroupSymbol* group;
     SymbolId groupId;
     std::string varName;
+    int functionIndex;
     void GetContent(Context* context);
 };
 

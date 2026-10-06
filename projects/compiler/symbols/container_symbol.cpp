@@ -144,8 +144,9 @@ Symbol* ContainerSymbol::GetMember(Index index, Context* context)
     }
 }
 
-void ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
+int ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    int index = -1;
     if (IsReadOnly())
     {
         ThrowException("cannot add member to container symbol '" + Name() + "' because it is read-only", fullSpan, context);
@@ -158,6 +159,7 @@ void ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
         {
             childScope->AddParentScope(&scope);
         }
+        index = int(members.size());
         members.push_back(std::unique_ptr<Symbol>(symbol));
         Module* m = GetModule();
         SymbolTable* symbolTable = m->GetSymbolTable();
@@ -185,6 +187,18 @@ void ContainerSymbol::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullS
             scope.Install(symbol, context);
         }
     }
+    return index;
+}
+
+std::unique_ptr<Symbol> ContainerSymbol::RemoveSymbol(int index)
+{
+    if (index != -1)
+    {
+        std::unique_ptr<Symbol> symbol(members[index].release());
+        members.erase(members.begin() + index);
+        return symbol;
+    }
+    return std::unique_ptr<Symbol>();
 }
 
 } // namespace otava::symbols

@@ -115,7 +115,7 @@ public:
     void AddEnumerator(const std::string& name, Value* value, otava::ast::Node* node, Context* context);
     BlockSymbol* BeginBlock(const soul::ast::FullSpan& fullSpan, Context* context);
     void EndBlock(Context* context);
-    void RemoveBlock(Context* context);
+    void RemoveBlock(Context* context, int index);
     void BeginTemplateDeclaration(otava::ast::Node* node, Context* context);
     void EndTemplateDeclaration(Context* context);
     void RemoveTemplateDeclaration(Context* context);

@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/statement.parser' using soul parser generator ospg version 0.1.0
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/statement.parser' using soul parser generator ospg version 0.2.6
 
 module otava.parser.statement;
 
@@ -2628,6 +2628,7 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
     soul::ast::Span span = soul::ast::Span();
     int blockId = int();
     bool blockOpen = bool();
+    int index = int();
     std::unique_ptr<otava::ast::Node> attributes;
     std::unique_ptr<otava::ast::Node> initStmt;
     std::unique_ptr<otava::ast::Node> declaration;
@@ -2716,7 +2717,8 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
                                                         soul::ast::Span forPos = lexer.GetSpan(pos);
                                                         if (!span.IsValid()) span = forPos;
                                                         blockId = context->NextBlockId();
-                                                        otava::symbols::BeginBlock(lexer.GetFullSpan(pos), blockId, context);
+                                                        otava::symbols::BlockSymbol *block = otava::symbols::BeginBlock(lexer.GetFullSpan(pos), blockId, context);
+                                                        index = block->Index();
                                                         blockOpen = true;
                                                     }
                                                     *parentMatch14 = match;
@@ -2856,7 +2858,7 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
                 {
                     if (blockOpen)
                     {
-                        otava::symbols::RemoveBlock(context);
+                        otava::symbols::RemoveBlock(context, index);
                     }
                 }
                 *parentMatch5 = match;

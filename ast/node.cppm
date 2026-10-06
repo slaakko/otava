@@ -135,6 +135,8 @@ public:
     inline bool IsArrowNode() const noexcept { return kind == NodeKind::arrowNode; }
     inline bool IsDotNode() const noexcept { return kind == NodeKind::dotNode; }
     inline bool IsMulNode() const noexcept { return kind == NodeKind::mulNode; }
+    inline bool IsMinusNode() const noexcept { return kind == NodeKind::minusNode; }
+    inline bool IsIntegerLiteralNode() const noexcept { return kind == NodeKind::integerLiteralNode; }
     inline bool IsInvokeExprNode() const noexcept { return kind == NodeKind::invokeExprNode; }
     inline bool IsMemberExprNode() const noexcept { return kind == NodeKind::memberExprNode; }
     inline bool IsBinaryExprNode() const noexcept { return kind == NodeKind::binaryExprNode; }

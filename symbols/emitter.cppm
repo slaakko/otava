@@ -7,7 +7,7 @@ export module otava.symbols.emitter;
 
 import otava.symbols.ir_value_stack;
 import otava.symbols.id;
-import otava.symbols.vtabgen;
+import otava.symbols.codegen;
 import otava.intermediate.context;
 import otava.intermediate.code;
 import otava.intermediate.compile_unit;
@@ -210,8 +210,8 @@ public:
     inline otava::intermediate::MetadataRef* CreateMetadataRef(int nodeId) { return context->CreateMetadataRef(soul::ast::Span(), nodeId); }
     inline int Line() const noexcept { return line; }
     inline void SetLine(int line_) noexcept { line = line_; }
-    inline void SetVTabGenerator(VTabGenerator* vtabGenerator) noexcept { vtabGen = vtabGenerator; }
-    inline VTabGenerator* GetVTabGenerator() const noexcept { return vtabGen; }
+    inline void SetCodeGenerator(CodeGen* codeGen_) noexcept { codeGen = codeGen_; }
+    inline CodeGen* GetCodeGenerator() const noexcept { return codeGen; }
 private:
     otava::intermediate::IntermediateContext* context;
     IrValueStack* stack;
@@ -222,7 +222,7 @@ private:
     std::map<util::uuid, otava::intermediate::StructureType*> forwardDeclarationMap;
     int line;
     bool check;
-    VTabGenerator* vtabGen;
+    CodeGen* codeGen;
 };
 
 } // namespace otava::symbols

@@ -42,6 +42,43 @@ void FunctionCompletionRepository::AddCompletedFunction(FunctionSymbol* fn, Func
     completedFunctionMap[fn] = completedFunction;
 }
 
+FunctionSymbol* TryCompleteFunction(Context* context, Instantiator& instantiator, otava::ast::FunctionDefinitionNode* functionDefinitionNode, FunctionSymbol* completedFn,
+    FunctionSymbol* fn, FunctionCompletionRepository* functionCompletionRepository, const soul::ast::FullSpan& fullSpan, otava::ast::Node* node)
+{
+    FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
+    instantiator.SetFunctionNode(functionDefinitionNode);
+    functionDefinitionNode->Accept(instantiator);
+    completedFn = instantiator.GetSpecialization();
+    context->RemoveSpecialization(functionDefinitionNode);
+    if (completedFn && completedFn->IsFunctionDefinitionSymbol())
+    {
+        completedFn->SetSpecialization();
+        FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(completedFn);
+        ParentScopeCleaner parentScopeClearn(functionDefinition->GetScope());
+        functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
+        functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
+        functionDefinition->SetParent(fn->Parent(context));
+        std::string irName = functionDefinition->IrName(context);
+        functionCompletionRepository->AddCompletedFunction(fn, completedFn);
+        context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
+        completedFn = functionDefinition;
+        completedFn->SetSkip();
+        completedFn->SetVTabIndex(fn->VTabIndex());
+        if (functionDefinition->IsBound())
+        {
+            std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
+            context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
+        }
+        context->PopBoundFunction();
+    }
+    else
+    {
+        ThrowException("otava.symbols.function_completion: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
+    }
+    return completedFn;
+}
+
 FunctionSymbol* CompleteIncompleteFunction(FunctionSymbol* fn, const soul::ast::FullSpan& fullSpan, Context* context)
 {
     FunctionCompletionRepository* functionCompletionRepository = context->GetBoundCompileUnit()->GetFunctionCompletionRepository();
@@ -83,37 +120,7 @@ FunctionSymbol* CompleteIncompleteFunction(FunctionSymbol* fn, const soul::ast::
         FunctionSymbol* completedFn = nullptr;
         try
         {
-            FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
-            instantiator.SetFunctionNode(functionDefinitionNode);
-            functionDefinitionNode->Accept(instantiator);
-            completedFn = instantiator.GetSpecialization();
-            context->RemoveSpecialization(functionDefinitionNode);
-            if (completedFn && completedFn->IsFunctionDefinitionSymbol())
-            {
-                completedFn->SetSpecialization();
-                FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(completedFn);
-                ParentScopeCleaner parentScopeClearn(functionDefinition->GetScope());
-                functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
-                functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
-                functionDefinition->SetParent(fn->Parent(context));
-                std::string irName = functionDefinition->IrName(context);
-                functionCompletionRepository->AddCompletedFunction(fn, completedFn);
-                context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
-                functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
-                completedFn = functionDefinition;
-                completedFn->SetSkip();
-                completedFn->SetVTabIndex(fn->VTabIndex());
-                if (functionDefinition->IsBound())
-                {
-                    std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
-                    context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
-                }
-                context->PopBoundFunction();
-            }
-            else
-            {
-                ThrowException("otava.symbols.function_completion: function definition symbol expected", node->GetFullSpan(), fullSpan, context);
-            }
+            completedFn = TryCompleteFunction(context, instantiator, functionDefinitionNode, completedFn, fn, functionCompletionRepository, fullSpan, node);
         }
         catch (const std::exception& ex)
         {

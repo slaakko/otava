@@ -35,7 +35,7 @@ class TemplateParameterSymbol : public TypeSymbol
 public:
     TemplateParameterSymbol(Module* module_, SymbolId id_);
     TemplateParameterSymbol(Module* module_, SymbolId id_, const std::string& name_);
-    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
     void SetDefaultTemplateArg(otava::ast::Node* defaultTemplateArgNode_) noexcept;
     inline otava::ast::Node* DefaultTemplateArg() const noexcept { return defaultTemplateArgNode.get(); }
     ParameterSymbol* GetParameterSymbol(Context* context) const;
@@ -74,15 +74,18 @@ class TemplateDeclarationSymbol : public ContainerSymbol
 public:
     TemplateDeclarationSymbol(Module* module_, SymbolId id_);
     TemplateDeclarationSymbol(Module* module_, SymbolId id_, const std::string& name_);
-    void AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
     Cardinality Arity() const;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     const std::vector<TemplateParameterSymbol*>& TemplateParameters(Context* context) const;
+    inline int Index() const noexcept { return index; }
+    inline void SetIndex(int index_) noexcept { index = index_; }
 private:
     mutable std::vector<TemplateParameterSymbol*> templateParameters;
     std::vector<SymbolId> templateParameterIds;
     mutable bool read;
+    int index;
 };
 
 class ExplicitInstantiationSymbol : public Symbol

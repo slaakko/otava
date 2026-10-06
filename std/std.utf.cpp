@@ -152,10 +152,12 @@ u16string to_utf16(const u32string& s)
                 uint16_t bit = static_cast<uint16_t>(static_cast<uint32_t>(uprime) & (static_cast<uint32_t>(0x1u) << i));
                 w2 = static_cast<char16_t>(static_cast<uint16_t>(w2) | bit);
             }
-            for (uint16_t i = 10u; i < 20u; ++i)
+            uint16_t i = 10u;
+            while (i < 20u)
             {
                 uint16_t bit = static_cast<uint16_t>((static_cast<uint32_t>(uprime) & (static_cast<uint32_t>(0x1u) << i)) >> 10u);
                 w1 = static_cast<char16_t>(static_cast<uint16_t>(w1) | bit);
+                ++i;
             }
             result.append(1, w1);
             result.append(1, w2);

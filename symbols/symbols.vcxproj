@@ -167,8 +167,7 @@
     <ClCompile Include="class_info.cppm" />
     <ClCompile Include="class_templates.cpp" />
     <ClCompile Include="class_templates.cppm" />
-    <ClCompile Include="vtabgen.cpp" />
-    <ClCompile Include="vtabgen.cppm" />
+    <ClCompile Include="codegen.cppm" />
     <ClCompile Include="compound_type_symbol.cpp" />
     <ClCompile Include="compound_type_symbol.cppm" />
     <ClCompile Include="concepts.cpp" />

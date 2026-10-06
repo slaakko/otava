@@ -231,7 +231,7 @@ EnumTypeDefaultCtor::EnumTypeDefaultCtor(Module* module_, SymbolId id_, Enumerat
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(enumType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
     SetNoExcept();
@@ -294,10 +294,10 @@ EnumTypeCopyCtor::EnumTypeCopyCtor(Module* module_, SymbolId id_, EnumeratedType
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(enumType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(enumType, context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
@@ -359,10 +359,10 @@ EnumTypeMoveCtor::EnumTypeMoveCtor(Module* module_, SymbolId id_, EnumeratedType
 {
     SetFunctionKind(FunctionKind::constructor);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(enumType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(enumType->AddRValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetNoExcept();
@@ -404,10 +404,10 @@ EnumTypeCopyAssignment::EnumTypeCopyAssignment(Module* module_, SymbolId id_, En
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(enumType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(enumType, context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetReturnType(enumType->AddLValueRef(context), context);
@@ -444,10 +444,10 @@ EnumTypeMoveAssignment::EnumTypeMoveAssignment(Module* module_, SymbolId id_, En
 {
     SetFunctionKind(FunctionKind::special);
     SetAccess(Access::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
+    ParameterSymbol* thisParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "this");
     thisParam->SetType(enumType->AddPointer(context), context);
     AddSymbol(thisParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* thatParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
+    ParameterSymbol* thatParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "that");
     thatParam->SetType(enumType->AddRValueRef(context), context);
     AddSymbol(thatParam, soul::ast::FullSpan(), context);
     SetReturnType(enumType->AddLValueRef(context), context);
@@ -486,10 +486,10 @@ EnumTypeEqual::EnumTypeEqual(Module* module_, SymbolId id_, EnumeratedTypeSymbol
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(enumType, context);
     AddSymbol(leftParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(enumType, context);
     AddSymbol(rightParam, soul::ast::FullSpan(), context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context), context);
@@ -537,10 +537,10 @@ EnumTypeLess::EnumTypeLess(Module* module_, SymbolId id_, EnumeratedTypeSymbol* 
 {
     SetFunctionKind(FunctionKind::function);
     SetAccess(Access::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
+    ParameterSymbol* leftParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "left");
     leftParam->SetType(enumType, context);
     AddSymbol(leftParam, soul::ast::FullSpan(), context);
-    ParameterSymbol* rightParam = new ParameterSymbol(context->GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
+    ParameterSymbol* rightParam = new ParameterSymbol(GetModule(), context->GetNextSymbolId(SymbolKind::parameterSymbol), "right");
     rightParam->SetType(enumType, context);
     AddSymbol(rightParam, soul::ast::FullSpan(), context);
     SetReturnType(context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(FundamentalTypeKind::boolType, context), context);
