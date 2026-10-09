@@ -10,6 +10,7 @@ import otava.symbols.bound_tree;
 import otava.ast.node;
 import otava.symbols.scope;
 import otava.symbols.symbol;
+import otava.symbols.variable_group_symbol;
 import otava.symbols.variable_symbol;
 import soul.ast.span;
 

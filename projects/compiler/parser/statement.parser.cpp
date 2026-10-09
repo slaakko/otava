@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/statement.parser' using soul parser generator ospg version 0.2.6
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/statement.parser' using soul parser generator ospg version 0.2.7
 
 module otava.parser.statement;
 
@@ -2718,7 +2718,7 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
                                                         if (!span.IsValid()) span = forPos;
                                                         blockId = context->NextBlockId();
                                                         otava::symbols::BlockSymbol *block = otava::symbols::BeginBlock(lexer.GetFullSpan(pos), blockId, context);
-                                                        index = block->Index();
+                                                        index = block->GetIndex();
                                                         blockOpen = true;
                                                     }
                                                     *parentMatch14 = match;

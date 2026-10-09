@@ -10,7 +10,6 @@ import otava.symbols.classes;
 import otava.symbols.context;
 import otava.symbols.exception;
 import otava.symbols.function_kind;
-import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
 import otava.symbols.modules;
 import otava.symbols.scope;
@@ -43,11 +42,53 @@ FunctionSymbol* InlineFunctionRepository::GetInlineFunction(FunctionSymbol* fn) 
     }
 }
 
+class InlineScopePtr
+{
+public:
+    InlineScopePtr(Context* context_, Scope* scope) noexcept;
+    ~InlineScopePtr();
+private:
+    Context* context;
+};
+
+InlineScopePtr::InlineScopePtr(Context* context_, Scope* scope) noexcept : context(context_)
+{
+    context->PushInlineScope(scope);
+}
+
+InlineScopePtr::~InlineScopePtr()
+{
+    context->PopInlineScope();
+}
+
+class InlineModulePtr
+{
+public:
+    InlineModulePtr(Context* context_, Module* module_) noexcept;
+    ~InlineModulePtr();
+private:
+    Context* context;
+    Module* module;
+};
+
+InlineModulePtr::InlineModulePtr(Context* context_, Module* module_) noexcept : context(context_), module(module_)
+{
+    context->PushInlineModule(module);
+}
+
+InlineModulePtr::~InlineModulePtr()
+{
+    context->PopInlineModule();
+}
+
 FunctionSymbol* TryInstantiateInlineFunction(Context* context, Instantiator& instantiator, otava::ast::FunctionDefinitionNode* functionDefinitionNode, 
     FunctionSymbol* inlineFn, FunctionSymbol* fn, InlineFunctionRepository* inlineFunctionRepository, const soul::ast::FullSpan& fullSpan, otava::ast::Node* node)
 {
     FlagSetter flagSetter(context, ContextFlags::instantiateInlineFunction | ContextFlags::saveDeclarations | ContextFlags::dontBind);
     instantiator.SetFunctionNode(functionDefinitionNode);
+    Scope* inlineNsScope = fn->GetScope()->GetNamespaceScope(context);
+    InlineScopePtr inlineScopePtr(context, inlineNsScope);
+    InlineModulePtr inlineModulePtr(context, fn->GetModule());
     functionDefinitionNode->Accept(instantiator);
     inlineFn = instantiator.GetSpecialization();
     context->RemoveSpecialization(functionDefinitionNode);
@@ -55,13 +96,14 @@ FunctionSymbol* TryInstantiateInlineFunction(Context* context, Instantiator& ins
     {
         inlineFn->SetSpecialization();
         FunctionDefinitionSymbol* functionDefinition = static_cast<FunctionDefinitionSymbol*>(inlineFn);
-        ParentScopeCleaner parentScopeClearn(functionDefinition->GetScope());
+        ParentScopeCleaner parentScopeCleaner(functionDefinition->GetScope());
         functionDefinition->SetFlag(FunctionSymbolFlags::fixedIrName);
         functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
         functionDefinition->SetParent(fn->Parent(context));
         std::string irName = functionDefinition->IrName(context);
         inlineFunctionRepository->AddInlineFunction(fn, inlineFn);
         context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        BoundFunctionGuard boundFunctionGuard(context);
         functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
         inlineFn = functionDefinition;
         inlineFn->SetSkip();
@@ -70,7 +112,6 @@ FunctionSymbol* TryInstantiateInlineFunction(Context* context, Instantiator& ins
             std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
             context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         }
-        context->PopBoundFunction();
     }
     else
     {
@@ -129,6 +170,10 @@ FunctionSymbol* InstantiateInlineFunction(FunctionSymbol* fn, const soul::ast::F
             if (inlineFn)
             {
                 inlineFunctionFullName = inlineFn->FullName(context);
+            }
+            else
+            {
+                inlineFunctionFullName = fn->FullName(context);
             }
             PrintWarning("failed to instantiate inline function '" + inlineFunctionFullName +
                 "': " + std::string(ex.what()), node->GetFullSpan(), fullSpan, context);

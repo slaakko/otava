@@ -11,6 +11,7 @@ import otava.symbols.exception;
 import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.modules;
+import otava.symbols.variable_symbol;
 
 namespace otava::symbols {
 

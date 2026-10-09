@@ -27,7 +27,7 @@ public:
     inline Node* Specifiers() const noexcept { return specifiers.get(); }
     inline Node* FunctionBody() const noexcept { return functionBody.get(); }
     void ResetFunctionBody(Node* functionBody_) noexcept;
-    inline std::int32_t Index() const noexcept { return index; }
+    inline std::int32_t GetIndex() const noexcept { return index; }
     inline void SetIndex(std::int32_t index_) noexcept { index = index_; }
 private:
     std::unique_ptr<Node> attributes;

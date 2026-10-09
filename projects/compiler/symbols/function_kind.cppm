@@ -49,6 +49,25 @@ enum class FunctionQualifiers : std::uint16_t
     noreturn = 1 << 7, isNoexcept = 1 << 8
 };
 
+#ifdef OTAVA
+
+FunctionQualifiers operator|(FunctionQualifiers left, FunctionQualifiers right) noexcept
+{
+    return FunctionQualifiers(std::uint16_t(left) | std::uint16_t(right));
+}
+
+FunctionQualifiers operator&(FunctionQualifiers left, FunctionQualifiers right) noexcept
+{
+    return FunctionQualifiers(std::uint16_t(left) & std::uint16_t(right));
+}
+
+FunctionQualifiers operator~(FunctionQualifiers qualifiers) noexcept
+{
+    return FunctionQualifiers(~std::uint16_t(qualifiers));
+}
+
+#else
+
 constexpr FunctionQualifiers operator|(FunctionQualifiers left, FunctionQualifiers right) noexcept
 {
     return FunctionQualifiers(std::uint16_t(left) | std::uint16_t(right));
@@ -63,6 +82,8 @@ constexpr FunctionQualifiers operator~(FunctionQualifiers qualifiers) noexcept
 {
     return FunctionQualifiers(~std::uint16_t(qualifiers));
 }
+
+#endif
 
 constexpr std::uint16_t ToUnderlying(FunctionQualifiers qualifiers)
 {
@@ -93,6 +114,25 @@ constexpr std::uint32_t ToUnderlying(FunctionSymbolFlags flags)
     return std::uint32_t(flags);
 }
 
+#ifdef OTAVA
+
+FunctionSymbolFlags operator|(FunctionSymbolFlags left, FunctionSymbolFlags right) noexcept
+{
+    return FunctionSymbolFlags(ToUnderlying(left) | ToUnderlying(right));
+}
+
+FunctionSymbolFlags operator&(FunctionSymbolFlags left, FunctionSymbolFlags right) noexcept
+{
+    return FunctionSymbolFlags(ToUnderlying(left) & ToUnderlying(right));
+}
+
+FunctionSymbolFlags operator~(FunctionSymbolFlags flags) noexcept
+{
+    return FunctionSymbolFlags(~ToUnderlying(flags));
+}
+
+#else
+
 constexpr FunctionSymbolFlags operator|(FunctionSymbolFlags left, FunctionSymbolFlags right) noexcept
 {
     return FunctionSymbolFlags(ToUnderlying(left) | ToUnderlying(right));
@@ -107,5 +147,7 @@ constexpr FunctionSymbolFlags operator~(FunctionSymbolFlags flags) noexcept
 {
     return FunctionSymbolFlags(~ToUnderlying(flags));
 }
+
+#endif
 
 } // namespace otava::symbols

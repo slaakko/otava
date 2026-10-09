@@ -25,6 +25,25 @@ constexpr std::uint8_t ToUnderlying(Derivations derivations) noexcept
 constexpr int pointerShift = 4;
 constexpr int maxPointerCount = 15;
 
+#ifdef OTAVA
+
+Derivations operator|(Derivations left, Derivations right) noexcept
+{
+    return Derivations(ToUnderlying(left) | ToUnderlying(right));
+}
+
+Derivations operator&(Derivations left, Derivations right) noexcept
+{
+    return Derivations(ToUnderlying(left) & ToUnderlying(right));
+}
+
+Derivations operator~(Derivations derivations) noexcept
+{
+    return Derivations(~ToUnderlying(derivations));
+}
+
+#else
+
 constexpr Derivations operator|(Derivations left, Derivations right) noexcept
 {
     return Derivations(ToUnderlying(left) | ToUnderlying(right));
@@ -35,10 +54,12 @@ constexpr Derivations operator&(Derivations left, Derivations right) noexcept
     return Derivations(ToUnderlying(left) & ToUnderlying(right));
 }
 
-constexpr Derivations operator~(Derivations derivations) noexcept
+Derivations operator~(Derivations derivations) noexcept
 {
     return Derivations(~ToUnderlying(derivations));
 }
+
+#endif
 
 constexpr bool HasDerivation(Derivations derivations, Derivations derivation) noexcept { return (derivations & derivation) != Derivations::none; }
 constexpr int PointerCount(Derivations derivations) noexcept { return static_cast<int>(static_cast<std::uint8_t>(derivations & Derivations::pointerMask)) >> pointerShift; }

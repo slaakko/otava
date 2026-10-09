@@ -26,6 +26,7 @@ import otava.symbols.symbol;
 import otava.symbols.type_resolver;
 import otava.symbols.type_symbol;
 import otava.symbols.concrete_value;
+import otava.symbols.variable_symbol;
 import otava.intermediate.types;
 import otava.ast.identifier;
 import otava.ast.declaration;

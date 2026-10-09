@@ -24,11 +24,6 @@ BlockSymbol::BlockSymbol(Module* module_, SymbolId id_, const std::string& name_
     GetScope()->SetKind(ScopeKind::blockScope);
 }
 
-BlockSymbol::~BlockSymbol()
-{
-    //std::cout << "~block:" << ToUnderlying(Id()) << " : " << blockId << " : " << index << "\n";
-}
-
 void BlockSymbol::AddDestructorCall(int statementIndex, BoundExpressionNode* destructorCall)
 {
     destructorCallMap[statementIndex].push_back(destructorCall);
@@ -97,5 +92,6 @@ void MapNode(otava::ast::Node* node, Context* context)
 {
     context->GetSymbolTable()->MapNode(node, context);
 }
+
 
 } // namespace otava::symbols

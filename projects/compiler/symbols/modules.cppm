@@ -114,7 +114,7 @@ public:
     void SetFilePath(const std::string& filePath_);
     util::FileMapping* GetFileMapping();
     inline StringTable* GetStringTable() const noexcept { return const_cast<StringTable*>(&stringTable); }
-    inline SymbolTable* GetSymbolTable() const noexcept { return const_cast<SymbolTable*>(&symbolTable); }
+    SymbolTable* GetSymbolTable() const noexcept { return const_cast<SymbolTable*>(&symbolTable); }
     inline EvaluationContext* GetEvaluationContext() const noexcept { return const_cast<EvaluationContext*>(&evaluationContext); }
     inline FileOffset GetStringTableOffset() const noexcept { return header.stringTableOffset; }
     inline Length GetStringTableLength() const noexcept { return header.stringTableLength; }

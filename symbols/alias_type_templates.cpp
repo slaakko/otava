@@ -55,7 +55,7 @@ void AliasTypeTemplateSpecializationSymbol::Read(Reader& reader)
     instantiated = reader.CurrentReader().ReadBool();
     aliasTypeTemplateId = SymbolId(reader.CurrentReader().ReadULong());
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (otava::symbols::Index i = otava::symbols::Index(0); i < ToIndex(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId templateArgumentId = SymbolId(reader.CurrentReader().ReadULong());
         templateArgumentIds.push_back(templateArgumentId);

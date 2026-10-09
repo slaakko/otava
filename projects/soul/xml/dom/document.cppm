@@ -23,7 +23,7 @@ public:
     inline void SetXmlVersion(const std::string& xmlVersion_) { xmlVersion = xmlVersion_; }
     inline const std::string& XmlEncoding() const noexcept { return xmlEncoding; }
     inline void SetXmlEncoding(const std::string& xmlEncoding_) { xmlEncoding = xmlEncoding_; }
-    inline std::map<std::string, Element*>& Index() noexcept { return index; }
+    inline std::map<std::string, Element*>& GetIndex() noexcept { return index; }
     Element* GetElementById(const std::string& elementId) noexcept;
     void AppendChild(Node* child) override;
     void InsertBefore(Node* newChild, Node* refChild) override;

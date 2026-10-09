@@ -222,13 +222,13 @@ Module::Module(const std::string& name_) :
     interfaceUnitNameOffset(), interfaceUnitName(""),
     evaluationContext(this, false), fileMapping(), header(), headerRead(false),
     importedSymbolsRead(false), fileId(-1), index(Index(-1)), importIndex(Index(-1)), exportedModulesAdded(false),
-    importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), importedModuleTableRead(false), reset(false)
+    importedModulesAdded(false), astNodeRead(false), namespaceIdsRead(false), incompleteClassIdsRead(false), destructing(false), 
+    importedModuleTableRead(false), reset(false)
 {
 }
 
 Module::~Module()
 {
-    std::cout << "~module: " << Name() << ":" << ToUnderlying(id) << "\n";
     Reset();
 }
 

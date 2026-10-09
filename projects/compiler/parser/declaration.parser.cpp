@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/declaration.parser' using soul parser generator ospg version 0.2.6
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/declaration.parser' using soul parser generator ospg version 0.2.7
 
 module otava.parser.declaration;
 

@@ -80,6 +80,25 @@ constexpr StringOffset GetStringOffset(SymbolOffset symbolOffset)
 
 std::string SymbolGroupStr(SymbolGroupKind group);
 
+#ifdef OTAVA
+
+SymbolGroupKind operator|(SymbolGroupKind left, SymbolGroupKind right) noexcept
+{
+    return SymbolGroupKind(ToUnderlying(left) | ToUnderlying(right));
+}
+
+SymbolGroupKind operator&(SymbolGroupKind left, SymbolGroupKind right) noexcept
+{
+    return SymbolGroupKind(ToUnderlying(left) & ToUnderlying(right));
+}
+
+SymbolGroupKind operator~(SymbolGroupKind kind) noexcept
+{
+    return SymbolGroupKind(~ToUnderlying(kind));
+}
+
+#else
+
 constexpr SymbolGroupKind operator|(SymbolGroupKind left, SymbolGroupKind right) noexcept
 {
     return SymbolGroupKind(ToUnderlying(left) | ToUnderlying(right));
@@ -94,6 +113,8 @@ constexpr SymbolGroupKind operator~(SymbolGroupKind kind) noexcept
 {
     return SymbolGroupKind(~ToUnderlying(kind));
 }
+
+#endif
 
 std::vector<SymbolGroupKind> SymbolGroupKindstoSymbolGroupKindVec(SymbolGroupKind symbolGroupKinds);
 

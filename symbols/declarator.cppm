@@ -13,7 +13,6 @@ import otava.ast.node;
 
 export namespace otava::symbols {
 
-class TypeSymbol;
 class VariableSymbol;
 
 enum class DeclaratorKind : std::uint8_t
@@ -77,7 +76,7 @@ public:
     inline const std::vector<Declaration>& ParameterDeclarations() const noexcept { return parameterDeclarations; }
     inline Scope* GetScope() const noexcept { return scope; }
     void SetTemplateArgs(const std::vector<TypeSymbol*>& templateArgs_);
-    inline const std::vector<TypeSymbol*>& TemplateArgs() const noexcept { return templateArgs; }
+    const std::vector<TypeSymbol*>& TemplateArgs() const noexcept { return templateArgs; }
 private:
     FunctionKind kind;
     FunctionQualifiers qualifiers;

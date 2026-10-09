@@ -8,6 +8,7 @@ module otava.symbols.context;
 import otava.symbols.declarator;
 import otava.symbols.scope;
 import otava.symbols.symbol_table;
+import otava.symbols.variable_symbol;
 
 namespace otava::symbols {
 
@@ -39,13 +40,18 @@ Context::Context() :
     moduleMapper(nullptr), emitter(nullptr), traceInfo(nullptr),
     lexer(nullptr), module(nullptr), compileUnitModule(nullptr), stdTypeFundamentalModule(nullptr), rejectTemplateId(false), nextBlockId(0), 
     currentBlockId(-1), currentProject(nullptr), parentFn(nullptr), parentBlockId(-1), memFunDefSymbolIndex(-1), fileMap(nullptr), 
-    aliasType(nullptr), debugOutputStream(nullptr), ptr(nullptr), argType(nullptr), paramType(nullptr), nodeId(-1), statementBinder(nullptr),
+    aliasType(nullptr), debugOutputStream(nullptr), ptr(nullptr), argType(nullptr), paramType(nullptr), nodeId(-1), statementBinder(nullptr), 
     totalFunctionsCompiled(0), functionCallsInlined(0), functionsInlined(0), invokes(0), unresolvedInvokes(0), argIndex(0),
     boundFunctionSerial(0), trySerial(0), invokeSerial(0), cleanupSerial(0), resultSerial(0), labelSerial(0), ehReturnFromSerial(0), childControlResultSerial(0),
     conditionVariableSerial(0), streamInitVarSerial(0), instantiationQueue(nullptr), switchCondType(nullptr), declaredInitializerType(nullptr),
-    parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateScope(nullptr), hasException(false), initializer(nullptr), 
-    incompleteClassesCompleted(false), hasUnresolvedForwardDeclaration(false)
+    parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateScope(nullptr), inlineModule(nullptr), inlineScope(nullptr),
+    hasException(false), initializer(nullptr), incompleteClassesCompleted(false), hasUnresolvedForwardDeclaration(false)
 {
+    skipInvokeCheckingFNames.push_back("otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)");
+    skipInvokeCheckingFNames.push_back("otava::parser::function::FunctionParser<soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>>::FunctionDefinition(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.push_back("otava::codegen::CodeGenerator::GenerateGlobalInitializationFunction()");
+    skipInvokeCheckingFNames.push_back("otava::build::BuildSequentially(otava::build::Project*, const std::string&, int, otava::build::BuildFlags, std::basic_ostream<char>*)");
+    skipInvokeCheckingFNames.push_back("otava::build::Project::LoadModules(otava::symbols::ModuleMapper&, const std::string&, int, const std::set<std::basic_string<char>, std::less<std::basic_string<char>>>&, otava::symbols::Context*)");
 }
 
 void Context::PushFlags()
@@ -575,6 +581,18 @@ void Context::PopTemplateModule()
     templateModuleStack.pop();
 }
 
+void Context::PushInlineModule(Module* inlineModule_)
+{
+    inlineModuleStack.push(inlineModule);
+    inlineModule = inlineModule_;
+}
+
+void Context::PopInlineModule()
+{
+    inlineModule = inlineModuleStack.top();
+    inlineModuleStack.pop();
+}
+
 void Context::PushTemplateScope(Scope* templateScope_)
 {
     templateScopeStack.push(templateScope);
@@ -585,6 +603,18 @@ void Context::PopTemplateScope()
 {
     templateScope = templateScopeStack.top();
     templateScopeStack.pop();
+}
+
+void Context::PushInlineScope(Scope* inlineScope_)
+{
+    inlineScopeStack.push(inlineScope);
+    inlineScope = inlineScope_;
+}
+
+void Context::PopInlineScope()
+{
+    inlineScope = inlineScopeStack.top();
+    inlineScopeStack.pop();
 }
 
 void Context::SetException(Exception&& exception_)
@@ -608,6 +638,20 @@ void Context::AddModule(Module* module)
         std::cout << "MODULE:" << module->Name() << ":" << ToUnderlying(module->Id()) << "\n";
     }
 #endif
+}
+
+void Context::SetSkipInvokeChecking(FunctionDefinitionSymbol* fn)
+{
+    if (fn->SkipInvokeChecking()) return;
+    std::string fname = fn->FullName(this);
+    for (const std::string& skipFnName : skipInvokeCheckingFNames)
+    {
+        if (fname == skipFnName)
+        {
+            fn->SetSkipInvokeChecking();
+            return;
+        }
+    }
 }
 
 } // namespace otava::symbols

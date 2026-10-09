@@ -2434,7 +2434,7 @@ void DefaultVisitor::Visit(ExprListNode& node)
 void DefaultVisitor::Visit(IndexExprNode& node)
 {
     node.Child()->Accept(*this);
-    node.Index()->Accept(*this);
+    node.GetIndex()->Accept(*this);
 }
 
 void DefaultVisitor::Visit(InvokeNode& node)

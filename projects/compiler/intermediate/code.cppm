@@ -85,7 +85,7 @@ public:
     bool RequiresLocalRegister() const noexcept;
     virtual bool IsFloatingPointInstruction() const noexcept { return false; }
     std::vector<BasicBlock*> Successors() const;
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
     inline int RegValueIndex() const noexcept { return regValueIndex; }
     inline void SetRegValueIndex(int regValueIndex_) noexcept { regValueIndex = regValueIndex_; }

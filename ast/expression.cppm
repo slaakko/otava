@@ -620,7 +620,7 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline Node* Index() const noexcept { return index.get(); }
+    inline Node* GetIndex() const noexcept { return index.get(); }
     std::string Str() const override;
 private:
     std::unique_ptr<Node> index;

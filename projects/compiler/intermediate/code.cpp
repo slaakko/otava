@@ -481,7 +481,7 @@ void StoreInstruction::Accept(Visitor& visitor)
 Value* StoreInstruction::Clone(CloneContext& cloneContext) const
 {
     StoreInstruction* clone = new StoreInstruction(Span(), value->Clone(cloneContext), ptr->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     clone->AddToUses();
     return clone;
@@ -511,7 +511,7 @@ void ArgInstruction::Accept(Visitor& visitor)
 Value* ArgInstruction::Clone(CloneContext& cloneContext) const
 {
     ArgInstruction* clone = new ArgInstruction(Span(), arg->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     clone->AddToUses();
     return clone;
@@ -560,7 +560,7 @@ void JmpInstruction::Accept(Visitor& visitor)
 Value* JmpInstruction::Clone(CloneContext& cloneContext) const
 {
     JmpInstruction* clone = new JmpInstruction(Span(), targetBasicBlock->Id());
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     BasicBlock* bb = cloneContext.GetMappedBasicBlock(targetBasicBlock);
     if (bb)
@@ -595,7 +595,7 @@ void BranchInstruction::Accept(Visitor& visitor)
 Value* BranchInstruction::Clone(CloneContext& cloneContext) const
 {
     BranchInstruction* clone = new BranchInstruction(Span(), cond->Clone(cloneContext), trueTargetBasicBlock->Id(), falseTargetBasicBlock->Id());
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     BasicBlock* trueBB = cloneContext.GetMappedBasicBlock(trueTargetBasicBlock);
     if (trueBB)
@@ -666,7 +666,7 @@ void ProcedureCallInstruction::Accept(Visitor& visitor)
 Value* ProcedureCallInstruction::Clone(CloneContext& cloneContext) const
 {
     ProcedureCallInstruction* clone = new ProcedureCallInstruction(Span(), callee->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     clone->AddToUses();
     return clone;
@@ -731,7 +731,7 @@ Value* RetInstruction::Clone(CloneContext& cloneContext) const
         clonedReturnValue = returnValue->Clone(cloneContext);
     }
     RetInstruction* clone = new RetInstruction(Span(), clonedReturnValue);
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     clone->AddToUses();
     return clone;
@@ -803,7 +803,7 @@ void SwitchInstruction::Accept(Visitor& visitor)
 Value* SwitchInstruction::Clone(CloneContext& cloneContext) const
 {
     SwitchInstruction* clone = new SwitchInstruction(Span(), cond->Clone(cloneContext), defaultTargetBlock->Id());
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     BasicBlock* bb = cloneContext.GetMappedBasicBlock(defaultTargetBlock);
     if (bb)
@@ -976,7 +976,7 @@ Value* NotInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     NotInstruction* clone = new NotInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1004,7 +1004,7 @@ Value* NegInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     NegInstruction* clone = new NegInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1032,7 +1032,7 @@ Value* SignExtendInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     SignExtendInstruction* clone = new SignExtendInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1060,7 +1060,7 @@ Value* ZeroExtendInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     ZeroExtendInstruction* clone = new ZeroExtendInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1088,7 +1088,7 @@ Value* FloatingPointExtendInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     FloatingPointExtendInstruction* clone = new FloatingPointExtendInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1116,7 +1116,7 @@ Value* TruncateInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     TruncateInstruction* clone = new TruncateInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1144,7 +1144,7 @@ Value* BitcastInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     BitcastInstruction* clone = new BitcastInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1172,7 +1172,7 @@ Value* IntToFloatInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     IntToFloatInstruction* clone = new IntToFloatInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1200,7 +1200,7 @@ Value* FloatToIntInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     FloatToIntInstruction* clone = new FloatToIntInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1228,7 +1228,7 @@ Value* IntToPtrInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     IntToPtrInstruction* clone = new IntToPtrInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1256,7 +1256,7 @@ Value* PtrToIntInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     PtrToIntInstruction* clone = new PtrToIntInstruction(Span(), result, Operand()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1331,7 +1331,7 @@ Value* AddInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     AddInstruction* clone = new AddInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1359,7 +1359,7 @@ Value* SubInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     SubInstruction* clone = new SubInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1387,7 +1387,7 @@ Value* MulInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     MulInstruction* clone = new MulInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1415,7 +1415,7 @@ Value* DivInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     DivInstruction* clone = new DivInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1443,7 +1443,7 @@ Value* ModInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     ModInstruction* clone = new ModInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1471,7 +1471,7 @@ Value* AndInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     AndInstruction* clone = new AndInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1499,7 +1499,7 @@ Value* OrInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     OrInstruction* clone = new OrInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1527,7 +1527,7 @@ Value* XorInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     XorInstruction* clone = new XorInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1555,7 +1555,7 @@ Value* ShlInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     ShlInstruction* clone = new ShlInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1583,7 +1583,7 @@ Value* ShrInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     ShrInstruction* clone = new ShrInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1611,7 +1611,7 @@ Value* EqualInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     EqualInstruction* clone = new EqualInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1639,7 +1639,7 @@ Value* LessInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     LessInstruction* clone = new LessInstruction(Span(), result, Left()->Clone(cloneContext), Right()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1667,7 +1667,7 @@ Value* ParamInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     ParamInstruction* clone = new ParamInstruction(Span(), result);
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1694,7 +1694,7 @@ Value* LocalInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     LocalInstruction* clone = new LocalInstruction(Span(), result, localType);
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1722,7 +1722,7 @@ Value* PLocalInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     PLocalInstruction* clone = new PLocalInstruction(Span(), result, localType, level);
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1751,7 +1751,7 @@ Value* LoadInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     LoadInstruction* clone = new LoadInstruction(Span(), result, ptr->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1803,7 +1803,7 @@ Value* ElemAddrInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     ElemAddrInstruction* clone = new ElemAddrInstruction(Span(), result, Ptr()->Clone(cloneContext), IndexValue()->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1886,7 +1886,7 @@ Value* PtrOffsetInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     PtrOffsetInstruction* clone = new PtrOffsetInstruction(Span(), result, Ptr()->Clone(cloneContext), offset->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -1950,7 +1950,7 @@ Value* PtrDiffInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     PtrDiffInstruction* clone = new PtrDiffInstruction(Span(), result, leftPtr->Clone(cloneContext), rightPtr->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -2014,7 +2014,7 @@ Value* FunctionCallInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     FunctionCallInstruction* clone = new FunctionCallInstruction(Span(), result, callee->Clone(cloneContext));
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     result->SetInst(clone);
     clone->AddToUses();
@@ -2079,7 +2079,7 @@ void NoOperationInstruction::Accept(Visitor& visitor)
 Value* NoOperationInstruction::Clone(CloneContext& cloneContext) const
 {
     NoOperationInstruction* clone = new NoOperationInstruction(Span());
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     clone->AddToUses();
     return clone;
@@ -2104,7 +2104,7 @@ Value* GetRbpInstruction::Clone(CloneContext& cloneContext) const
 {
     RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
     GetRbpInstruction* clone = new GetRbpInstruction(Span(), result);
-    clone->SetIndex(Index());
+    clone->SetIndex(GetIndex());
     clone->SetRegValueIndex(RegValueIndex());
     clone->AddToUses();
     return clone;

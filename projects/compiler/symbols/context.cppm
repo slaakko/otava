@@ -95,6 +95,25 @@ enum class ContextFlags : std::uint64_t
     sticky = noWarnings | expected
 };
 
+#ifdef OTAVA
+
+ContextFlags operator|(ContextFlags left, ContextFlags right) noexcept
+{
+    return ContextFlags(std::uint64_t(left) | std::uint64_t(right));
+}
+
+ContextFlags operator&(ContextFlags left, ContextFlags right) noexcept
+{
+    return ContextFlags(std::uint64_t(left) & std::uint64_t(right));
+}
+
+ContextFlags operator~(ContextFlags flags) noexcept
+{
+    return ContextFlags(~std::uint64_t(flags));
+}
+
+#else
+
 constexpr ContextFlags operator|(ContextFlags left, ContextFlags right) noexcept
 {
     return ContextFlags(std::uint64_t(left) | std::uint64_t(right));
@@ -109,6 +128,8 @@ constexpr ContextFlags operator~(ContextFlags flags) noexcept
 {
     return ContextFlags(~std::uint64_t(flags));
 }
+
+#endif
 
 int GetOptLevel(int level, bool release) noexcept;
 
@@ -303,9 +324,15 @@ public:
     void PushTemplateModule(Module* templateModule_);
     void PopTemplateModule();
     inline Module* GetTemplateModule() const noexcept { return templateModule; }
+    void PushInlineModule(Module* inlineModule_);
+    void PopInlineModule();
+    inline Module* GetInlineModule() const noexcept { return inlineModule; }
     void PushTemplateScope(Scope* classTemplateScope_);
     void PopTemplateScope();
     inline Scope* GetTemplateScope() const noexcept { return templateScope; }
+    void PushInlineScope(Scope* inlineScope_);
+    void PopInlineScope();
+    inline Scope* GetInlineScope() const noexcept { return inlineScope; }
     inline bool HasException() const noexcept { return hasException; }
     inline void ResetException() noexcept { hasException = false; }
     void SetException(Exception&& exception_);
@@ -318,6 +345,7 @@ public:
     inline void SetHasUnresolvedForwardDeclaration() noexcept { hasUnresolvedForwardDeclaration = true; }
     inline void ResetHasUnresolvedForwardDeclaration() { hasUnresolvedForwardDeclaration = false; }
     inline bool HasUnresolvedForwardDeclaration() const noexcept { return hasUnresolvedForwardDeclaration; }
+    void SetSkipInvokeChecking(FunctionDefinitionSymbol* fn);
 private:
     Module* module;
     Module* compileUnitModule;
@@ -402,12 +430,17 @@ private:
     std::stack<Module*> templateModuleStack;
     Scope* templateScope;
     std::stack<Scope*> templateScopeStack;
+    Scope* inlineScope;
+    std::stack<Scope*> inlineScopeStack;
+    Module* inlineModule;
+    std::stack<Module*> inlineModuleStack;
     bool hasException;
     Exception exception;
     Value* initializer;
     bool incompleteClassesCompleted;
     std::vector<Module*> modules;
     bool hasUnresolvedForwardDeclaration;
+    std::vector<std::string> skipInvokeCheckingFNames;
 };
 
 class FlagSetter

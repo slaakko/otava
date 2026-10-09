@@ -219,6 +219,12 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
         Symbol* symbol = templateScope->GetSymbol();
         containerNames = GetContainerNames(symbol, context);
     }
+    Scope* inlineScope = context->GetInlineScope();
+    if (inlineScope)
+    {
+        Symbol* symbol = inlineScope->GetSymbol();
+        containerNames = GetContainerNames(symbol, context);
+    }
     std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
     Module* templateModule = context->GetTemplateModule();
     if (templateModule)
@@ -229,6 +235,22 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
         }
         std::vector<Module*> templateModules = templateModule->ImportExportModules(context);
         for (Module* importedModule : templateModules)
+        {
+            if (std::find(importedModules.begin(), importedModules.end(), importedModule) == importedModules.end())
+            {
+                importedModules.push_back(importedModule);
+            }
+        }
+    }
+    Module* inlineModule = context->GetInlineModule();
+    if (inlineModule)
+    {
+        if (std::find(importedModules.begin(), importedModules.end(), inlineModule) == importedModules.end())
+        {
+            importedModules.push_back(inlineModule);
+        }
+        std::vector<Module*> inlineModules = inlineModule->ImportExportModules(context);
+        for (Module* importedModule : inlineModules)
         {
             if (std::find(importedModules.begin(), importedModules.end(), importedModule) == importedModules.end())
             {
@@ -247,6 +269,17 @@ Scopes GetScopes(otava::ast::Node* nnsNode, Context* context)
         {
             scopes.AddScope(scope);
             if (scope->IsClassScope())
+            {
+                break;
+            }
+        }
+        Scope* globalScope = importedModule->GetSymbolTable()->GetGlobalNs(context)->GetScope();
+        ScopePtr globalScopePtr(globalScope, context);
+        Scope* gscope = GetScope(nnsNode, context);
+        if (gscope)
+        {
+            scopes.AddScope(gscope);
+            if (gscope->IsClassScope())
             {
                 break;
             }

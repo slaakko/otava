@@ -29,7 +29,7 @@ void BuildIndexVisitor::BeginVisit(Element& element)
 
 void BuildIndex(Document* document)
 {
-    BuildIndexVisitor visitor(document->Index());
+    BuildIndexVisitor visitor(document->GetIndex());
     document->Accept(visitor);
 }
 

@@ -246,7 +246,7 @@ bool BoundNodeLess::operator()(const std::unique_ptr<BoundNode>& left, const std
 {
     if (left->Kind() < right->Kind()) return true;
     if (left->Kind() > right->Kind()) return false;
-    return left->Index() < right->Index();
+    return left->GetIndex() < right->GetIndex();
 }
 
 BoundNode::BoundNode(BoundNodeKind kind_, const soul::ast::FullSpan& fullSpan_) noexcept :

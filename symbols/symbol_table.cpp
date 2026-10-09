@@ -718,7 +718,7 @@ void SymbolTable::RemoveTemplateDeclaration(Context* context)
     if (symbol && symbol->IsTemplateDeclarationSymbol())
     {
         TemplateDeclarationSymbol* templateDeclaration = static_cast<TemplateDeclarationSymbol*>(symbol);
-        int index = templateDeclaration->Index();
+        int index = templateDeclaration->GetIndex();
         EndScope(context);
         currentScope->SymbolScope(context)->RemoveSymbol(index);
     }

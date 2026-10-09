@@ -24,6 +24,25 @@ enum class OverloadResolutionFlags
     none = 0, dontInstantiate = 1 << 0, dontSearchArgumentScopes = 1 << 1, noMemberFunctions = 1 << 2
 };
 
+#ifdef OTAVA
+
+OverloadResolutionFlags operator|(OverloadResolutionFlags left, OverloadResolutionFlags right) noexcept
+{
+    return OverloadResolutionFlags(int(left) | int(right));
+}
+
+OverloadResolutionFlags operator&(OverloadResolutionFlags left, OverloadResolutionFlags right) noexcept
+{
+    return OverloadResolutionFlags(int(left) & int(right));
+}
+
+OverloadResolutionFlags operator~(OverloadResolutionFlags flags) noexcept
+{
+    return OverloadResolutionFlags(~int(flags));
+}
+
+#else
+
 constexpr OverloadResolutionFlags operator|(OverloadResolutionFlags left, OverloadResolutionFlags right) noexcept
 {
     return OverloadResolutionFlags(int(left) | int(right));
@@ -39,8 +58,10 @@ constexpr OverloadResolutionFlags operator~(OverloadResolutionFlags flags) noexc
     return OverloadResolutionFlags(~int(flags));
 }
 
-const std::int32_t truncateConversionDistance = 10;
-const std::int32_t unsignedToSignedConversionDistance = 10;
+#endif
+
+constexpr std::int32_t truncateConversionDistance = 10;
+constexpr std::int32_t unsignedToSignedConversionDistance = 10;
 
 struct ArgumentMatch
 {

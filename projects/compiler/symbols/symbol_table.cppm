@@ -53,6 +53,25 @@ enum class MapKind
     none, nodeToSymbol = 1 << 0, symbolToNode = 1 << 1, both = nodeToSymbol | symbolToNode
 };
 
+#ifdef OTAVA
+
+MapKind operator|(MapKind left, MapKind right) noexcept
+{
+    return MapKind(int(left) | int(right));
+}
+
+MapKind operator&(MapKind left, MapKind right) noexcept
+{
+    return MapKind(int(left) & int(right));
+}
+
+MapKind operator~(MapKind kind) noexcept
+{
+    return MapKind(~int(kind));
+}
+
+#else
+
 constexpr MapKind operator|(MapKind left, MapKind right) noexcept
 {
     return MapKind(int(left) | int(right));
@@ -67,6 +86,8 @@ constexpr MapKind operator~(MapKind kind) noexcept
 {
     return MapKind(~int(kind));
 }
+
+#endif
 
 constexpr int maxArguments = 16;
 
@@ -83,7 +104,7 @@ public:
     NamespaceSymbol* GlobalNs() const noexcept { return globalNs.get(); }
     NamespaceSymbol* GetGlobalNs(Context* context);
     void Init(Context* context);
-    inline Scope* CurrentScope() const noexcept { return currentScope; }
+    Scope* CurrentScope() const noexcept { return currentScope; }
     inline void SetCurrentScope(Scope* scope) noexcept { currentScope = scope; }
     Scope* GetNamespaceScope(const std::string& nsName, const soul::ast::FullSpan& fullSpan, Context* context);
     void AddClass(ClassTypeSymbol* cls);

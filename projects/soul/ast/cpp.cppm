@@ -117,7 +117,7 @@ class IndexExprNode : public UnaryNode
 {
 public:
     IndexExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* index_) noexcept;
-    inline Node* Index() const noexcept { return index.get(); }
+    inline Node* GetIndex() const noexcept { return index.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;

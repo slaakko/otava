@@ -25,7 +25,7 @@ void MakeNfas(soul::ast::re::LexerContext& lexerContext)
     for (auto& rule : lexerContext.GetLexer()->Rules())
     {
         soul::ast::re::Nfa* nfa = lexerContext.GetExprParser()->Parse(rule->Expr(), &lexerContext, lexerContext.FileName(), rule->Line());
-        nfa->End()->SetRuleIndex(rule->Index());
+        nfa->End()->SetRuleIndex(rule->GetIndex());
         int nfaIndex = lexerContext.AddNfa(nfa);
         rule->SetNfaIndex(nfaIndex);
     }
@@ -253,7 +253,7 @@ void CreateClassMap(soul::ast::re::LexerContext& lexerContext, const std::string
             {
                 if (classMapVec[i] == -1)
                 {
-                    classMapVec[static_cast<std::int32_t>(i)] = cls->Index();
+                    classMapVec[static_cast<std::int32_t>(i)] = cls->GetIndex();
                 }
             }
         }
@@ -592,10 +592,10 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
         std::map<std::int32_t, std::set<std::int32_t>> m;
         for (soul::ast::re::Class* cls : lexerContext.Partition())
         {
-            soul::ast::re::DfaState* next = state->Next(cls->Index());
+            soul::ast::re::DfaState* next = state->Next(cls->GetIndex());
             if (next != nullptr)
             {
-                m[next->Id()].insert(cls->Index());
+                m[next->Id()].insert(cls->GetIndex());
             }
         }
         if (m.empty())
@@ -646,7 +646,7 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.IncIndent();
     for (const auto& rule : lexer->Rules())
     {
-        interfaceFormatter.WriteLine("case " + std::to_string(rule->Index()) + ":");
+        interfaceFormatter.WriteLine("case " + std::to_string(rule->GetIndex()) + ":");
         soul::ast::common::TokenMap* tokenMap = lexerFile->GetTokenMap();
         if (tokenMap)
         {

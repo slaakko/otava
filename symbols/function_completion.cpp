@@ -11,7 +11,6 @@ import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.exception;
 import otava.symbols.function_kind;
-import otava.symbols.function_symbol;
 import otava.symbols.instantiator;
 import otava.symbols.modules;
 import otava.symbols.statement_binder;
@@ -61,6 +60,7 @@ FunctionSymbol* TryCompleteFunction(Context* context, Instantiator& instantiator
         std::string irName = functionDefinition->IrName(context);
         functionCompletionRepository->AddCompletedFunction(fn, completedFn);
         context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        BoundFunctionGuard boundFunctionGuard(context);
         functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
         completedFn = functionDefinition;
         completedFn->SetSkip();
@@ -70,7 +70,6 @@ FunctionSymbol* TryCompleteFunction(Context* context, Instantiator& instantiator
             std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
             context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         }
-        context->PopBoundFunction();
     }
     else
     {

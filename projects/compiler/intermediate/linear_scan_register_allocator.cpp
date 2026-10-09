@@ -16,7 +16,7 @@ LiveRange GetLiveRange(Instruction* inst)
 {
     if (inst->RequiresLocalRegister())
     {
-        int lastUserIndex = inst->Index();
+        int lastUserIndex = inst->GetIndex();
         const std::vector<Instruction*>& users = inst->Users();
         std::vector<Instruction*> finalUsers;
         for (Instruction* user : users)
@@ -39,17 +39,17 @@ LiveRange GetLiveRange(Instruction* inst)
         }
         for (Instruction* user : finalUsers)
         {
-            if (user->Index() > lastUserIndex)
+            if (user->GetIndex() > lastUserIndex)
             {
-                lastUserIndex = user->Index();
+                lastUserIndex = user->GetIndex();
             }
         }
-        LiveRange range(inst->Index(), lastUserIndex);
+        LiveRange range(inst->GetIndex(), lastUserIndex);
         return range;
     }
     else
     {
-        return LiveRange(inst->Index(), inst->Index());
+        return LiveRange(inst->GetIndex(), inst->GetIndex());
     }
 }
 
@@ -267,7 +267,7 @@ LiveRange LinearScanRegisterAllocator::GetLiveRange(Instruction* inst) const noe
     }
     else
     {
-        return LiveRange(inst->Index(), inst->Index());
+        return LiveRange(inst->GetIndex(), inst->GetIndex());
     }
 }
 

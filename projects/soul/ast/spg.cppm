@@ -403,7 +403,7 @@ public:
     RuleParser(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     std::string Name() const override { return name; }
     inline void SetIndex(std::int32_t index_) noexcept { index = index_; }
-    inline std::int32_t Index() const noexcept { return index; }
+    inline std::int32_t GetIndex() const noexcept { return index; }
     inline void SetId(std::int64_t id_) noexcept { id = id_; }
     inline std::int64_t Id() const noexcept { return id; }
     void SetInfo(const std::string& info_);

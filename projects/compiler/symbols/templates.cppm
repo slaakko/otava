@@ -79,7 +79,7 @@ public:
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
     const std::vector<TemplateParameterSymbol*>& TemplateParameters(Context* context) const;
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
 private:
     mutable std::vector<TemplateParameterSymbol*> templateParameters;

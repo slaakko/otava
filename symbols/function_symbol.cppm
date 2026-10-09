@@ -311,4 +311,13 @@ bool FunctionMatches(FunctionSymbol* left, FunctionSymbol* right, Context* conte
 
 void PrintXml(FunctionSymbol* function, Context* context);
 
+class BoundFunctionGuard
+{
+public:
+    BoundFunctionGuard(Context* context_) : context(context_) {}
+    ~BoundFunctionGuard();
+private:
+    Context* context;
+};
+
 } // namespace otava::symbols

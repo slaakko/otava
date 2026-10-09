@@ -34,7 +34,7 @@ public:
     bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
     void Write(Writer& writer) override;
     void Read(Reader& reader) override;
-    inline int Index() noexcept { return index; }
+    inline int GetIndex() noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
 private:
     SymbolId referredTypeId;

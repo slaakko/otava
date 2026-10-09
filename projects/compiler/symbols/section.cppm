@@ -23,10 +23,21 @@ enum class SectionKind : std::uint8_t
 
 constexpr std::uint8_t ToUnderlying(SectionKind sectionKind) { return std::uint8_t(sectionKind); }
 
+#ifdef OTAVA
+
+std::uint8_t operator-(SectionKind x, SectionKind y)
+{
+    return ToUnderlying(x) - ToUnderlying(y);
+}
+
+#else
+
 constexpr std::uint8_t operator-(SectionKind x, SectionKind y)
 {
     return ToUnderlying(x) - ToUnderlying(y);
 }
+
+#endif
 
 SectionKind ToSectionKind(SymbolKind symbolKind);
 SectionKind GetSectionKind(Symbol* symbol);

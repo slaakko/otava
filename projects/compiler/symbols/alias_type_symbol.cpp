@@ -90,8 +90,9 @@ otava::intermediate::Type* AliasTypeSymbol::IrType(Emitter& emitter, const soul:
 
 bool AliasTypeSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const
 {
-    if (visited.find(this) != visited.end()) return false;
-    visited.insert(this);
+    const Symbol* thisSymbol = this;
+    if (visited.find(thisSymbol) != visited.end()) return false;
+    visited.insert(thisSymbol);
     if (referredType)
     {
         return referredType->IsTemplateParameterInstantiation(context, visited);
@@ -203,7 +204,7 @@ void RemoveTemporaryAliasTypeSymbols(Context* context)
 {
     for (AliasTypeSymbol* temporaryAlias : context->TemporaryAliasTypes())
     {
-        int index = temporaryAlias->Index();
+        int index = temporaryAlias->GetIndex();
         temporaryAlias->Group()->RemoveAliasType(temporaryAlias);
         Scope* scope = temporaryAlias->Parent(context)->GetScope()->SymbolScope(context);
         if (scope->IsContainerScope())

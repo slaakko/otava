@@ -708,8 +708,9 @@ bool FunctionSymbol::IsTemplate(Context* context) const noexcept
 
 bool FunctionSymbol::IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const 
 {
-    if (visited.find(this) != visited.end()) return false;
-    visited.insert(this);
+    const Symbol* thisSymbol = this;
+    if (visited.find(thisSymbol) != visited.end()) return false;
+    visited.insert(thisSymbol);
     const std::vector<ParameterSymbol*>& memFnParams = MemFnParameters(context);
     for (ParameterSymbol* param : memFnParams)
     {
@@ -1996,6 +1997,11 @@ void PrintXml(FunctionSymbol* function, Context* context)
     element->SetAttribute("qualifiers", MakeFunctionQualifierStr(function->Qualifiers()));
     util::CodeFormatter formatter(std::cout);
     element->Write(formatter);
+}
+
+BoundFunctionGuard::~BoundFunctionGuard()
+{
+    context->PopBoundFunction();
 }
 
 } // namespace otava::symbols

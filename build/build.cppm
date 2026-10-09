@@ -18,6 +18,25 @@ enum class BuildFlags : std::int32_t
     debug = 1 << 8
 };
 
+#ifdef OTAVA
+
+BuildFlags operator|(BuildFlags left, BuildFlags right) noexcept
+{
+    return BuildFlags(std::int32_t(left) | std::int32_t(right));
+}
+
+BuildFlags operator&(BuildFlags left, BuildFlags right) noexcept
+{
+    return BuildFlags(std::int32_t(left) & std::int32_t(right));
+}
+
+BuildFlags operator~(BuildFlags flags) noexcept
+{
+    return BuildFlags(~std::int32_t(flags));
+}
+
+#else
+
 constexpr BuildFlags operator|(BuildFlags left, BuildFlags right) noexcept
 {
     return BuildFlags(std::int32_t(left) | std::int32_t(right));
@@ -32,6 +51,8 @@ constexpr BuildFlags operator~(BuildFlags flags) noexcept
 {
     return BuildFlags(~std::int32_t(flags));
 }
+
+#endif
 
 void Build(soul::lexer::FileMap& fileMap, Project* project, const std::string& config, int optLevel, BuildFlags flags, std::set<Project*, ProjectLess>& projectSet,
     std::ostream* outFile);

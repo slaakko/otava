@@ -576,13 +576,13 @@ void SymbolTable::AddForwardClassDeclaration(const std::string& name, ClassKind 
 
 void SymbolTable::AddFriend(const std::string& name, otava::ast::Node* node, Context* context)
 {
-    /*
-        soul::ast::FullSpan fullSpan = node->GetFullSpan();
-        FriendSymbol* friendSymbol = new FriendSymbol(name);
-        friendSymbol->SetFullSpan(fullSpan);
-        currentScope->SymbolScope()->AddSymbol(friendSymbol, fullSpan, context);
-        MapNode(node, friendSymbol);
-    */
+/*
+    soul::ast::FullSpan fullSpan = node->GetFullSpan();
+    FriendSymbol* friendSymbol = new FriendSymbol(name);
+    friendSymbol->SetFullSpan(fullSpan);
+    currentScope->SymbolScope()->AddSymbol(friendSymbol, fullSpan, context);
+    MapNode(node, friendSymbol);
+*/
 }
 
 void SymbolTable::BeginEnumeratedType(const std::string& name, EnumTypeKind kind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context)
@@ -605,25 +605,25 @@ void SymbolTable::EndEnumeratedType(Context* context)
 
 void SymbolTable::AddForwardEnumDeclaration(const std::string& name, EnumTypeKind enumTypeKind, TypeSymbol* underlyingType, otava::ast::Node* node, Context* context)
 {
-    /*
-        soul::ast::FullSpan fullSpan = node->GetFullSpan();
-        EnumGroupSymbol* enumGroup = currentScope->GroupScope()->GetOrInsertEnumGroup(name, fullSpan, context);
-        if (enumGroup->GetForwardDeclaration())
-        {
-            return;
-        }
-        ForwardEnumDeclarationSymbol* forwardDeclarationSymbol = new ForwardEnumDeclarationSymbol(name);
-        forwardDeclarationSymbol->SetAccess(CurrentAccess());
-        forwardDeclarationSymbol->SetEnumTypeKind(enumTypeKind);
-        forwardDeclarationSymbol->SetUnderlyingType(underlyingType);
-        forwardDeclarationSymbol->SetFullSpan(fullSpan);
-        Symbol* sym = forwardDeclarationSymbol;
-        currentScope->SymbolScope()->AddSymbol(sym, fullSpan, context);
-        enumGroup->SetForwardDeclaration(forwardDeclarationSymbol);
-        MapNode(node, sym);
-        forwardDeclarations.insert(sym);
-        allForwardDeclarations.insert(sym);
-    */
+/*
+    soul::ast::FullSpan fullSpan = node->GetFullSpan();
+    EnumGroupSymbol* enumGroup = currentScope->GroupScope()->GetOrInsertEnumGroup(name, fullSpan, context);
+    if (enumGroup->GetForwardDeclaration())
+    {
+        return;
+    }
+    ForwardEnumDeclarationSymbol* forwardDeclarationSymbol = new ForwardEnumDeclarationSymbol(name);
+    forwardDeclarationSymbol->SetAccess(CurrentAccess());
+    forwardDeclarationSymbol->SetEnumTypeKind(enumTypeKind);
+    forwardDeclarationSymbol->SetUnderlyingType(underlyingType);
+    forwardDeclarationSymbol->SetFullSpan(fullSpan);
+    Symbol* sym = forwardDeclarationSymbol;
+    currentScope->SymbolScope()->AddSymbol(sym, fullSpan, context);
+    enumGroup->SetForwardDeclaration(forwardDeclarationSymbol);
+    MapNode(node, sym);
+    forwardDeclarations.insert(sym);
+    allForwardDeclarations.insert(sym);
+*/
 }
 
 void SymbolTable::AddEnumerator(const std::string& name, Value* value, otava::ast::Node* node, Context* context)
@@ -718,7 +718,7 @@ void SymbolTable::RemoveTemplateDeclaration(Context* context)
     if (symbol && symbol->IsTemplateDeclarationSymbol())
     {
         TemplateDeclarationSymbol* templateDeclaration = static_cast<TemplateDeclarationSymbol*>(symbol);
-        int index = templateDeclaration->Index();
+        int index = templateDeclaration->GetIndex();
         EndScope(context);
         currentScope->SymbolScope(context)->RemoveSymbol(index);
     }

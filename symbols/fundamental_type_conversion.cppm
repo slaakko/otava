@@ -17,6 +17,7 @@ import otava.symbols.writer;
 import otava.symbols.reader;
 import otava.symbols.modules;
 import otava.symbols.type_symbol;
+import otava.intermediate.code;
 import otava.intermediate.data;
 import otava.intermediate.types;
 import otava.intermediate.value;

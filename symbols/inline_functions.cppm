@@ -5,13 +5,13 @@
 
 export module otava.symbols.inline_functions;
 
+import otava.symbols.function_symbol;
 import soul.ast.span;
 import std;
 
 export namespace otava::symbols {
 
 class Context;
-class FunctionSymbol;
 
 class InlineFunctionRepository
 {

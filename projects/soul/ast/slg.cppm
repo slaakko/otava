@@ -56,7 +56,7 @@ public:
     Expression(const std::string& id_, const std::string& value_, int line_);
     inline void SetCollection(soul::ast::common::Collection* collection_) noexcept { collection = collection_; }
     inline soul::ast::common::Collection* GetCollection() const noexcept { return collection; }
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
     inline const std::string& Id() const noexcept { return id; }
     inline const std::string& Value() const noexcept { return value; }
@@ -94,7 +94,7 @@ class Rule
 {
 public:
     Rule(const std::string& expr_, soul::ast::cpp::CompoundStatementNode* code_, int action_, int line_);
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
     inline void SetCollection(soul::ast::common::Collection* collection_) noexcept { collection = collection_; }
     inline soul::ast::common::Collection* GetCollection() const noexcept { return collection; }

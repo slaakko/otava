@@ -126,7 +126,7 @@ void LinkingVisitor::Visit(soul::ast::spg::RuleParser& parser)
     currentRule = &parser;
     if (stage == LinkingStage::resolveRulesAndTokens)
     {
-        std::int64_t ruleId = (std::int64_t(parser.Grammar()->Id()) << 32) | std::int64_t(parser.Index() + 1);
+        std::int64_t ruleId = (std::int64_t(parser.Grammar()->Id()) << 32) | std::int64_t(parser.GetIndex() + 1);
         parser.SetId(ruleId);
         spgFile->AddRule(&parser);
     }

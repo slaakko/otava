@@ -897,6 +897,7 @@ FunctionSymbol* TryInstantiateMemFnDefinition(Context* context, FunctionSymbol* 
         std::string irName = functionDefinition->IrName(context);
         classTemplateRepository->AddFunctionDefinition(key, functionDefinition);
         context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        BoundFunctionGuard boundFunctionGuard(context);
         Scope* nsScope = classTemplateSpecialization->ClassTemplate(context)->GetScope()->GetNamespaceScope(context);
         TemplateScopePtr classTemplateScopePtr(context, nsScope);
         ParentScopeAdder parentScopeAdder(&instantiationScope, nsScope);
@@ -908,7 +909,6 @@ FunctionSymbol* TryInstantiateMemFnDefinition(Context* context, FunctionSymbol* 
             BoundCompileUnitNode* boundCompileUnit = context->GetBoundCompileUnit();
             boundCompileUnit->AddBoundNode(std::move(boundNode), context);
         }
-        context->PopBoundFunction();
     }
     else
     {

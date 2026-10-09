@@ -1960,7 +1960,7 @@ void EmitIntegerParam(ParamInstruction& inst, CodeGenerator& codeGenerator)
     {
         codeGenerator.Error("error emitting param: reg group not valid");
     }
-    switch (inst.Index())
+    switch (inst.GetIndex())
     {
     case 0:
     {
@@ -2038,7 +2038,7 @@ void EmitFloatingPointParam(ParamInstruction& inst, CodeGenerator& codeGenerator
     {
         codeGenerator.Error("error emitting param: invalid operand size");
     }
-    switch (inst.Index())
+    switch (inst.GetIndex())
     {
     case 0:
     {

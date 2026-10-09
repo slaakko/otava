@@ -192,7 +192,6 @@ Symbol::Symbol(Module* module_, SymbolId id_, const std::string& name_) :
 
 Symbol::~Symbol()
 {
-    //std::cout << "~symbol: " << SymbolKindStr(kind) << ":" << Name() << ":" << ToUnderlying(id) << "\n";
     if (module)
     {
         module->RemoveSymbol(this);

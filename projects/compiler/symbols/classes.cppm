@@ -67,6 +67,25 @@ constexpr std::uint8_t ToUnderlying(ClassTypeSymbolFlags flags)
     return std::uint8_t(flags);
 }
 
+#ifdef OTAVA
+
+ClassTypeSymbolFlags operator|(ClassTypeSymbolFlags left, ClassTypeSymbolFlags right) noexcept
+{
+    return static_cast<ClassTypeSymbolFlags>(ToUnderlying(left) | ToUnderlying(right));
+}
+
+ClassTypeSymbolFlags operator&(ClassTypeSymbolFlags left, ClassTypeSymbolFlags right) noexcept
+{
+    return static_cast<ClassTypeSymbolFlags>(ToUnderlying(left) & ToUnderlying(right));
+}
+
+ClassTypeSymbolFlags operator~(ClassTypeSymbolFlags flags) noexcept
+{
+    return static_cast<ClassTypeSymbolFlags>(~ToUnderlying(flags));
+}
+
+#else
+
 constexpr ClassTypeSymbolFlags operator|(ClassTypeSymbolFlags left, ClassTypeSymbolFlags right) noexcept
 {
     return static_cast<ClassTypeSymbolFlags>(ToUnderlying(left) | ToUnderlying(right));
@@ -81,6 +100,8 @@ constexpr ClassTypeSymbolFlags operator~(ClassTypeSymbolFlags flags) noexcept
 {
     return static_cast<ClassTypeSymbolFlags>(~ToUnderlying(flags));
 }
+
+#endif
 
 class ClassTypeSymbol : public TypeSymbol
 {

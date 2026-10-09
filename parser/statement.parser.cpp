@@ -2716,7 +2716,7 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
                                                         if (!span.IsValid()) span = forPos;
                                                         blockId = context->NextBlockId();
                                                         otava::symbols::BlockSymbol *block = otava::symbols::BeginBlock(lexer.GetFullSpan(pos), blockId, context);
-                                                        index = block->Index();
+                                                        index = block->GetIndex();
                                                         blockOpen = true;
                                                     }
                                                     *parentMatch14 = match;

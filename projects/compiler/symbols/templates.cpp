@@ -169,7 +169,7 @@ void TemplateDeclarationSymbol::Read(Reader& reader)
 {
     ContainerSymbol::Read(reader);
     Cardinality count = Cardinality(reader.CurrentReader().ReadUInt());
-    for (otava::symbols::Index i = otava::symbols::Index(0); i < ToIndex(count); ++i)
+    for (Index i = Index(0); i < ToIndex(count); ++i)
     {
         SymbolId templateParameterId = SymbolId(reader.CurrentReader().ReadULong());
         templateParameterIds.push_back(templateParameterId);

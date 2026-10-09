@@ -514,7 +514,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             }
             module->ResetNode(translationUnitNode.release());
             module->SetImplementationUnitNames(implementationNameMap[module->Name()]);
-            project->Index().import(module->GetSymbolTable()->ClassIndex());
+            project->GetIndex().import(module->GetSymbolTable()->ClassIndex());
             module->Write(project->RootDir(), config, optLevel, context.get(), configurations);
             context.reset();
             moduleMapper.RemoveModule(module.get());
@@ -597,7 +597,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         std::string asmFileName = otava::codegen::GenerateCode(
             *context.get(), config, optLevel, verbose, mainFunctionIrName, mainFunctionParams, false, std::vector<std::string>(), configurations);
         asmFileNames.push_back(asmFileName);
-        project->Index().import(module->GetSymbolTable()->ClassIndex());
+        project->GetIndex().import(module->GetSymbolTable()->ClassIndex());
         otava::symbols::BoundFunctionNode* initFn = context->GetBoundCompileUnit()->GetCompileUnitInitializationFunction();
         if (initFn)
         {
@@ -688,7 +688,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
                 traceBin.Import(referencedProject->GetTraceInfo());
             }
             referencedProject->ReadClassIndex(moduleDirPath);
-            project->Index().import(referencedProject->Index());
+            project->GetIndex().import(referencedProject->GetIndex());
         }
         if (project->HasDefine("TRACE"))
         {
@@ -697,7 +697,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             otava::symbols::WriteTraceBin(traceBin, traceBinPath);
         }
         classIndexFilePath = util::GetFullPath(util::Path::Combine(moduleDirPath, "class_index.bin"));
-        WriteClassIndex(classIndexFilePath, project->Index());
+        WriteClassIndex(classIndexFilePath, project->GetIndex());
     }
     for (const auto& resourceFilePath : project->ResourceFilePaths())
     {

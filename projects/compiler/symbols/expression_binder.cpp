@@ -38,7 +38,6 @@ import otava.symbols.type_symbol;
 import otava.symbols.type_compare;
 import otava.symbols.concrete_value;
 import otava.symbols.value;
-import otava.symbols.variable_group_symbol;
 import otava.intermediate.types;
 import otava.ast.expression;
 import otava.ast.function;
@@ -2009,10 +2008,11 @@ void ExpressionBinder::Visit(otava::ast::ThisNode& node)
     if (failed) return;
     soul::ast::FullSpan fullSpan = node.GetFullSpan();
     bool invokeOrTryCatch = context->GetFlag(ContextFlags::invoke | ContextFlags::tryCatch);
-    FunctionDefinitionSymbol* parentFn = context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ParentFn();
+    FunctionDefinitionSymbol* currentFunction = context->GetBoundFunction()->GetFunctionDefinitionSymbol();
+    FunctionDefinitionSymbol* parentFn = currentFunction->ParentFn();
     if (!parentFn || !invokeOrTryCatch)
     {
-        ParameterSymbol* thisParam = context->GetBoundFunction()->GetFunctionDefinitionSymbol()->ThisParam(context);
+        ParameterSymbol* thisParam = currentFunction->ThisParam(context);
         if (thisParam)
         {
             boundExpression.reset(new BoundParameterNode(thisParam, fullSpan, thisParam->GetType(context)));
@@ -2919,7 +2919,7 @@ void ExpressionBinder::Visit(otava::ast::SubscriptExprNode& node)
         failed = true;
         return;
     }
-    std::unique_ptr<BoundExpressionNode> index = BindExpression(node.Index(), context);
+    std::unique_ptr<BoundExpressionNode> index = BindExpression(node.GetIndex(), context);
     if (!index)
     {
         failed = true;

@@ -83,7 +83,7 @@ public:
         const std::set<std::string>& configurations, otava::symbols::Context* context);
     inline void SetTarget(Target target_) { target = target_; }
     inline Target GetTarget() const { return target; }
-    inline otava::symbols::class_index& Index() { return index; }
+    inline otava::symbols::class_index& GetIndex() { return index; }
     inline otava::symbols::TraceInfo& GetTraceInfo() { return traceInfo; };
     void SetProjectId(otava::symbols::ProjectId projectId_) noexcept { projectId = projectId_; }
     otava::symbols::ProjectId GetProjectId() const noexcept override { return projectId; }

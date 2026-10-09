@@ -6,6 +6,7 @@
 export module otava.symbols.bound_tree;
 
 import otava.symbols.type_symbol;
+import otava.symbols.variable_symbol;
 import otava.intermediate.code;
 import otava.intermediate.value;
 import otava.intermediate.types;
@@ -27,6 +28,25 @@ enum class OperationFlags : std::int32_t
     derefCount = 0xFF << 8
 };
 
+#ifdef OTAVA
+
+OperationFlags operator|(OperationFlags left, OperationFlags right) noexcept
+{
+    return OperationFlags(std::int32_t(left) | std::int32_t(right));
+}
+
+OperationFlags operator&(OperationFlags left, OperationFlags right) noexcept
+{
+    return OperationFlags(std::int32_t(left) & std::int32_t(right));
+}
+
+OperationFlags operator~(OperationFlags flags) noexcept
+{
+    return OperationFlags(~std::int32_t(flags));
+}
+
+#else
+
 constexpr OperationFlags operator|(OperationFlags left, OperationFlags right) noexcept
 {
     return OperationFlags(std::int32_t(left) | std::int32_t(right));
@@ -42,6 +62,8 @@ constexpr OperationFlags operator~(OperationFlags flags) noexcept
     return OperationFlags(~std::int32_t(flags));
 }
 
+#endif
+
 constexpr std::uint8_t GetDerefCount(OperationFlags flags) noexcept
 {
     return static_cast<std::uint8_t>(static_cast<std::int32_t>(flags & OperationFlags::derefCount) >> 8);
@@ -54,7 +76,6 @@ constexpr OperationFlags SetDerefCount(OperationFlags flags, std::uint8_t n) noe
 
 class FunctionSymbol;
 class FunctionGroupSymbol;
-class VariableSymbol;
 class ParameterSymbol;
 class EnumConstantSymbol;
 class TypeSymbol;
@@ -142,7 +163,7 @@ public:
     inline bool IsBoundSequenceStatementNode() const noexcept { return kind == BoundNodeKind::boundSequenceStatementNode; }
     inline bool IsBoundLiteralNode() const noexcept { return kind == BoundNodeKind::boundLiteralNode; }
     inline bool IsBoundStringLiteralNode() const noexcept { return kind == BoundNodeKind::boundStringLiteralNode; }
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
     inline otava::ast::Node* Source() const noexcept { return source.get(); }
     inline void SetSource(otava::ast::Node* source_) noexcept { source.reset(source_); }
@@ -161,6 +182,25 @@ enum class BoundExpressionFlags
     none = 0, bindToRvalueRef = 1 << 0, virtualCall = 1 << 1, deref = 1 << 2
 };
 
+#ifdef OTAVA
+
+BoundExpressionFlags operator|(BoundExpressionFlags left, BoundExpressionFlags right) noexcept
+{
+    return BoundExpressionFlags(int(left) | int(right));
+}
+
+BoundExpressionFlags operator&(BoundExpressionFlags left, BoundExpressionFlags right) noexcept
+{
+    return BoundExpressionFlags(int(left) & int(right));
+}
+
+BoundExpressionFlags operator~(BoundExpressionFlags flag) noexcept
+{
+    return BoundExpressionFlags(~int(flag));
+}
+
+#else
+
 constexpr BoundExpressionFlags operator|(BoundExpressionFlags left, BoundExpressionFlags right) noexcept
 {
     return BoundExpressionFlags(int(left) | int(right));
@@ -175,6 +215,8 @@ constexpr BoundExpressionFlags operator~(BoundExpressionFlags flag) noexcept
 {
     return BoundExpressionFlags(~int(flag));
 }
+
+#endif
 
 class BoundDestructTemporariesNode;
 

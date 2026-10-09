@@ -1462,7 +1462,7 @@ void CompleteIncompleteClasses(Context* context)
     if (!module || context->GetModule() == module) return;
     module->ReadIncompleteClassIdTable();
     otava::symbols::Cardinality n = otava::symbols::Cardinality(module->IncompleteClassIds().size());
-    for (otava::symbols::Index index = otava::symbols::Index(0); index < otava::symbols::ToIndex(n); ++index)
+    for (Index index = Index(0); index < otava::symbols::ToIndex(n); ++index)
     {
         otava::symbols::SymbolId classId = module->IncompleteClassIds()[otava::symbols::ToUnderlying(index)];
         otava::symbols::ClassTypeSymbol* cls = module->GetSymbolTable()->GetClassTypeSymbol(classId, context);

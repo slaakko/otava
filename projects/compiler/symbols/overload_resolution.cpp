@@ -1438,7 +1438,8 @@ std::unique_ptr<BoundFunctionCallNode> ResolveOverload(Scope* scope, const std::
         }
         context->GetSymbolTable()->CollectViableFunctions(scopeLookups, groupName, templateArgs, Cardinality(args.size()), viableFunctions, context);
     }
-    std::unique_ptr<FunctionMatch> bestMatch = SelectBestMatchingFunction(viableFunctions, scope, templateArgs, args, groupName, fullSpan, context, ex);
+    std::unique_ptr<FunctionMatch> bestMatch = SelectBestMatchingFunction(viableFunctions, scope, templateArgs, 
+        args, groupName, fullSpan, context, ex);
     if (!bestMatch)
     {
         context->ResetFlag(ContextFlags::ignoreClassTemplateSpecializations);

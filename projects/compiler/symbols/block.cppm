@@ -20,14 +20,13 @@ class BlockSymbol : public ContainerSymbol
 public:
     BlockSymbol(Module* module_, SymbolId id_);
     BlockSymbol(Module* module_, SymbolId id_, const std::string& name_);
-    ~BlockSymbol();
     inline int BlockId() const noexcept { return blockId; }
     inline void SetBlockId(int blockId_) noexcept { blockId = blockId_; }
     void AddDestructorCall(int statementIndex, BoundExpressionNode* destructorCall);
     bool HasDestructorCalls(int statementIndex) const;
     std::vector<BoundExpressionNode*> GetDestructorCalls(int statementIndex);
     int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
     void RemoveLocalVariables(Context* context);
 private:

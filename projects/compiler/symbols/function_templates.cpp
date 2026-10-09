@@ -111,6 +111,7 @@ FunctionSymbol* TryInstantiateFunctionTemplate(Context* context, Instantiator& i
         functionDefinition->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
         functionTemplateRepository->AddFunctionDefinition(key, functionDefinition, clonedNode.release());
         context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
+        BoundFunctionGuard boundFunctionGuard(context);
         functionDefinition = BindFunction(functionDefinitionNode, functionDefinition, context);
         specialization = functionDefinition;
         if (functionDefinition->IsBound())
@@ -118,7 +119,6 @@ FunctionSymbol* TryInstantiateFunctionTemplate(Context* context, Instantiator& i
             std::unique_ptr<BoundNode> boundNode(context->ReleaseBoundFunction());
             context->GetBoundCompileUnit()->AddBoundNode(std::move(boundNode), context);
         }
-        context->PopBoundFunction();
     }
     else
     {

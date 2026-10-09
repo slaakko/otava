@@ -1462,7 +1462,7 @@ void DefaultVisitor::Visit(SubscriptExprNode& node)
 {
     BeginVisit(node);
     node.Child()->Accept(*this);
-    node.Index()->Accept(*this);
+    node.GetIndex()->Accept(*this);
     EndVisit(node);
 }
 

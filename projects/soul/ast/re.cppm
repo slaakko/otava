@@ -109,7 +109,7 @@ public:
     inline const std::vector<Symbol*>& Symbols() const noexcept { return symbols; }
     void AddSymbol(Symbol* symbol);
     void AddChar(char32_t c);
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     void SetIndex(int index_);
     inline const std::vector<char32_t>& Chars() const noexcept { return chars; }
     Class* MakeCanonical(LexerContext& lexerContext);

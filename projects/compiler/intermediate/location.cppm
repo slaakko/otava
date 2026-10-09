@@ -30,7 +30,7 @@ constexpr Locations operator&(Locations left, Locations right) noexcept
     return Locations(int(left) & int(right));
 }
 
-constexpr Locations operator~(Locations locs) noexcept
+Locations operator~(Locations locs) noexcept
 {
     return Locations(~int(locs));
 }

@@ -1957,7 +1957,7 @@ Nfa LexerContext::MakeExpr(const std::string& id)
         {
             if (currentExpression)
             {
-                if (expr->Index() >= currentExpression->Index())
+                if (expr->GetIndex() >= currentExpression->GetIndex())
                 {
                     throw std::runtime_error("error: expression '" + currentExpression->Id() + "' depends on forward reference '" + expr->Id() + "'");
                 }

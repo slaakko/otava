@@ -35,6 +35,7 @@ import otava.symbols.trace;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
 import otava.symbols.type_symbol;
+import otava.symbols.variable_symbol;
 import otava.ast.classes;
 import otava.ast.declaration;
 import otava.ast.expression;
@@ -2542,10 +2543,7 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
     {
         CheckFunctionReturnPaths(functionDefinitionNode, context);
     }
-    if (functionDefinitionSymbol->FullName(context) == "otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)")
-    {
-        functionDefinitionSymbol->SetSkipInvokeChecking();
-    }
+    context->SetSkipInvokeChecking(functionDefinitionSymbol);
     bool skipInvokeChecking = functionDefinitionSymbol->SkipInvokeChecking();
     bool containsStatics = functionDefinitionSymbol->ContainsStatics();
     if (!functionDefinitionSymbol->IsNoExcept() && !skipInvokeChecking && !containsStatics && functionDefinitionSymbol->ContainsLocalVariableWithDestructor())

@@ -620,6 +620,12 @@ void TypeResolver::Visit(otava::ast::IdentifierNode& node)
             Symbol* symbol = templateScope->GetSymbol();
             containerNames = GetContainerNames(symbol, context);
         }
+        Scope* inlineScope = context->GetInlineScope();
+        if (inlineScope)
+        {
+            Symbol* symbol = inlineScope->GetSymbol();
+            containerNames = GetContainerNames(symbol, context);
+        }
         std::vector<Module*> importedModules = context->GetModule()->ImportExportModules(context);
         Module* templateModule = context->GetTemplateModule();
         if (templateModule)

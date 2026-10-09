@@ -64,6 +64,25 @@ constexpr std::int32_t ToUnderlying(DeclarationFlags declarationFlags)
     return std::int32_t(declarationFlags);
 }
 
+#ifdef OTAVA
+
+DeclarationFlags operator|(DeclarationFlags left, DeclarationFlags right) noexcept
+{
+    return DeclarationFlags(ToUnderlying(left) | ToUnderlying(right));
+}
+
+DeclarationFlags operator&(DeclarationFlags left, DeclarationFlags right) noexcept
+{
+    return DeclarationFlags(ToUnderlying(left) & ToUnderlying(right));
+}
+
+DeclarationFlags operator~(DeclarationFlags flags) noexcept
+{
+    return DeclarationFlags(~ToUnderlying(flags));
+}
+
+#else
+
 constexpr DeclarationFlags operator|(DeclarationFlags left, DeclarationFlags right) noexcept
 {
     return DeclarationFlags(ToUnderlying(left) | ToUnderlying(right));
@@ -78,6 +97,8 @@ constexpr DeclarationFlags operator~(DeclarationFlags flags) noexcept
 {
     return DeclarationFlags(~ToUnderlying(flags));
 }
+
+#endif
 
 enum class Access : std::uint8_t
 {
@@ -163,6 +184,25 @@ enum class SymbolFlags : std::uint8_t
 
 constexpr std::uint8_t ToUnderlying(SymbolFlags flags) { return std::uint8_t(flags); }
 
+#ifdef OTAVA
+
+SymbolFlags operator|(SymbolFlags left, SymbolFlags right) noexcept
+{
+    return SymbolFlags(ToUnderlying(left) | ToUnderlying(right));
+}
+
+SymbolFlags operator&(SymbolFlags left, SymbolFlags right) noexcept
+{
+    return SymbolFlags(ToUnderlying(left) & ToUnderlying(right));
+}
+
+SymbolFlags operator~(SymbolFlags flags) noexcept
+{
+    return SymbolFlags(~ToUnderlying(flags));
+}
+
+#else
+
 constexpr SymbolFlags operator|(SymbolFlags left, SymbolFlags right) noexcept
 {
     return SymbolFlags(ToUnderlying(left) | ToUnderlying(right));
@@ -177,6 +217,8 @@ constexpr SymbolFlags operator~(SymbolFlags flags) noexcept
 {
     return SymbolFlags(~ToUnderlying(flags));
 }
+
+#endif
 
 std::string SymbolKindStr(SymbolKind kind);
 

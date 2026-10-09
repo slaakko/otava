@@ -6,12 +6,12 @@
 export module otava.symbols.function_completion;
 
 import soul.ast.span;
+import otava.symbols.function_symbol;
 import std;
 
 export namespace otava::symbols {
 
 class Context;
-class FunctionSymbol;
 
 class FunctionCompletionRepository
 {
