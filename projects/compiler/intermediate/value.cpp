@@ -173,14 +173,14 @@ Instruction* Value::GetInstruction() const noexcept
     return nullptr;
 }
 
-Value* Value::Log2(IntermediateContext* context) const
-{
-    return nullptr;
+Value* Value::Log2(IntermediateContext* context) const 
+{ 
+    return nullptr; 
 }
 
-Value* Value::ModPowerOfTwo(IntermediateContext* context) const
-{
-    return nullptr;
+Value* Value::ModPowerOfTwo(IntermediateContext* context) const 
+{ 
+    return nullptr; 
 }
 
 BoolValue::BoolValue(bool value_, Type* type_) noexcept : Value(soul::ast::Span(), ValueKind::boolValue, type_), value(value_)

@@ -261,7 +261,7 @@ void WriteFilesFile(const std::string& projectFilesPath, const std::vector<std::
     }
 }
 
-void BuildSequentially(Project* project, const std::string& config, int optLevel, BuildFlags flags, std::ostream* outFile)
+void BuildSequentially(Project* project, const std::string& config, int optLevel, const std::string& optFn, BuildFlags flags, std::ostream* outFile)
 {
     otava::symbols::ResetCompileEnded();
     otava::symbols::ModuleMapper moduleMapper;
@@ -455,16 +455,13 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             lexer.SetFile(file);
             lexer.SetRuleNameMapPtr(otava::parser::spg::rules::GetRuleNameMapPtr());
             std::unique_ptr<otava::symbols::Context> context(new otava::symbols::Context());
-            if (filePath == "D:/work/otava/ooc/std/std.cow_string.cppm")
-            {
-                context->SetFlag(otava::symbols::ContextFlags::debug);
-            }
             otava::symbols::Emitter emitter;
             context->SetEmitter(&emitter);
             context->SetModuleMapper(&moduleMapper);
             context->SetCurrentConfig(config);
             context->SetCurrentConfigurations(configurations);
             context->SetOptLevel(optLevel);
+            context->SetOptFn(optFn);
             context->SetCurrentProject(project);
             std::string compileUnitId = "compile_unit_" + util::GetSha1MessageDigest(filePath);
             context->GetBoundCompileUnit()->SetId(compileUnitId);
@@ -565,6 +562,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         context->SetCurrentConfig(config);
         context->SetCurrentConfigurations(configurations);
         context->SetOptLevel(optLevel);
+        context->SetOptFn(optFn);
         std::string compileUnitId = "compile_unit_" + util::GetSha1MessageDigest(filePath);
         context->GetBoundCompileUnit()->SetId(compileUnitId);
         context->SetCurrentProject(project);
@@ -769,8 +767,8 @@ std::vector<Project*> MakeTopologicalOrder(Solution* solution)
     return topologicalOrder;
 }
 
-void BuildSequentially(soul::lexer::FileMap& fileMap, Solution* solution, const std::string& config, int optLevel, BuildFlags flags,
-    std::set<Project*, ProjectLess>& projectSet, std::ostream* outFile)
+void BuildSequentially(soul::lexer::FileMap& fileMap, Solution* solution, const std::string& config, int optLevel, const std::string& optFn, 
+    BuildFlags flags, std::set<Project*, ProjectLess>& projectSet, std::ostream* outFile)
 {
     if (solution->IsProjectSolution())
     {
@@ -794,7 +792,7 @@ void BuildSequentially(soul::lexer::FileMap& fileMap, Solution* solution, const 
     std::vector<Project*> buildOrder = MakeTopologicalOrder(solution);
     for (Project* project : buildOrder)
     {
-        Build(fileMap, project, config, optLevel, flags & ~BuildFlags::all, projectSet, outFile);
+        Build(fileMap, project, config, optLevel, optFn, flags & ~BuildFlags::all, projectSet, outFile);
     }
     if (!solution->IsProjectSolution())
     {
@@ -820,8 +818,8 @@ void ProjectClosure(soul::lexer::FileMap& fileMap, Project* project, Solution* s
     solution->AddProject(project, false);
 }
 
-void Build(soul::lexer::FileMap& fileMap, Project* project, const std::string& config, int optLevel, BuildFlags flags, std::set<Project*, ProjectLess>& projectSet,
-    std::ostream* outFile)
+void Build(soul::lexer::FileMap& fileMap, Project* project, const std::string& config, int optLevel, const std::string& optFn, 
+    BuildFlags flags, std::set<Project*, ProjectLess>& projectSet, std::ostream* outFile)
 {
     if ((flags & BuildFlags::all) != BuildFlags::none)
     {
@@ -829,20 +827,20 @@ void Build(soul::lexer::FileMap& fileMap, Project* project, const std::string& c
         solution.SetProjectSolution();
         std::set<std::string> projectFilePaths;
         ProjectClosure(fileMap, project, &solution, projectFilePaths);
-        Build(fileMap, &solution, config, optLevel, flags & ~BuildFlags::all, projectSet, outFile);
+        Build(fileMap, &solution, config, optLevel, optFn, flags & ~BuildFlags::all, projectSet, outFile);
     }
     else
     {
         if (projectSet.find(project) != projectSet.end()) return;
         projectSet.insert(project);
-        BuildSequentially(project, config, optLevel, flags & ~BuildFlags::all, outFile);
+        BuildSequentially(project, config, optLevel, optFn, flags & ~BuildFlags::all, outFile);
     }
 }
 
-void Build(soul::lexer::FileMap& fileMap, Solution* solution, const std::string& config, int optLevel, BuildFlags flags, std::set<Project*, ProjectLess>& projectSet,
-    std::ostream* outFile)
+void Build(soul::lexer::FileMap& fileMap, Solution* solution, const std::string& config, int optLevel, const std::string& optFn, 
+    BuildFlags flags, std::set<Project*, ProjectLess>& projectSet, std::ostream* outFile)
 {
-    BuildSequentially(fileMap, solution, config, optLevel, flags & ~BuildFlags::all, projectSet, outFile);
+    BuildSequentially(fileMap, solution, config, optLevel, optFn, flags & ~BuildFlags::all, projectSet, outFile);
 }
 
 } // namespace otava::build

@@ -9,7 +9,7 @@ import otava.intermediate.util;
 
 namespace otava::optimizer {
 
-void OptimizeJumps(otava::intermediate::Function* fn)
+bool OptimizeJumps(otava::intermediate::Function* fn)
 {
     bool optimized = false;
     otava::intermediate::BasicBlock* bb = fn->FirstBasicBlock();
@@ -86,6 +86,7 @@ void OptimizeJumps(otava::intermediate::Function* fn)
     {
         fn->SetNumbers();
     }
+    return optimized;
 }
 
 } // otava::optimizer

@@ -117,14 +117,14 @@ Metadata::Metadata() noexcept : context(nullptr), trueItem(), falseItem()
 {
 }
 
-IntermediateContext* Metadata::GetContext() const noexcept 
-{ 
-    return context; 
+IntermediateContext* Metadata::GetContext() const noexcept
+{
+    return context;
 }
 
-void Metadata::SetContext(IntermediateContext* context_) noexcept 
-{ 
-    context = context_; 
+void Metadata::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
 }
 
 MetadataStruct* Metadata::CreateMetadataStruct()

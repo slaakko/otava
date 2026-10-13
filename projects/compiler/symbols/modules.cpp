@@ -229,6 +229,9 @@ Module::Module(const std::string& name_) :
 
 Module::~Module()
 {
+#ifdef DEBUG_HEAP
+    std::cout << "~module:" << Name() << "\n";
+#endif
     Reset();
 }
 

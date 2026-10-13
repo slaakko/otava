@@ -45,7 +45,7 @@ void Walk(intermediate::BasicBlock* bb, std::set<intermediate::BasicBlock*>& rea
     }
 }
 
-void DeadCodeElimination(otava::intermediate::Function* fn)
+bool DeadCodeElimination(otava::intermediate::Function* fn)
 {
     bool optimized = false;
     std::set<intermediate::BasicBlock*> reachable;
@@ -66,6 +66,7 @@ void DeadCodeElimination(otava::intermediate::Function* fn)
     {
         fn->SetNumbers();
     }
+    return optimized;
 }
 
 } // otava::optimizer

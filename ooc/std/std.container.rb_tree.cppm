@@ -5,6 +5,7 @@ import std.iterator;
 import std.utilities.pair;
 import std.utilities.utility;
 import std.utilities.unique_ptr;
+import std.basic_string;
 import std.new_delete_op;
 
 export namespace std {

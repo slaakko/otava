@@ -50,7 +50,7 @@ Context::Context() :
     skipInvokeCheckingFNames.push_back("otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)");
     skipInvokeCheckingFNames.push_back("otava::parser::function::FunctionParser<soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>>::FunctionDefinition(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>&, otava::symbols::Context*)");
     skipInvokeCheckingFNames.push_back("otava::codegen::CodeGenerator::GenerateGlobalInitializationFunction()");
-    skipInvokeCheckingFNames.push_back("otava::build::BuildSequentially(otava::build::Project*, const std::string&, int, otava::build::BuildFlags, std::basic_ostream<char>*)");
+    skipInvokeCheckingFNames.push_back("otava::build::BuildSequentially(otava::build::Project*, const std::string&, int, const std::string&, otava::build::BuildFlags, std::basic_ostream<char>*)");
     skipInvokeCheckingFNames.push_back("otava::build::Project::LoadModules(otava::symbols::ModuleMapper&, const std::string&, int, const std::set<std::basic_string<char>, std::less<std::basic_string<char>>>&, otava::symbols::Context*)");
 }
 
@@ -80,6 +80,11 @@ void Context::PushResetFlag(ContextFlags flag)
 int Context::OptLevel() const noexcept
 {
     return GetOptLevel(optLevel, ReleaseConfig());
+}
+
+void Context::SetOptFn(const std::string& optFn_)
+{
+    optFn = optFn_;
 }
 
 OperationRepository* Context::GetOperationRepository() const noexcept

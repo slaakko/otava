@@ -85,7 +85,7 @@ public:
     bool RequiresLocalRegister() const noexcept;
     virtual bool IsFloatingPointInstruction() const noexcept { return false; }
     std::vector<BasicBlock*> Successors() const;
-    inline int Index() const noexcept { return index; }
+    inline int GetIndex() const noexcept { return index; }
     inline void SetIndex(int index_) noexcept { index = index_; }
     inline int RegValueIndex() const noexcept { return regValueIndex; }
     inline void SetRegValueIndex(int regValueIndex_) noexcept { regValueIndex = regValueIndex_; }
@@ -100,6 +100,7 @@ public:
     virtual void Write(util::CodeFormatter& formatter) = 0;
     inline otava::assembly::Instruction* AssemblyInstruction() const noexcept { return assemblyInstruction; }
     inline void SetAssemblyInstruction(otava::assembly::Instruction* assemblyInstruction_) noexcept { assemblyInstruction = assemblyInstruction_; }
+    void PrintUsers(util::CodeFormatter& formatter);
 private:
     OpCode opCode;
     MetadataRef* metadataRef;
@@ -697,6 +698,7 @@ public:
     void ClearSuccessorsAndPredecessors();
     int IndexOf(Instruction* x) noexcept;
     void Write(util::CodeFormatter& formatter);
+    void PrintUsers(util::CodeFormatter& formatter);
 private:
     soul::ast::Span span;
     std::int32_t id;
@@ -796,6 +798,7 @@ public:
     inline const std::string& Comment() const noexcept { return comment; }
     std::string ResolveFullName() const;
     void Write(util::CodeFormatter& formatter);
+    void PrintUsers(util::CodeFormatter& formatter);
 private:
     FunctionFlags flags;
     soul::ast::Span span;

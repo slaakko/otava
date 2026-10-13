@@ -18,19 +18,19 @@ CloneContext::CloneContext() : context(nullptr), currentFunction(nullptr)
 {
 }
 
+void CloneContext::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
+}
+
+IntermediateContext* CloneContext::GetContext() const noexcept
+{
+    return context;
+}
+
 void CloneContext::MapInstruction(Instruction* inst, Instruction* clone)
 {
     instMap[inst] = clone;
-}
-
-void CloneContext::SetContext(IntermediateContext* context_) noexcept
-{ 
-    context = context_; 
-}
-
-IntermediateContext* CloneContext::GetContext() const noexcept 
-{ 
-    return context; 
 }
 
 Instruction* CloneContext::GetMappedInstruction(Instruction* inst) const noexcept
@@ -319,14 +319,14 @@ Data::Data() noexcept : context(nullptr), nextStringValueId(0)
 {
 }
 
-IntermediateContext* Data::GetContext() const noexcept 
-{ 
-    return context; 
+IntermediateContext* Data::GetContext() const noexcept
+{
+    return context;
 }
 
-void Data::SetContext(IntermediateContext* context_) noexcept 
-{ 
-    context = context_; 
+void Data::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
 }
 
 GlobalVariable* Data::DoAddGlobalVariable(const soul::ast::Span& span, Type* type, const std::string& variableName, Value* initializer, IntermediateContext* context)

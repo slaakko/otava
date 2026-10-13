@@ -191,6 +191,8 @@ public:
     inline void SetReleaseConfig() noexcept { SetFlag(ContextFlags::release); }
     int OptLevel() const noexcept;
     inline void SetOptLevel(int optLevel_) noexcept { optLevel = optLevel_; }
+    inline const std::string& OptFn() const { return optFn; }
+    void SetOptFn(const std::string& optFn_);
     inline void ResetRejectTemplateId() noexcept { rejectTemplateId = false; }
     inline void SetRejectTemplateId() noexcept { rejectTemplateId = true; }
     inline bool RejectTemplateId() const noexcept { return rejectTemplateId; }
@@ -356,6 +358,7 @@ private:
     ContextFlags flags;
     std::stack<ContextFlags> flagStack;
     int optLevel;
+    std::string optFn;
     std::stack<otava::ast::Node*> nodeStack;
     otava::ast::Node* node;
     Lexer* lexer;

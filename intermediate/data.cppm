@@ -156,15 +156,44 @@ private:
     Value* initializer;
 };
 
+#ifdef OTAVA
+
 template<class T>
 class ValueMap
 {
 public:
-    ValueMap();
+    ValueMap() {}
+    otava::intermediate::Value* Get(const T& value, Data* data, const otava::intermediate::Types& types)
+    {
+        auto it = valueMap.find(value);
+        if (it != valueMap.cend())
+        {
+            return it->second;
+        }
+        else
+        {
+            otava::intermediate::Value* constantValue = data->MakeValue(value, types);
+            valueMap[value] = constantValue;
+            return constantValue;
+        }
+    }
+private:
+    std::map<T, otava::intermediate::Value*> valueMap;
+};
+
+#else
+
+template<class T>
+class ValueMap
+{
+public:
+    ValueMap() {}
     otava::intermediate::Value* Get(const T& value, Data* data, const otava::intermediate::Types& types);
 private:
     std::map<T, otava::intermediate::Value*> valueMap;
 };
+
+#endif
 
 class Data
 {
@@ -240,10 +269,7 @@ private:
     GlobalVariable* DoAddGlobalVariable(const soul::ast::Span& span, Type* type, const std::string& variableName, Value* initializer, IntermediateContext* context);
 };
 
-template<class T>
-ValueMap<T>::ValueMap()
-{
-}
+#ifndef OTAVA
 
 template<class T>
 otava::intermediate::Value* ValueMap<T>::Get(const T& value, Data* data, const otava::intermediate::Types& types)
@@ -260,5 +286,7 @@ otava::intermediate::Value* ValueMap<T>::Get(const T& value, Data* data, const o
         return constantValue;
     }
 }
+
+#endif
 
 } // otava::intermediate

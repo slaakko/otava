@@ -1,0 +1,674 @@
+====================================================================
+before optimizations
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T84* mfn_basic_string_find_45706E3983B3705B8349D08DB2FE3A33FEFEE4CE !116
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    arg     $T2* $9
+    bool    $10 = call $T44 @mfn_basic_string_empty_33298036BE94E915AD27015579D0808399A815FA
+    branch  bool $10, @1, @2
+
+@1  long    $11 = load long* $5
+    ret     long $11
+
+@2  $T2*    $12 = load $T2** $3
+    $T2*    $13 = load $T2** $4
+    long    $14 = signextend int 0
+    arg     $T2* $13
+    arg     long $14
+    byte*   $15 = call $T45 @op_subscript_basic_string_821D0514081DB01706329EC8703D6A5D254186D6
+    byte    $16 = load byte* $15
+    long    $17 = load long* $5
+    arg     $T2* $12
+    arg     byte $16
+    arg     long $17
+    long    $18 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $18, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    long    $19 = signextend int 1
+    store   long $19, long* $8
+    jmp     @6
+
+@4  long    $20 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    ret     long $20
+
+@5  long    $21 = load long* $6
+    long    $22 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    bool    $23 = equal long $21, long $22
+    bool    $24 = not bool $23
+    branch  bool $24, @3, @4
+
+@6  long    $25 = load long* $8
+    $T2*    $26 = load $T2** $4
+    arg     $T2* $26
+    long    $27 = call $T43 @mfn_basic_string_length_1BED3A9F6A4CE75C9B898BD4889D6FA43202A571
+    bool    $28 = less long $25, long $27
+    branch  bool $28, @7, @9
+
+@7  $T2*    $29 = load $T2** $3
+    byte**  $30 = elemaddr $T2* $29, long 0
+    byte*   $31 = load byte** $30
+    long    $32 = load long* $8
+    long    $33 = load long* $6
+    long    $34 = add long $32, long $33
+    byte*   $35 = ptroffset byte* $31, long $34
+    byte    $36 = load byte* $35
+    $T2*    $37 = load $T2** $4
+    long    $38 = load long* $8
+    arg     $T2* $37
+    arg     long $38
+    byte*   $39 = call $T45 @op_subscript_basic_string_821D0514081DB01706329EC8703D6A5D254186D6
+    byte    $40 = load byte* $39
+    bool    $41 = equal byte $36, byte $40
+    bool    $42 = not bool $41
+    branch  bool $42, @10, @11
+
+@8  long    $43 = load long* $8
+    long    $44 = signextend int 1
+    long    $45 = add long $43, long $44
+    store   long $45, long* $8
+    jmp     @6
+
+@9  bool    $46 = load bool* $7
+    branch  bool $46, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $47 = load long* $6
+    ret     long $47
+
+@13 $T2*    $48 = load $T2** $3
+    $T2*    $49 = load $T2** $4
+    long    $50 = signextend int 0
+    arg     $T2* $49
+    arg     long $50
+    byte*   $51 = call $T45 @op_subscript_basic_string_821D0514081DB01706329EC8703D6A5D254186D6
+    byte    $52 = load byte* $51
+    long    $53 = load long* $6
+    long    $54 = signextend int 1
+    long    $55 = add long $53, long $54
+    arg     $T2* $48
+    arg     byte $52
+    arg     long $55
+    long    $56 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $56, long* $6
+    jmp     @5
+}
+
+====================================================================
+after inlining
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T84* mfn_basic_string_find_45706E3983B3705B8349D08DB2FE3A33FEFEE4CE !116
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    store   $T2* $9, $T2** $10
+    $T2*    $11 = load $T2** $10
+    long*   $12 = elemaddr $T2* $11, long 1
+    long    $13 = load long* $12
+    bool    $14 = equal long $13, long 0
+    branch  bool $14, @1, @2
+
+@1  long    $15 = load long* $5
+    ret     long $15
+
+@2  $T2*    $16 = load $T2** $3
+    $T2*    $17 = load $T2** $4
+    long    $18 = signextend int 0
+    $T2**   $19 = local $T2*
+    long*   $20 = local long
+    store   $T2* $17, $T2** $19
+    store   long $18, long* $20
+    $T2*    $21 = load $T2** $19
+    byte**  $22 = elemaddr $T2* $21, long 0
+    byte*   $23 = load byte** $22
+    long    $24 = load long* $20
+    byte*   $25 = ptroffset byte* $23, long $24
+    byte    $26 = load byte* $25
+    long    $27 = load long* $5
+    arg     $T2* $16
+    arg     byte $26
+    arg     long $27
+    long    $28 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $28, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    long    $29 = signextend int 1
+    store   long $29, long* $8
+    jmp     @6
+
+@4  long    $30 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    ret     long $30
+
+@5  long    $31 = load long* $6
+    long    $32 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    bool    $33 = equal long $31, long $32
+    bool    $34 = not bool $33
+    branch  bool $34, @3, @4
+
+@6  long    $35 = load long* $8
+    $T2*    $36 = load $T2** $4
+    $T2**   $37 = local $T2*
+    store   $T2* $36, $T2** $37
+    $T2*    $38 = load $T2** $37
+    long*   $39 = elemaddr $T2* $38, long 1
+    long    $40 = load long* $39
+    bool    $41 = less long $35, long $40
+    branch  bool $41, @7, @9
+
+@7  $T2*    $42 = load $T2** $3
+    byte**  $43 = elemaddr $T2* $42, long 0
+    byte*   $44 = load byte** $43
+    long    $45 = load long* $8
+    long    $46 = load long* $6
+    long    $47 = add long $45, long $46
+    byte*   $48 = ptroffset byte* $44, long $47
+    byte    $49 = load byte* $48
+    $T2*    $50 = load $T2** $4
+    long    $51 = load long* $8
+    $T2**   $52 = local $T2*
+    long*   $53 = local long
+    store   $T2* $50, $T2** $52
+    store   long $51, long* $53
+    $T2*    $54 = load $T2** $52
+    byte**  $55 = elemaddr $T2* $54, long 0
+    byte*   $56 = load byte** $55
+    long    $57 = load long* $53
+    byte*   $58 = ptroffset byte* $56, long $57
+    byte    $59 = load byte* $58
+    bool    $60 = equal byte $49, byte $59
+    bool    $61 = not bool $60
+    branch  bool $61, @10, @11
+
+@8  long    $62 = load long* $8
+    long    $63 = signextend int 1
+    long    $64 = add long $62, long $63
+    store   long $64, long* $8
+    jmp     @6
+
+@9  bool    $65 = load bool* $7
+    branch  bool $65, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $66 = load long* $6
+    ret     long $66
+
+@13 $T2*    $67 = load $T2** $3
+    $T2*    $68 = load $T2** $4
+    long    $69 = signextend int 0
+    $T2**   $70 = local $T2*
+    long*   $71 = local long
+    store   $T2* $68, $T2** $70
+    store   long $69, long* $71
+    $T2*    $72 = load $T2** $70
+    byte**  $73 = elemaddr $T2* $72, long 0
+    byte*   $74 = load byte** $73
+    long    $75 = load long* $71
+    byte*   $76 = ptroffset byte* $74, long $75
+    byte    $77 = load byte* $76
+    long    $78 = load long* $6
+    long    $79 = signextend int 1
+    long    $80 = add long $78, long $79
+    arg     $T2* $67
+    arg     byte $77
+    arg     long $80
+    long    $81 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $81, long* $6
+    jmp     @5
+}
+
+====================================================================
+after moving locals to entry block
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T84* mfn_basic_string_find_45706E3983B3705B8349D08DB2FE3A33FEFEE4CE !116
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    $T2**   $11 = local $T2*
+    long*   $12 = local long
+    $T2**   $13 = local $T2*
+    $T2**   $14 = local $T2*
+    long*   $15 = local long
+    $T2**   $16 = local $T2*
+    long*   $17 = local long
+    store   $T2* $9, $T2** $10
+    $T2*    $18 = load $T2** $10
+    long*   $19 = elemaddr $T2* $18, long 1
+    long    $20 = load long* $19
+    bool    $21 = equal long $20, long 0
+    branch  bool $21, @1, @2
+
+@1  long    $22 = load long* $5
+    ret     long $22
+
+@2  $T2*    $23 = load $T2** $3
+    $T2*    $24 = load $T2** $4
+    long    $25 = signextend int 0
+    store   $T2* $24, $T2** $11
+    store   long $25, long* $12
+    $T2*    $26 = load $T2** $11
+    byte**  $27 = elemaddr $T2* $26, long 0
+    byte*   $28 = load byte** $27
+    long    $29 = load long* $12
+    byte*   $30 = ptroffset byte* $28, long $29
+    byte    $31 = load byte* $30
+    long    $32 = load long* $5
+    arg     $T2* $23
+    arg     byte $31
+    arg     long $32
+    long    $33 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $33, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    long    $34 = signextend int 1
+    store   long $34, long* $8
+    jmp     @6
+
+@4  long    $35 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    ret     long $35
+
+@5  long    $36 = load long* $6
+    long    $37 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    bool    $38 = equal long $36, long $37
+    bool    $39 = not bool $38
+    branch  bool $39, @3, @4
+
+@6  long    $40 = load long* $8
+    $T2*    $41 = load $T2** $4
+    store   $T2* $41, $T2** $13
+    $T2*    $42 = load $T2** $13
+    long*   $43 = elemaddr $T2* $42, long 1
+    long    $44 = load long* $43
+    bool    $45 = less long $40, long $44
+    branch  bool $45, @7, @9
+
+@7  $T2*    $46 = load $T2** $3
+    byte**  $47 = elemaddr $T2* $46, long 0
+    byte*   $48 = load byte** $47
+    long    $49 = load long* $8
+    long    $50 = load long* $6
+    long    $51 = add long $49, long $50
+    byte*   $52 = ptroffset byte* $48, long $51
+    byte    $53 = load byte* $52
+    $T2*    $54 = load $T2** $4
+    long    $55 = load long* $8
+    store   $T2* $54, $T2** $14
+    store   long $55, long* $15
+    $T2*    $56 = load $T2** $14
+    byte**  $57 = elemaddr $T2* $56, long 0
+    byte*   $58 = load byte** $57
+    long    $59 = load long* $15
+    byte*   $60 = ptroffset byte* $58, long $59
+    byte    $61 = load byte* $60
+    bool    $62 = equal byte $53, byte $61
+    bool    $63 = not bool $62
+    branch  bool $63, @10, @11
+
+@8  long    $64 = load long* $8
+    long    $65 = signextend int 1
+    long    $66 = add long $64, long $65
+    store   long $66, long* $8
+    jmp     @6
+
+@9  bool    $67 = load bool* $7
+    branch  bool $67, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $68 = load long* $6
+    ret     long $68
+
+@13 $T2*    $69 = load $T2** $3
+    $T2*    $70 = load $T2** $4
+    long    $71 = signextend int 0
+    store   $T2* $70, $T2** $16
+    store   long $71, long* $17
+    $T2*    $72 = load $T2** $16
+    byte**  $73 = elemaddr $T2* $72, long 0
+    byte*   $74 = load byte** $73
+    long    $75 = load long* $17
+    byte*   $76 = ptroffset byte* $74, long $75
+    byte    $77 = load byte* $76
+    long    $78 = load long* $6
+    long    $79 = signextend int 1
+    long    $80 = add long $78, long $79
+    arg     $T2* $69
+    arg     byte $77
+    arg     long $80
+    long    $81 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $81, long* $6
+    jmp     @5
+}
+
+====================================================================
+after optimizing arithmetics
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T84* mfn_basic_string_find_45706E3983B3705B8349D08DB2FE3A33FEFEE4CE !116
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    $T2**   $11 = local $T2*
+    long*   $12 = local long
+    $T2**   $13 = local $T2*
+    $T2**   $14 = local $T2*
+    long*   $15 = local long
+    $T2**   $16 = local $T2*
+    long*   $17 = local long
+    store   $T2* $9, $T2** $10
+    $T2*    $18 = load $T2** $10
+    long*   $19 = elemaddr $T2* $18, long 1
+    long    $20 = load long* $19
+    bool    $21 = equal long $20, long 0
+    branch  bool $21, @1, @2
+
+@1  long    $22 = load long* $5
+    ret     long $22
+
+@2  $T2*    $23 = load $T2** $3
+    $T2*    $24 = load $T2** $4
+    store   $T2* $24, $T2** $11
+    store   long 0, long* $12
+    $T2*    $25 = load $T2** $11
+    byte**  $26 = elemaddr $T2* $25, long 0
+    byte*   $27 = load byte** $26
+    long    $28 = load long* $12
+    byte*   $29 = ptroffset byte* $27, long $28
+    byte    $30 = load byte* $29
+    long    $31 = load long* $5
+    arg     $T2* $23
+    arg     byte $30
+    arg     long $31
+    long    $32 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $32, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    store   long 1, long* $8
+    jmp     @6
+
+@4  long    $33 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    ret     long $33
+
+@5  long    $34 = load long* $6
+    long    $35 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    bool    $36 = equal long $34, long $35
+    bool    $37 = not bool $36
+    branch  bool $37, @3, @4
+
+@6  long    $38 = load long* $8
+    $T2*    $39 = load $T2** $4
+    store   $T2* $39, $T2** $13
+    $T2*    $40 = load $T2** $13
+    long*   $41 = elemaddr $T2* $40, long 1
+    long    $42 = load long* $41
+    bool    $43 = less long $38, long $42
+    branch  bool $43, @7, @9
+
+@7  $T2*    $44 = load $T2** $3
+    byte**  $45 = elemaddr $T2* $44, long 0
+    byte*   $46 = load byte** $45
+    long    $47 = load long* $8
+    long    $48 = load long* $6
+    long    $49 = add long $47, long $48
+    byte*   $50 = ptroffset byte* $46, long $49
+    byte    $51 = load byte* $50
+    $T2*    $52 = load $T2** $4
+    long    $53 = load long* $8
+    store   $T2* $52, $T2** $14
+    store   long $53, long* $15
+    $T2*    $54 = load $T2** $14
+    byte**  $55 = elemaddr $T2* $54, long 0
+    byte*   $56 = load byte** $55
+    long    $57 = load long* $15
+    byte*   $58 = ptroffset byte* $56, long $57
+    byte    $59 = load byte* $58
+    bool    $60 = equal byte $51, byte $59
+    bool    $61 = not bool $60
+    branch  bool $61, @10, @11
+
+@8  long    $62 = load long* $8
+    long    $63 = add long $62, long 1
+    store   long $63, long* $8
+    jmp     @6
+
+@9  bool    $64 = load bool* $7
+    branch  bool $64, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $65 = load long* $6
+    ret     long $65
+
+@13 $T2*    $66 = load $T2** $3
+    $T2*    $67 = load $T2** $4
+    store   $T2* $67, $T2** $16
+    store   long 0, long* $17
+    $T2*    $68 = load $T2** $16
+    byte**  $69 = elemaddr $T2* $68, long 0
+    byte*   $70 = load byte** $69
+    long    $71 = load long* $17
+    byte*   $72 = ptroffset byte* $70, long $71
+    byte    $73 = load byte* $72
+    long    $74 = load long* $6
+    long    $75 = add long $74, long 1
+    arg     $T2* $66
+    arg     byte $73
+    arg     long $75
+    long    $76 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $76, long* $6
+    jmp     @5
+}
+
+====================================================================
+after all optimizations
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T84* mfn_basic_string_find_45706E3983B3705B8349D08DB2FE3A33FEFEE4CE !116
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    $T2**   $11 = local $T2*
+    long*   $12 = local long
+    $T2**   $13 = local $T2*
+    $T2**   $14 = local $T2*
+    long*   $15 = local long
+    $T2**   $16 = local $T2*
+    long*   $17 = local long
+    store   $T2* $9, $T2** $10
+    $T2*    $18 = load $T2** $10
+    long*   $19 = elemaddr $T2* $18, long 1
+    long    $20 = load long* $19
+    bool    $21 = equal long $20, long 0
+    branch  bool $21, @1, @2
+
+@1  long    $22 = load long* $5
+    ret     long $22
+
+@2  $T2*    $23 = load $T2** $3
+    $T2*    $24 = load $T2** $4
+    store   $T2* $24, $T2** $11
+    store   long 0, long* $12
+    $T2*    $25 = load $T2** $11
+    byte**  $26 = elemaddr $T2* $25, long 0
+    byte*   $27 = load byte** $26
+    long    $28 = load long* $12
+    byte*   $29 = ptroffset byte* $27, long $28
+    byte    $30 = load byte* $29
+    long    $31 = load long* $5
+    arg     $T2* $23
+    arg     byte $30
+    arg     long $31
+    long    $32 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $32, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    store   long 1, long* $8
+    jmp     @6
+
+@4  long    $33 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    ret     long $33
+
+@5  long    $34 = load long* $6
+    long    $35 = load long* variable_npos_F5A5731BE36B9AB4B497C2EAE860F21F9D60E4F6
+    bool    $36 = equal long $34, long $35
+    bool    $37 = not bool $36
+    branch  bool $37, @3, @4
+
+@6  long    $38 = load long* $8
+    $T2*    $39 = load $T2** $4
+    store   $T2* $39, $T2** $13
+    $T2*    $40 = load $T2** $13
+    long*   $41 = elemaddr $T2* $40, long 1
+    long    $42 = load long* $41
+    bool    $43 = less long $38, long $42
+    branch  bool $43, @7, @9
+
+@7  $T2*    $44 = load $T2** $3
+    byte**  $45 = elemaddr $T2* $44, long 0
+    byte*   $46 = load byte** $45
+    long    $47 = load long* $8
+    long    $48 = load long* $6
+    long    $49 = add long $47, long $48
+    byte*   $50 = ptroffset byte* $46, long $49
+    byte    $51 = load byte* $50
+    $T2*    $52 = load $T2** $4
+    long    $53 = load long* $8
+    store   $T2* $52, $T2** $14
+    store   long $53, long* $15
+    $T2*    $54 = load $T2** $14
+    byte**  $55 = elemaddr $T2* $54, long 0
+    byte*   $56 = load byte** $55
+    long    $57 = load long* $15
+    byte*   $58 = ptroffset byte* $56, long $57
+    byte    $59 = load byte* $58
+    bool    $60 = equal byte $51, byte $59
+    bool    $61 = not bool $60
+    branch  bool $61, @10, @11
+
+@8  long    $62 = load long* $8
+    long    $63 = add long $62, long 1
+    store   long $63, long* $8
+    jmp     @6
+
+@9  bool    $64 = load bool* $7
+    branch  bool $64, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $65 = load long* $6
+    ret     long $65
+
+@13 $T2*    $66 = load $T2** $3
+    $T2*    $67 = load $T2** $4
+    store   $T2* $67, $T2** $16
+    store   long 0, long* $17
+    $T2*    $68 = load $T2** $16
+    byte**  $69 = elemaddr $T2* $68, long 0
+    byte*   $70 = load byte** $69
+    long    $71 = load long* $17
+    byte*   $72 = ptroffset byte* $70, long $71
+    byte    $73 = load byte* $72
+    long    $74 = load long* $6
+    long    $75 = add long $74, long 1
+    arg     $T2* $66
+    arg     byte $73
+    arg     long $75
+    long    $76 = call $T83 @mfn_basic_string_find_FF3D4111B703B3B98A193E35F7526DC46D4453CE
+    store   long $76, long* $6
+    jmp     @5
+}

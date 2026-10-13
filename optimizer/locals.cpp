@@ -7,8 +7,9 @@ module otava.optimizer.locals;
 
 namespace otava::optimizer {
 
-void MoveLocalsToEntryBlock(otava::intermediate::Function* fn)
+bool MoveLocalsToEntryBlock(otava::intermediate::Function* fn)
 {
+    bool optimized = false;
     otava::intermediate::BasicBlock* bb = fn->FirstBasicBlock();
     otava::intermediate::BasicBlock* entryBlock = bb;
     otava::intermediate::Instruction* lastEntryBlockLocal = nullptr;
@@ -29,12 +30,14 @@ void MoveLocalsToEntryBlock(otava::intermediate::Function* fn)
                     std::unique_ptr<otava::intermediate::Instruction> removedLocal = inst->Parent()->RemoveInstruction(inst);
                     entryBlock->Instructions()->InsertAfter(removedLocal.release(), lastEntryBlockLocal);
                     lastEntryBlockLocal = inst;
+                    optimized = true;
                 }
             }
             inst = next;
         }
         bb = bb->Next();
     }
+    return optimized;
 }
 
 } // namespace otava::optimizer

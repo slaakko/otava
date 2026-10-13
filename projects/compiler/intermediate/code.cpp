@@ -120,13 +120,13 @@ void Instruction::Check()
 }
 
 void Instruction::SetMetadataRef(MetadataRef* metadataRef_) noexcept
-{ 
-    metadataRef = metadataRef_; 
+{
+    metadataRef = metadataRef_;
 }
 
 MetadataRef* Instruction::GetMetadataRef() const noexcept
-{ 
-    return metadataRef; 
+{
+    return metadataRef;
 }
 
 std::string Instruction::Name() const
@@ -436,6 +436,18 @@ bool Instruction::IsRetVoid() const noexcept
         return retInst->ReturnValue() == nullptr;
     }
     return false;
+}
+
+void Instruction::PrintUsers(util::CodeFormatter& formatter)
+{
+    formatter.Write("index: " + std::to_string(GetIndex()) + " ");
+    Write(formatter);
+    std::string usersText;
+    for (Instruction* user : users)
+    {
+        usersText.append(" " + std::to_string(user->GetIndex()));
+    }
+    formatter.WriteLine(" users:" + usersText);
 }
 
 StoreInstruction::StoreInstruction(const soul::ast::Span& span_, Value* value_, Value* ptr_) noexcept :
@@ -2379,6 +2391,17 @@ void BasicBlock::Write(util::CodeFormatter& formatter)
     }
 }
 
+void BasicBlock::PrintUsers(util::CodeFormatter& formatter)
+{
+    formatter.WriteLine("@" + std::to_string(id));
+    Instruction* inst = FirstInstruction();
+    while (inst)
+    {
+        inst->PrintUsers(formatter);
+        inst = inst->Next();
+    }
+}
+
 Function::Function(const soul::ast::Span& span_, FunctionType* type_, const std::string& name_, bool once_, bool definition_, bool createEntry,
     MetadataRef* metadataRef_, IntermediateContext* context) :
     Value(span_, ValueKind::function, type_),
@@ -2804,14 +2827,14 @@ void Function::SetComment(const std::string& comment_)
     comment = comment_;
 }
 
-void Function::SetMetadataRef(MetadataRef* metadataRef_) noexcept 
-{ 
-    metadataRef = metadataRef_; 
+void Function::SetMetadataRef(MetadataRef* metadataRef_) noexcept
+{
+    metadataRef = metadataRef_;
 }
 
-MetadataRef* Function::GetMetadataRef() const noexcept 
-{ 
-    return metadataRef; 
+MetadataRef* Function::GetMetadataRef() const noexcept
+{
+    return metadataRef;
 }
 
 std::string Function::ResolveFullName() const
@@ -2921,18 +2944,29 @@ void Function::Write(util::CodeFormatter& formatter)
 #endif
 }
 
+void Function::PrintUsers(util::CodeFormatter& formatter)
+{
+    formatter.WriteLine("function " + name);
+    BasicBlock* bb = FirstBasicBlock();
+    while (bb)
+    {
+        bb->PrintUsers(formatter);
+        bb = bb->Next();
+    }
+}
+
 Code::Code() noexcept : context(nullptr), currentFunction(nullptr), functions(this), totalFunctions(0)
 {
 }
 
-IntermediateContext* Code::GetContext() const noexcept 
-{ 
-    return context; 
+IntermediateContext* Code::GetContext() const noexcept
+{
+    return context;
 }
 
-void Code::SetContext(IntermediateContext* context_) noexcept 
-{ 
-    context = context_; 
+void Code::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
 }
 
 void Code::SetCurrentFunction(Function* function) noexcept

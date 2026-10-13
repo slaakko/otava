@@ -11,17 +11,17 @@ enum class ParsingFlags : int
     none = 0, generateWarnings = 1 << 0
 };
 
-constexpr ParsingFlags operator|(ParsingFlags left, ParsingFlags right) noexcept
+ParsingFlags operator|(ParsingFlags left, ParsingFlags right) noexcept
 {
     return ParsingFlags(int(left) | int(right));
 }
 
-constexpr ParsingFlags operator&(ParsingFlags left, ParsingFlags right) noexcept
+ParsingFlags operator&(ParsingFlags left, ParsingFlags right) noexcept
 {
     return ParsingFlags(int(left) & int(right));
 }
 
-constexpr ParsingFlags operator~(ParsingFlags flags) noexcept
+ParsingFlags operator~(ParsingFlags flags) noexcept
 {
     return ParsingFlags(~int(flags));
 }

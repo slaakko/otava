@@ -100,6 +100,7 @@ public:
     virtual void Write(util::CodeFormatter& formatter) = 0;
     inline otava::assembly::Instruction* AssemblyInstruction() const noexcept { return assemblyInstruction; }
     inline void SetAssemblyInstruction(otava::assembly::Instruction* assemblyInstruction_) noexcept { assemblyInstruction = assemblyInstruction_; }
+    void PrintUsers(util::CodeFormatter& formatter);
 private:
     OpCode opCode;
     MetadataRef* metadataRef;
@@ -697,6 +698,7 @@ public:
     void ClearSuccessorsAndPredecessors();
     int IndexOf(Instruction* x) noexcept;
     void Write(util::CodeFormatter& formatter);
+    void PrintUsers(util::CodeFormatter& formatter);
 private:
     soul::ast::Span span;
     std::int32_t id;
@@ -796,6 +798,7 @@ public:
     inline const std::string& Comment() const noexcept { return comment; }
     std::string ResolveFullName() const;
     void Write(util::CodeFormatter& formatter);
+    void PrintUsers(util::CodeFormatter& formatter);
 private:
     FunctionFlags flags;
     soul::ast::Span span;

@@ -11,6 +11,6 @@ import otava.intermediate.context;
 
 export namespace otava::optimizer {
 
-void OptimizeIdentityCalls(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context);
+bool OptimizeIdentityCalls(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context);
 
 } // otava::optimizer

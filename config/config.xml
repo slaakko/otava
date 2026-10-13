@@ -16,4 +16,7 @@
     <configuration name='release'>
         <define symbol='RELEASE'/>
     </configuration>
+	<configuration name='heap' base='debug'>
+		<define symbol='DEBUG_HEAP'/>
+	</configuration>
 </configurations>

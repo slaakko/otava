@@ -347,8 +347,8 @@ GlobalVariable* Data::AddGlobalVariable(const soul::ast::Span& span, Type* type,
     catch (const std::exception& ex)
     {
         Error("error adding global variable: " + std::string(ex.what()), span, context);
-        return nullptr;
     }
+    return nullptr;
 }
 
 GlobalVariable* Data::GetGlobalVariableForString(Value* stringValue, Type* charType)

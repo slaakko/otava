@@ -869,7 +869,7 @@ void CodeGenerator::Visit(otava::symbols::BoundCompileUnitNode& node)
     if (context.ReleaseConfig())
     {
         intermediateContext.SetFilePath(optimizedIntermediateFilePath);
-        otava::optimizer::Optimize(&intermediateContext);
+        otava::optimizer::Optimize(&intermediateContext, context.DebugOutputStream(), context.OptFn());
         intermediateContext.WriteFile();
         otava::intermediate::Parse(optimizedIntermediateFilePath, optimizationContext, verbose);
         otava::intermediate::Verify(optimizationContext);

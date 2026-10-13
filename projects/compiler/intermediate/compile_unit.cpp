@@ -15,14 +15,14 @@ CompileUnit::CompileUnit() : context(nullptr), id(), metadataRef()
 {
 }
 
-IntermediateContext* CompileUnit::GetContext() const noexcept 
-{ 
-    return context; 
+IntermediateContext* CompileUnit::GetContext() const noexcept
+{
+    return context;
 }
 
-void CompileUnit::SetContext(IntermediateContext* context_) noexcept 
-{ 
-    context = context_; 
+void CompileUnit::SetContext(IntermediateContext* context_) noexcept
+{
+    context = context_;
 }
 
 void CompileUnit::SetFilePath(const std::string& filePath_)
@@ -37,8 +37,8 @@ void CompileUnit::SetInfo(const std::string& id_, MetadataRef* metadataRef_)
 }
 
 MetadataRef* CompileUnit::GetMetadataRef() const noexcept
-{ 
-    return metadataRef; 
+{
+    return metadataRef;
 }
 
 void CompileUnit::Write()

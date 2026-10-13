@@ -1,0 +1,1314 @@
+====================================================================
+before optimizations
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T83* mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2 !108
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    arg     $T2* $9
+    bool    $10 = call $T44 @mfn_basic_string_empty_75FF1F8615AE8FC9D706C9C33AD4996E42BCB538
+    branch  bool $10, @1, @2
+
+@1  long    $11 = load long* $5
+    ret     long $11
+
+@2  $T2*    $12 = load $T2** $3
+    $T2*    $13 = load $T2** $4
+    long    $14 = signextend int 0
+    arg     $T2* $13
+    arg     long $14
+    byte*   $15 = call $T45 @op_subscript_basic_string_34D86271E3A5AC9E217967F2183950B696ACF552
+    byte    $16 = load byte* $15
+    long    $17 = load long* $5
+    arg     $T2* $12
+    arg     byte $16
+    arg     long $17
+    long    $18 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $18, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    long    $19 = signextend int 1
+    store   long $19, long* $8
+    jmp     @6
+
+@4  long    $20 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    ret     long $20
+
+@5  long    $21 = load long* $6
+    long    $22 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    bool    $23 = equal long $21, long $22
+    bool    $24 = not bool $23
+    branch  bool $24, @3, @4
+
+@6  long    $25 = load long* $8
+    $T2*    $26 = load $T2** $4
+    arg     $T2* $26
+    long    $27 = call $T43 @mfn_basic_string_length_C869CDAD4DF2DBE090C43351CD357ACE41FEE7DA
+    bool    $28 = less long $25, long $27
+    branch  bool $28, @7, @9
+
+@7  $T2*    $29 = load $T2** $3
+    byte**  $30 = elemaddr $T2* $29, long 0
+    byte*   $31 = load byte** $30
+    long    $32 = load long* $8
+    long    $33 = load long* $6
+    long    $34 = add long $32, long $33
+    byte*   $35 = ptroffset byte* $31, long $34
+    byte    $36 = load byte* $35
+    $T2*    $37 = load $T2** $4
+    long    $38 = load long* $8
+    arg     $T2* $37
+    arg     long $38
+    byte*   $39 = call $T45 @op_subscript_basic_string_34D86271E3A5AC9E217967F2183950B696ACF552
+    byte    $40 = load byte* $39
+    bool    $41 = equal byte $36, byte $40
+    bool    $42 = not bool $41
+    branch  bool $42, @10, @11
+
+@8  long    $43 = load long* $8
+    long    $44 = signextend int 1
+    long    $45 = add long $43, long $44
+    store   long $45, long* $8
+    jmp     @6
+
+@9  bool    $46 = load bool* $7
+    branch  bool $46, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $47 = load long* $6
+    ret     long $47
+
+@13 $T2*    $48 = load $T2** $3
+    $T2*    $49 = load $T2** $4
+    long    $50 = signextend int 0
+    arg     $T2* $49
+    arg     long $50
+    byte*   $51 = call $T45 @op_subscript_basic_string_34D86271E3A5AC9E217967F2183950B696ACF552
+    byte    $52 = load byte* $51
+    long    $53 = load long* $6
+    long    $54 = signextend int 1
+    long    $55 = add long $53, long $54
+    arg     $T2* $48
+    arg     byte $52
+    arg     long $55
+    long    $56 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $56, long* $6
+    jmp     @5
+}
+
+function mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2
+@0
+index: 0 $T2*    $0 = param users: 9
+index: 1 $T2*    $1 = param users: 10
+index: 2 long    $2 = param users: 11
+index: 3 $T2**   $3 = local $T2* users: 9 18 49 78
+index: 4 $T2**   $4 = local $T2* users: 10 12 19 44 57 79
+index: 5 long*   $5 = local long users: 11 16 25
+index: 6 long*   $6 = local long users: 30 38 53 76 85 92
+index: 7 bool*   $7 = local bool users: 32 71 73
+index: 8 long*   $8 = local long users: 34 43 52 58 66 69
+index: 9 store   $T2* $0, $T2** $3 users:
+index: 10 store   $T2* $1, $T2** $4 users:
+index: 11 store   long $2, long* $5 users:
+index: 12 $T2*    $9 = load $T2** $4 users: 13
+index: 13 arg     $T2* $9 users:
+index: 14 bool    $10 = call $T44 @mfn_basic_string_empty_75FF1F8615AE8FC9D706C9C33AD4996E42BCB538 users: 15
+index: 15 branch  bool $10, @1, @2 users:
+@1
+index: 16 long    $11 = load long* $5 users: 17
+index: 17 ret     long $11 users:
+@2
+index: 18 $T2*    $12 = load $T2** $3 users: 26
+index: 19 $T2*    $13 = load $T2** $4 users: 21
+index: 20 long    $14 = signextend int 0 users: 22
+index: 21 arg     $T2* $13 users:
+index: 22 arg     long $14 users:
+index: 23 byte*   $15 = call $T45 @op_subscript_basic_string_34D86271E3A5AC9E217967F2183950B696ACF552 users: 24
+index: 24 byte    $16 = load byte* $15 users: 27
+index: 25 long    $17 = load long* $5 users: 28
+index: 26 arg     $T2* $12 users:
+index: 27 arg     byte $16 users:
+index: 28 arg     long $17 users:
+index: 29 long    $18 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 30
+index: 30 store   long $18, long* $6 users:
+index: 31 jmp     @5 users:
+@3
+index: 32 store   bool true, bool* $7 users:
+index: 33 long    $19 = signextend int 1 users: 34
+index: 34 store   long $19, long* $8 users:
+index: 35 jmp     @6 users:
+@4
+index: 36 long    $20 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 37
+index: 37 ret     long $20 users:
+@5
+index: 38 long    $21 = load long* $6 users: 40
+index: 39 long    $22 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 40
+index: 40 bool    $23 = equal long $21, long $22 users: 41
+index: 41 bool    $24 = not bool $23 users: 42
+index: 42 branch  bool $24, @3, @4 users:
+@6
+index: 43 long    $25 = load long* $8 users: 47
+index: 44 $T2*    $26 = load $T2** $4 users: 45
+index: 45 arg     $T2* $26 users:
+index: 46 long    $27 = call $T43 @mfn_basic_string_length_C869CDAD4DF2DBE090C43351CD357ACE41FEE7DA users: 47
+index: 47 bool    $28 = less long $25, long $27 users: 48
+index: 48 branch  bool $28, @7, @9 users:
+@7
+index: 49 $T2*    $29 = load $T2** $3 users: 50
+index: 50 byte**  $30 = elemaddr $T2* $29, long 0 users: 51
+index: 51 byte*   $31 = load byte** $30 users: 55
+index: 52 long    $32 = load long* $8 users: 54
+index: 53 long    $33 = load long* $6 users: 54
+index: 54 long    $34 = add long $32, long $33 users: 55
+index: 55 byte*   $35 = ptroffset byte* $31, long $34 users: 56
+index: 56 byte    $36 = load byte* $35 users: 63
+index: 57 $T2*    $37 = load $T2** $4 users: 59
+index: 58 long    $38 = load long* $8 users: 60
+index: 59 arg     $T2* $37 users:
+index: 60 arg     long $38 users:
+index: 61 byte*   $39 = call $T45 @op_subscript_basic_string_34D86271E3A5AC9E217967F2183950B696ACF552 users: 62
+index: 62 byte    $40 = load byte* $39 users: 63
+index: 63 bool    $41 = equal byte $36, byte $40 users: 64
+index: 64 bool    $42 = not bool $41 users: 65
+index: 65 branch  bool $42, @10, @11 users:
+@8
+index: 66 long    $43 = load long* $8 users: 68
+index: 67 long    $44 = signextend int 1 users: 68
+index: 68 long    $45 = add long $43, long $44 users: 69
+index: 69 store   long $45, long* $8 users:
+index: 70 jmp     @6 users:
+@9
+index: 71 bool    $46 = load bool* $7 users: 72
+index: 72 branch  bool $46, @12, @13 users:
+@10
+index: 73 store   bool false, bool* $7 users:
+index: 74 jmp     @9 users:
+@11
+index: 75 jmp     @8 users:
+@12
+index: 76 long    $47 = load long* $6 users: 77
+index: 77 ret     long $47 users:
+@13
+index: 78 $T2*    $48 = load $T2** $3 users: 88
+index: 79 $T2*    $49 = load $T2** $4 users: 81
+index: 80 long    $50 = signextend int 0 users: 82
+index: 81 arg     $T2* $49 users:
+index: 82 arg     long $50 users:
+index: 83 byte*   $51 = call $T45 @op_subscript_basic_string_34D86271E3A5AC9E217967F2183950B696ACF552 users: 84
+index: 84 byte    $52 = load byte* $51 users: 89
+index: 85 long    $53 = load long* $6 users: 87
+index: 86 long    $54 = signextend int 1 users: 87
+index: 87 long    $55 = add long $53, long $54 users: 90
+index: 88 arg     $T2* $48 users:
+index: 89 arg     byte $52 users:
+index: 90 arg     long $55 users:
+index: 91 long    $56 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 92
+index: 92 store   long $56, long* $6 users:
+index: 93 jmp     @5 users:
+
+====================================================================
+after inlining
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T83* mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2 !108
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    store   $T2* $9, $T2** $10
+    $T2*    $11 = load $T2** $10
+    long*   $12 = elemaddr $T2* $11, long 1
+    long    $13 = load long* $12
+    bool    $14 = equal long $13, long 0
+    branch  bool $14, @1, @2
+
+@1  long    $15 = load long* $5
+    ret     long $15
+
+@2  $T2*    $16 = load $T2** $3
+    $T2*    $17 = load $T2** $4
+    long    $18 = signextend int 0
+    $T2**   $19 = local $T2*
+    long*   $20 = local long
+    store   $T2* $17, $T2** $19
+    store   long $18, long* $20
+    $T2*    $21 = load $T2** $19
+    byte**  $22 = elemaddr $T2* $21, long 0
+    byte*   $23 = load byte** $22
+    long    $24 = load long* $20
+    byte*   $25 = ptroffset byte* $23, long $24
+    byte    $26 = load byte* $25
+    long    $27 = load long* $5
+    arg     $T2* $16
+    arg     byte $26
+    arg     long $27
+    long    $28 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $28, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    long    $29 = signextend int 1
+    store   long $29, long* $8
+    jmp     @6
+
+@4  long    $30 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    ret     long $30
+
+@5  long    $31 = load long* $6
+    long    $32 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    bool    $33 = equal long $31, long $32
+    bool    $34 = not bool $33
+    branch  bool $34, @3, @4
+
+@6  long    $35 = load long* $8
+    $T2*    $36 = load $T2** $4
+    $T2**   $37 = local $T2*
+    store   $T2* $36, $T2** $37
+    $T2*    $38 = load $T2** $37
+    long*   $39 = elemaddr $T2* $38, long 1
+    long    $40 = load long* $39
+    bool    $41 = less long $35, long $40
+    branch  bool $41, @7, @9
+
+@7  $T2*    $42 = load $T2** $3
+    byte**  $43 = elemaddr $T2* $42, long 0
+    byte*   $44 = load byte** $43
+    long    $45 = load long* $8
+    long    $46 = load long* $6
+    long    $47 = add long $45, long $46
+    byte*   $48 = ptroffset byte* $44, long $47
+    byte    $49 = load byte* $48
+    $T2*    $50 = load $T2** $4
+    long    $51 = load long* $8
+    $T2**   $52 = local $T2*
+    long*   $53 = local long
+    store   $T2* $50, $T2** $52
+    store   long $51, long* $53
+    $T2*    $54 = load $T2** $52
+    byte**  $55 = elemaddr $T2* $54, long 0
+    byte*   $56 = load byte** $55
+    long    $57 = load long* $53
+    byte*   $58 = ptroffset byte* $56, long $57
+    byte    $59 = load byte* $58
+    bool    $60 = equal byte $49, byte $59
+    bool    $61 = not bool $60
+    branch  bool $61, @10, @11
+
+@8  long    $62 = load long* $8
+    long    $63 = signextend int 1
+    long    $64 = add long $62, long $63
+    store   long $64, long* $8
+    jmp     @6
+
+@9  bool    $65 = load bool* $7
+    branch  bool $65, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $66 = load long* $6
+    ret     long $66
+
+@13 $T2*    $67 = load $T2** $3
+    $T2*    $68 = load $T2** $4
+    long    $69 = signextend int 0
+    $T2**   $70 = local $T2*
+    long*   $71 = local long
+    store   $T2* $68, $T2** $70
+    store   long $69, long* $71
+    $T2*    $72 = load $T2** $70
+    byte**  $73 = elemaddr $T2* $72, long 0
+    byte*   $74 = load byte** $73
+    long    $75 = load long* $71
+    byte*   $76 = ptroffset byte* $74, long $75
+    byte    $77 = load byte* $76
+    long    $78 = load long* $6
+    long    $79 = signextend int 1
+    long    $80 = add long $78, long $79
+    arg     $T2* $67
+    arg     byte $77
+    arg     long $80
+    long    $81 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $81, long* $6
+    jmp     @5
+}
+
+function mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2
+@0
+index: 0 $T2*    $0 = param users: 9
+index: 1 $T2*    $1 = param users: 10
+index: 2 long    $2 = param users: 11
+index: 3 $T2**   $3 = local $T2* users: 9 22 62 97
+index: 4 $T2**   $4 = local $T2* users: 10 12 23 54 70 98
+index: 5 long*   $5 = local long users: 11 20 35
+index: 6 long*   $6 = local long users: 40 48 66 95 110 117
+index: 7 bool*   $7 = local bool users: 42 90 92
+index: 8 long*   $8 = local long users: 44 53 65 71 85 88
+index: 9 store   $T2* $0, $T2** $3 users:
+index: 10 store   $T2* $1, $T2** $4 users:
+index: 11 store   long $2, long* $5 users:
+index: 12 $T2*    $9 = load $T2** $4 users: 14
+index: 13 $T2**   $10 = local $T2* users: 14 15
+index: 14 store   $T2* $9, $T2** $10 users:
+index: 15 $T2*    $11 = load $T2** $10 users: 16
+index: 16 long*   $12 = elemaddr $T2* $11, long 1 users: 17
+index: 17 long    $13 = load long* $12 users: 18
+index: 18 bool    $14 = equal long $13, long 0 users: 19
+index: 19 branch  bool $14, @1, @2 users:
+@1
+index: 20 long    $15 = load long* $5 users: 21
+index: 21 ret     long $15 users:
+@2
+index: 22 $T2*    $16 = load $T2** $3 users: 36
+index: 23 $T2*    $17 = load $T2** $4 users: 27
+index: 24 long    $18 = signextend int 0 users: 28
+index: 25 $T2**   $19 = local $T2* users: 27 29
+index: 26 long*   $20 = local long users: 28 32
+index: 27 store   $T2* $17, $T2** $19 users:
+index: 28 store   long $18, long* $20 users:
+index: 29 $T2*    $21 = load $T2** $19 users: 30
+index: 30 byte**  $22 = elemaddr $T2* $21, long 0 users: 31
+index: 31 byte*   $23 = load byte** $22 users: 33
+index: 32 long    $24 = load long* $20 users: 33
+index: 33 byte*   $25 = ptroffset byte* $23, long $24 users: 34
+index: 34 byte    $26 = load byte* $25 users: 37
+index: 35 long    $27 = load long* $5 users: 38
+index: 36 arg     $T2* $16 users:
+index: 37 arg     byte $26 users:
+index: 38 arg     long $27 users:
+index: 39 long    $28 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 40
+index: 40 store   long $28, long* $6 users:
+index: 41 jmp     @5 users:
+@3
+index: 42 store   bool true, bool* $7 users:
+index: 43 long    $29 = signextend int 1 users: 44
+index: 44 store   long $29, long* $8 users:
+index: 45 jmp     @6 users:
+@4
+index: 46 long    $30 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 47
+index: 47 ret     long $30 users:
+@5
+index: 48 long    $31 = load long* $6 users: 50
+index: 49 long    $32 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 50
+index: 50 bool    $33 = equal long $31, long $32 users: 51
+index: 51 bool    $34 = not bool $33 users: 52
+index: 52 branch  bool $34, @3, @4 users:
+@6
+index: 53 long    $35 = load long* $8 users: 60
+index: 54 $T2*    $36 = load $T2** $4 users: 56
+index: 55 $T2**   $37 = local $T2* users: 56 57
+index: 56 store   $T2* $36, $T2** $37 users:
+index: 57 $T2*    $38 = load $T2** $37 users: 58
+index: 58 long*   $39 = elemaddr $T2* $38, long 1 users: 59
+index: 59 long    $40 = load long* $39 users: 60
+index: 60 bool    $41 = less long $35, long $40 users: 61
+index: 61 branch  bool $41, @7, @9 users:
+@7
+index: 62 $T2*    $42 = load $T2** $3 users: 63
+index: 63 byte**  $43 = elemaddr $T2* $42, long 0 users: 64
+index: 64 byte*   $44 = load byte** $43 users: 68
+index: 65 long    $45 = load long* $8 users: 67
+index: 66 long    $46 = load long* $6 users: 67
+index: 67 long    $47 = add long $45, long $46 users: 68
+index: 68 byte*   $48 = ptroffset byte* $44, long $47 users: 69
+index: 69 byte    $49 = load byte* $48 users: 82
+index: 70 $T2*    $50 = load $T2** $4 users: 74
+index: 71 long    $51 = load long* $8 users: 75
+index: 72 $T2**   $52 = local $T2* users: 74 76
+index: 73 long*   $53 = local long users: 75 79
+index: 74 store   $T2* $50, $T2** $52 users:
+index: 75 store   long $51, long* $53 users:
+index: 76 $T2*    $54 = load $T2** $52 users: 77
+index: 77 byte**  $55 = elemaddr $T2* $54, long 0 users: 78
+index: 78 byte*   $56 = load byte** $55 users: 80
+index: 79 long    $57 = load long* $53 users: 80
+index: 80 byte*   $58 = ptroffset byte* $56, long $57 users: 81
+index: 81 byte    $59 = load byte* $58 users: 82
+index: 82 bool    $60 = equal byte $49, byte $59 users: 83
+index: 83 bool    $61 = not bool $60 users: 84
+index: 84 branch  bool $61, @10, @11 users:
+@8
+index: 85 long    $62 = load long* $8 users: 87
+index: 86 long    $63 = signextend int 1 users: 87
+index: 87 long    $64 = add long $62, long $63 users: 88
+index: 88 store   long $64, long* $8 users:
+index: 89 jmp     @6 users:
+@9
+index: 90 bool    $65 = load bool* $7 users: 91
+index: 91 branch  bool $65, @12, @13 users:
+@10
+index: 92 store   bool false, bool* $7 users:
+index: 93 jmp     @9 users:
+@11
+index: 94 jmp     @8 users:
+@12
+index: 95 long    $66 = load long* $6 users: 96
+index: 96 ret     long $66 users:
+@13
+index: 97 $T2*    $67 = load $T2** $3 users: 113
+index: 98 $T2*    $68 = load $T2** $4 users: 102
+index: 99 long    $69 = signextend int 0 users: 103
+index: 100 $T2**   $70 = local $T2* users: 102 104
+index: 101 long*   $71 = local long users: 103 107
+index: 102 store   $T2* $68, $T2** $70 users:
+index: 103 store   long $69, long* $71 users:
+index: 104 $T2*    $72 = load $T2** $70 users: 105
+index: 105 byte**  $73 = elemaddr $T2* $72, long 0 users: 106
+index: 106 byte*   $74 = load byte** $73 users: 108
+index: 107 long    $75 = load long* $71 users: 108
+index: 108 byte*   $76 = ptroffset byte* $74, long $75 users: 109
+index: 109 byte    $77 = load byte* $76 users: 114
+index: 110 long    $78 = load long* $6 users: 112
+index: 111 long    $79 = signextend int 1 users: 112
+index: 112 long    $80 = add long $78, long $79 users: 115
+index: 113 arg     $T2* $67 users:
+index: 114 arg     byte $77 users:
+index: 115 arg     long $80 users:
+index: 116 long    $81 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 117
+index: 117 store   long $81, long* $6 users:
+index: 118 jmp     @5 users:
+
+====================================================================
+after moving locals to entry block
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T83* mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2 !108
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    $T2**   $11 = local $T2*
+    long*   $12 = local long
+    $T2**   $13 = local $T2*
+    $T2**   $14 = local $T2*
+    long*   $15 = local long
+    $T2**   $16 = local $T2*
+    long*   $17 = local long
+    store   $T2* $9, $T2** $10
+    $T2*    $18 = load $T2** $10
+    long*   $19 = elemaddr $T2* $18, long 1
+    long    $20 = load long* $19
+    bool    $21 = equal long $20, long 0
+    branch  bool $21, @1, @2
+
+@1  long    $22 = load long* $5
+    ret     long $22
+
+@2  $T2*    $23 = load $T2** $3
+    $T2*    $24 = load $T2** $4
+    long    $25 = signextend int 0
+    store   $T2* $24, $T2** $11
+    store   long $25, long* $12
+    $T2*    $26 = load $T2** $11
+    byte**  $27 = elemaddr $T2* $26, long 0
+    byte*   $28 = load byte** $27
+    long    $29 = load long* $12
+    byte*   $30 = ptroffset byte* $28, long $29
+    byte    $31 = load byte* $30
+    long    $32 = load long* $5
+    arg     $T2* $23
+    arg     byte $31
+    arg     long $32
+    long    $33 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $33, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    long    $34 = signextend int 1
+    store   long $34, long* $8
+    jmp     @6
+
+@4  long    $35 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    ret     long $35
+
+@5  long    $36 = load long* $6
+    long    $37 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    bool    $38 = equal long $36, long $37
+    bool    $39 = not bool $38
+    branch  bool $39, @3, @4
+
+@6  long    $40 = load long* $8
+    $T2*    $41 = load $T2** $4
+    store   $T2* $41, $T2** $13
+    $T2*    $42 = load $T2** $13
+    long*   $43 = elemaddr $T2* $42, long 1
+    long    $44 = load long* $43
+    bool    $45 = less long $40, long $44
+    branch  bool $45, @7, @9
+
+@7  $T2*    $46 = load $T2** $3
+    byte**  $47 = elemaddr $T2* $46, long 0
+    byte*   $48 = load byte** $47
+    long    $49 = load long* $8
+    long    $50 = load long* $6
+    long    $51 = add long $49, long $50
+    byte*   $52 = ptroffset byte* $48, long $51
+    byte    $53 = load byte* $52
+    $T2*    $54 = load $T2** $4
+    long    $55 = load long* $8
+    store   $T2* $54, $T2** $14
+    store   long $55, long* $15
+    $T2*    $56 = load $T2** $14
+    byte**  $57 = elemaddr $T2* $56, long 0
+    byte*   $58 = load byte** $57
+    long    $59 = load long* $15
+    byte*   $60 = ptroffset byte* $58, long $59
+    byte    $61 = load byte* $60
+    bool    $62 = equal byte $53, byte $61
+    bool    $63 = not bool $62
+    branch  bool $63, @10, @11
+
+@8  long    $64 = load long* $8
+    long    $65 = signextend int 1
+    long    $66 = add long $64, long $65
+    store   long $66, long* $8
+    jmp     @6
+
+@9  bool    $67 = load bool* $7
+    branch  bool $67, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $68 = load long* $6
+    ret     long $68
+
+@13 $T2*    $69 = load $T2** $3
+    $T2*    $70 = load $T2** $4
+    long    $71 = signextend int 0
+    store   $T2* $70, $T2** $16
+    store   long $71, long* $17
+    $T2*    $72 = load $T2** $16
+    byte**  $73 = elemaddr $T2* $72, long 0
+    byte*   $74 = load byte** $73
+    long    $75 = load long* $17
+    byte*   $76 = ptroffset byte* $74, long $75
+    byte    $77 = load byte* $76
+    long    $78 = load long* $6
+    long    $79 = signextend int 1
+    long    $80 = add long $78, long $79
+    arg     $T2* $69
+    arg     byte $77
+    arg     long $80
+    long    $81 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $81, long* $6
+    jmp     @5
+}
+
+function mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2
+@0
+index: 0 $T2*    $0 = param users: 9
+index: 1 $T2*    $1 = param users: 10
+index: 2 long    $2 = param users: 11
+index: 3 $T2**   $3 = local $T2* users: 9 29 66 99
+index: 4 $T2**   $4 = local $T2* users: 10 12 30 59 74 100
+index: 5 long*   $5 = local long users: 11 27 40
+index: 6 long*   $6 = local long users: 45 53 70 97 110 117
+index: 7 bool*   $7 = local bool users: 47 92 94
+index: 8 long*   $8 = local long users: 49 58 69 75 87 90
+index: 9 store   $T2* $0, $T2** $3 users:
+index: 10 store   $T2* $1, $T2** $4 users:
+index: 11 store   long $2, long* $5 users:
+index: 12 $T2*    $9 = load $T2** $4 users: 21
+index: 13 $T2**   $10 = local $T2* users: 21 22
+index: 14 $T2**   $11 = local $T2* users: 32 34
+index: 15 long*   $12 = local long users: 33 37
+index: 16 $T2**   $13 = local $T2* users: 60 61
+index: 17 $T2**   $14 = local $T2* users: 76 78
+index: 18 long*   $15 = local long users: 77 81
+index: 19 $T2**   $16 = local $T2* users: 102 104
+index: 20 long*   $17 = local long users: 103 107
+index: 21 store   $T2* $9, $T2** $10 users:
+index: 22 $T2*    $18 = load $T2** $10 users: 23
+index: 23 long*   $19 = elemaddr $T2* $18, long 1 users: 24
+index: 24 long    $20 = load long* $19 users: 25
+index: 25 bool    $21 = equal long $20, long 0 users: 26
+index: 26 branch  bool $21, @1, @2 users:
+@1
+index: 27 long    $22 = load long* $5 users: 28
+index: 28 ret     long $22 users:
+@2
+index: 29 $T2*    $23 = load $T2** $3 users: 41
+index: 30 $T2*    $24 = load $T2** $4 users: 32
+index: 31 long    $25 = signextend int 0 users: 33
+index: 32 store   $T2* $24, $T2** $11 users:
+index: 33 store   long $25, long* $12 users:
+index: 34 $T2*    $26 = load $T2** $11 users: 35
+index: 35 byte**  $27 = elemaddr $T2* $26, long 0 users: 36
+index: 36 byte*   $28 = load byte** $27 users: 38
+index: 37 long    $29 = load long* $12 users: 38
+index: 38 byte*   $30 = ptroffset byte* $28, long $29 users: 39
+index: 39 byte    $31 = load byte* $30 users: 42
+index: 40 long    $32 = load long* $5 users: 43
+index: 41 arg     $T2* $23 users:
+index: 42 arg     byte $31 users:
+index: 43 arg     long $32 users:
+index: 44 long    $33 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 45
+index: 45 store   long $33, long* $6 users:
+index: 46 jmp     @5 users:
+@3
+index: 47 store   bool true, bool* $7 users:
+index: 48 long    $34 = signextend int 1 users: 49
+index: 49 store   long $34, long* $8 users:
+index: 50 jmp     @6 users:
+@4
+index: 51 long    $35 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 52
+index: 52 ret     long $35 users:
+@5
+index: 53 long    $36 = load long* $6 users: 55
+index: 54 long    $37 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 55
+index: 55 bool    $38 = equal long $36, long $37 users: 56
+index: 56 bool    $39 = not bool $38 users: 57
+index: 57 branch  bool $39, @3, @4 users:
+@6
+index: 58 long    $40 = load long* $8 users: 64
+index: 59 $T2*    $41 = load $T2** $4 users: 60
+index: 60 store   $T2* $41, $T2** $13 users:
+index: 61 $T2*    $42 = load $T2** $13 users: 62
+index: 62 long*   $43 = elemaddr $T2* $42, long 1 users: 63
+index: 63 long    $44 = load long* $43 users: 64
+index: 64 bool    $45 = less long $40, long $44 users: 65
+index: 65 branch  bool $45, @7, @9 users:
+@7
+index: 66 $T2*    $46 = load $T2** $3 users: 67
+index: 67 byte**  $47 = elemaddr $T2* $46, long 0 users: 68
+index: 68 byte*   $48 = load byte** $47 users: 72
+index: 69 long    $49 = load long* $8 users: 71
+index: 70 long    $50 = load long* $6 users: 71
+index: 71 long    $51 = add long $49, long $50 users: 72
+index: 72 byte*   $52 = ptroffset byte* $48, long $51 users: 73
+index: 73 byte    $53 = load byte* $52 users: 84
+index: 74 $T2*    $54 = load $T2** $4 users: 76
+index: 75 long    $55 = load long* $8 users: 77
+index: 76 store   $T2* $54, $T2** $14 users:
+index: 77 store   long $55, long* $15 users:
+index: 78 $T2*    $56 = load $T2** $14 users: 79
+index: 79 byte**  $57 = elemaddr $T2* $56, long 0 users: 80
+index: 80 byte*   $58 = load byte** $57 users: 82
+index: 81 long    $59 = load long* $15 users: 82
+index: 82 byte*   $60 = ptroffset byte* $58, long $59 users: 83
+index: 83 byte    $61 = load byte* $60 users: 84
+index: 84 bool    $62 = equal byte $53, byte $61 users: 85
+index: 85 bool    $63 = not bool $62 users: 86
+index: 86 branch  bool $63, @10, @11 users:
+@8
+index: 87 long    $64 = load long* $8 users: 89
+index: 88 long    $65 = signextend int 1 users: 89
+index: 89 long    $66 = add long $64, long $65 users: 90
+index: 90 store   long $66, long* $8 users:
+index: 91 jmp     @6 users:
+@9
+index: 92 bool    $67 = load bool* $7 users: 93
+index: 93 branch  bool $67, @12, @13 users:
+@10
+index: 94 store   bool false, bool* $7 users:
+index: 95 jmp     @9 users:
+@11
+index: 96 jmp     @8 users:
+@12
+index: 97 long    $68 = load long* $6 users: 98
+index: 98 ret     long $68 users:
+@13
+index: 99 $T2*    $69 = load $T2** $3 users: 113
+index: 100 $T2*    $70 = load $T2** $4 users: 102
+index: 101 long    $71 = signextend int 0 users: 103
+index: 102 store   $T2* $70, $T2** $16 users:
+index: 103 store   long $71, long* $17 users:
+index: 104 $T2*    $72 = load $T2** $16 users: 105
+index: 105 byte**  $73 = elemaddr $T2* $72, long 0 users: 106
+index: 106 byte*   $74 = load byte** $73 users: 108
+index: 107 long    $75 = load long* $17 users: 108
+index: 108 byte*   $76 = ptroffset byte* $74, long $75 users: 109
+index: 109 byte    $77 = load byte* $76 users: 114
+index: 110 long    $78 = load long* $6 users: 112
+index: 111 long    $79 = signextend int 1 users: 112
+index: 112 long    $80 = add long $78, long $79 users: 115
+index: 113 arg     $T2* $69 users:
+index: 114 arg     byte $77 users:
+index: 115 arg     long $80 users:
+index: 116 long    $81 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 117
+index: 117 store   long $81, long* $6 users:
+index: 118 jmp     @5 users:
+
+====================================================================
+after optimizing arithmetics
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T83* mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2 !108
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    $T2**   $11 = local $T2*
+    long*   $12 = local long
+    $T2**   $13 = local $T2*
+    $T2**   $14 = local $T2*
+    long*   $15 = local long
+    $T2**   $16 = local $T2*
+    long*   $17 = local long
+    store   $T2* $9, $T2** $10
+    $T2*    $18 = load $T2** $10
+    long*   $19 = elemaddr $T2* $18, long 1
+    long    $20 = load long* $19
+    bool    $21 = equal long $20, long 0
+    branch  bool $21, @1, @2
+
+@1  long    $22 = load long* $5
+    ret     long $22
+
+@2  $T2*    $23 = load $T2** $3
+    $T2*    $24 = load $T2** $4
+    store   $T2* $24, $T2** $11
+    store   long 0, long* $12
+    $T2*    $25 = load $T2** $11
+    byte**  $26 = elemaddr $T2* $25, long 0
+    byte*   $27 = load byte** $26
+    long    $28 = load long* $12
+    byte*   $29 = ptroffset byte* $27, long $28
+    byte    $30 = load byte* $29
+    long    $31 = load long* $5
+    arg     $T2* $23
+    arg     byte $30
+    arg     long $31
+    long    $32 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $32, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    store   long 1, long* $8
+    jmp     @6
+
+@4  long    $33 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    ret     long $33
+
+@5  long    $34 = load long* $6
+    long    $35 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    bool    $36 = equal long $34, long $35
+    bool    $37 = not bool $36
+    branch  bool $37, @3, @4
+
+@6  long    $38 = load long* $8
+    $T2*    $39 = load $T2** $4
+    store   $T2* $39, $T2** $13
+    $T2*    $40 = load $T2** $13
+    long*   $41 = elemaddr $T2* $40, long 1
+    long    $42 = load long* $41
+    bool    $43 = less long $38, long $42
+    branch  bool $43, @7, @9
+
+@7  $T2*    $44 = load $T2** $3
+    byte**  $45 = elemaddr $T2* $44, long 0
+    byte*   $46 = load byte** $45
+    long    $47 = load long* $8
+    long    $48 = load long* $6
+    long    $49 = add long $47, long $48
+    byte*   $50 = ptroffset byte* $46, long $49
+    byte    $51 = load byte* $50
+    $T2*    $52 = load $T2** $4
+    long    $53 = load long* $8
+    store   $T2* $52, $T2** $14
+    store   long $53, long* $15
+    $T2*    $54 = load $T2** $14
+    byte**  $55 = elemaddr $T2* $54, long 0
+    byte*   $56 = load byte** $55
+    long    $57 = load long* $15
+    byte*   $58 = ptroffset byte* $56, long $57
+    byte    $59 = load byte* $58
+    bool    $60 = equal byte $51, byte $59
+    bool    $61 = not bool $60
+    branch  bool $61, @10, @11
+
+@8  long    $62 = load long* $8
+    long    $63 = add long $62, long 1
+    store   long $63, long* $8
+    jmp     @6
+
+@9  bool    $64 = load bool* $7
+    branch  bool $64, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $65 = load long* $6
+    ret     long $65
+
+@13 $T2*    $66 = load $T2** $3
+    $T2*    $67 = load $T2** $4
+    store   $T2* $67, $T2** $16
+    store   long 0, long* $17
+    $T2*    $68 = load $T2** $16
+    byte**  $69 = elemaddr $T2* $68, long 0
+    byte*   $70 = load byte** $69
+    long    $71 = load long* $17
+    byte*   $72 = ptroffset byte* $70, long $71
+    byte    $73 = load byte* $72
+    long    $74 = load long* $6
+    long    $75 = add long $74, long 1
+    arg     $T2* $66
+    arg     byte $73
+    arg     long $75
+    long    $76 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $76, long* $6
+    jmp     @5
+}
+
+function mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2
+@0
+index: 0 $T2*    $0 = param users: 9
+index: 1 $T2*    $1 = param users: 10
+index: 2 long    $2 = param users: 11
+index: 3 $T2**   $3 = local $T2* users: 9 29 64 96
+index: 4 $T2**   $4 = local $T2* users: 10 12 30 57 72 97
+index: 5 long*   $5 = local long users: 11 27 39
+index: 6 long*   $6 = local long users: 44 51 68 94 106 112
+index: 7 bool*   $7 = local bool users: 46 89 91
+index: 8 long*   $8 = local long users: 47 56 67 73 85 87
+index: 9 store   $T2* $0, $T2** $3 users:
+index: 10 store   $T2* $1, $T2** $4 users:
+index: 11 store   long $2, long* $5 users:
+index: 12 $T2*    $9 = load $T2** $4 users: 21
+index: 13 $T2**   $10 = local $T2* users: 21 22
+index: 14 $T2**   $11 = local $T2* users: 31 33
+index: 15 long*   $12 = local long users: 32 36
+index: 16 $T2**   $13 = local $T2* users: 58 59
+index: 17 $T2**   $14 = local $T2* users: 74 76
+index: 18 long*   $15 = local long users: 75 79
+index: 19 $T2**   $16 = local $T2* users: 98 100
+index: 20 long*   $17 = local long users: 99 103
+index: 21 store   $T2* $9, $T2** $10 users:
+index: 22 $T2*    $18 = load $T2** $10 users: 23
+index: 23 long*   $19 = elemaddr $T2* $18, long 1 users: 24
+index: 24 long    $20 = load long* $19 users: 25
+index: 25 bool    $21 = equal long $20, long 0 users: 26
+index: 26 branch  bool $21, @1, @2 users:
+@1
+index: 27 long    $22 = load long* $5 users: 28
+index: 28 ret     long $22 users:
+@2
+index: 29 $T2*    $23 = load $T2** $3 users: 40
+index: 30 $T2*    $24 = load $T2** $4 users: 31
+index: 31 store   $T2* $24, $T2** $11 users:
+index: 32 store   long 0, long* $12 users:
+index: 33 $T2*    $25 = load $T2** $11 users: 34
+index: 34 byte**  $26 = elemaddr $T2* $25, long 0 users: 35
+index: 35 byte*   $27 = load byte** $26 users: 37
+index: 36 long    $28 = load long* $12 users: 37
+index: 37 byte*   $29 = ptroffset byte* $27, long $28 users: 38
+index: 38 byte    $30 = load byte* $29 users: 41
+index: 39 long    $31 = load long* $5 users: 42
+index: 40 arg     $T2* $23 users:
+index: 41 arg     byte $30 users:
+index: 42 arg     long $31 users:
+index: 43 long    $32 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 44
+index: 44 store   long $32, long* $6 users:
+index: 45 jmp     @5 users:
+@3
+index: 46 store   bool true, bool* $7 users:
+index: 47 store   long 1, long* $8 users:
+index: 48 jmp     @6 users:
+@4
+index: 49 long    $33 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 50
+index: 50 ret     long $33 users:
+@5
+index: 51 long    $34 = load long* $6 users: 53
+index: 52 long    $35 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 53
+index: 53 bool    $36 = equal long $34, long $35 users: 54
+index: 54 bool    $37 = not bool $36 users: 55
+index: 55 branch  bool $37, @3, @4 users:
+@6
+index: 56 long    $38 = load long* $8 users: 62
+index: 57 $T2*    $39 = load $T2** $4 users: 58
+index: 58 store   $T2* $39, $T2** $13 users:
+index: 59 $T2*    $40 = load $T2** $13 users: 60
+index: 60 long*   $41 = elemaddr $T2* $40, long 1 users: 61
+index: 61 long    $42 = load long* $41 users: 62
+index: 62 bool    $43 = less long $38, long $42 users: 63
+index: 63 branch  bool $43, @7, @9 users:
+@7
+index: 64 $T2*    $44 = load $T2** $3 users: 65
+index: 65 byte**  $45 = elemaddr $T2* $44, long 0 users: 66
+index: 66 byte*   $46 = load byte** $45 users: 70
+index: 67 long    $47 = load long* $8 users: 69
+index: 68 long    $48 = load long* $6 users: 69
+index: 69 long    $49 = add long $47, long $48 users: 70
+index: 70 byte*   $50 = ptroffset byte* $46, long $49 users: 71
+index: 71 byte    $51 = load byte* $50 users: 82
+index: 72 $T2*    $52 = load $T2** $4 users: 74
+index: 73 long    $53 = load long* $8 users: 75
+index: 74 store   $T2* $52, $T2** $14 users:
+index: 75 store   long $53, long* $15 users:
+index: 76 $T2*    $54 = load $T2** $14 users: 77
+index: 77 byte**  $55 = elemaddr $T2* $54, long 0 users: 78
+index: 78 byte*   $56 = load byte** $55 users: 80
+index: 79 long    $57 = load long* $15 users: 80
+index: 80 byte*   $58 = ptroffset byte* $56, long $57 users: 81
+index: 81 byte    $59 = load byte* $58 users: 82
+index: 82 bool    $60 = equal byte $51, byte $59 users: 83
+index: 83 bool    $61 = not bool $60 users: 84
+index: 84 branch  bool $61, @10, @11 users:
+@8
+index: 85 long    $62 = load long* $8 users: 86
+index: 86 long    $63 = add long $62, long 1 users: 87
+index: 87 store   long $63, long* $8 users:
+index: 88 jmp     @6 users:
+@9
+index: 89 bool    $64 = load bool* $7 users: 90
+index: 90 branch  bool $64, @12, @13 users:
+@10
+index: 91 store   bool false, bool* $7 users:
+index: 92 jmp     @9 users:
+@11
+index: 93 jmp     @8 users:
+@12
+index: 94 long    $65 = load long* $6 users: 95
+index: 95 ret     long $65 users:
+@13
+index: 96 $T2*    $66 = load $T2** $3 users: 108
+index: 97 $T2*    $67 = load $T2** $4 users: 98
+index: 98 store   $T2* $67, $T2** $16 users:
+index: 99 store   long 0, long* $17 users:
+index: 100 $T2*    $68 = load $T2** $16 users: 101
+index: 101 byte**  $69 = elemaddr $T2* $68, long 0 users: 102
+index: 102 byte*   $70 = load byte** $69 users: 104
+index: 103 long    $71 = load long* $17 users: 104
+index: 104 byte*   $72 = ptroffset byte* $70, long $71 users: 105
+index: 105 byte    $73 = load byte* $72 users: 109
+index: 106 long    $74 = load long* $6 users: 107
+index: 107 long    $75 = add long $74, long 1 users: 110
+index: 108 arg     $T2* $66 users:
+index: 109 arg     byte $73 users:
+index: 110 arg     long $75 users:
+index: 111 long    $76 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 112
+index: 112 store   long $76, long* $6 users:
+index: 113 jmp     @5 users:
+
+====================================================================
+after all optimizations
+====================================================================
+
+// std::basic_string<char>::find(const std::basic_string<char>&, long long int) const
+
+function $T83* mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2 !108
+{
+@0  $T2*    $0 = param
+    $T2*    $1 = param
+    long    $2 = param
+    $T2**   $3 = local $T2*
+    $T2**   $4 = local $T2*
+    long*   $5 = local long
+    long*   $6 = local long
+    bool*   $7 = local bool
+    long*   $8 = local long
+    store   $T2* $0, $T2** $3
+    store   $T2* $1, $T2** $4
+    store   long $2, long* $5
+    $T2*    $9 = load $T2** $4
+    $T2**   $10 = local $T2*
+    $T2**   $11 = local $T2*
+    long*   $12 = local long
+    $T2**   $13 = local $T2*
+    $T2**   $14 = local $T2*
+    long*   $15 = local long
+    $T2**   $16 = local $T2*
+    long*   $17 = local long
+    store   $T2* $9, $T2** $10
+    $T2*    $18 = load $T2** $10
+    long*   $19 = elemaddr $T2* $18, long 1
+    long    $20 = load long* $19
+    bool    $21 = equal long $20, long 0
+    branch  bool $21, @1, @2
+
+@1  long    $22 = load long* $5
+    ret     long $22
+
+@2  $T2*    $23 = load $T2** $3
+    $T2*    $24 = load $T2** $4
+    store   $T2* $24, $T2** $11
+    store   long 0, long* $12
+    $T2*    $25 = load $T2** $11
+    byte**  $26 = elemaddr $T2* $25, long 0
+    byte*   $27 = load byte** $26
+    long    $28 = load long* $12
+    byte*   $29 = ptroffset byte* $27, long $28
+    byte    $30 = load byte* $29
+    long    $31 = load long* $5
+    arg     $T2* $23
+    arg     byte $30
+    arg     long $31
+    long    $32 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $32, long* $6
+    jmp     @5
+
+@3  store   bool true, bool* $7
+    store   long 1, long* $8
+    jmp     @6
+
+@4  long    $33 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    ret     long $33
+
+@5  long    $34 = load long* $6
+    long    $35 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7
+    bool    $36 = equal long $34, long $35
+    bool    $37 = not bool $36
+    branch  bool $37, @3, @4
+
+@6  long    $38 = load long* $8
+    $T2*    $39 = load $T2** $4
+    store   $T2* $39, $T2** $13
+    $T2*    $40 = load $T2** $13
+    long*   $41 = elemaddr $T2* $40, long 1
+    long    $42 = load long* $41
+    bool    $43 = less long $38, long $42
+    branch  bool $43, @7, @9
+
+@7  $T2*    $44 = load $T2** $3
+    byte**  $45 = elemaddr $T2* $44, long 0
+    byte*   $46 = load byte** $45
+    long    $47 = load long* $8
+    long    $48 = load long* $6
+    long    $49 = add long $47, long $48
+    byte*   $50 = ptroffset byte* $46, long $49
+    byte    $51 = load byte* $50
+    $T2*    $52 = load $T2** $4
+    long    $53 = load long* $8
+    store   $T2* $52, $T2** $14
+    store   long $53, long* $15
+    $T2*    $54 = load $T2** $14
+    byte**  $55 = elemaddr $T2* $54, long 0
+    byte*   $56 = load byte** $55
+    long    $57 = load long* $15
+    byte*   $58 = ptroffset byte* $56, long $57
+    byte    $59 = load byte* $58
+    bool    $60 = equal byte $51, byte $59
+    bool    $61 = not bool $60
+    branch  bool $61, @10, @11
+
+@8  long    $62 = load long* $8
+    long    $63 = add long $62, long 1
+    store   long $63, long* $8
+    jmp     @6
+
+@9  bool    $64 = load bool* $7
+    branch  bool $64, @12, @13
+
+@10 store   bool false, bool* $7
+    jmp     @9
+
+@11 jmp     @8
+
+@12 long    $65 = load long* $6
+    ret     long $65
+
+@13 $T2*    $66 = load $T2** $3
+    $T2*    $67 = load $T2** $4
+    store   $T2* $67, $T2** $16
+    store   long 0, long* $17
+    $T2*    $68 = load $T2** $16
+    byte**  $69 = elemaddr $T2* $68, long 0
+    byte*   $70 = load byte** $69
+    long    $71 = load long* $17
+    byte*   $72 = ptroffset byte* $70, long $71
+    byte    $73 = load byte* $72
+    long    $74 = load long* $6
+    long    $75 = add long $74, long 1
+    arg     $T2* $66
+    arg     byte $73
+    arg     long $75
+    long    $76 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84
+    store   long $76, long* $6
+    jmp     @5
+}
+
+function mfn_basic_string_find_B038A81C7CC216C671B09A7D69E51BDC53393CD2
+@0
+index: 0 $T2*    $0 = param users: 9
+index: 1 $T2*    $1 = param users: 10
+index: 2 long    $2 = param users: 11
+index: 3 $T2**   $3 = local $T2* users: 9 29 64 96
+index: 4 $T2**   $4 = local $T2* users: 10 12 30 57 72 97
+index: 5 long*   $5 = local long users: 11 27 39
+index: 6 long*   $6 = local long users: 44 51 68 94 106 112
+index: 7 bool*   $7 = local bool users: 46 89 91
+index: 8 long*   $8 = local long users: 47 56 67 73 85 87
+index: 9 store   $T2* $0, $T2** $3 users:
+index: 10 store   $T2* $1, $T2** $4 users:
+index: 11 store   long $2, long* $5 users:
+index: 12 $T2*    $9 = load $T2** $4 users: 21
+index: 13 $T2**   $10 = local $T2* users: 21 22
+index: 14 $T2**   $11 = local $T2* users: 31 33
+index: 15 long*   $12 = local long users: 32 36
+index: 16 $T2**   $13 = local $T2* users: 58 59
+index: 17 $T2**   $14 = local $T2* users: 74 76
+index: 18 long*   $15 = local long users: 75 79
+index: 19 $T2**   $16 = local $T2* users: 98 100
+index: 20 long*   $17 = local long users: 99 103
+index: 21 store   $T2* $9, $T2** $10 users:
+index: 22 $T2*    $18 = load $T2** $10 users: 23
+index: 23 long*   $19 = elemaddr $T2* $18, long 1 users: 24
+index: 24 long    $20 = load long* $19 users: 25
+index: 25 bool    $21 = equal long $20, long 0 users: 26
+index: 26 branch  bool $21, @1, @2 users:
+@1
+index: 27 long    $22 = load long* $5 users: 28
+index: 28 ret     long $22 users:
+@2
+index: 29 $T2*    $23 = load $T2** $3 users: 40
+index: 30 $T2*    $24 = load $T2** $4 users: 31
+index: 31 store   $T2* $24, $T2** $11 users:
+index: 32 store   long 0, long* $12 users:
+index: 33 $T2*    $25 = load $T2** $11 users: 34
+index: 34 byte**  $26 = elemaddr $T2* $25, long 0 users: 35
+index: 35 byte*   $27 = load byte** $26 users: 37
+index: 36 long    $28 = load long* $12 users: 37
+index: 37 byte*   $29 = ptroffset byte* $27, long $28 users: 38
+index: 38 byte    $30 = load byte* $29 users: 41
+index: 39 long    $31 = load long* $5 users: 42
+index: 40 arg     $T2* $23 users:
+index: 41 arg     byte $30 users:
+index: 42 arg     long $31 users:
+index: 43 long    $32 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 44
+index: 44 store   long $32, long* $6 users:
+index: 45 jmp     @5 users:
+@3
+index: 46 store   bool true, bool* $7 users:
+index: 47 store   long 1, long* $8 users:
+index: 48 jmp     @6 users:
+@4
+index: 49 long    $33 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 50
+index: 50 ret     long $33 users:
+@5
+index: 51 long    $34 = load long* $6 users: 53
+index: 52 long    $35 = load long* variable_npos_FA5B1317B6693BF161A1E7CCB133ACB13D2699E7 users: 53
+index: 53 bool    $36 = equal long $34, long $35 users: 54
+index: 54 bool    $37 = not bool $36 users: 55
+index: 55 branch  bool $37, @3, @4 users:
+@6
+index: 56 long    $38 = load long* $8 users: 62
+index: 57 $T2*    $39 = load $T2** $4 users: 58
+index: 58 store   $T2* $39, $T2** $13 users:
+index: 59 $T2*    $40 = load $T2** $13 users: 60
+index: 60 long*   $41 = elemaddr $T2* $40, long 1 users: 61
+index: 61 long    $42 = load long* $41 users: 62
+index: 62 bool    $43 = less long $38, long $42 users: 63
+index: 63 branch  bool $43, @7, @9 users:
+@7
+index: 64 $T2*    $44 = load $T2** $3 users: 65
+index: 65 byte**  $45 = elemaddr $T2* $44, long 0 users: 66
+index: 66 byte*   $46 = load byte** $45 users: 70
+index: 67 long    $47 = load long* $8 users: 69
+index: 68 long    $48 = load long* $6 users: 69
+index: 69 long    $49 = add long $47, long $48 users: 70
+index: 70 byte*   $50 = ptroffset byte* $46, long $49 users: 71
+index: 71 byte    $51 = load byte* $50 users: 82
+index: 72 $T2*    $52 = load $T2** $4 users: 74
+index: 73 long    $53 = load long* $8 users: 75
+index: 74 store   $T2* $52, $T2** $14 users:
+index: 75 store   long $53, long* $15 users:
+index: 76 $T2*    $54 = load $T2** $14 users: 77
+index: 77 byte**  $55 = elemaddr $T2* $54, long 0 users: 78
+index: 78 byte*   $56 = load byte** $55 users: 80
+index: 79 long    $57 = load long* $15 users: 80
+index: 80 byte*   $58 = ptroffset byte* $56, long $57 users: 81
+index: 81 byte    $59 = load byte* $58 users: 82
+index: 82 bool    $60 = equal byte $51, byte $59 users: 83
+index: 83 bool    $61 = not bool $60 users: 84
+index: 84 branch  bool $61, @10, @11 users:
+@8
+index: 85 long    $62 = load long* $8 users: 86
+index: 86 long    $63 = add long $62, long 1 users: 87
+index: 87 store   long $63, long* $8 users:
+index: 88 jmp     @6 users:
+@9
+index: 89 bool    $64 = load bool* $7 users: 90
+index: 90 branch  bool $64, @12, @13 users:
+@10
+index: 91 store   bool false, bool* $7 users:
+index: 92 jmp     @9 users:
+@11
+index: 93 jmp     @8 users:
+@12
+index: 94 long    $65 = load long* $6 users: 95
+index: 95 ret     long $65 users:
+@13
+index: 96 $T2*    $66 = load $T2** $3 users: 108
+index: 97 $T2*    $67 = load $T2** $4 users: 98
+index: 98 store   $T2* $67, $T2** $16 users:
+index: 99 store   long 0, long* $17 users:
+index: 100 $T2*    $68 = load $T2** $16 users: 101
+index: 101 byte**  $69 = elemaddr $T2* $68, long 0 users: 102
+index: 102 byte*   $70 = load byte** $69 users: 104
+index: 103 long    $71 = load long* $17 users: 104
+index: 104 byte*   $72 = ptroffset byte* $70, long $71 users: 105
+index: 105 byte    $73 = load byte* $72 users: 109
+index: 106 long    $74 = load long* $6 users: 107
+index: 107 long    $75 = add long $74, long 1 users: 110
+index: 108 arg     $T2* $66 users:
+index: 109 arg     byte $73 users:
+index: 110 arg     long $75 users:
+index: 111 long    $76 = call $T82 @mfn_basic_string_find_5139D09E19427E1B802ED40DC33C3A895D56CD84 users: 112
+index: 112 store   long $76, long* $6 users:
+index: 113 jmp     @5 users:

@@ -90,7 +90,7 @@ void RemoveIdentityFunctionCall(otava::intermediate::FunctionCallInstruction* id
     identityFnCallInst->Parent()->RemoveInstruction(identityFnCallInst);
 }
 
-void OptimizeIdentityCalls(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context)
+bool OptimizeIdentityCalls(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context)
 {
     bool optimized = false;
     otava::intermediate::BasicBlock* bb = fn->FirstBasicBlock();
@@ -118,6 +118,7 @@ void OptimizeIdentityCalls(otava::intermediate::Function* fn, otava::intermediat
     {
         fn->SetNumbers();
     }
+    return optimized;
 }
 
 } // otava::optimizer

@@ -1322,6 +1322,7 @@ bool OptimizeLess(otava::intermediate::LessInstruction* inst, otava::intermediat
 
 bool OptimizeArithmetics(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context)
 {
+    bool fnOptimized = false;
     bool optimized = true;
     int count = 0;
     int maxArithmeticOptimizationCount = context->MaxArithmeticOptimizationCount();
@@ -1490,9 +1491,10 @@ bool OptimizeArithmetics(otava::intermediate::Function* fn, otava::intermediate:
         {
             ++count;
             fn->SetNumbers();
+            fnOptimized = true;
         }
     }
-    return optimized;
+    return fnOptimized;
 }
 
 } // otava::optimizer

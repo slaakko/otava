@@ -28,6 +28,25 @@ enum class Optimizations : std::uint64_t
     o3 = xor_ | jump | removeNops | jumpTableSwitch | arithmetic | identity | deadCodeElimination | moveLocalsToEntryBlock | inlining
 };
 
+#ifdef OTAVA
+
+Optimizations operator|(Optimizations left, Optimizations right) noexcept
+{
+    return Optimizations(static_cast<std::uint64_t>(left) | static_cast<std::uint64_t>(right));
+}
+
+Optimizations operator&(Optimizations left, Optimizations right) noexcept
+{
+    return Optimizations(static_cast<std::uint64_t>(left) & static_cast<std::uint64_t>(right));
+}
+
+Optimizations operator~(Optimizations operand) noexcept
+{
+    return Optimizations(~static_cast<std::uint64_t>(operand));
+}
+
+#else
+
 constexpr Optimizations operator|(Optimizations left, Optimizations right) noexcept
 {
     return Optimizations(static_cast<std::uint64_t>(left) | static_cast<std::uint64_t>(right));
@@ -42,6 +61,8 @@ constexpr Optimizations operator~(Optimizations operand) noexcept
 {
     return Optimizations(~static_cast<std::uint64_t>(operand));
 }
+
+#endif
 
 Optimizations currentOptimizations = Optimizations::o2;
 
@@ -67,6 +88,6 @@ private:
     std::string optLevel;
 };
 
-void Optimize(otava::intermediate::IntermediateContext* context);
+void Optimize(otava::intermediate::IntermediateContext* context, std::ostream* outFile, const std::string& optFn);
 
 } // otava::optimizer

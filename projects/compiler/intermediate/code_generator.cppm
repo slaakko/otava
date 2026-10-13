@@ -11,6 +11,7 @@ import otava.intermediate.context;
 import otava.intermediate.value;
 import otava.intermediate.data;
 import otava.intermediate.register_allocator;
+import otava.assembly.data;
 import otava.assembly.file;
 import otava.assembly.function;
 import otava.assembly.instruction;

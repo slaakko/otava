@@ -43,7 +43,7 @@ void constructive_move_backward(T* to, T* from, ssize_t count)
 }
 
 template<typename T>
-void destruct(T* elements, ssize_t count)
+void do_destruct(T* elements, ssize_t count)
 {
     for (ssize_t i = 0; i < count; ++i)
     {
@@ -389,7 +389,7 @@ private:
     {
         if (sz > 0)
         {
-            destruct(elements, sz);
+            do_destruct(elements, sz);
             sz = 0;
         }
         if (res > 0)

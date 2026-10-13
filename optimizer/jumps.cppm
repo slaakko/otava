@@ -10,6 +10,6 @@ import otava.intermediate.code;
 
 export namespace otava::optimizer {
 
-void OptimizeJumps(otava::intermediate::Function* fn);
+bool OptimizeJumps(otava::intermediate::Function* fn);
 
 } // otava::optimizer

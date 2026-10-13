@@ -7,6 +7,7 @@ export module otava.intermediate.context;
 
 import otava.intermediate.compile_unit;
 import otava.intermediate.types;
+import otava.intermediate.value;
 import otava.intermediate.data;
 import otava.intermediate.code;
 import otava.intermediate.metadata;

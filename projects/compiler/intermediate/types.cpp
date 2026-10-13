@@ -23,13 +23,13 @@ TypeRef::TypeRef(const soul::ast::Span& span_, std::int32_t id_) noexcept : span
 }
 
 void TypeRef::SetType(Type* type_) noexcept
-{ 
-    type = type_; 
+{
+    type = type_;
 }
 
 Type* TypeRef::GetType() const noexcept
-{ 
-    return type; 
+{
+    return type;
 }
 
 Type::Type(const soul::ast::Span& span_, TypeKind kind_, std::int32_t id_) noexcept : span(span_), kind(kind_), id(id_), defaultValue(nullptr)
@@ -223,19 +223,19 @@ void Type::WriteDeclaration(util::CodeFormatter& formatter)
     formatter.Write(" = type ");
 }
 
-Value* Type::DefaultValue() noexcept
-{
-    return defaultValue;
+Value* Type::DefaultValue() noexcept 
+{ 
+    return defaultValue; 
 }
 
-void Type::SetDefaultValue(Value* defaultValue_) noexcept
-{
-    defaultValue = defaultValue_;
+void Type::SetDefaultValue(Value* defaultValue_) noexcept 
+{ 
+    defaultValue = defaultValue_; 
 }
 
 Value* Type::MakeDefaultValue(IntermediateContext& context) const
-{
-    return nullptr;
+{ 
+    return nullptr; 
 }
 
 TypeRef Type::GetTypeRef()
@@ -524,13 +524,13 @@ void StructureType::SetComment(const std::string& comment_)
 }
 
 void StructureType::SetMetadataRef(MetadataRef* metadataRef_) noexcept
-{ 
-    metadataRef = metadataRef_; 
+{
+    metadataRef = metadataRef_;
 }
 
-MetadataRef* StructureType::GetMetadataRef() const noexcept 
-{ 
-    return metadataRef; 
+MetadataRef* StructureType::GetMetadataRef() const noexcept
+{
+    return metadataRef;
 }
 
 FwdDeclaredStructureType::FwdDeclaredStructureType(std::uint64_t id_, std::int32_t typeId_) noexcept :
@@ -770,14 +770,14 @@ void Types::Init()
     doubleType.SetDefaultValue(context->GetDoubleValue(0.0));
 }
 
-IntermediateContext* Types::GetContext() const noexcept
-{
-    return context;
+IntermediateContext* Types::GetContext() const noexcept 
+{ 
+    return context; 
 }
 
-void Types::SetContext(IntermediateContext* context_) noexcept
-{
-    context = context_;
+void Types::SetContext(IntermediateContext* context_) noexcept 
+{ 
+    context = context_; 
 }
 
 void Types::AddStructureType(const soul::ast::Span& span, std::int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* mdRef)

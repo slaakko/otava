@@ -8,6 +8,7 @@ module otava.intermediate.types;
 import otava.intermediate.context;
 import otava.intermediate.error;
 import otava.intermediate.metadata;
+import otava.intermediate.value;
 import otava.intermediate.visitor;
 import util.align;
 
@@ -712,7 +713,8 @@ Type* GetElemType(Value* ptr, Value* index, const soul::ast::Span& span, Interme
             StructureType* structureType = static_cast<StructureType*>(aggregateType);
             if (index->IsLongValue())
             {
-                std::int64_t idx = static_cast<LongValue*>(index)->GetValue();
+                LongValue* longValue = static_cast<LongValue*>(index);
+                std::int64_t idx = longValue->GetValue();
                 if (idx >= 0 && idx < structureType->FieldCount())
                 {
                     return context->MakePtrType(structureType->FieldType(static_cast<int>(idx)));
@@ -1008,7 +1010,7 @@ void Types::ResolveForwardReferences(std::uint64_t id, StructureType* structureT
         if (it != fwdDeclarationMap.end())
         {
             std::vector<Type*>& dependentTypes = it->second;
-            for (auto& dependentType : dependentTypes)
+            for (auto* dependentType : dependentTypes)
             {
                 dependentType->ReplaceForwardReference(fwdType, structureType, context);
             }

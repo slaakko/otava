@@ -198,7 +198,7 @@ void Inline(otava::intermediate::Function* fn, otava::intermediate::Instruction*
     fn->SetNumbers();
 }
 
-void Inline(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context)
+bool Inline(otava::intermediate::Function* fn, otava::intermediate::IntermediateContext* context)
 {
     bool fnInlined = false;
     bool inlined = false;
@@ -262,6 +262,7 @@ void Inline(otava::intermediate::Function* fn, otava::intermediate::Intermediate
     {
         context->IncFunctionsInlined();
     }
+    return fnInlined;
 }
 
 } // namespace otava::optimizer

@@ -10,6 +10,6 @@ import otava.intermediate.code;
 
 export namespace otava::optimizer {
 
-void MoveLocalsToEntryBlock(otava::intermediate::Function* fn);
+bool MoveLocalsToEntryBlock(otava::intermediate::Function* fn);
 
 } // namespace otava::optimizer

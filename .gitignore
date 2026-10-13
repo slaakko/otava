@@ -25,6 +25,7 @@ get_sources.bat
 *.ast
 *.classmap
 *.pdb
+*.bak
 doc.prev
 DFA.debug.txt
 CLASSMAP.debug.txt

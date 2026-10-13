@@ -10,6 +10,6 @@ import otava.intermediate.code;
 
 export namespace otava::optimizer {
 
-void DeadCodeElimination(otava::intermediate::Function* fn);
+bool DeadCodeElimination(otava::intermediate::Function* fn);
 
 } // otava::optimizer

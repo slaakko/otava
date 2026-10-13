@@ -54,10 +54,10 @@ constexpr BuildFlags operator~(BuildFlags flags) noexcept
 
 #endif
 
-void Build(soul::lexer::FileMap& fileMap, Project* project, const std::string& config, int optLevel, BuildFlags flags, std::set<Project*, ProjectLess>& projectSet,
-    std::ostream* outFile);
+void Build(soul::lexer::FileMap& fileMap, Project* project, const std::string& config, int optLevel, const std::string& optFn, 
+    BuildFlags flags, std::set<Project*, ProjectLess>& projectSet, std::ostream* outFile);
 
-void Build(soul::lexer::FileMap& fileMap, Solution* solution, const std::string& config, int optLevel, BuildFlags flags, std::set<Project*, ProjectLess>& projectSet,
-    std::ostream* outFile);
+void Build(soul::lexer::FileMap& fileMap, Solution* solution, const std::string& config, int optLevel, const std::string& optFn, 
+    BuildFlags flags, std::set<Project*, ProjectLess>& projectSet, std::ostream* outFile);
 
 } // namespace otava::build

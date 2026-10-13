@@ -22,7 +22,7 @@ void SetEx()
 
 std::string OtavaVersionStr()
 {
-    return "0.2.8";
+    return "0.2.9";
 }
 
 std::string OtavaRoot()

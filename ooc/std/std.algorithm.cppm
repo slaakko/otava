@@ -157,7 +157,7 @@ O remove_copy(I begin, I end, O result, const T& value)
 {
     while (begin != end)
     {
-        if (*begin == value)
+        if (!(*begin == value))
         {
             *result = *begin;
             ++result;

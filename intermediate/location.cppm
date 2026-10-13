@@ -20,6 +20,25 @@ enum class Locations : int
     none = 0, reg = 1 << 0, frame = 1 << 1
 };
 
+#ifdef OTAVA
+
+Locations operator|(Locations left, Locations right) noexcept
+{
+    return Locations(int(left) | int(right));
+}
+
+Locations operator&(Locations left, Locations right) noexcept
+{
+    return Locations(int(left) & int(right));
+}
+
+Locations operator~(Locations locs) noexcept
+{
+    return Locations(~int(locs));
+}
+
+#else
+
 constexpr Locations operator|(Locations left, Locations right) noexcept
 {
     return Locations(int(left) | int(right));
@@ -34,6 +53,8 @@ constexpr Locations operator~(Locations locs) noexcept
 {
     return Locations(~int(locs));
 }
+
+#endif
 
 struct FrameLocation
 {

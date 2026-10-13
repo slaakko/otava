@@ -27,7 +27,7 @@ import util.time;
 
 std::string Version()
 {
-    return "0.2.8";
+    return "0.2.9";
 }
 
 void PrintHelp()
@@ -55,8 +55,8 @@ void PrintHelp()
     std::cout << "  Set compile debugging on." << "\n";
     std::cout << "--out=FILENAME | -o=FILENAME" << "\n";
     std::cout << "  Write compile debug output to file FILENAME." << "\n";
-    //std::cout << "--opt-fn=FN | -f=FN" << "\n";
-    //std::cout << "  Write optimization stages for function FN to --ort-out file." << "\n";
+    std::cout << "--opt-fn=FN | -f=FN" << "\n";
+    std::cout << "  Write optimization stages for function FN to --out file." << "\n";
     std::cout << "--time | -t" << "\n";
     std::cout << "  Print compilation time." << "\n";
 }
@@ -86,6 +86,7 @@ int main(int argc, const char** argv)
         bool symbolXml = false;
         bool all = false;
         int optLevel = -1;
+        std::string optFn;
         bool time = false;
         std::ofstream outFileStream;
         std::ostream* outFile = nullptr;
@@ -106,6 +107,10 @@ int main(int argc, const char** argv)
                         else if (components[0] == "--opt")
                         {
                             optLevel = std::stoi(components[1]);
+                        }
+                        else if (components[0] == "--opt-fn")
+                        {
+                            optFn = components[1];
                         }
                         else if (components[0] == "--define")
                         {
@@ -196,6 +201,10 @@ int main(int argc, const char** argv)
                         else if (components[0] == "-O")
                         {
                             optLevel = std::stoi(components[1]);
+                        }
+                        else if (components[0] == "-f")
+                        {
+                            optFn = components[1];
                         }
                         else if (components[0] == "-d")
                         {
@@ -352,7 +361,7 @@ int main(int argc, const char** argv)
                     buildFlags = buildFlags | otava::build::BuildFlags::debug;
                 }
                 std::set<otava::build::Project*, otava::build::ProjectLess> projectSet;
-                otava::build::Build(fileMap, project.get(), config, optLevel, buildFlags, projectSet, outFile);
+                otava::build::Build(fileMap, project.get(), config, optLevel, optFn, buildFlags, projectSet, outFile);
             }
             else if (file.ends_with(".solution"))
             {
@@ -391,7 +400,7 @@ int main(int argc, const char** argv)
                     buildFlags = buildFlags | otava::build::BuildFlags::debug;
                 }
                 std::set<otava::build::Project*, otava::build::ProjectLess> projectSet;
-                otava::build::Build(fileMap, solution.get(), config, optLevel, buildFlags, projectSet, outFile);
+                otava::build::Build(fileMap, solution.get(), config, optLevel, optFn, buildFlags, projectSet, outFile);
             }
             else
             {

@@ -15,8 +15,8 @@ export namespace otava::intermediate {
 
 class Value;
 class IntermediateContext;
-class Type;
 class Types;
+class Type;
 class Visitor;
 class ArrayType;
 class StructureType;

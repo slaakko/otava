@@ -196,6 +196,9 @@ Symbol::~Symbol()
     {
         module->RemoveSymbol(this);
     }
+#ifdef DEBUG_HEAP
+    std::cout << "~symbol:" << SymbolKindStr(kind) << " : " << ToUnderlying(id) << "\n";
+#endif
 }
 
 Module* Symbol::GetModule() const noexcept

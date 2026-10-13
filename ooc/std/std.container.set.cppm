@@ -5,6 +5,7 @@ import std.functional;
 import std.utilities.pair;
 import std.utilities.unique_ptr;
 import std.container.rb_tree;
+import std.basic_string;
 
 export namespace std {
 

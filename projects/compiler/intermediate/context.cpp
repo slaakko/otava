@@ -24,74 +24,74 @@ IntermediateContext::IntermediateContext() :
     metadata.SetContext(this);
 }
 
-Value* IntermediateContext::GetTrueValue()
+Value* IntermediateContext::GetTrueValue() 
+{ 
+    return data.GetTrueValue(types); 
+}
+
+Value* IntermediateContext::GetFalseValue() 
+{ 
+    return data.GetFalseValue(types); 
+}
+
+Value* IntermediateContext::GetSByteValue(std::int8_t value)
 {
-    return data.GetTrueValue(types);
+    return data.GetSByteValue(value, types);
 }
 
-Value* IntermediateContext::GetFalseValue()
+Value* IntermediateContext::GetByteValue(std::uint8_t value)
 {
-    return data.GetFalseValue(types);
+    return data.GetByteValue(value, types);
 }
 
-Value* IntermediateContext::GetSByteValue(std::int8_t value) 
-{ 
-    return data.GetSByteValue(value, types); 
+Value* IntermediateContext::GetShortValue(std::int16_t value)
+{
+    return data.GetShortValue(value, types);
 }
 
-Value* IntermediateContext::GetByteValue(std::uint8_t value) 
-{ 
-    return data.GetByteValue(value, types); 
+Value* IntermediateContext::GetUShortValue(std::uint16_t value)
+{
+    return data.GetUShortValue(value, types);
 }
 
-Value* IntermediateContext::GetShortValue(std::int16_t value) 
-{ 
-    return data.GetShortValue(value, types); 
+Value* IntermediateContext::GetIntValue(std::int32_t value)
+{
+    return data.GetIntValue(value, types);
 }
 
-Value* IntermediateContext::GetUShortValue(std::uint16_t value) 
-{ 
-    return data.GetUShortValue(value, types); 
+Value* IntermediateContext::GetUIntValue(std::uint32_t value)
+{
+    return data.GetUIntValue(value, types);
 }
 
-Value* IntermediateContext::GetIntValue(std::int32_t value) 
-{ 
-    return data.GetIntValue(value, types); 
+Value* IntermediateContext::GetLongValue(std::int64_t value)
+{
+    return data.GetLongValue(value, types);
 }
 
-Value* IntermediateContext::GetUIntValue(std::uint32_t value) 
-{ 
-    return data.GetUIntValue(value, types); 
+Value* IntermediateContext::GetULongValue(std::uint64_t value)
+{
+    return data.GetULongValue(value, types);
 }
 
-Value* IntermediateContext::GetLongValue(std::int64_t value) 
-{ 
-    return data.GetLongValue(value, types); 
+Value* IntermediateContext::GetIntegerValue(Type* type, std::int64_t value)
+{
+    return data.GetIntegerValue(type, value, types);
 }
 
-Value* IntermediateContext::GetULongValue(std::uint64_t value) 
-{ 
-    return data.GetULongValue(value, types); 
+Value* IntermediateContext::GetFloatValue(float value)
+{
+    return data.GetFloatValue(value, types);
 }
 
-Value* IntermediateContext::GetIntegerValue(Type* type, std::int64_t value) 
-{ 
-    return data.GetIntegerValue(type, value, types); 
+Value* IntermediateContext::GetDoubleValue(double value)
+{
+    return data.GetDoubleValue(value, types);
 }
 
-Value* IntermediateContext::GetFloatValue(float value) 
-{ 
-    return data.GetFloatValue(value, types); 
-}
-
-Value* IntermediateContext::GetDoubleValue(double value) 
-{ 
-    return data.GetDoubleValue(value, types); 
-}
-
-Value* IntermediateContext::GetFloatingValue(Type* type, double value) 
-{ 
-    return data.GetFloatingValue(type, value, types); 
+Value* IntermediateContext::GetFloatingValue(Type* type, double value)
+{
+    return data.GetFloatingValue(type, value, types);
 }
 
 Value* IntermediateContext::MakeArrayValue(const soul::ast::Span& span, const std::vector<Value*>& elements, ArrayType* arrayType)
@@ -114,19 +114,19 @@ Value* IntermediateContext::MakeStringArrayValue(const soul::ast::Span& span, ch
     return data.MakeStringArrayValue(span, prefix, elements);
 }
 
-Value* IntermediateContext::MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from) 
-{ 
-    return data.MakeConversionValue(span, type, from); 
+Value* IntermediateContext::MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from)
+{
+    return data.MakeConversionValue(span, type, from);
 }
 
-Value* IntermediateContext::MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr) 
-{ 
-    return data.MakeClsIdValue(span, type, clsIdStr); 
+Value* IntermediateContext::MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr)
+{
+    return data.MakeClsIdValue(span, type, clsIdStr);
 }
 
-Value* IntermediateContext::MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol) 
-{ 
-    return data.MakeSymbolValue(span, type, symbol); 
+Value* IntermediateContext::MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol)
+{
+    return data.MakeSymbolValue(span, type, symbol);
 }
 
 Value* IntermediateContext::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue)
