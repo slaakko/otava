@@ -83,6 +83,8 @@ interface <function_return_path_checker.cppm>;
 source <function_return_path_checker.cpp>;
 interface <function_symbol.cppm>;
 source <function_symbol.cpp>;
+interface <function_table.cppm>;
+source <function_table.cpp>;
 interface <function_templates.cppm>;
 source <function_templates.cpp>;
 interface <function_type_symbol.cppm>;

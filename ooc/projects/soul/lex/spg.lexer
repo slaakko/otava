@@ -1,0 +1,87 @@
+export module soul.lex.spg;
+
+import soul.cpp.token;
+import soul.cpp.op.token;
+import soul.punctuation.token;
+import soul.tool.token;
+import soul.cpp.keyword;
+import soul.spg.keyword;
+import soul.tool.expr;
+
+lexer SpgLexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{id}" { auto& token = lexer.CurrentToken(); std::int64_t kw = lexer.GetKeywordToken(token.match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
+        "{integer_literal}" { return INTEGER_LITERAL; }
+        "{floating_literal}" { return FLOATING_LITERAL; }
+        "{char_literal}" { return CHAR_LITERAL; }
+        "{string_literal}" { return STRING_LITERAL; }
+        "::=" { return PRODUCES; }
+        "$" { return DOLLAR; }
+        "\|\|" { return DISJUNCTION; }
+        "&&" { return AMP_AMP; }
+        "\.\*"{ return DOT_STAR; }
+        "->\*"{ return ARROW_STAR; }
+        "\|" { return PIPE; }
+        "^" { return CARET; }
+        "&" { return AMP; }
+        "==" { return EQ; }
+        "!=" { return NEQ; }
+        "<=" { return LEQ; }
+        ">=" { return GEQ; }
+        "<" { return LANGLE; }
+        ">" { return RANGLE; }
+        "<<"{ return SHIFT_LEFT; }
+        ">>" $(0) { return SHIFT_RIGHT; }
+        "\+" { return PLUS; }
+        "-" { return MINUS; }
+        "\*" { return STAR; }
+        "/" { return DIV; }
+        "%" { return REM; }
+        "\+\+" { return PLUS_PLUS; }
+        "--" { return MINUS_MINUS; }
+        "!" { return EXCLAMATION; }
+        "\?" { return QUEST; }
+        "~" { return TILDE; }
+        "\." { return DOT; }
+        "->" { return ARROW; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "\.\.\." { return ELLIPSIS; }
+        "::"{ return COLON_COLON; }
+        ":" { return COLON; }
+        ";" { return SEMICOLON; }
+        "#" { return HASH; }
+        "," { return COMMA; }
+        "=" { return ASSIGN; }
+        "\*=" { return MUL_ASSIGN; }
+        "/=" { return DIV_ASSIGN; }
+        "%=" { return REM_ASSIGN; }
+        "\+=" { return PLUS_ASSIGN; }
+        "-=" { return MINUS_ASSIGN; }
+        "<<=" { return SHIFT_LEFT_ASSIGN; }
+        ">>=" { return SHIFT_RIGHT_ASSIGN; }
+        "&=" { return AND_ASSIGN; }
+        "^=" { return XOR_ASSIGN; }
+        "\|=" { return OR_ASSIGN; }
+        "<[^\n>]*>" $(1) { return FILEPATH; }
+    }
+
+    variables 
+    {
+        int leftAngleCount;
+        bool matchFilePath;
+    }
+
+    actions
+    {
+        $(0)={ if (vars->leftAngleCount > 0) return soul::lexer::INVALID_TOKEN; }
+        $(1)={ if (!vars->matchFilePath) return soul::lexer::INVALID_TOKEN; }
+    }
+}

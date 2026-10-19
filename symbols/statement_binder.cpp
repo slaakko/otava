@@ -20,6 +20,7 @@ import otava.symbols.expr_parser;
 import otava.symbols.expression_binder;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
+import otava.symbols.function_table;
 import otava.symbols.function_return_path_checker;
 import otava.symbols.fundamental_type_kind;
 import otava.symbols.id;
@@ -2523,6 +2524,11 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
     if (context->GetFlag(ContextFlags::debugMemory))
     {
         context->SetFunction(functionDefinitionSymbol->FullName(context));
+    }
+    FunctionTable* functionTable = GetFunctionTable();
+    if (functionTable)
+    {
+        functionTable->AddFunction(ToUnderlying(functionDefinitionSymbol->Id()), functionDefinitionSymbol->FullName(context));
     }
     StatementBinder binder(context, functionDefinitionSymbol);
     context->PushStatementBinder(&binder);

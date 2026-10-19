@@ -1,0 +1,6 @@
+import soul.tool.token;
+
+keywords soul.spg.keyword
+{
+    ("main", MAIN), ("start", START), ("empty", EMPTY), ("any", ANY), ("var", VAR), ("project", PROJECT), ("tokens", TOKENS)
+}

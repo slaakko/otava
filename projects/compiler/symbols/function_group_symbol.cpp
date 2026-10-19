@@ -31,6 +31,13 @@ FunctionGroupSymbol::FunctionGroupSymbol(Module* module_, SymbolId id_, const st
 
 FunctionGroupSymbol::~FunctionGroupSymbol()
 {
+    if (IsReadOnly())
+    {
+        return;
+    }
+#ifdef DEBUG_HEAP
+    std::cout << "~functionGroup:" << Name() << "\n";
+#endif
     for (FunctionSymbol* fn : functions)
     {
         fn->ResetGroup();

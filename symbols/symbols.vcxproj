@@ -216,6 +216,8 @@
     <ClCompile Include="function_return_path_checker.cppm" />
     <ClCompile Include="function_symbol.cpp" />
     <ClCompile Include="function_symbol.cppm" />
+    <ClCompile Include="function_table.cpp" />
+    <ClCompile Include="function_table.cppm" />
     <ClCompile Include="function_templates.cpp" />
     <ClCompile Include="function_templates.cppm" />
     <ClCompile Include="function_type_symbol.cpp" />

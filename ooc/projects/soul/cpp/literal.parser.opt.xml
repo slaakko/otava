@@ -1,0 +1,43 @@
+<parserFile>
+ <grammar name="LiteralParser">
+  <rule first="{TRUE, FALSE, NULLPTR, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}" name="Literal">
+   <switch first="{TRUE, FALSE, NULLPTR, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}">
+    <case first="{INTEGER_LITERAL}">
+     <action first="{INTEGER_LITERAL}">
+      <token first="{INTEGER_LITERAL}" name="INTEGER_LITERAL"/>
+     </action>
+    </case>
+    <case first="{FLOATING_LITERAL}">
+     <action first="{FLOATING_LITERAL}">
+      <token first="{FLOATING_LITERAL}" name="FLOATING_LITERAL"/>
+     </action>
+    </case>
+    <case first="{CHAR_LITERAL}">
+     <action first="{CHAR_LITERAL}">
+      <token first="{CHAR_LITERAL}" name="CHAR_LITERAL"/>
+     </action>
+    </case>
+    <case first="{STRING_LITERAL}">
+     <action first="{STRING_LITERAL}">
+      <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+     </action>
+    </case>
+    <case first="{TRUE}">
+     <action first="{TRUE}">
+      <token first="{TRUE}" name="TRUE"/>
+     </action>
+    </case>
+    <case first="{FALSE}">
+     <action first="{FALSE}">
+      <token first="{FALSE}" name="FALSE"/>
+     </action>
+    </case>
+    <case first="{NULLPTR}">
+     <action first="{NULLPTR}">
+      <token first="{NULLPTR}" name="NULLPTR"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

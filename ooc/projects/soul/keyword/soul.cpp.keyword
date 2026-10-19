@@ -1,0 +1,14 @@
+import soul.cpp.token;
+
+keywords soul.cpp.keyword
+{
+    ("auto", AUTO), ("register", REGISTER), ("static", STATIC), ("extern", EXTERN), ("mutable", MUTABLE), 
+    ("char", CHAR), ("char8_t", CHAR8T), ("char16_t", CHAR16T), ("char32_t", CHAR32T), ("wchar_t", WCHART), 
+    ("bool", BOOL), ("short", SHORT), ("int", INT), ("long", LONG), ("signed", SIGNED), ("unsigned", UNSIGNED),
+    ("float", FLOAT), ("double", DOUBLE), ("void", VOID),
+    ("typedef", TYPEDEF), ("const", CONST), ("volatile", VOLATILE), ("using", USING), ("namespace", NAMESPACE), ("throw", THROW), ("sizeof", SIZEOF), ("operator", OPERATOR),
+    ("dynamic_cast", DYNAMIC_CAST), ("static_cast", STATIC_CAST), ("reinterpret_cast", REINTERPRET_CAST), ("const_cast", CONST_CAST), ("typeid", TYPEID), ("this", THIS),
+    ("new", NEW), ("delete", DELETE), ("true", TRUE), ("false", FALSE), ("nullptr", NULLPTR),
+    ("case", CASE), ("default", DEFAULT), ("if", IF), ("else", ELSE), ("switch", SWITCH), ("while", WHILE), ("do", DO), ("for", FOR),
+    ("break", BREAK), ("continue", CONTINUE), ("return", RETURN), ("goto", GOTO), ("try", TRY), ("catch", CATCH)
+}

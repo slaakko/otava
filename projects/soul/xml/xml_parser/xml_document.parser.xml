@@ -1,0 +1,1239 @@
+<parserFile>
+ <grammar name="XmlParser">
+  <rule first="{}" name="Document">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <action first="{}">
+         <empty first="{}"/>
+        </action>
+        <nonterminal first="{}" ruleName="Prolog"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="Element"/>
+      </sequence>
+      <kleene first="{}">
+       <nonterminal first="{}" ruleName="Misc"/>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="Prolog">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <optional first="{}">
+       <nonterminal first="{}" ruleName="XmlDecl"/>
+      </optional>
+      <kleene first="{}">
+       <nonterminal first="{}" ruleName="Misc"/>
+      </kleene>
+     </sequence>
+     <optional first="{}">
+      <group first="{}">
+       <sequence first="{}">
+        <nonterminal first="{}" ruleName="DocTypeDecl"/>
+        <kleene first="{}">
+         <nonterminal first="{}" ruleName="Misc"/>
+        </kleene>
+       </sequence>
+      </group>
+     </optional>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="XmlDecl">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <nonterminal first="{}" ruleName="VersionInfo"/>
+        </sequence>
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="EncodingDecl"/>
+        </optional>
+       </sequence>
+       <optional first="{}">
+        <nonterminal first="{}" ruleName="StandaloneDecl"/>
+       </optional>
+      </sequence>
+      <optional first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </optional>
+     </sequence>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="VersionInfo">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="Eq"/>
+     </sequence>
+     <nonterminal first="{}" ruleName="VersionNumber"/>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="S">
+   <positive first="{}"/>
+  </rule>
+  <rule first="{}" name="Eq">
+   <sequence first="{}">
+    <sequence first="{}">
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+    <optional first="{}">
+     <nonterminal first="{}" ruleName="S"/>
+    </optional>
+   </sequence>
+  </rule>
+  <rule first="{}" name="VersionNumber">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="VersionNumDQ"/>
+    <nonterminal first="{}" ruleName="VersionNumSQ"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="VersionNumDQ">
+   <sequence first="{}">
+    <sequence first="{}">
+     <nonterminal first="{}" ruleName="VersionNum"/>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="VersionNumSQ">
+   <sequence first="{}">
+    <sequence first="{}">
+     <nonterminal first="{}" ruleName="VersionNum"/>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="VersionNum">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <action first="{}"/>
+       <action first="{}"/>
+      </sequence>
+      <positive first="{}">
+       <group first="{}">
+        <action first="{}"/>
+       </group>
+      </positive>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="EncodingDecl">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="Eq"/>
+     </sequence>
+     <nonterminal first="{}" ruleName="EncodingName"/>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="EncodingName">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="EncNameDQ"/>
+    <nonterminal first="{}" ruleName="EncNameSQ"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="EncNameDQ">
+   <sequence first="{}">
+    <sequence first="{}">
+     <nonterminal first="{}" ruleName="EncName"/>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="EncNameSQ">
+   <sequence first="{}">
+    <sequence first="{}">
+     <nonterminal first="{}" ruleName="EncName"/>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="EncName">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <action first="{}"/>
+      <kleene first="{}">
+       <group first="{}">
+        <action first="{}"/>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="StandaloneDecl">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="Eq"/>
+     </sequence>
+     <action first="{}">
+      <nonterminal first="{}" ruleName="YesNo"/>
+     </action>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="YesNo">
+   <choice first="{}">
+    <choice first="{}">
+     <choice first="{}">
+      <action first="{}"/>
+      <action first="{}"/>
+     </choice>
+     <action first="{}"/>
+    </choice>
+    <action first="{}"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="Misc">
+   <choice first="{}">
+    <choice first="{}">
+     <nonterminal first="{}" ruleName="Comment"/>
+     <nonterminal first="{}" ruleName="PI"/>
+    </choice>
+    <nonterminal first="{}" ruleName="S"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="Comment">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <action first="{}"/>
+       <kleene first="{}">
+        <group first="{}">
+         <action first="{}">
+          <group first="{}">
+           <difference first="{}">
+            <nonterminal first="{}" ruleName="Char"/>
+           </difference>
+          </group>
+         </action>
+        </group>
+       </kleene>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="Char">
+   <action first="{}"/>
+  </rule>
+  <rule first="{}" name="PI">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <action first="{}"/>
+        <nonterminal first="{}" ruleName="PITarget"/>
+       </sequence>
+       <optional first="{}">
+        <group first="{}">
+         <sequence first="{}">
+          <nonterminal first="{}" ruleName="S"/>
+          <kleene first="{}">
+           <group first="{}">
+            <action first="{}">
+             <group first="{}">
+              <difference first="{}">
+               <nonterminal first="{}" ruleName="Char"/>
+              </difference>
+             </group>
+            </action>
+           </group>
+          </kleene>
+         </sequence>
+        </group>
+       </optional>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="PITarget">
+   <action first="{}">
+    <group first="{}">
+     <difference first="{}">
+      <nonterminal first="{}" ruleName="Name"/>
+      <nonterminal first="{}" ruleName="Xml"/>
+     </difference>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="Name">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <action first="{}">
+       <nonterminal first="{}" ruleName="NameStartChar"/>
+      </action>
+      <kleene first="{}">
+       <group first="{}">
+        <action first="{}">
+         <nonterminal first="{}" ruleName="NameChar"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="NameStartChar">
+   <action first="{}">
+    <group first="{}"/>
+   </action>
+  </rule>
+  <rule first="{}" name="NameChar">
+   <group first="{}">
+    <choice first="{}">
+     <action first="{}">
+      <nonterminal first="{}" ruleName="NameStartChar"/>
+     </action>
+     <action first="{}"/>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{}" name="Xml">
+   <sequence first="{}">
+    <sequence first="{}"/>
+   </sequence>
+  </rule>
+  <rule first="{}" name="Element">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <action first="{}">
+         <nonterminal first="{}" ruleName="Name"/>
+        </action>
+       </sequence>
+       <kleene first="{}">
+        <group first="{}">
+         <sequence first="{}">
+          <nonterminal first="{}" ruleName="S"/>
+          <nonterminal first="{}" ruleName="Attribute"/>
+         </sequence>
+        </group>
+       </kleene>
+      </sequence>
+      <optional first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </optional>
+     </sequence>
+     <group first="{}">
+      <choice first="{}">
+       <action first="{}"/>
+       <sequence first="{}">
+        <sequence first="{}">
+         <action first="{}"/>
+         <nonterminal first="{}" ruleName="Content"/>
+        </sequence>
+        <nonterminal first="{}" ruleName="ETag"/>
+       </sequence>
+      </choice>
+     </group>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="Attribute">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <action first="{}">
+        <nonterminal first="{}" ruleName="Name"/>
+       </action>
+       <nonterminal first="{}" ruleName="Eq"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="AttValue"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="AttValue">
+   <choice first="{}">
+    <action first="{}">
+     <nonterminal first="{}" ruleName="AttValueDQ"/>
+    </action>
+    <action first="{}">
+     <nonterminal first="{}" ruleName="AttValueSQ"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{}" name="AttValueDQ">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <action first="{}"/>
+       <kleene first="{}">
+        <group first="{}">
+         <choice first="{}">
+          <action first="{}"/>
+          <nonterminal first="{}" ruleName="Reference"/>
+         </choice>
+        </group>
+       </kleene>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="AttValueSQ">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <action first="{}"/>
+       <kleene first="{}">
+        <group first="{}">
+         <choice first="{}">
+          <action first="{}"/>
+          <nonterminal first="{}" ruleName="Reference"/>
+         </choice>
+        </group>
+       </kleene>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="Reference">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="CharRef"/>
+    <nonterminal first="{}" ruleName="EntityRef"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="CharRef">
+   <action first="{}">
+    <group first="{}">
+     <choice first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <nonterminal first="{}" ruleName="DecCodePoint"/>
+       </sequence>
+       <action first="{}"/>
+      </sequence>
+      <sequence first="{}">
+       <sequence first="{}">
+        <nonterminal first="{}" ruleName="HexCodePoint"/>
+       </sequence>
+       <action first="{}"/>
+      </sequence>
+     </choice>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="DecCodePoint">
+   <action first="{}">
+    <group first="{}">
+     <positive first="{}">
+      <group first="{}">
+       <action first="{}"/>
+      </group>
+     </positive>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="HexCodePoint">
+   <action first="{}">
+    <group first="{}">
+     <positive first="{}">
+      <group first="{}">
+       <action first="{}"/>
+      </group>
+     </positive>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="EntityRef">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <nonterminal first="{}" ruleName="Name"/>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="Content">
+   <group first="{}">
+    <sequence first="{}">
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="CharData"/>
+     </optional>
+     <kleene first="{}">
+      <group first="{}">
+       <sequence first="{}">
+        <group first="{}">
+         <choice first="{}">
+          <choice first="{}">
+           <choice first="{}">
+            <choice first="{}">
+             <nonterminal first="{}" ruleName="Element"/>
+             <nonterminal first="{}" ruleName="Reference"/>
+            </choice>
+            <nonterminal first="{}" ruleName="CDSect"/>
+           </choice>
+           <nonterminal first="{}" ruleName="PI"/>
+          </choice>
+          <nonterminal first="{}" ruleName="Comment"/>
+         </choice>
+        </group>
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="CharData"/>
+        </optional>
+       </sequence>
+      </group>
+     </kleene>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="CharData">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <action first="{}">
+       <empty first="{}"/>
+      </action>
+      <positive first="{}">
+       <group first="{}">
+        <action first="{}">
+         <group first="{}">
+          <difference first="{}">
+           <nonterminal first="{}" ruleName="CharDataChar"/>
+          </difference>
+         </group>
+        </action>
+       </group>
+      </positive>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="CharDataChar">
+   <action first="{}"/>
+  </rule>
+  <rule first="{}" name="CDSect">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <action first="{}"/>
+       <kleene first="{}">
+        <group first="{}">
+         <action first="{}">
+          <group first="{}">
+           <difference first="{}">
+            <nonterminal first="{}" ruleName="Char"/>
+           </difference>
+          </group>
+         </action>
+        </group>
+       </kleene>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="ETag">
+   <action first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <action first="{}">
+         <nonterminal first="{}" ruleName="Name"/>
+        </action>
+       </sequence>
+       <optional first="{}">
+        <nonterminal first="{}" ruleName="S"/>
+       </optional>
+      </sequence>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{}" name="DocTypeDecl">
+   <group first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <nonterminal first="{}" ruleName="S"/>
+         </sequence>
+         <nonterminal first="{}" ruleName="Name"/>
+        </sequence>
+        <optional first="{}">
+         <group first="{}">
+          <sequence first="{}">
+           <nonterminal first="{}" ruleName="S"/>
+           <nonterminal first="{}" ruleName="ExternalID"/>
+          </sequence>
+         </group>
+        </optional>
+       </sequence>
+       <optional first="{}">
+        <nonterminal first="{}" ruleName="S"/>
+       </optional>
+      </sequence>
+      <optional first="{}">
+       <group first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <nonterminal first="{}" ruleName="IntSubset"/>
+          </sequence>
+         </sequence>
+         <optional first="{}">
+          <nonterminal first="{}" ruleName="S"/>
+         </optional>
+        </sequence>
+       </group>
+      </optional>
+     </sequence>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{}" name="ExternalID">
+   <choice first="{}">
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="SystemLiteral"/>
+     </sequence>
+    </group>
+    <group first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </sequence>
+        <nonterminal first="{}" ruleName="PubidLiteral"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="SystemLiteral"/>
+     </sequence>
+    </group>
+   </choice>
+  </rule>
+  <rule first="{}" name="SystemLiteral">
+   <choice first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <kleene first="{}"/>
+     </sequence>
+    </sequence>
+    <sequence first="{}">
+     <sequence first="{}">
+      <kleene first="{}"/>
+     </sequence>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{}" name="PubidLiteral">
+   <choice first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <kleene first="{}">
+       <nonterminal first="{}" ruleName="PubidChar"/>
+      </kleene>
+     </sequence>
+    </sequence>
+    <sequence first="{}">
+     <sequence first="{}">
+      <kleene first="{}">
+       <group first="{}">
+        <difference first="{}">
+         <nonterminal first="{}" ruleName="PubidChar"/>
+        </difference>
+       </group>
+      </kleene>
+     </sequence>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{}" name="PubidChar">
+   <choice first="{}">
+    <choice first="{}"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="IntSubset">
+   <kleene first="{}">
+    <group first="{}">
+     <choice first="{}">
+      <nonterminal first="{}" ruleName="MarkupDecl"/>
+      <nonterminal first="{}" ruleName="DeclSep"/>
+     </choice>
+    </group>
+   </kleene>
+  </rule>
+  <rule first="{}" name="MarkupDecl">
+   <choice first="{}">
+    <choice first="{}">
+     <choice first="{}">
+      <choice first="{}">
+       <choice first="{}">
+        <nonterminal first="{}" ruleName="ElementDecl"/>
+        <nonterminal first="{}" ruleName="AttlistDecl"/>
+       </choice>
+       <nonterminal first="{}" ruleName="EntityDecl"/>
+      </choice>
+      <nonterminal first="{}" ruleName="NotationDecl"/>
+     </choice>
+     <nonterminal first="{}" ruleName="PI"/>
+    </choice>
+    <nonterminal first="{}" ruleName="Comment"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="ElementDecl">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </sequence>
+        <nonterminal first="{}" ruleName="Name"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="ContentSpec"/>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="ContentSpec">
+   <choice first="{}">
+    <choice first="{}">
+     <choice first="{}"/>
+     <nonterminal first="{}" ruleName="Mixed"/>
+    </choice>
+    <nonterminal first="{}" ruleName="Children"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="Mixed">
+   <choice first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <optional first="{}">
+          <nonterminal first="{}" ruleName="S"/>
+         </optional>
+        </sequence>
+       </sequence>
+       <kleene first="{}">
+        <group first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <sequence first="{}">
+            <optional first="{}">
+             <nonterminal first="{}" ruleName="S"/>
+            </optional>
+           </sequence>
+           <optional first="{}">
+            <nonterminal first="{}" ruleName="S"/>
+           </optional>
+          </sequence>
+          <nonterminal first="{}" ruleName="Name"/>
+         </sequence>
+        </group>
+       </kleene>
+      </sequence>
+      <optional first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </optional>
+     </sequence>
+    </sequence>
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </optional>
+       </sequence>
+      </sequence>
+      <optional first="{}">
+       <nonterminal first="{}" ruleName="S"/>
+      </optional>
+     </sequence>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{}" name="Choice">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </optional>
+       </sequence>
+       <nonterminal first="{}" ruleName="CP"/>
+      </sequence>
+      <positive first="{}">
+       <group first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <optional first="{}">
+            <nonterminal first="{}" ruleName="S"/>
+           </optional>
+          </sequence>
+          <optional first="{}">
+           <nonterminal first="{}" ruleName="S"/>
+          </optional>
+         </sequence>
+         <nonterminal first="{}" ruleName="CP"/>
+        </sequence>
+       </group>
+      </positive>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="CP">
+   <sequence first="{}">
+    <group first="{}">
+     <choice first="{}">
+      <choice first="{}">
+       <nonterminal first="{}" ruleName="Name"/>
+       <nonterminal first="{}" ruleName="Choice"/>
+      </choice>
+      <nonterminal first="{}" ruleName="Seq"/>
+     </choice>
+    </group>
+    <optional first="{}">
+     <group first="{}">
+      <choice first="{}">
+       <choice first="{}"/>
+      </choice>
+     </group>
+    </optional>
+   </sequence>
+  </rule>
+  <rule first="{}" name="Seq">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </optional>
+       </sequence>
+       <nonterminal first="{}" ruleName="CP"/>
+      </sequence>
+      <kleene first="{}">
+       <group first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <optional first="{}">
+            <nonterminal first="{}" ruleName="S"/>
+           </optional>
+          </sequence>
+          <optional first="{}">
+           <nonterminal first="{}" ruleName="S"/>
+          </optional>
+         </sequence>
+         <nonterminal first="{}" ruleName="CP"/>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="Children">
+   <sequence first="{}">
+    <group first="{}">
+     <choice first="{}">
+      <nonterminal first="{}" ruleName="Choice"/>
+      <nonterminal first="{}" ruleName="Seq"/>
+     </choice>
+    </group>
+    <optional first="{}">
+     <group first="{}">
+      <choice first="{}">
+       <choice first="{}"/>
+      </choice>
+     </group>
+    </optional>
+   </sequence>
+  </rule>
+  <rule first="{}" name="AttlistDecl">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <nonterminal first="{}" ruleName="S"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="Name"/>
+      </sequence>
+      <kleene first="{}">
+       <nonterminal first="{}" ruleName="AttDef"/>
+      </kleene>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="AttDef">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <nonterminal first="{}" ruleName="S"/>
+        <nonterminal first="{}" ruleName="Name"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="AttType"/>
+     </sequence>
+     <nonterminal first="{}" ruleName="S"/>
+    </sequence>
+    <nonterminal first="{}" ruleName="DefaultDecl"/>
+   </sequence>
+  </rule>
+  <rule first="{}" name="AttType">
+   <choice first="{}">
+    <choice first="{}">
+     <nonterminal first="{}" ruleName="StringType"/>
+     <nonterminal first="{}" ruleName="TokenizedType"/>
+    </choice>
+    <nonterminal first="{}" ruleName="EnumeratedType"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="StringType"/>
+  <rule first="{}" name="TokenizedType">
+   <choice first="{}">
+    <choice first="{}">
+     <choice first="{}">
+      <choice first="{}">
+       <choice first="{}">
+        <choice first="{}"/>
+       </choice>
+      </choice>
+     </choice>
+    </choice>
+   </choice>
+  </rule>
+  <rule first="{}" name="EnumeratedType">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="NotationType"/>
+    <nonterminal first="{}" ruleName="Enumeration"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="NotationType">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <nonterminal first="{}" ruleName="S"/>
+         </sequence>
+        </sequence>
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </optional>
+       </sequence>
+       <nonterminal first="{}" ruleName="Name"/>
+      </sequence>
+      <kleene first="{}">
+       <group first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <optional first="{}">
+            <nonterminal first="{}" ruleName="S"/>
+           </optional>
+          </sequence>
+          <optional first="{}">
+           <nonterminal first="{}" ruleName="S"/>
+          </optional>
+         </sequence>
+         <nonterminal first="{}" ruleName="Name"/>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="Enumeration">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <optional first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </optional>
+       </sequence>
+       <nonterminal first="{}" ruleName="Nmtoken"/>
+      </sequence>
+      <kleene first="{}">
+       <group first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <optional first="{}">
+            <nonterminal first="{}" ruleName="S"/>
+           </optional>
+          </sequence>
+          <optional first="{}">
+           <nonterminal first="{}" ruleName="S"/>
+          </optional>
+         </sequence>
+         <nonterminal first="{}" ruleName="Nmtoken"/>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="Nmtoken">
+   <positive first="{}">
+    <nonterminal first="{}" ruleName="NameChar"/>
+   </positive>
+  </rule>
+  <rule first="{}" name="DefaultDecl">
+   <choice first="{}">
+    <choice first="{}"/>
+    <group first="{}">
+     <sequence first="{}">
+      <optional first="{}">
+       <group first="{}">
+        <sequence first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </sequence>
+       </group>
+      </optional>
+      <nonterminal first="{}" ruleName="AttValue"/>
+     </sequence>
+    </group>
+   </choice>
+  </rule>
+  <rule first="{}" name="EntityDecl">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="GEDecl"/>
+    <nonterminal first="{}" ruleName="PEDecl"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="GEDecl">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </sequence>
+        <nonterminal first="{}" ruleName="Name"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="EntityDef"/>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="EntityDef">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="EntityValue"/>
+    <group first="{}">
+     <sequence first="{}">
+      <nonterminal first="{}" ruleName="ExternalID"/>
+      <optional first="{}">
+       <nonterminal first="{}" ruleName="NDataDecl"/>
+      </optional>
+     </sequence>
+    </group>
+   </choice>
+  </rule>
+  <rule first="{}" name="EntityValue">
+   <choice first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <kleene first="{}">
+       <group first="{}">
+        <choice first="{}">
+         <choice first="{}">
+          <nonterminal first="{}" ruleName="PEReference"/>
+         </choice>
+         <nonterminal first="{}" ruleName="Reference"/>
+        </choice>
+       </group>
+      </kleene>
+     </sequence>
+    </sequence>
+    <sequence first="{}">
+     <sequence first="{}">
+      <kleene first="{}">
+       <group first="{}">
+        <choice first="{}">
+         <choice first="{}">
+          <nonterminal first="{}" ruleName="PEReference"/>
+         </choice>
+         <nonterminal first="{}" ruleName="Reference"/>
+        </choice>
+       </group>
+      </kleene>
+     </sequence>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{}" name="PEReference">
+   <sequence first="{}">
+    <sequence first="{}">
+     <nonterminal first="{}" ruleName="Name"/>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="PEDecl">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <sequence first="{}">
+          <sequence first="{}">
+           <nonterminal first="{}" ruleName="S"/>
+          </sequence>
+         </sequence>
+         <nonterminal first="{}" ruleName="S"/>
+        </sequence>
+        <nonterminal first="{}" ruleName="Name"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <nonterminal first="{}" ruleName="PEDef"/>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="PEDef">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="EntityValue"/>
+    <nonterminal first="{}" ruleName="ExternalID"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="NDataDecl">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </sequence>
+     <nonterminal first="{}" ruleName="S"/>
+    </sequence>
+    <nonterminal first="{}" ruleName="Name"/>
+   </sequence>
+  </rule>
+  <rule first="{}" name="NotationDecl">
+   <sequence first="{}">
+    <sequence first="{}">
+     <sequence first="{}">
+      <sequence first="{}">
+       <sequence first="{}">
+        <sequence first="{}">
+         <nonterminal first="{}" ruleName="S"/>
+        </sequence>
+        <nonterminal first="{}" ruleName="Name"/>
+       </sequence>
+       <nonterminal first="{}" ruleName="S"/>
+      </sequence>
+      <group first="{}">
+       <choice first="{}">
+        <nonterminal first="{}" ruleName="ExternalID"/>
+        <nonterminal first="{}" ruleName="PublicID"/>
+       </choice>
+      </group>
+     </sequence>
+     <optional first="{}">
+      <nonterminal first="{}" ruleName="S"/>
+     </optional>
+    </sequence>
+   </sequence>
+  </rule>
+  <rule first="{}" name="DeclSep">
+   <choice first="{}">
+    <nonterminal first="{}" ruleName="PEReference"/>
+    <nonterminal first="{}" ruleName="S"/>
+   </choice>
+  </rule>
+  <rule first="{}" name="PublicID">
+   <sequence first="{}">
+    <sequence first="{}">
+     <nonterminal first="{}" ruleName="S"/>
+    </sequence>
+    <nonterminal first="{}" ruleName="PubidLiteral"/>
+   </sequence>
+  </rule>
+ </grammar>
+</parserFile>

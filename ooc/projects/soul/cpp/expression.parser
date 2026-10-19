@@ -1,0 +1,453 @@
+export module soul.cpp.expression.parser;
+
+[interface]import soul.ast.cpp;
+[interface]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.cpp.declarator.parser;
+[implementation]import soul.cpp.declaration.parser;
+[implementation]import soul.cpp.literal.parser;
+[implementation]import soul.cpp.identifier.parser;
+[implementation]import soul.lex.slg;
+[implementation]import soul.lex.spg;
+
+parser ExpressionParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+    lexer soul::lex::spg::SpgLexer<char32_t>;
+
+    using DeclaratorParser.TypeId;
+    using DeclaratorParser.TypeSpecifierSeq;
+    using DeclaratorParser.PtrOperator;
+    using DeclarationParser.SimpleTypeSpecifier;
+    using DeclarationParser.TypeName;
+    using LiteralParser.Literal;
+    using CppIdentifierParser.QualifiedCppId;
+
+    Expression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (
+            AssignmentExpression:left{ expr.reset(left); } 
+            (
+                COMMA AssignmentExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), soul::ast::cpp::Operator::comma, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ConstantExpression : soul::ast::cpp::Node*
+        ::= Expression:expr{ return expr; }
+        ;
+
+    AssignmentExpression : soul::ast::cpp::Node*
+        ::= LogicalOrExpression:left AssignmentOp:op AssignmentExpression:right{ return new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, left, right); }
+        |   ConditionalExpression:conditionalExpr{ return conditionalExpr; }
+        ;
+
+    AssignmentOp : soul::ast::cpp::Operator
+        ::= ASSIGN{ return soul::ast::cpp::Operator::assign; }
+        |   MUL_ASSIGN{ return soul::ast::cpp::Operator::mulAssign; }
+        |   DIV_ASSIGN{ return soul::ast::cpp::Operator::divAssign; }
+        |   REM_ASSIGN{ return soul::ast::cpp::Operator::remAssign; }
+        |   PLUS_ASSIGN{ return soul::ast::cpp::Operator::plusAssign; }
+        |   MINUS_ASSIGN{ return soul::ast::cpp::Operator::minusAssign; }
+        |   SHIFT_LEFT_ASSIGN{ return soul::ast::cpp::Operator::shiftLeftAssign; }
+        |   SHIFT_RIGHT_ASSIGN{ return soul::ast::cpp::Operator::shiftRightAssign; }
+        |   AND_ASSIGN{ return soul::ast::cpp::Operator::andAssign; }
+        |   XOR_ASSIGN{ return soul::ast::cpp::Operator::xorAssign; }
+        |   OR_ASSIGN{ return soul::ast::cpp::Operator::orAssign; }
+        ;
+
+    ConditionalExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   LogicalOrExpression:left{ expr.reset(left); }
+            (
+                QUEST Expression:thenExpr COLON AssignmentExpression:elseExpr{ expr.reset(new soul::ast::cpp::ConditionalNode(lexer.GetSourcePos(pos), expr.release(), thenExpr, elseExpr)); }
+            )?
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    LogicalOrExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   LogicalAndExpression:left{ expr.reset(left); }
+            (
+                DISJUNCTION LogicalAndExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), soul::ast::cpp::Operator::or_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    LogicalAndExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::=
+        (   InclusiveOrExpression:left{ expr.reset(left); }
+            (   
+                AMP_AMP InclusiveOrExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), soul::ast::cpp::Operator::and_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    InclusiveOrExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   ExclusiveOrExpression:left{ expr.reset(left); }
+            (
+                PIPE ExclusiveOrExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), soul::ast::cpp::Operator::bitor_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ExclusiveOrExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::=
+        (   AndExpression:left{ expr.reset(left); }
+            (
+                CARET AndExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), soul::ast::cpp::Operator::bitxor, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AndExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::=
+        (   EqualityExpression:left{ expr.reset(left); }
+            (
+                AMP EqualityExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), soul::ast::cpp::Operator::bitand_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    EqualityExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   RelationalExpression:left{ expr.reset(left); }
+            (
+                EqOp:op RelationalExpression:right!{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    EqOp : soul::ast::cpp::Operator
+        ::= EQ{ return soul::ast::cpp::Operator::eq; }
+        |   NEQ{ return soul::ast::cpp::Operator::notEq; }
+        ;
+
+    RelationalExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::=
+        (   ShiftExpression:left{ expr.reset(left); }
+            (
+                RelOp:op ShiftExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    RelOp : soul::ast::cpp::Operator
+        ::= LANGLE{ return soul::ast::cpp::Operator::less; }
+        |   RANGLE{ return soul::ast::cpp::Operator::greater; }
+        |   LEQ{ return soul::ast::cpp::Operator::lessOrEq; }
+        |   GEQ{ return soul::ast::cpp::Operator::greaterOrEq; }
+        ;
+
+    ShiftExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::=
+        (   AdditiveExpression:left{ expr.reset(left); }
+            (
+                ShiftOp:op AdditiveExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ShiftOp : soul::ast::cpp::Operator
+        ::= SHIFT_LEFT{ return soul::ast::cpp::Operator::shiftLeft; }
+        |   SHIFT_RIGHT{ return soul::ast::cpp::Operator::shiftRight; }
+        ;
+
+    AdditiveExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   MultiplicativeExpression:left{ expr.reset(left); }
+            (
+                AddOp:op MultiplicativeExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AddOp : soul::ast::cpp::Operator
+        ::= PLUS{ return soul::ast::cpp::Operator::plus; }
+        |   MINUS{ return soul::ast::cpp::Operator::minus; }
+        ;
+
+    MultiplicativeExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::=
+        (   PmExpression:left{ expr.reset(left); }
+            (
+                MulOp:op PmExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    MulOp : soul::ast::cpp::Operator
+        ::= STAR{ return soul::ast::cpp::Operator::mul; }
+        |   DIV{ return soul::ast::cpp::Operator::div; }
+        |   REM{ return soul::ast::cpp::Operator::rem; }
+        ;
+
+    PmExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   CastExpression:left{ expr.reset(left); }
+            (
+                PmOp:op CastExpression:right{ expr.reset(new soul::ast::cpp::BinaryOpExprNode(lexer.GetSourcePos(pos), op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    PmOp : soul::ast::cpp::Operator
+        ::= DOT_STAR{ return soul::ast::cpp::Operator::dotStar; }
+        |   ARROW_STAR{ return soul::ast::cpp::Operator::arrowStar; }
+        ;
+
+    CastExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   LPAREN TypeId:typeId RPAREN CastExpression:castExpr{ expr.reset(new soul::ast::cpp::CastNode(lexer.GetSourcePos(pos), typeId, castExpr)); }
+        |   UnaryExpression:unaryExpr{ expr.reset(unaryExpr); }
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    UnaryExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   PostfixExpression:postfixExpr{ expr.reset(postfixExpr); }
+        |   PostCastExpression:postCastExpr{ expr.reset(postCastExpr); }
+        |   PLUS_PLUS UnaryExpression:u1{ expr.reset(new soul::ast::cpp::PreIncrementNode(lexer.GetSourcePos(pos), u1)); }
+        |   MINUS_MINUS UnaryExpression:u2{ expr.reset(new soul::ast::cpp::PreDecrementNode(lexer.GetSourcePos(pos), u2)); }
+        |   UnaryOperator:op CastExpression:castExpr{ expr.reset(new soul::ast::cpp::UnaryOpExprNode(lexer.GetSourcePos(pos), op, castExpr)); }
+        |   SIZEOF LPAREN TypeId:typeId RPAREN{ expr.reset(new soul::ast::cpp::SizeOfNode(lexer.GetSourcePos(pos), typeId, true)); }
+        |   SIZEOF UnaryExpression:u3{ expr.reset(new soul::ast::cpp::SizeOfNode(lexer.GetSourcePos(pos), u3, false)); }
+        |   NewExpression:newExpr{ expr.reset(newExpr); }
+        |   DeleteExpression:deleteExpr{ expr.reset(deleteExpr); }
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    UnaryOperator : soul::ast::cpp::Operator
+        ::= STAR{ return soul::ast::cpp::Operator::deref; }
+        |   AMP{ return soul::ast::cpp::Operator::addrOf; }
+        |   PLUS{ return soul::ast::cpp::Operator::plus; }
+        |   MINUS{ return soul::ast::cpp::Operator::minus; }
+        |   EXCLAMATION{ return soul::ast::cpp::Operator::not_; }
+        |   TILDE{ return soul::ast::cpp::Operator::cpl; }
+        ;
+
+    PostfixExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= 
+        (   PrimaryExpression:primaryExpr{ expr.reset(primaryExpr); }
+            (   LBRACKET Expression:index RBRACKET{ expr.reset(new soul::ast::cpp::IndexExprNode(lexer.GetSourcePos(pos), expr.release(), index)); }
+            |   LPAREN{ expr.reset(new soul::ast::cpp::InvokeNode(lexer.GetSourcePos(pos), expr.release())); } ExpressionList(expr.get()):exprList? RPAREN
+            |   DOT IdExpression:dotMember{ expr.reset(new soul::ast::cpp::MemberAccessNode(lexer.GetSourcePos(pos), expr.release(), dotMember)); }
+            |   ARROW IdExpression:arrowMember{ expr.reset(new soul::ast::cpp::PtrMemberAccessNode(lexer.GetSourcePos(pos), expr.release(), arrowMember)); }
+            |   PLUS_PLUS{ expr.reset(new soul::ast::cpp::PostIncrementNode(lexer.GetSourcePos(pos), expr.release())); }
+            |   MINUS_MINUS{ expr.reset(new soul::ast::cpp::PostDecrementNode(lexer.GetSourcePos(pos), expr.release())); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+    
+    PostCastExpression(var std::unique_ptr<soul::ast::cpp::CppCastNode> cppCastNode) : soul::ast::cpp::Node*
+        ::= 
+        (
+            (   STATIC_CAST{ cppCastNode.reset(new soul::ast::cpp::StaticCastNode(lexer.GetSourcePos(pos))); }
+            |   DYNAMIC_CAST{ cppCastNode.reset(new soul::ast::cpp::DynamicCastNode(lexer.GetSourcePos(pos))); }
+            |   REINTERPRET_CAST{ cppCastNode.reset(new soul::ast::cpp::ReinterpretCastNode(lexer.GetSourcePos(pos))); }
+            |   CONST_CAST{ cppCastNode.reset(new soul::ast::cpp::ConstCastNode(lexer.GetSourcePos(pos))); }
+            )
+            LANGLE TypeId:typeId RANGLE LPAREN Expression:expr RPAREN{ return new soul::ast::cpp::PostCastNode(lexer.GetSourcePos(pos), cppCastNode.release(), typeId, expr); }
+        |   TYPEID LPAREN Expression:typeIdExpr RPAREN{ return new soul::ast::cpp::TypeIdExprNode(lexer.GetSourcePos(pos), typeIdExpr); }
+        )
+        ;
+
+    ExpressionList(soul::ast::cpp::Node* owner)
+        ::= AssignmentExpression:expr{ owner->Add(expr); } % COMMA
+        ;
+
+    PrimaryExpression(var std::unique_ptr<soul::ast::cpp::Node> expr) : soul::ast::cpp::Node*
+        ::= Literal:literal{ return literal; }
+        |   THIS{ return new soul::ast::cpp::ThisNode(lexer.GetSourcePos(pos)); }
+        |   LPAREN Expression:parenExpr RPAREN{ return new soul::ast::cpp::ParenExprNode(lexer.GetSourcePos(pos), parenExpr); }
+        |   IdExpression:idExpr{ return idExpr; }
+        ;
+
+    IdExpression(var std::string str) : soul::ast::cpp::IdExprNode*
+        ::= 
+        (   QualifiedCppId:id1{ str = id1; } COLON_COLON OperatorFunctionId:ofId1{ str.append("::").append(ofId1); return new soul::ast::cpp::IdExprNode(lexer.GetSourcePos(pos), str); }
+        |   empty{ str.clear(); } (COLON_COLON{ str.append("::"); })? OperatorFunctionId:ofId2{ str.append(ofId2); return new soul::ast::cpp::IdExprNode(lexer.GetSourcePos(pos), str); }
+        |   QualifiedCppId:id2{ return new soul::ast::cpp::IdExprNode(lexer.GetSourcePos(pos), id2); }
+        )
+        ;
+
+    TypeSpecifierOrTypeName : soul::ast::cpp::Node*
+        ::= SimpleTypeSpecifier:simpleTypeSpecifier{ return simpleTypeSpecifier; }
+        |   TypeName:typeName{ return typeName; }
+        ;
+
+    NewExpression(var bool global, var std::unique_ptr<soul::ast::cpp::NewNode> newExprNode) : soul::ast::cpp::Node*
+        ::= 
+        (   (COLON_COLON{ global = true; })?
+            NEW{ newExprNode.reset(new soul::ast::cpp::NewNode(lexer.GetSourcePos(pos), global)); }
+            empty{ newExprNode->BeginAddToPlacement(); } NewPlacement(newExprNode.get()):placement? empty{ newExprNode->EndAddToPlacement(); }
+            (NewTypeId:newTypeId{ newExprNode->SetParens(false); newExprNode->SetTypeId(newTypeId); } | LPAREN TypeId:ti RPAREN{ newExprNode->SetParens(true); newExprNode->SetTypeId(ti); })
+            empty{ newExprNode->BeginAddToInitializer(); } NewInitializer(newExprNode.get()):initializer? empty{ newExprNode->EndAddToInitializer(); }
+        )
+        {
+            return newExprNode.release();
+        }
+        ;
+
+    NewPlacement(soul::ast::cpp::Node* owner)
+        ::= LPAREN ExpressionList(owner):exprList RPAREN
+        ;
+
+    NewTypeId(var std::unique_ptr<soul::ast::cpp::TypeIdNode> ti) : soul::ast::cpp::TypeIdNode*
+        ::= empty{ ti.reset(new soul::ast::cpp::TypeIdNode(lexer.GetSourcePos(pos))); }
+        (
+            (TypeSpecifierSeq(ti.get()):typeSpecifierSeq | TypeName:typeName{ ti->Add(typeName); })
+            (NewDeclarator:newDeclarator{ ti->SetDeclarator(newDeclarator); })?
+        )
+        {
+            return ti.release();
+        }
+        ;
+
+    NewDeclarator(var std::string str) : std::string
+        ::= 
+        (   PtrOperator:ptrOperator{ str.append(ptrOperator); } (NewDeclarator:newDeclarator{ str.append(newDeclarator); })?
+        |   DirectNewDeclarator:directNewDeclarator{ str.append(directNewDeclarator); }
+        )
+        {
+            return str;
+        }
+        ;
+
+    NewInitializer(soul::ast::cpp::Node* owner)
+        ::= LPAREN ExpressionList(owner):initializer? RPAREN
+        ;
+
+    DirectNewDeclarator(var std::string str) : std::string
+        ::= 
+        (
+            LBRACKET{ str.append("["); } Expression:expr{ str.append(expr->ToString()); } RBRACKET{ str.append("]"); } 
+            (LBRACKET ConstantExpression:constantExpr RBRACKET{ str.append("[").append(constantExpr->ToString()).append("]"); })*
+        )
+        {
+            return str;
+        }
+        ;
+
+    DeleteExpression(var bool global, var bool isArray) : soul::ast::cpp::Node*
+        ::= 
+        (
+            (COLON_COLON{ global = true; })? 
+            DELETE
+            (LBRACKET RBRACKET{ isArray = true; })? 
+            CastExpression:ptr
+        )
+        {
+            return new soul::ast::cpp::DeleteNode(lexer.GetSourcePos(pos), global, isArray, ptr);
+        }
+        ;
+
+    OperatorFunctionId(var std::string str) : std::string
+        ::= 
+        (
+            OPERATOR{ str.append("operator"); } Operator:op{ str.append(op); }
+        )
+        {
+            return str;
+        }
+        ;
+
+    Operator : std::string
+        ::= 
+        (   LBRACKET RBRACKET{ return "[]"; }
+        |   LPAREN RPAREN{ return "()"; }
+        |   ARROW_STAR{ return "->*"; }
+        |   ARROW{ return "->"; }
+        |   COMMA{ return ","; }
+        |   MINUS_MINUS{ return "--"; }
+        |   PLUS_PLUS{ return "++"; }
+        |   DISJUNCTION{ return "||"; }
+        |   AMP_AMP{ return "&&"; }
+        |   LEQ{ return "<="; }
+        |   GEQ{ return ">="; }
+        |   NEQ{ return "!="; }
+        |   EQ{ return "=="; }
+        |   SHIFT_LEFT_ASSIGN{ return "<<="; }
+        |   SHIFT_RIGHT_ASSIGN{ return ">>="; }
+        |   SHIFT_LEFT{ return "<<"; }
+        |   SHIFT_RIGHT{ return ">>"; }
+        |   OR_ASSIGN{ return "|="; }
+        |   AND_ASSIGN{ return "&="; }
+        |   XOR_ASSIGN{ return "^="; }
+        |   REM_ASSIGN{ return "%="; }
+        |   DIV_ASSIGN{ return "/="; }
+        |   MUL_ASSIGN{ return "*="; }
+        |   MINUS_ASSIGN{ return "-="; }
+        |   PLUS_ASSIGN{ return "+="; }
+        |   LANGLE{ return "<"; }
+        |   RANGLE{ return ">"; }
+        |   ASSIGN{ return "="; }
+        |   EXCLAMATION{ return "!"; }
+        |   TILDE{ return "~"; }
+        |   AMP{ return "&"; }
+        |   CARET{ return "^"; }
+        |   PIPE{ return "|"; }
+        |   REM{ return "%"; }
+        |   DIV{ return "/"; }
+        |   STAR{ return "*"; }
+        |   MINUS{ return "-"; }
+        |   PLUS{ return "+"; }
+        |   NEW LBRACKET RBRACKET{ return " new[]"; }
+        |   DELETE LBRACKET RBRACKET{ return " delete[]"; }   
+        |   NEW{ return " new"; }
+        |   DELETE{ return " delete"; }
+        )
+        ;
+}

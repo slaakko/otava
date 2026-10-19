@@ -22,6 +22,7 @@ import otava.symbols.declarator;
 import otava.symbols.emitter;
 import otava.symbols.exception;
 import otava.symbols.function_symbol;
+import otava.symbols.function_table;
 import otava.symbols.modules;
 import otava.symbols.scope;
 import otava.symbols.statement_binder;
@@ -269,9 +270,15 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     otava::ast::SetNodeIdFactory(&nodeIdFactory);
     std::set<std::string> configurations;
     ConfigureProject(project, config, (flags & BuildFlags::verbose) != BuildFlags::none, configurations);
+    for (const std::string& symbol : GetBuildSymbols())
+    {
+        project->AddDefine(symbol, 1);
+    }
     bool releaseCfg = configurations.find("release") != configurations.end();
     optLevel = otava::symbols::GetOptLevel(optLevel, releaseCfg);
     std::string moduleDirPath = otava::symbols::MakeModuleDirPath(project->RootDir(), config, optLevel, configurations);
+    otava::symbols::FunctionTable functionTable;
+    otava::symbols::SetFunctionTable(&functionTable);
     util::CreateDirectories(moduleDirPath);
     std::string projectFilePath;
     std::string outputFilePath;
@@ -307,6 +314,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     std::vector<std::string> resourceFileNames;
     std::vector<std::string> compileUnitInitFunctionNames;
     std::vector<std::string> allCompileUnitInitFunctionNames;
+    std::vector<std::unique_ptr<otava::symbols::Module>> builtModules;
     std::string mainFunctionIrName;
     int mainFunctionParams = 0;
     std::string cppFileName = "__main__.cpp";
@@ -519,7 +527,8 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             module->Write(project->RootDir(), config, optLevel, context.get(), configurations);
             context.reset();
             moduleMapper.RemoveModule(module.get());
-            moduleMapper.AddBuiltModule(module.release());
+            moduleMapper.AddModuleInfo(module.get());
+            builtModules.push_back(std::move(module));
         }
     }
     else
@@ -616,7 +625,8 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         }
         context.reset();
         moduleMapper.RemoveModule(module.get());
-        moduleMapper.AddBuiltModule(module.release());
+        moduleMapper.AddModuleInfo(module.get());
+        builtModules.push_back(std::move(module));
     }
     project->WriteTraceInfo(moduleDirPath);
     project->WriteClassIndex(moduleDirPath);
@@ -716,6 +726,9 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         std::cout << invokes << " invokes generated\n";
         std::cout << unresolvedInvokes << " invokes unresolved\n";
     }
+    std::string functionTableFilePath = util::Path::Combine(moduleDirPath, "fns.txt");
+    functionTable.Write(functionTableFilePath);
+    otava::symbols::SetFunctionTable(nullptr);
     MakeProjectFile(project, projectFilePath, asmFileNames, cppFileNames, resourceFileNames,
         libraryDirs, project->ReferencedProjects(), config, optLevel, classIndexFilePath, traceBinPath, projectTarget,
         (flags & BuildFlags::verbose) != BuildFlags::none, configurations);

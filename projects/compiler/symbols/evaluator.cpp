@@ -2535,6 +2535,7 @@ Value* TryEvaluate(otava::ast::Node* node, Context* context)
 
 Value* Evaluate(otava::ast::Node* node, Context* context)
 {
+    EvaluatingSetter evaluatingSetter(context);
     try
     {
         return TryEvaluate(node, context);

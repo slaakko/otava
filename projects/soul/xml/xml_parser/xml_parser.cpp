@@ -39,7 +39,7 @@ void ParseXmlContent(const std::u32string& xmlContent, const std::string& system
     lexer.SetRuleNameMapPtr(soul::xml::parser::rules::GetRuleNameMapPtr());
     soul::xml::processor::XmlProcessor processor(contentHandler);
     using LexerType = decltype(lexer);
-    soul::xml::document::parser::XmlParser<LexerType>::Parse(lexer, &processor);
+    soul::xml::document_parser::XmlParser<LexerType>::Parse(lexer, &processor);
 }
 
 void ParseXmlContent(std::u32string&& xmlContent, const std::string& systemId, XmlContentHandler* contentHandler, soul::lexer::FileMap& fileMap)
@@ -50,7 +50,7 @@ void ParseXmlContent(std::u32string&& xmlContent, const std::string& systemId, X
     lexer.SetFile(fileId);
     soul::xml::processor::XmlProcessor processor(contentHandler);
     using LexerType = decltype(lexer);
-    soul::xml::document::parser::XmlParser<LexerType>::Parse(lexer, &processor);
+    soul::xml::document_parser::XmlParser<LexerType>::Parse(lexer, &processor);
     fileMap.AddFileContent(fileId, std::move(xmlContent), std::move(lexer.GetLineStartIndeces()));
 }
 

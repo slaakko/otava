@@ -1,0 +1,30 @@
+export module soul.lex.re;
+
+import soul.cpp.token;
+import soul.cpp.op.token;
+import soul.punctuation.token;
+import soul.tool.token;
+import soul.ast.common;
+import re.expr;
+
+lexer RegExLexer
+{
+    rules
+    {
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "\|" { return PIPE; }
+        "\*" { return STAR; }
+        "\+" { return PLUS; }
+        "\?" { return QUEST; }
+        "\." { return DOT; }
+        "^" { return CARET; }
+        "-" { return MINUS; }
+        "{escape}" { return ESCAPE; }
+        "[^\x0\r\n{}\\()[\]|*+?.^-]" { return CHARACTER; }
+    }
+}

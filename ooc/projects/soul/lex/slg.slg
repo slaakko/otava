@@ -1,0 +1,9 @@
+project soul.lex.slg;
+extern tokens <../token/soul.cpp.op.token>;
+extern tokens <../token/soul.cpp.token>;
+extern tokens <../token/soul.punctuation.token>;
+extern tokens <../token/soul.tool.token>;
+keywords <../keyword/soul.cpp.keyword>;
+keywords <../keyword/soul.slg.keyword>;
+expressions <../expression/soul.tool.expr>;
+lexer <slg.lexer>;

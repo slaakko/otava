@@ -156,7 +156,7 @@ public:
     virtual void Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context);
     virtual int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context);
-    virtual std::unique_ptr<Symbol> RemoveSymbol(int index);
+    virtual void RemoveSymbol(int index);
     virtual const std::vector<Scope*>& ParentScopes(Context* context);
     virtual void AddParentScope(Scope* parentScope_);
     virtual void RemoveParentScope(Scope* parentScope);
@@ -218,7 +218,7 @@ public:
     void Lookup(const std::string& name, SymbolGroupKind symbolGroupKinds, ScopeLookup scopeLookup, LookupFlags flags,
         std::vector<Symbol*>& symbols, std::set<const Scope*>& visited, Context* context) override;
     int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    std::unique_ptr<Symbol> RemoveSymbol(int index) override;
+    void RemoveSymbol(int index) override;
     NamespaceSymbol* GetOrInsertNamespace(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     ClassGroupSymbol* GetOrInsertClassGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;
     FunctionGroupSymbol* GetOrInsertFunctionGroup(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context) override;

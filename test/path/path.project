@@ -1,0 +1,4 @@
+project path;
+target=program;
+reference <../../projects/util/util.project>;
+source <main.cpp>;

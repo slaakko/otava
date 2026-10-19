@@ -45,7 +45,8 @@ Context::Context() :
     boundFunctionSerial(0), trySerial(0), invokeSerial(0), cleanupSerial(0), resultSerial(0), labelSerial(0), ehReturnFromSerial(0), childControlResultSerial(0),
     conditionVariableSerial(0), streamInitVarSerial(0), instantiationQueue(nullptr), switchCondType(nullptr), declaredInitializerType(nullptr),
     parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateScope(nullptr), inlineModule(nullptr), inlineScope(nullptr),
-    hasException(false), initializer(nullptr), incompleteClassesCompleted(false), hasUnresolvedForwardDeclaration(false)
+    hasException(false), initializer(nullptr), incompleteClassesCompleted(false), hasUnresolvedForwardDeclaration(false), temporaryAction(TemporaryAction::none),
+    evaluating(false)
 {
     skipInvokeCheckingFNames.push_back("otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)");
     skipInvokeCheckingFNames.push_back("otava::parser::function::FunctionParser<soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>>::FunctionDefinition(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>&, otava::symbols::Context*)");

@@ -1,0 +1,12 @@
+project soul.lex;
+target=library;
+reference <../../util/util.project>;
+reference <../ast/ast.project>;
+reference <../lexer/lexer.project>;
+reference <../token/token.project>;
+interface <re.lexer.cppm>;
+source <re.lexer.cpp>;
+interface <slg.lexer.cppm>;
+source <slg.lexer.cpp>;
+interface <spg.lexer.cppm>;
+source <spg.lexer.cpp>;

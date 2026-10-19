@@ -243,6 +243,18 @@ private:
     void GetAllImportedModules(std::vector<Module*>& targetImportedModules, Context* context);
 };
 
+class ModuleInfo
+{
+public:
+    ModuleInfo();
+    ModuleInfo(ModuleId id_, const std::string& name_);
+    inline ModuleId Id() const noexcept { return id; }
+    inline const std::string& Name() const noexcept { return name; }
+private:
+    ModuleId id;
+    std::string name;
+};
+
 class ModuleMapper
 {
 public:
@@ -259,19 +271,19 @@ public:
     std::string GetProjectFilePath(const std::string& moduleName) const;
     ModuleId MakeModuleId(const std::string& moduleName) noexcept;
     inline Cardinality ModuleCount() const noexcept { return Cardinality(modules.size()); }
-    void AddBuiltModule(Module* module);
     void PrintModules(std::ostream& s);
     ProjectId MakeProjectId(const std::string& projectName);
     void AddProjectId(const std::string& projectName, ProjectId projectId);
+    void AddModuleInfo(Module* module);
 private:
     std::vector<std::string> roots;
     std::vector<std::unique_ptr<Module>> modules;
     std::map<std::string, Module*> moduleNameMap;
     std::map<ModuleId, Module*> moduleIdMap;
     SymbolIndexMap symbolIndexMap;
-    std::vector<std::unique_ptr<Module>> builtModules;
     std::set<ProjectId> projectIds;
     bool reset;
+    std::map<ModuleId, ModuleInfo> moduleInfoMap;
 };
 
 class ModulePtr

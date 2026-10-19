@@ -1,0 +1,50 @@
+export module soul.common.token.file.parser;
+
+[interface]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.common.common.parser;
+[implementation]import soul.common.token.parser;
+[implementation]import soul.lex.slg;
+[implementation]import soul.lex.spg;
+
+parser TokenFileParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+    lexer soul::lex::spg::SpgLexer<char32_t>; 
+
+    main;
+    using CommonParser.QualifiedId;
+
+    TokenFile(var std::unique_ptr<soul::ast::common::TokenFile> tokenFile, var std::unique_ptr<soul::ast::common::TokenCollection> tokenCollection) : 
+        soul::ast::common::TokenFile*
+        ::= 
+        (   
+            TOKENS{ tokenFile.reset(new soul::ast::common::TokenFile(lexer.FileName())); }
+            QualifiedId:tokenCollectionName{ tokenCollection.reset(new soul::ast::common::TokenCollection(tokenCollectionName)); }
+			LBRACE
+			(Token:token{ tokenCollection->AddToken(token); } % COMMA)?
+			RBRACE
+        )
+        {
+            tokenFile->SetTokenCollection(tokenCollection.release());
+            return tokenFile.release();
+        }
+        ;
+
+    Token(var std::string name, var std::string info) : soul::ast::common::Token*
+        ::= 
+        (
+            LPAREN 
+            ID{ name = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+            COMMA 
+            STRING_LITERAL{ info = util::ToUtf8(soul::common::token::parser::ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos))); } 
+            RPAREN
+        )
+        {
+            return new soul::ast::common::Token(name, info);
+        }
+        ;
+}

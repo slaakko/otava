@@ -828,6 +828,14 @@ bool Module::UpToDate() const noexcept
     return true;
 }
 
+ModuleInfo::ModuleInfo() : id(), name()
+{
+}
+
+ModuleInfo::ModuleInfo(ModuleId id_, const std::string& name_) : id(id_), name(name_)
+{
+}
+
 ModuleMapper::ModuleMapper() : reset(false)
 {
 #ifdef OTAVA
@@ -881,6 +889,7 @@ Module* ModuleMapper::LoadModule(const std::string& moduleName, const std::strin
             moduleNameMap[moduleName] = m;
             MapModule(m);
             modules.push_back(std::unique_ptr<Module>(m));
+            AddModuleInfo(m);
             return m;
         }
     }
@@ -932,35 +941,12 @@ ModuleId ModuleMapper::MakeModuleId(const std::string& moduleName) noexcept
     return moduleId;
 }
 
-void ModuleMapper::AddBuiltModule(Module* module)
-{
-    builtModules.push_back(std::unique_ptr<Module>(module));
-}
-
-struct ById
-{
-    bool operator()(const std::pair<std::string, ModuleId>& left, const std::pair<std::string, ModuleId>& right) const noexcept
-    {
-        return left.second < right.second;
-    }
-};
-
 void ModuleMapper::PrintModules(std::ostream& s)
 {
-    std::vector<std::pair<std::string, ModuleId>> m;
-    for (const auto& module : modules)
+    for (const auto& m : moduleInfoMap)
     {
-        m.push_back(std::make_pair(module->Name(), module->Id()));
-    }
-    for (const auto& module : builtModules)
-    {
-        m.push_back(std::make_pair(module->Name(), module->Id()));
-    }
-    std::sort(m.begin(), m.end(), ById());
-    m.erase(std::unique(m.begin(), m.end()), m.end());
-    for (const auto& p : m)
-    {
-        s << ToUnderlying(p.second) << ":" << p.first << "\n";
+        const ModuleInfo* info = &m.second;
+        s << ToUnderlying(info->Id()) << ":" << info->Name() << "\n";
     }
 }
 
@@ -983,6 +969,11 @@ void ModuleMapper::AddProjectId(const std::string& projectName, ProjectId projec
             projectName);
     }
     projectIds.insert(projectId);
+}
+
+void ModuleMapper::AddModuleInfo(Module* module)
+{
+    moduleInfoMap[module->Id()] = ModuleInfo(module->Id(), module->Name());
 }
 
 ModulePtr::ModulePtr(Module* module_, Context* context_) noexcept : module(module_), context(context_), prevModule(nullptr)

@@ -1462,7 +1462,7 @@ void CompleteIncompleteClasses(Context* context)
     if (!module || context->GetModule() == module) return;
     module->ReadIncompleteClassIdTable();
     otava::symbols::Cardinality n = otava::symbols::Cardinality(module->IncompleteClassIds().size());
-    for (Index index = Index(0); index < ToIndex(n); ++index)
+    for (Index index = Index(0); index < otava::symbols::ToIndex(n); ++index)
     {
         otava::symbols::SymbolId classId = module->IncompleteClassIds()[otava::symbols::ToUnderlying(index)];
         otava::symbols::ClassTypeSymbol* cls = module->GetSymbolTable()->GetClassTypeSymbol(classId, context);
@@ -2217,6 +2217,10 @@ BoundFunctionCallNode* MakeDestructorCall(ClassTypeSymbol* cls, BoundExpressionN
 
 void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* constructTemporary, BoundExpressionNode* arg, Context* context)
 {
+    if (context->Evaluating())
+    {
+        return;
+    }
     if (!arg)
     {
         std::cout << "NO TEMPORARY ARG!" << "\n";
@@ -2230,7 +2234,6 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
     }
     if (!temporary->GetType()->IsClassTypeSymbol()) return;
     ClassTypeSymbol* cls = static_cast<ClassTypeSymbol*>(temporary->GetType());
-    if (cls->IsReadOnly()) return;
     BoundFunctionCallNode* destructorCall = MakeDestructorCall(cls, arg, nullptr, constructTemporary->GetFullSpan(), context);
     if (!destructorCall) return;
     if (context->CurrentProject()->HasDefine("PRINT_TEMPORARIES"))

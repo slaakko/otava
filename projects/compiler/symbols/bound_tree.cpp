@@ -1543,6 +1543,37 @@ void BoundVariableNode::Load(Emitter& emitter, OperationFlags flags, const soul:
         {
             emitter.Stack().Push(emitter.EmitLoad(static_cast<otava::intermediate::Value*>(variable->IrObject(emitter, fullSpan, context))));
         }
+        if (context->CurrentProject()->HasDefine("PRINT_TEMPORARIES") && variable->IsTemporary())
+        {
+            VariableSymbol* temporary = variable;
+            TypeSymbol* type = temporary->GetType(context);
+            int64_t nodeId = temporary->NodeId();
+            std::string action;
+            switch (context->GetTemporaryAction())
+            {
+            case TemporaryAction::none:
+            {
+                action = "none";
+                break;
+            }
+            case TemporaryAction::construct:
+            {
+                action = "construct";
+                break;
+            }
+            case TemporaryAction::load:
+            {
+                action = "load";
+                break;
+            }
+            case TemporaryAction::destruct:
+            {
+                action = "destruct";
+                break;
+            }
+            }
+            std::cout << "LOADING OF TEMPORARY:" << temporary->Name() << ":" << type->FullName(context) << ":" << nodeId << ":" << action << "\n";
+        }
     }
     else if (variable->IsMemberVariable(context))
     {
@@ -3430,6 +3461,8 @@ BoundTemporaryNode::BoundTemporaryNode(BoundExpressionNode* rvalueExpr_, BoundVa
 
 void BoundTemporaryNode::Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    TemporaryAction prevAction = context->GetTemporaryAction();
+    context->SetTemporaryAction(TemporaryAction::load);
     if (!backingStore)
     {
         ThrowException("backing store of temporary not set", fullSpan, context);
@@ -3448,6 +3481,7 @@ void BoundTemporaryNode::Load(Emitter& emitter, OperationFlags flags, const soul
     {
         backingStore->Load(emitter, OperationFlags::none, fullSpan, context);
     }
+    context->SetTemporaryAction(prevAction);
     DestructTemporaries(emitter, context);
 }
 
@@ -3500,8 +3534,12 @@ BoundConstructTemporaryNode::BoundConstructTemporaryNode(BoundExpressionNode* co
 
 void BoundConstructTemporaryNode::Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    TemporaryAction prevAction = context->GetTemporaryAction();
+    context->SetTemporaryAction(TemporaryAction::construct);
     constructorCall->Load(emitter, OperationFlags::defaultInit, fullSpan, context);
+    context->SetTemporaryAction(TemporaryAction::load);
     temporary->Load(emitter, flags, fullSpan, context);
+    context->SetTemporaryAction(prevAction);
     DestructTemporaries(emitter, context);
 }
 
@@ -3550,10 +3588,13 @@ BoundDestructTemporariesNode::BoundDestructTemporariesNode(const soul::ast::Full
 
 void BoundDestructTemporariesNode::Load(Emitter& emitter, OperationFlags flags, const soul::ast::FullSpan& fullSpan, Context* context)
 {
+    TemporaryAction prevAction = context->GetTemporaryAction();
+    context->SetTemporaryAction(TemporaryAction::destruct);
     for (const auto& call : temporaryDestructorCalls)
     {
         call->Load(emitter, flags, fullSpan, context);
     }
+    context->SetTemporaryAction(prevAction);
 }
 
 void BoundDestructTemporariesNode::Accept(BoundTreeVisitor& visitor)

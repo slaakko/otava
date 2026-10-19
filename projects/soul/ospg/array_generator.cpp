@@ -5,21 +5,22 @@ namespace soul::spg {
 class ArrayGeneratorVisitor : public soul::ast::spg::DefaultVisitor
 {
 public:
-    ArrayGeneratorVisitor(util::CodeFormatter& formatter_, int& sn_);
+    ArrayGeneratorVisitor(util::CodeFormatter& formatter_, int* sn_);
     void Visit(soul::ast::spg::StringParser& parser) override;
     void Visit(soul::ast::spg::CharSetParser& parser) override;
 private:
     util::CodeFormatter& formatter;
-    int& sn;
+    int* sn;
 };
 
-ArrayGeneratorVisitor::ArrayGeneratorVisitor(util::CodeFormatter& formatter_, int& sn_) : formatter(formatter_), sn(sn_)
+ArrayGeneratorVisitor::ArrayGeneratorVisitor(util::CodeFormatter& formatter_, int* sn_) : formatter(formatter_), sn(sn_)
 {
 }
 
 void ArrayGeneratorVisitor::Visit(soul::ast::spg::StringParser& parser)
 {
-    std::string s = "s" + std::to_string(sn++);
+    std::string s = "s" + std::to_string(*sn);
+    ++*sn;
     parser.SetArrayName(s);
     formatter.Write("static constexpr std::int32_t " + s + "[] = {");
     bool first = true;
@@ -42,7 +43,8 @@ void ArrayGeneratorVisitor::Visit(soul::ast::spg::StringParser& parser)
 
 void ArrayGeneratorVisitor::Visit(soul::ast::spg::CharSetParser& parser)
 {
-    std::string s = "s" + std::to_string(sn++);
+    std::string s = "s" + std::to_string(*sn);
+    ++*sn;
     parser.SetArrayName(s);
     formatter.Write("static constexpr soul::ast::spg::Range " + s + "[] = {");
     bool first = true;
@@ -63,7 +65,7 @@ void ArrayGeneratorVisitor::Visit(soul::ast::spg::CharSetParser& parser)
     formatter.WriteLine();
 }
 
-void GenerateArrays(soul::ast::spg::ParserFile& parserFile, util::CodeFormatter& formatter, int& sn)
+void GenerateArrays(soul::ast::spg::ParserFile& parserFile, util::CodeFormatter& formatter, int* sn)
 {
     ArrayGeneratorVisitor visitor(formatter, sn);
     parserFile.Accept(visitor);

@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/soul-mod/tools/otava/projects/soul/xml/xml_parser/xml_document.parser' using soul parser generator spg version 5.0.0
+// this file has been automatically generated from 'D:/work/otava/projects/soul/xml/xml_parser/xml_document.parser' using soul parser generator ospg version 0.3.0
 
 export module soul.xml.document_parser;
 
@@ -10,7 +10,7 @@ import soul.xml.processor;
 import soul.lexer.trivial;
 import soul.ast.source_pos;
 
-export namespace soul::xml::document::parser {
+export namespace soul::xml::document_parser {
 
 template<typename LexerT>
 struct XmlParser
@@ -94,4 +94,4 @@ struct XmlParser
     static soul::parser::Match PublicID(LexerT& lexer);
 };
 
-} // namespace soul::xml::document::parser
+} // namespace soul::xml::document_parser

@@ -1,0 +1,82 @@
+<parserFile>
+ <grammar name="TokenFileParser">
+  <rule first="{TOKENS}" name="TokenFile">
+   <action first="{TOKENS}">
+    <group first="{TOKENS}">
+     <sequence first="{TOKENS}">
+      <sequence first="{TOKENS}">
+       <sequence first="{TOKENS}">
+        <sequence first="{TOKENS}">
+         <action first="{TOKENS}">
+          <token first="{TOKENS}" name="TOKENS"/>
+         </action>
+         <action first="{ID}">
+          <expectation first="{ID}">
+           <nonterminal first="{ID}" ruleName="QualifiedId"/>
+          </expectation>
+         </action>
+        </sequence>
+        <expectation first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </expectation>
+       </sequence>
+       <optional first="{#, LPAREN}">
+        <group first="{LPAREN}">
+         <list first="{LPAREN}">
+          <sequence first="{LPAREN}">
+           <action first="{LPAREN}">
+            <nonterminal first="{LPAREN}" ruleName="Token"/>
+           </action>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <action first="{LPAREN}">
+              <nonterminal first="{LPAREN}" ruleName="Token"/>
+             </action>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
+        </group>
+       </optional>
+      </sequence>
+      <expectation first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </expectation>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN}" name="Token">
+   <action first="{LPAREN}">
+    <group first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <sequence first="{LPAREN}">
+        <sequence first="{LPAREN}">
+         <token first="{LPAREN}" name="LPAREN"/>
+         <action first="{ID}">
+          <expectation first="{ID}">
+           <token first="{ID}" name="ID"/>
+          </expectation>
+         </action>
+        </sequence>
+        <expectation first="{COMMA}">
+         <token first="{COMMA}" name="COMMA"/>
+        </expectation>
+       </sequence>
+       <action first="{STRING_LITERAL}">
+        <expectation first="{STRING_LITERAL}">
+         <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+        </expectation>
+       </action>
+      </sequence>
+      <expectation first="{RPAREN}">
+       <token first="{RPAREN}" name="RPAREN"/>
+      </expectation>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

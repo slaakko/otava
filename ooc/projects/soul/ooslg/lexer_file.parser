@@ -1,0 +1,115 @@
+export module soul.slg.lexer.file.parser;
+
+[interface]import soul.ast.slg;
+[implementation]import soul.ast.common;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.common.common.parser;
+[implementation]import soul.common.token.parser;
+[implementation]import soul.cpp.statement.parser;
+[implementation]import soul.cpp.declarator.parser;
+[implementation]import soul.ast.cpp;
+[implementation]import soul.lex.slg;
+
+parser LexerFileParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+
+    main;
+    using CommonParser.QualifiedId;
+    using CommonParser.ExportModule;
+    using CommonParser.Import;
+    using CommonParser.ExprString;
+    using CommonParser.LexerKeyword;
+    using StatementParser.CompoundStatement;
+    using DeclaratorParser.TypeId;
+
+    LexerFile(var std::unique_ptr<soul::ast::slg::LexerFile> lexerFile, var std::unique_ptr<soul::ast::slg::Lexer> lxr) : soul::ast::slg::LexerFile*
+        ::= 
+        (
+            empty{ lexerFile.reset(new soul::ast::slg::LexerFile(lexer.FileName())); }
+            ExportModule:exportModule{ lexerFile->SetExportModule(exportModule); }
+            Imports(lexerFile.get()):imports
+            LexerKeyword:lexerKeyword
+            ID{ lxr.reset(new soul::ast::slg::Lexer(util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+            LBRACE
+            (LexerContent(lxr.get()):content)*
+            RBRACE
+        )
+        {
+            lexerFile->SetLexer(lxr.release());
+            return lexerFile.release();
+        }
+        ;
+
+    Imports(soul::ast::slg::LexerFile* lexerFile)
+        ::= (Import:imp{ lexerFile->AddImport(imp); })*
+        ;
+
+    LexerContent(soul::ast::slg::Lexer* lxr)
+        ::= 
+        (   Rules(lxr):rls
+        |   Variables(lxr):vars
+        |   Actions(lxr):actns
+        )
+        ;
+
+    Rules(soul::ast::slg::Lexer* lxr)
+        ::= 
+        (
+            RULES
+            LBRACE
+            (Rule:rl{ lxr->AddRule(rl); })*
+            RBRACE
+        )
+        ;
+
+    Rule(var int line) : soul::ast::slg::Rule*
+        ::= 
+        (
+            ExprString:expr{ line = lexer.GetToken(pos).line; }
+            Action:action
+            CompoundStatement:code
+        )
+        {
+            return new soul::ast::slg::Rule(expr, code, action, line);
+        }
+        ;
+
+    Variables(soul::ast::slg::Lexer* lxr)
+        ::= 
+        (
+            VARIABLES
+            LBRACE
+            (Variable:variable{ lxr->AddVariable(variable); })*
+            RBRACE
+        )
+        ;
+
+    Variable(var std::string name) : soul::ast::slg::Variable*
+        ::= 
+        (
+            TypeId:type ID{ name = util::ToUtf8(lexer.GetToken(pos).ToString()); } SEMICOLON
+        )
+        {
+            return new soul::ast::slg::Variable(type, name);
+        }
+        ;
+		
+    Actions(soul::ast::slg::Lexer* lxr, var int actionId)
+        ::= 
+        (
+            ACTIONS
+            LBRACE
+            (Action:action{ actionId = action; pass = actionId != -1; } ASSIGN CompoundStatement:stmt{ lxr->AddAction(new soul::ast::slg::Action(actionId, stmt)); })*
+            RBRACE
+        )
+        ;
+
+    Action(var int actionId) : int
+        ::= DOLLAR LPAREN INTEGER_LITERAL{ actionId = lexer.GetToken(pos).ToInt(); } RPAREN{ return actionId; }
+        |   empty{ return -1; }
+        ;
+}

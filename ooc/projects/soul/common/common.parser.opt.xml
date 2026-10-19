@@ -1,0 +1,147 @@
+<parserFile>
+ <grammar name="CommonParser">
+  <rule first="{ID}" name="QualifiedId">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ExportModule">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <nonterminal first="{ID}" ruleName="ExportKeyword"/>
+        <nonterminal first="{ID}" ruleName="ModuleKeyword"/>
+       </sequence>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, LBRACKET, SEMICOLON, ID}" name="Import">
+   <action first="{#, LBRACKET, SEMICOLON, ID}">
+    <group first="{#, LBRACKET, SEMICOLON, ID}">
+     <sequence first="{#, LBRACKET, SEMICOLON, ID}">
+      <sequence first="{#, LBRACKET, ID}">
+       <sequence first="{#, LBRACKET, ID}">
+        <group first="{#, LBRACKET}">
+         <choice first="{#, LBRACKET}">
+          <action first="{LBRACKET}">
+           <nonterminal first="{LBRACKET}" ruleName="ImportPrefix"/>
+          </action>
+          <action first="{#}">
+           <empty first="{#}"/>
+          </action>
+         </choice>
+        </group>
+        <nonterminal first="{ID}" ruleName="ImportKeyword"/>
+       </sequence>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LBRACKET}" name="ImportPrefix">
+   <choice first="{LBRACKET}">
+    <action first="{LBRACKET}">
+     <nonterminal first="{LBRACKET}" ruleName="ImplementationPrefix"/>
+    </action>
+    <action first="{LBRACKET}">
+     <nonterminal first="{LBRACKET}" ruleName="InterfacePrefix"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{STRING_LITERAL}" name="ExprString">
+   <action first="{STRING_LITERAL}">
+    <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+   </action>
+  </rule>
+  <rule first="{FILEPATH}" name="FilePath">
+   <action first="{FILEPATH}">
+    <token first="{FILEPATH}" name="FILEPATH"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ExportKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ModuleKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ImportKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{LBRACKET}" name="ImplementationPrefix">
+   <sequence first="{LBRACKET}">
+    <sequence first="{LBRACKET}">
+     <token first="{LBRACKET}" name="LBRACKET"/>
+     <nonterminal first="{ID}" ruleName="ImplementationKeyword"/>
+    </sequence>
+    <action first="{RBRACKET}">
+     <token first="{RBRACKET}" name="RBRACKET"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LBRACKET}" name="InterfacePrefix">
+   <sequence first="{LBRACKET}">
+    <sequence first="{LBRACKET}">
+     <token first="{LBRACKET}" name="LBRACKET"/>
+     <nonterminal first="{ID}" ruleName="InterfaceKeyword"/>
+    </sequence>
+    <action first="{RBRACKET}">
+     <token first="{RBRACKET}" name="RBRACKET"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{ID}" name="ImplementationKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="InterfaceKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ParserKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="LexerKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

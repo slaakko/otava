@@ -1108,7 +1108,7 @@ void CodeGeneratorVisitor::Visit(soul::ast::spg::ParserFile& parserFile)
     formatter->WriteLine();
     formatter->WriteLine("namespace " + soul::ast::common::ToNamespaceName(mod->ModuleName()) + " {");
     formatter->WriteLine();
-    GenerateArrays(parserFile, *formatter, sn);
+    GenerateArrays(parserFile, *formatter, &sn);
     for (const auto& parser : parserFile.Parsers())
     {
         parser->Accept(*this);

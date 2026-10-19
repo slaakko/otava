@@ -10,6 +10,36 @@ import ort.trace;
 
 namespace ort::memory {
 
+std::string mtos(size_t m)
+{
+    if (m < 1024)
+    {
+        return std::to_string(m) + " bytes";
+    }
+    else
+    {
+        size_t kb = m / 1024;
+        if (kb < 1024)
+        {
+            return std::to_string(kb) + " KB";
+        }
+        else
+        {
+            size_t mb = kb / 1024;
+            if (mb < 1024)
+            {
+                return std::to_string(mb) + " MB";
+            }
+            else
+            {
+                size_t gb = mb / 1024;
+                return std::to_string(gb) + " GB";
+            }
+        }
+    }
+    return std::to_string(m) + " bytes";
+}
+
 struct memory_info
 {
     memory_info(void* block_, std::int64_t size_, int serial_);
@@ -166,10 +196,14 @@ void memory_map::print_leaks(std::ostream* s)
     else
     {
         (*s) << leaks.size() << " memory leaks:" << "\n";
+        std::size_t size = 0;
         for (memory_info* leak : leaks)
         {
             print_info(leak, s);
+            size += leak->size;
         }
+        (*s) << "total " << mtos(size) << "\n";
+        std::cout << "total " << mtos(size) << "\n";
     }
     for (const auto& mi : map)
     {

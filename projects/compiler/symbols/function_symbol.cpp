@@ -147,18 +147,21 @@ void FunctionSymbol::SetGroup(FunctionGroupSymbol* group_) noexcept
 
 FunctionSymbol::~FunctionSymbol()
 {
+#ifdef DEBUG_HEAP
+    std::cout << "~functionSymbol:" << Name() << "\n";
+#endif
     destructing = true;
-    if (GetModule())
-    {
-        GetModule()->RemoveFunction(this);
-    }
-    if (group)
+    if (group && !IsReadOnly())
     {
         group->Remove(this);
     }
     for (ClassTypeSymbol* cls : classes)
     {
         cls->UnmapFunction(this);
+    }
+    if (GetModule())
+    {
+        GetModule()->RemoveFunction(this);
     }
 }
 

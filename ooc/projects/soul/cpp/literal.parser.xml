@@ -1,0 +1,39 @@
+<parserFile>
+ <grammar name="LiteralParser">
+  <rule first="{TRUE, FALSE, NULLPTR, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}" name="Literal">
+   <choice first="{TRUE, FALSE, NULLPTR, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}">
+    <choice first="{TRUE, FALSE, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}">
+     <choice first="{TRUE, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}">
+      <choice first="{INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL}">
+       <choice first="{INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL}">
+        <choice first="{INTEGER_LITERAL, FLOATING_LITERAL}">
+         <action first="{INTEGER_LITERAL}">
+          <token first="{INTEGER_LITERAL}" name="INTEGER_LITERAL"/>
+         </action>
+         <action first="{FLOATING_LITERAL}">
+          <token first="{FLOATING_LITERAL}" name="FLOATING_LITERAL"/>
+         </action>
+        </choice>
+        <action first="{CHAR_LITERAL}">
+         <token first="{CHAR_LITERAL}" name="CHAR_LITERAL"/>
+        </action>
+       </choice>
+       <action first="{STRING_LITERAL}">
+        <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+       </action>
+      </choice>
+      <action first="{TRUE}">
+       <token first="{TRUE}" name="TRUE"/>
+      </action>
+     </choice>
+     <action first="{FALSE}">
+      <token first="{FALSE}" name="FALSE"/>
+     </action>
+    </choice>
+    <action first="{NULLPTR}">
+     <token first="{NULLPTR}" name="NULLPTR"/>
+    </action>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

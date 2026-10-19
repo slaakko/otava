@@ -154,6 +154,11 @@ class ClassTemplateSpecializationSymbol;
 
 using Lexer = soul::lexer::LexerBase<char32_t>;
 
+enum class TemporaryAction
+{
+    none, construct, load, destruct
+};
+
 class Context
 {
 public:
@@ -348,6 +353,10 @@ public:
     inline void ResetHasUnresolvedForwardDeclaration() { hasUnresolvedForwardDeclaration = false; }
     inline bool HasUnresolvedForwardDeclaration() const noexcept { return hasUnresolvedForwardDeclaration; }
     void SetSkipInvokeChecking(FunctionDefinitionSymbol* fn);
+    inline void SetTemporaryAction(TemporaryAction action) noexcept { temporaryAction = action; }
+    inline TemporaryAction GetTemporaryAction() const noexcept { return temporaryAction; }
+    inline bool Evaluating() const noexcept { return evaluating; }
+    inline void SetEvaluating(bool evaluating_) noexcept { evaluating = evaluating_; }
 private:
     Module* module;
     Module* compileUnitModule;
@@ -444,6 +453,8 @@ private:
     std::vector<Module*> modules;
     bool hasUnresolvedForwardDeclaration;
     std::vector<std::string> skipInvokeCheckingFNames;
+    TemporaryAction temporaryAction;
+    bool evaluating;
 };
 
 class FlagSetter
@@ -500,6 +511,22 @@ public:
     }
 private:
     Context* context;
+};
+
+class EvaluatingSetter
+{
+public:
+    EvaluatingSetter(Context* context_) : context(context_), prevEvaluating(context->Evaluating())
+    {
+        context->SetEvaluating(true);
+    }
+    ~EvaluatingSetter()
+    {
+        context->SetEvaluating(prevEvaluating);
+    }
+private:
+    Context* context;
+    bool prevEvaluating;
 };
 
 } // namespace otava::symbols

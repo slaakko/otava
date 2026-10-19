@@ -1,0 +1,532 @@
+****************************************
+* Otava C++ Compiler version 0.3.0
+****************************************
+> building project 'std'...
+> D:/work/otava/std/std.type.fundamental.cppm
+> D:/work/otava/std/std.atexit.cppm
+> D:/work/otava/std/std.thread.mutex.cppm
+> D:/work/otava/std/std.init.cppm
+> D:/work/otava/std/std.type_traits.cppm
+> D:/work/otava/std/std.trace.cppm
+> D:/work/otava/std/std.rt.cppm
+> D:/work/otava/std/std.utilities.utility.cppm
+> D:/work/otava/std/std.utilities.pair.cppm
+> D:/work/otava/std/std.iterator.cppm
+> D:/work/otava/std/std.algorithm.cppm
+> D:/work/otava/std/std.atomic.cppm
+> D:/work/otava/std/std.new_delete.cppm
+> D:/work/otava/std/std.eh.cppm
+> D:/work/otava/std/std.basic_string.cppm
+CREATE TEMPORARY:@t2:char:76068
+CREATE TEMPORARY:@t0:long long int:329138
+CREATE TEMPORARY:@t2:char:79147
+CREATE TEMPORARY:@t0:bool:357033
+CREATE TEMPORARY:@t0:bool:398959
+CREATE TEMPORARY:@t1:std::basic_string<char>:399546
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t2:std::basic_string<char>:399862
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:367465
+TEMPORARY:std::basic_string<char>*
+CLONE TEMPORARY:@t0:std::basic_string<char>:367465
+CREATE TEMPORARY:@t0:bool:372352
+CREATE TEMPORARY:@t2:char16_t:76068
+CREATE TEMPORARY:@t0:long long int:329138
+CREATE TEMPORARY:@t2:char16_t:79147
+CREATE TEMPORARY:@t0:bool:357033
+CREATE TEMPORARY:@t0:bool:398959
+CREATE TEMPORARY:@t1:std::basic_string<char16_t>:399546
+TEMPORARY:std::basic_string<char16_t>*
+CREATE TEMPORARY:@t2:std::basic_string<char16_t>:399862
+TEMPORARY:std::basic_string<char16_t>*
+CREATE TEMPORARY:@t0:std::basic_string<char16_t>:367465
+TEMPORARY:std::basic_string<char16_t>*
+CLONE TEMPORARY:@t0:std::basic_string<char16_t>:367465
+CREATE TEMPORARY:@t0:bool:372352
+CREATE TEMPORARY:@t2:char32_t:76068
+CREATE TEMPORARY:@t0:long long int:329138
+CREATE TEMPORARY:@t2:char32_t:79147
+CREATE TEMPORARY:@t0:bool:357033
+CREATE TEMPORARY:@t0:bool:398959
+CREATE TEMPORARY:@t1:std::basic_string<char32_t>:399546
+TEMPORARY:std::basic_string<char32_t>*
+CREATE TEMPORARY:@t2:std::basic_string<char32_t>:399862
+TEMPORARY:std::basic_string<char32_t>*
+CREATE TEMPORARY:@t0:std::basic_string<char32_t>:367465
+TEMPORARY:std::basic_string<char32_t>*
+CLONE TEMPORARY:@t0:std::basic_string<char32_t>:367465
+CREATE TEMPORARY:@t0:bool:372352
+LOADING OF TEMPORARY:@t2:char:76068:load
+LOADING OF TEMPORARY:@t2:char:79147:load
+LOADING OF TEMPORARY:@t0:long long int:329138:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:399546:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:399546:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:399546:destruct
+LOADING OF TEMPORARY:@t2:std::basic_string<char>:399862:construct
+LOADING OF TEMPORARY:@t2:std::basic_string<char>:399862:load
+LOADING OF TEMPORARY:@t2:std::basic_string<char>:399862:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:367465:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:367465:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:367465:destruct
+LOADING OF TEMPORARY:@t2:char16_t:76068:load
+LOADING OF TEMPORARY:@t2:char16_t:79147:load
+LOADING OF TEMPORARY:@t0:long long int:329138:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char16_t>:399546:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char16_t>:399546:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char16_t>:399546:destruct
+LOADING OF TEMPORARY:@t2:std::basic_string<char16_t>:399862:construct
+LOADING OF TEMPORARY:@t2:std::basic_string<char16_t>:399862:load
+LOADING OF TEMPORARY:@t2:std::basic_string<char16_t>:399862:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char16_t>:367465:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char16_t>:367465:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char16_t>:367465:destruct
+LOADING OF TEMPORARY:@t2:char32_t:76068:load
+LOADING OF TEMPORARY:@t2:char32_t:79147:load
+LOADING OF TEMPORARY:@t0:long long int:329138:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char32_t>:399546:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char32_t>:399546:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char32_t>:399546:destruct
+LOADING OF TEMPORARY:@t2:std::basic_string<char32_t>:399862:construct
+LOADING OF TEMPORARY:@t2:std::basic_string<char32_t>:399862:load
+LOADING OF TEMPORARY:@t2:std::basic_string<char32_t>:399862:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:367465:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:367465:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:367465:destruct
+> D:/work/otava/std/std.functional.cppm
+> D:/work/otava/std/std.container.vector.cppm
+> D:/work/otava/std/std.hash.cppm
+> D:/work/otava/std/std.container.hash_table.cppm
+> D:/work/otava/std/std.container.list.cppm
+> D:/work/otava/std/std.utilities.unique_ptr.cppm
+> D:/work/otava/std/std.container.rb_tree.cppm
+> D:/work/otava/std/std.container.map.cppm
+> D:/work/otava/std/std.container.set.cppm
+> D:/work/otava/std/std.container.stack.cppm
+> D:/work/otava/std/std.container.unordered_map.cppm
+> D:/work/otava/std/std.container.unordered_set.cppm
+> D:/work/otava/std/std.utilities.shared_ptr.cppm
+> D:/work/otava/std/std.cow_string.cppm
+CREATE TEMPORARY:@t0:long long int:1151373
+CREATE TEMPORARY:@t0:char*:1151694
+LOADING OF TEMPORARY:@t0:long long int:1151373:none
+LOADING OF TEMPORARY:@t0:char*:1151694:none
+> D:/work/otava/std/std.error.cppm
+> D:/work/otava/std/std.exception.cppm
+> D:/work/otava/std/std.expected.cppm
+> D:/work/otava/std/std.limits.cppm
+> D:/work/otava/std/std.utf.cppm
+> D:/work/otava/std/std.stream.cppm
+> D:/work/otava/std/std.stringstream.cppm
+> D:/work/otava/std/std.time.cppm
+> D:/work/otava/std/std.core.cppm
+> D:/work/otava/std/std.filesystem.cppm
+> D:/work/otava/std/std.cppm
+> D:/work/otava/std/std.atexit.cpp
+CREATE TEMPORARY:@t0:std::at_exit_entry*:1316155
+LOADING OF TEMPORARY:@t0:std::at_exit_entry*:1316155:none
+> D:/work/otava/std/std.init.cpp
+> D:/work/otava/std/std.atomic.cpp
+> D:/work/otava/std/std.basic_string.cpp
+CREATE TEMPORARY:@t0:std::random_access_iterator_tag:131445
+CREATE TEMPORARY:@t0:std::basic_string<char>:1329046
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1332692
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1334842
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1337907
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1340069
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1343146
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1345370
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1347399
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t1:bool:1350746
+CREATE TEMPORARY:@t2:bool:1351229
+INVOKE TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1360809
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1363318
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1365827
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1368336
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1371070
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1373804
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:std::basic_string<char>:1376538
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t0:bool:1381137
+CREATE TEMPORARY:@t1:bool:1381759
+CREATE TEMPORARY:@t0:bool:1385590
+CREATE TEMPORARY:@t1:bool:1385935
+CREATE TEMPORARY:@t2:bool:1386251
+CREATE TEMPORARY:@t3:bool:1386846
+CREATE TEMPORARY:@t4:bool:1387224
+CREATE TEMPORARY:@t5:bool:1387620
+CREATE TEMPORARY:@t0:bool:1391295
+CREATE TEMPORARY:@t1:bool:1391917
+CREATE TEMPORARY:@t0:bool:1381137
+CREATE TEMPORARY:@t1:bool:1381759
+CREATE TEMPORARY:@t0:bool:1385590
+CREATE TEMPORARY:@t1:bool:1385935
+CREATE TEMPORARY:@t2:bool:1386251
+CREATE TEMPORARY:@t3:bool:1386846
+CREATE TEMPORARY:@t4:bool:1387224
+CREATE TEMPORARY:@t5:bool:1387620
+CREATE TEMPORARY:@t0:bool:1391295
+CREATE TEMPORARY:@t1:bool:1391917
+CREATE TEMPORARY:@t0:bool:1381137
+CREATE TEMPORARY:@t1:bool:1381759
+CREATE TEMPORARY:@t0:bool:1385590
+CREATE TEMPORARY:@t1:bool:1385935
+CREATE TEMPORARY:@t2:bool:1386251
+CREATE TEMPORARY:@t3:bool:1386846
+CREATE TEMPORARY:@t4:bool:1387224
+CREATE TEMPORARY:@t5:bool:1387620
+CREATE TEMPORARY:@t0:bool:1391295
+CREATE TEMPORARY:@t1:bool:1391917
+CREATE TEMPORARY:@t0:bool:1381137
+CREATE TEMPORARY:@t1:bool:1381759
+CREATE TEMPORARY:@t0:bool:1385590
+CREATE TEMPORARY:@t1:bool:1385935
+CREATE TEMPORARY:@t2:bool:1386251
+CREATE TEMPORARY:@t3:bool:1386846
+CREATE TEMPORARY:@t4:bool:1387224
+CREATE TEMPORARY:@t5:bool:1387620
+CREATE TEMPORARY:@t0:bool:1391295
+CREATE TEMPORARY:@t1:bool:1391917
+CREATE TEMPORARY:@t0:bool:1381137
+CREATE TEMPORARY:@t1:bool:1381759
+CREATE TEMPORARY:@t0:bool:1385590
+CREATE TEMPORARY:@t1:bool:1385935
+CREATE TEMPORARY:@t2:bool:1386251
+CREATE TEMPORARY:@t3:bool:1386846
+CREATE TEMPORARY:@t4:bool:1387224
+CREATE TEMPORARY:@t5:bool:1387620
+CREATE TEMPORARY:@t0:bool:1391295
+CREATE TEMPORARY:@t1:bool:1391917
+LOADING OF TEMPORARY:@t0:std::random_access_iterator_tag:131445:construct
+LOADING OF TEMPORARY:@t0:std::random_access_iterator_tag:131445:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1329046:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1329046:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1329046:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1332692:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1332692:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1332692:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1334842:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1334842:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1334842:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1337907:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1337907:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1337907:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1340069:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1340069:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1340069:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1343146:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1343146:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1343146:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1345370:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1345370:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1345370:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1360809:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1360809:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1360809:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1363318:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1363318:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1363318:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1365827:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1365827:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1365827:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1368336:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1368336:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1368336:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1371070:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1371070:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1371070:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1373804:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1373804:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1373804:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1376538:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1376538:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1376538:destruct
+> D:/work/otava/std/std.cow_string.cpp
+CREATE TEMPORARY:@t0:std::vector<char>*:1436023
+CREATE TEMPORARY:@t0:std::detail::counter<std::vector<char>>*:1100946
+CREATE TEMPORARY:@t0:char*:559756
+CREATE TEMPORARY:@t0:char*:619820
+CREATE TEMPORARY:@t0:char:1444669
+LOADING OF TEMPORARY:@t0:std::detail::counter<std::vector<char>>*:1100946:none
+LOADING OF TEMPORARY:@t0:std::vector<char>*:1436023:none
+LOADING OF TEMPORARY:@t0:char:1444669:load
+> D:/work/otava/std/std.rt.cpp
+> D:/work/otava/std/std.container.hash_table.cpp
+CREATE TEMPORARY:@t0:std::random_access_iterator_tag:116759
+CREATE TEMPORARY:@t0:long long int:111410
+CREATE TEMPORARY:@t1:std::random_access_iterator_tag:111547
+LOADING OF TEMPORARY:@t0:std::random_access_iterator_tag:116759:construct
+LOADING OF TEMPORARY:@t0:std::random_access_iterator_tag:116759:load
+LOADING OF TEMPORARY:@t0:long long int:111410:load
+LOADING OF TEMPORARY:@t1:std::random_access_iterator_tag:111547:construct
+LOADING OF TEMPORARY:@t1:std::random_access_iterator_tag:111547:load
+> D:/work/otava/std/std.error.cpp
+CREATE TEMPORARY:@t0:std::basic_string<char>:1454507
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t1:std::basic_string<char>:1454634
+TEMPORARY:std::basic_string<char>*
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1454507:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1454507:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:1454507:destruct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:1454634:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:1454634:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:1454634:destruct
+> D:/work/otava/std/std.exception.cpp
+> D:/work/otava/std/std.filesystem.cpp
+CREATE TEMPORARY:@t0:std::basic_string<char16_t>:1511101
+TEMPORARY:std::basic_string<char16_t>*
+CLONE TEMPORARY:@t0:std::basic_string<char16_t>:1511101
+INVOKE TEMPORARY:std::basic_string<char16_t>*
+CREATE TEMPORARY:@t0:std::basic_string<char32_t>:1513099
+TEMPORARY:std::basic_string<char32_t>*
+CLONE TEMPORARY:@t0:std::basic_string<char32_t>:1513099
+INVOKE TEMPORARY:std::basic_string<char32_t>*
+CREATE TEMPORARY:@t0:std::basic_string<char16_t>:1516217
+TEMPORARY:std::basic_string<char16_t>*
+CLONE TEMPORARY:@t0:std::basic_string<char16_t>:1516217
+INVOKE TEMPORARY:std::basic_string<char16_t>*
+CREATE TEMPORARY:@t0:std::basic_string<char32_t>:1517961
+TEMPORARY:std::basic_string<char32_t>*
+CLONE TEMPORARY:@t0:std::basic_string<char32_t>:1517961
+INVOKE TEMPORARY:std::basic_string<char32_t>*
+CREATE TEMPORARY:@t0:std::filesystem::path:1519078
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1519719
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1520360
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1521001
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1521642
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1522283
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1522924
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1523565
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1531113
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1532450
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1536916
+TEMPORARY:std::filesystem::path*
+CREATE TEMPORARY:@t0:std::filesystem::path:1548541
+TEMPORARY:std::filesystem::path*
+LOADING OF TEMPORARY:@t0:std::basic_string<char16_t>:1516217:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1517961:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1519078:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1519078:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1519078:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1519719:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1519719:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1519719:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1520360:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1520360:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1520360:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1521001:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1521001:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1521001:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1521642:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1521642:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1521642:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1522283:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1522283:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1522283:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1522924:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1522924:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1522924:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1523565:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1523565:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1523565:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1531113:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1531113:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1531113:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1532450:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1532450:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1532450:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1536916:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1536916:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1536916:destruct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1548541:construct
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1548541:load
+LOADING OF TEMPORARY:@t0:std::filesystem::path:1548541:destruct
+> D:/work/otava/std/std.hash.cpp
+> D:/work/otava/std/std.new_delete.cpp
+CREATE TEMPORARY:@t0:std::bad_alloc:1621124
+TEMPORARY:std::bad_alloc*
+CREATE TEMPORARY:@t1:std::bad_alloc*:1622617
+CREATE TEMPORARY:@t2:void*:1622618
+LOADING OF TEMPORARY:@t2:void*:1622618:none
+LOADING OF TEMPORARY:@t0:std::bad_alloc:1621124:destruct
+LOADING OF TEMPORARY:@t0:std::bad_alloc:1621124:destruct
+LOADING OF TEMPORARY:@t1:std::bad_alloc*:1622617:none
+> D:/work/otava/std/std.container.rb_tree.cpp
+CREATE TEMPORARY:@t0:bool:1624906
+CREATE TEMPORARY:@t1:bool:1625140
+CREATE TEMPORARY:@t0:bool:1625746
+CREATE TEMPORARY:@t1:bool:1625809
+CREATE TEMPORARY:@t0:bool:1642288
+CREATE TEMPORARY:@t1:bool:1643208
+CREATE TEMPORARY:@t2:bool:1646722
+CREATE TEMPORARY:@t0:bool:1662527
+CREATE TEMPORARY:@t1:bool:1662530
+CREATE TEMPORARY:@t2:bool:1665420
+CREATE TEMPORARY:@t3:bool:1665857
+CREATE TEMPORARY:@t4:bool:1665860
+CREATE TEMPORARY:@t5:bool:1666732
+CREATE TEMPORARY:@t6:bool:1671875
+CREATE TEMPORARY:@t7:bool:1672312
+CREATE TEMPORARY:@t8:bool:1672315
+CREATE TEMPORARY:@t9:bool:1673187
+LOADING OF TEMPORARY:@t1:bool:1625809:none
+LOADING OF TEMPORARY:@t0:bool:1625746:none
+> D:/work/otava/std/std.stream.cpp
+CREATE TEMPORARY:@t0:std::ios_base::fmtflags:1683089
+CREATE TEMPORARY:@t1:int:1683213
+CREATE TEMPORARY:@t2:int:1683273
+CREATE TEMPORARY:@t0:std::ios_base::fmtflags:1684970
+CREATE TEMPORARY:@t1:int:1685096
+CREATE TEMPORARY:@t2:int:1685157
+LOADING OF TEMPORARY:@t1:int:1683213:load
+LOADING OF TEMPORARY:@t2:int:1683273:load
+LOADING OF TEMPORARY:@t0:std::ios_base::fmtflags:1683089:load
+LOADING OF TEMPORARY:@t1:int:1685096:load
+LOADING OF TEMPORARY:@t2:int:1685157:load
+LOADING OF TEMPORARY:@t0:std::ios_base::fmtflags:1684970:load
+> D:/work/otava/std/std.thread.mutex.cpp
+> D:/work/otava/std/std.trace.cpp
+> D:/work/otava/std/std.utf.cpp
+CREATE TEMPORARY:@t0:std::runtime_error:1697715
+TEMPORARY:std::runtime_error*
+CREATE TEMPORARY:@t1:std::runtime_error*:1699088
+CREATE TEMPORARY:@t2:void*:1699089
+CREATE TEMPORARY:@t0:std::runtime_error:1699462
+TEMPORARY:std::runtime_error*
+CREATE TEMPORARY:@t1:std::runtime_error*:1700835
+CREATE TEMPORARY:@t2:void*:1700836
+CREATE TEMPORARY:@t0:std::runtime_error:1701208
+TEMPORARY:std::runtime_error*
+CREATE TEMPORARY:@t1:std::runtime_error*:1702581
+CREATE TEMPORARY:@t2:void*:1702582
+CREATE TEMPORARY:@t0:std::basic_string<char32_t>:1703604
+TEMPORARY:std::basic_string<char32_t>*
+CREATE TEMPORARY:@t1:std::basic_string<char>:1703486
+TEMPORARY:std::basic_string<char>*
+CRE**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.39
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+ATE TEMPORARY:@t0:std::basic_string<char32_t>:1738055
+TEMPORARY:std::basic_string<char32_t>*
+CREATE TEMPORARY:@t1:std::basic_string<char16_t>:1737937
+TEMPORARY:std::basic_string<char16_t>*
+CREATE TEMPORARY:@t0:bool:1739776
+CREATE TEMPORARY:@t1:bool:1801094
+CREATE TEMPORARY:@t2:bool:1801675
+CREATE TEMPORARY:@t4:bool:1802392
+LOADING OF TEMPORARY:@t2:void*:1699089:none
+LOADING OF TEMPORARY:@t0:std::runtime_error:1697715:destruct
+LOADING OF TEMPORARY:@t0:std::runtime_error:1697715:destruct
+LOADING OF TEMPORARY:@t1:std::runtime_error*:1699088:none
+LOADING OF TEMPORARY:@t2:void*:1700836:none
+LOADING OF TEMPORARY:@t0:std::runtime_error:1699462:destruct
+LOADING OF TEMPORARY:@t0:std::runtime_error:1699462:destruct
+LOADING OF TEMPORARY:@t1:std::runtime_error*:1700835:none
+LOADING OF TEMPORARY:@t2:void*:1702582:none
+LOADING OF TEMPORARY:@t0:std::runtime_error:1701208:destruct
+LOADING OF TEMPORARY:@t0:std::runtime_error:1701208:destruct
+LOADING OF TEMPORARY:@t1:std::runtime_error*:1702581:none
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1703604:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1703604:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:1703486:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:1703486:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1703604:destruct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:1703486:destruct
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1738055:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1738055:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char16_t>:1737937:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char16_t>:1737937:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char32_t>:1738055:destruct
+LOADING OF TEMPORARY:@t1:std::basic_string<char16_t>:1737937:destruct
+> D:/work/otava/std/std.utilities.shared_ptr.cpp
+> D:/work/otava/std/std.utilities.utility.cpp
+MSBuild version 17.14.51+25f168cee for .NET Framework
+
+  Assembling std.type.fundamental.cppm.asm...
+  Assembling std.atexit.cppm.asm...
+  Assembling std.thread.mutex.cppm.asm...
+  Assembling std.init.cppm.asm...
+  Assembling std.type_traits.cppm.asm...
+  Assembling std.trace.cppm.asm...
+  Assembling std.rt.cppm.asm...
+  Assembling std.utilities.utility.cppm.asm...
+  Assembling std.utilities.pair.cppm.asm...
+  Assembling std.iterator.cppm.asm...
+  Assembling std.algorithm.cppm.asm...
+  Assembling std.atomic.cppm.asm...
+  Assembling std.new_delete.cppm.asm...
+  Assembling std.eh.cppm.asm...
+  Assembling std.basic_string.cppm.asm...
+  Assembling std.functional.cppm.asm...
+  Assembling std.container.vector.cppm.asm...
+  Assembling std.hash.cppm.asm...
+  Assembling std.container.hash_table.cppm.asm...
+  Assembling std.container.list.cppm.asm...
+  Assembling std.utilities.unique_ptr.cppm.asm...
+  Assembling std.container.rb_tree.cppm.asm...
+  Assembling std.container.map.cppm.asm...
+  Assembling std.container.set.cppm.asm...
+  Assembling std.container.stack.cppm.asm...
+  Assembling std.container.unordered_map.cppm.asm...
+  Assembling std.container.unordered_set.cppm.asm...
+  Assembling std.utilities.shared_ptr.cppm.asm...
+  Assembling std.cow_string.cppm.asm...
+  Assembling std.error.cppm.asm...
+  Assembling std.exception.cppm.asm...
+  Assembling std.expected.cppm.asm...
+  Assembling std.limits.cppm.asm...
+  Assembling std.utf.cppm.asm...
+  Assembling std.stream.cppm.asm...
+  Assembling std.stringstream.cppm.asm...
+  Assembling std.time.cppm.asm...
+  Assembling std.core.cppm.asm...
+  Assembling std.filesystem.cppm.asm...
+  Assembling std.cppm.asm...
+  Assembling std.atexit.cpp.asm...
+  Assembling std.init.cpp.asm...
+  Assembling std.atomic.cpp.asm...
+  Assembling std.basic_string.cpp.asm...
+  Assembling std.cow_string.cpp.asm...
+  Assembling std.rt.cpp.asm...
+  Assembling std.container.hash_table.cpp.asm...
+  Assembling std.error.cpp.asm...
+  Assembling std.exception.cpp.asm...
+  Assembling std.filesystem.cpp.asm...
+  Assembling std.hash.cpp.asm...
+  Assembling std.new_delete.cpp.asm...
+  Assembling std.container.rb_tree.cpp.asm...
+  Assembling std.stream.cpp.asm...
+  Assembling std.thread.mutex.cpp.asm...
+  Assembling std.trace.cpp.asm...
+  Assembling std.utf.cpp.asm...
+  Assembling std.utilities.shared_ptr.cpp.asm...
+  Assembling std.utilities.utility.cpp.asm...
+  std.vcxproj -> D:\work\otava\std\bin\memdbg\std.lib
+
+project 'std' built successfully

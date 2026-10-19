@@ -23,6 +23,7 @@ get_sources.bat
 *.release
 *.log
 *.ast
+!soul.ast
 *.classmap
 *.pdb
 *.bak

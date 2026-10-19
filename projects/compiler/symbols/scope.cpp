@@ -282,7 +282,7 @@ int Scope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Contex
     return -1;
 }
 
-std::unique_ptr<Symbol> Scope::RemoveSymbol(int index)
+void Scope::RemoveSymbol(int index)
 {
     SetExceptionThrown();
     throw std::runtime_error("could not remove symbol");
@@ -846,9 +846,9 @@ int ContainerScope::AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpa
     return index;
 }
 
-std::unique_ptr<Symbol> ContainerScope::RemoveSymbol(int index)
+void ContainerScope::RemoveSymbol(int index)
 {
-    return containerSymbol->RemoveSymbol(index);
+    std::unique_ptr<Symbol> s = containerSymbol->RemoveSymbol(index);
 }
 
 NamespaceSymbol* ContainerScope::GetOrInsertNamespace(const std::string& name, const soul::ast::FullSpan& fullSpan, Context* context)

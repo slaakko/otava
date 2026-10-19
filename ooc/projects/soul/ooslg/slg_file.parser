@@ -1,0 +1,77 @@
+export module soul.slg.slg.file.parser;
+
+[interface]import soul.ast.slg;
+[implementation]import soul.cpp.token;
+[implementation]import soul.cpp.op.token;
+[implementation]import soul.punctuation.token;
+[implementation]import soul.tool.token;
+[implementation]import soul.common.common.parser;
+[implementation]import soul.lex.slg;
+
+parser SlgFileParser
+{
+    lexer soul::lex::slg::SlgLexer<char32_t>;
+
+    main;
+    using CommonParser.QualifiedId;
+	using CommonParser.FilePath;
+	using CommonParser.LexerKeyword;
+
+    SlgFile(var std::unique_ptr<soul::ast::slg::SlgFile> slgFile) : soul::ast::slg::SlgFile*
+        ::= 
+        (
+            PROJECT QualifiedId:projectName{ slgFile.reset(new soul::ast::slg::SlgFile(lexer.FileName(), projectName)); } SEMICOLON
+            (SlgFileDeclaration:declaration{ slgFile->AddDeclaration(declaration); })*
+        )
+        {
+            return slgFile.release();
+        }
+        ;
+
+	SlgFileDeclaration : soul::ast::slg::SlgFileDeclaration*
+		::= TokenFileDeclaration:tokenFileDeclaration{ return tokenFileDeclaration; }
+		|	KeywordFileDeclaration:keywordFileDeclaration{ return keywordFileDeclaration; }
+		|	ExpressionFileDeclaration:expressionFileDeclaration{ return expressionFileDeclaration; }
+		|	LexerFileDeclaration:lexerFileDeclaration{ return lexerFileDeclaration; }
+		;
+
+	TokenFileDeclaration(var bool external) : soul::ast::slg::SlgFileDeclaration*
+		::= 
+		(
+			(EXTERN{ external = true; } | empty{ external = false; }) TOKENS FilePath:filePath SEMICOLON
+		)
+		{
+			return new soul::ast::slg::TokenFileDeclaration(filePath, external); 
+		}
+		;
+
+	KeywordFileDeclaration : soul::ast::slg::SlgFileDeclaration*
+		::= 
+		(
+			KEYWORDS FilePath:filePath SEMICOLON
+		)
+		{
+			return new soul::ast::slg::KeywordFileDeclaration(filePath); 
+		}
+		;
+
+	ExpressionFileDeclaration : soul::ast::slg::SlgFileDeclaration*
+		::= 
+		(
+			EXPRESSIONS FilePath:filePath SEMICOLON
+		)
+		{
+			return new soul::ast::slg::ExpressionFileDeclaration(filePath); 
+		}
+		;
+
+	LexerFileDeclaration : soul::ast::slg::SlgFileDeclaration*
+		::= 
+		(
+			LexerKeyword:lexerKeyword FilePath:filePath SEMICOLON
+		)
+		{
+			return new soul::ast::slg::LexerFileDeclaration(filePath); 
+		}
+		;
+}

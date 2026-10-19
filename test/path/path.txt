@@ -1,0 +1,46 @@
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.39
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+****************************************
+* Otava C++ Compiler version 0.3.0
+****************************************
+> building project 'path'...
+> D:/work/otava/test/path/main.cpp
+CREATE TEMPORARY:@t0:std::basic_string<char>:3527692428906927733
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t1:std::basic_string<char>:-1124656232159402340
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t2:std::basic_string<char>:871
+TEMPORARY:std::basic_string<char>*
+CREATE TEMPORARY:@t3:std::basic_string<char>:684
+TEMPORARY:std::basic_string<char>*
+CLONE TEMPORARY:@t3:std::basic_string<char>:684
+CLONE TEMPORARY:@t2:std::basic_string<char>:871
+CLONE TEMPORARY:@t0:std::basic_string<char>:3527692428906927733
+CLONE TEMPORARY:@t1:std::basic_string<char>:-1124656232159402340
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:3527692428906927733:construct
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:3527692428906927733:load
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:-1124656232159402340:construct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:-1124656232159402340:load
+LOADING OF TEMPORARY:@t2:std::basic_string<char>:871:construct
+LOADING OF TEMPORARY:@t2:std::basic_string<char>:871:load
+LOADING OF TEMPORARY:@t3:std::basic_string<char>:684:construct
+LOADING OF TEMPORARY:@t3:std::basic_string<char>:684:load
+LOADING OF TEMPORARY:@t0:std::basic_string<char>:3527692428906927733:destruct
+LOADING OF TEMPORARY:@t1:std::basic_string<char>:-1124656232159402340:destruct
+LOADING OF TEMPORARY:@t2:std::basic_string<char>:871:destruct
+LOADING OF TEMPORARY:@t3:std::basic_string<char>:684:destruct
+CREATE TEMPORARY:@t0:std::bad_alloc*:1335
+LOADING OF TEMPORARY:@t0:std::bad_alloc*:1335:none
+> D:/work/otava/test/path/bin/memdbg/__main__.cpp.i
+==> D:/work/otava/test/path/bin/memdbg/__main__.cpp.asm
+MSBuild version 17.14.51+25f168cee for .NET Framework
+
+  Assembling main.cpp.asm...
+  Assembling __main__.cpp.asm...
+  __main__.cpp
+  path.vcxproj -> D:\work\otava\test\path\bin\memdbg\path.exe
+
+project 'path' built successfully

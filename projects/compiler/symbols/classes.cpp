@@ -2217,6 +2217,14 @@ BoundFunctionCallNode* MakeDestructorCall(ClassTypeSymbol* cls, BoundExpressionN
 
 void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* constructTemporary, BoundExpressionNode* arg, Context* context)
 {
+    if (context->Evaluating())
+    {
+        return;
+    }
+    if (context->GetFlag(ContextFlags::invoke))
+    {
+        return;
+    }
     if (!arg)
     {
         std::cout << "NO TEMPORARY ARG!" << "\n";
@@ -2230,7 +2238,6 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
     }
     if (!temporary->GetType()->IsClassTypeSymbol()) return;
     ClassTypeSymbol* cls = static_cast<ClassTypeSymbol*>(temporary->GetType());
-    if (cls->IsReadOnly()) return;
     BoundFunctionCallNode* destructorCall = MakeDestructorCall(cls, arg, nullptr, constructTemporary->GetFullSpan(), context);
     if (!destructorCall) return;
     if (context->CurrentProject()->HasDefine("PRINT_TEMPORARIES"))

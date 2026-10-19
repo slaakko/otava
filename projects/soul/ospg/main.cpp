@@ -7,7 +7,7 @@ import util;
 
 std::string Version()
 {
-    return "0.2.9";
+    return "0.3.0";
 }
 
 void PrintHelp()
