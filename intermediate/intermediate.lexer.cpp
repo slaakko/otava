@@ -5,7 +5,7 @@ module otava.intermediate.lexer;
 
 namespace otava::intermediate::lexer {
 
-soul::ast::common::TokenCollection* GetTokens(otava::intermediate::lexer::Tag tag)
+soul::ast::common::TokenCollection* GetTokens()
 {
     static soul::ast::common::TokenCollection tokens("otava.intermediate.lexer.tokens");
     if (!tokens.Initialized())
@@ -111,7 +111,7 @@ std::mutex mtx;
 std::mutex& MakeLexerMtx() { return mtx; }
 
 template<>
-soul::lexer::KeywordMap<char>* GetKeywords<char>(otava::intermediate::lexer::Tag tag)
+soul::lexer::KeywordMap<char>* GetKeywords<char>()
 {
     static const soul::lexer::Keyword<char> keywords[] = {
          { "types", otava::intermediate::token::TYPES },
@@ -188,7 +188,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>(otava::intermediate::lexer::Tag
 }
 
 template<>
-soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>(otava::intermediate::lexer::Tag tag)
+soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
 {
     static const soul::lexer::Keyword<char8_t> keywords[] = {
          { u8"types", otava::intermediate::token::TYPES },
@@ -265,7 +265,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>(otava::intermediate::lexe
 }
 
 template<>
-soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>(otava::intermediate::lexer::Tag tag)
+soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
 {
     static const soul::lexer::Keyword<char16_t> keywords[] = {
          { u"types", otava::intermediate::token::TYPES },
@@ -342,7 +342,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>(otava::intermediate::le
 }
 
 template<>
-soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>(otava::intermediate::lexer::Tag tag)
+soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
 {
     static const soul::lexer::Keyword<char32_t> keywords[] = {
          { U"types", otava::intermediate::token::TYPES },

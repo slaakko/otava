@@ -1,0 +1,39 @@
+<parserFile>
+ <grammar name="CppIdentifierParser">
+  <rule first="{ID}" name="CppIdentifier">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{#, ID, COLON_COLON}" name="QualifiedCppId">
+   <action first="{#, ID, COLON_COLON}">
+    <group first="{#, ID, COLON_COLON}">
+     <sequence first="{#, ID, COLON_COLON}">
+      <sequence first="{#, ID, COLON_COLON}">
+       <optional first="{#, COLON_COLON}">
+        <group first="{COLON_COLON}">
+         <action first="{COLON_COLON}">
+          <token first="{COLON_COLON}" name="COLON_COLON"/>
+         </action>
+        </group>
+       </optional>
+       <action first="{ID}">
+        <token first="{ID}" name="ID"/>
+       </action>
+      </sequence>
+      <kleene first="{#, COLON_COLON}">
+       <group first="{COLON_COLON}">
+        <sequence first="{COLON_COLON}">
+         <token first="{COLON_COLON}" name="COLON_COLON"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

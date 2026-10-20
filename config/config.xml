@@ -6,6 +6,10 @@
 		<define symbol='DEBUG_MEMORY'/>
 		<define symbol='NOWARN'/>
 	</configuration>
+	<configuration name='lexerdbg' base='debug'>
+		<define symbol='DEBUG_LEXER'/>
+		<define symbol='NOWARN'/>
+	</configuration>
 	<configuration name='fn' base='debug'>
 		<define symbol='DEBUG_FUNCTIONS'/>
 		<define symbol='NOWARN'/>

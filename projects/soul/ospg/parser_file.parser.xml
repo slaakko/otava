@@ -1,0 +1,440 @@
+<parserFile>
+ <grammar name="ParserFileParser">
+  <rule first="{#, LBRACKET, SEMICOLON, ID}" name="ParserFile">
+   <action first="{#, LBRACKET, SEMICOLON, ID}">
+    <group first="{#, LBRACKET, SEMICOLON, ID}">
+     <sequence first="{#, LBRACKET, SEMICOLON, ID}">
+      <sequence first="{#, LBRACKET, SEMICOLON, ID}">
+       <sequence first="{#, ID}">
+        <action first="{#}">
+         <empty first="{#}"/>
+        </action>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="ExportModule"/>
+        </action>
+       </sequence>
+       <kleene first="{#, LBRACKET, SEMICOLON, ID}">
+        <group first="{#, LBRACKET, SEMICOLON, ID}">
+         <action first="{#, LBRACKET, SEMICOLON, ID}">
+          <nonterminal first="{#, LBRACKET, SEMICOLON, ID}" ruleName="Import"/>
+         </action>
+        </group>
+       </kleene>
+      </sequence>
+      <kleene first="{#, ID}">
+       <group first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="Parser"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Parser">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <sequence first="{ID}">
+         <nonterminal first="{ID}" ruleName="ParserKeyword"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+        <token first="{LBRACE}" name="LBRACE"/>
+       </sequence>
+       <kleene first="{#, MAIN, USING, ID}">
+        <nonterminal first="{MAIN, USING, ID}" ruleName="ParserStatement"/>
+       </kleene>
+      </sequence>
+      <token first="{RBRACE}" name="RBRACE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{MAIN, USING, ID}" name="ParserStatement">
+   <choice first="{MAIN, USING, ID}">
+    <choice first="{MAIN, USING, ID}">
+     <choice first="{MAIN, ID}">
+      <nonterminal first="{ID}" ruleName="LexerStatement"/>
+      <nonterminal first="{MAIN}" ruleName="MainStatement"/>
+     </choice>
+     <nonterminal first="{USING}" ruleName="UsingStatement"/>
+    </choice>
+    <nonterminal first="{ID}" ruleName="RuleStatement"/>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="LexerStatement">
+   <sequence first="{ID}">
+    <sequence first="{ID}">
+     <nonterminal first="{ID}" ruleName="LexerKeyword"/>
+     <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, ID, STAR, COLON_COLON}" ruleName="TypeId"/>
+    </sequence>
+    <action first="{SEMICOLON}">
+     <token first="{SEMICOLON}" name="SEMICOLON"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{MAIN}" name="MainStatement">
+   <sequence first="{MAIN}">
+    <token first="{MAIN}" name="MAIN"/>
+    <action first="{SEMICOLON}">
+     <token first="{SEMICOLON}" name="SEMICOLON"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{USING}" name="UsingStatement">
+   <action first="{USING}">
+    <group first="{USING}">
+     <sequence first="{USING}">
+      <sequence first="{USING}">
+       <token first="{USING}" name="USING"/>
+       <nonterminal first="{ID}" ruleName="QualifiedId"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="RuleStatement">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <sequence first="{ID}">
+         <sequence first="{ID}">
+          <action first="{ID}">
+           <token first="{ID}" name="ID"/>
+          </action>
+          <optional first="{#, LPAREN}">
+           <nonterminal first="{LPAREN}" ruleName="ParametersAndVariables"/>
+          </optional>
+         </sequence>
+         <optional first="{#, COLON}">
+          <nonterminal first="{COLON}" ruleName="ReturnType"/>
+         </optional>
+        </sequence>
+        <token first="{PRODUCES}" name="PRODUCES"/>
+       </sequence>
+       <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="RuleBody"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN}" name="ParametersAndVariables">
+   <sequence first="{LPAREN}">
+    <sequence first="{LPAREN}">
+     <token first="{LPAREN}" name="LPAREN"/>
+     <optional first="{#, LPAREN, LBRACKET, LANGLE, COMMA, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+      <group first="{#, LPAREN, LBRACKET, LANGLE, COMMA, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+       <list first="{#, LPAREN, LBRACKET, LANGLE, COMMA, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+        <sequence first="{#, LPAREN, LBRACKET, LANGLE, COMMA, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+         <action first="{#, LPAREN, LBRACKET, LANGLE, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+          <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}" ruleName="ParamOrVariable"/>
+         </action>
+         <kleene first="{#, COMMA}">
+          <sequence first="{COMMA}">
+           <token first="{COMMA}" name="COMMA"/>
+           <action first="{#, LPAREN, LBRACKET, LANGLE, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+            <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}" ruleName="ParamOrVariable"/>
+           </action>
+          </sequence>
+         </kleene>
+        </sequence>
+       </list>
+      </group>
+     </optional>
+    </sequence>
+    <token first="{RPAREN}" name="RPAREN"/>
+   </sequence>
+  </rule>
+  <rule first="{#, LPAREN, LBRACKET, LANGLE, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}" name="ParamOrVariable">
+   <choice first="{#, LPAREN, LBRACKET, LANGLE, AMP, VAR, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+    <sequence first="{VAR}">
+     <sequence first="{VAR}">
+      <token first="{VAR}" name="VAR"/>
+      <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, ID, STAR, COLON_COLON}" ruleName="TypeId"/>
+     </sequence>
+     <action first="{#, LPAREN, LBRACKET, LANGLE, AMP, OPERATOR, ID, STAR, COLON_COLON}">
+      <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, OPERATOR, ID, STAR, COLON_COLON}" ruleName="Declarator"/>
+     </action>
+    </sequence>
+    <sequence first="{#, LPAREN, LBRACKET, LANGLE, AMP, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, OPERATOR, ID, STAR, COLON_COLON}">
+     <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, ID, STAR, COLON_COLON}" ruleName="TypeId"/>
+     <action first="{#, LPAREN, LBRACKET, LANGLE, AMP, OPERATOR, ID, STAR, COLON_COLON}">
+      <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, OPERATOR, ID, STAR, COLON_COLON}" ruleName="Declarator"/>
+     </action>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{COLON}" name="ReturnType">
+   <sequence first="{COLON}">
+    <token first="{COLON}" name="COLON"/>
+    <action first="{#, LPAREN, LBRACKET, LANGLE, AMP, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, ID, STAR, COLON_COLON}">
+     <nonterminal first="{#, LPAREN, LBRACKET, LANGLE, AMP, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, ID, STAR, COLON_COLON}" ruleName="TypeId"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="RuleBody">
+   <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Choice"/>
+   </action>
+  </rule>
+  <rule first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Choice">
+   <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <group first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <sequence first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Sequence"/>
+      </action>
+      <kleene first="{#, PIPE}">
+       <group first="{PIPE}">
+        <sequence first="{PIPE}">
+         <token first="{PIPE}" name="PIPE"/>
+         <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+          <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Sequence"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Sequence">
+   <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <group first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <sequence first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Difference"/>
+      </action>
+      <kleene first="{#, LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <group first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+        <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+         <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Difference"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Difference">
+   <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <group first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <sequence first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="List"/>
+      </action>
+      <kleene first="{#, MINUS}">
+       <group first="{MINUS}">
+        <sequence first="{MINUS}">
+         <token first="{MINUS}" name="MINUS"/>
+         <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+          <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="List"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="List">
+   <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <group first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <sequence first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Prefix"/>
+      </action>
+      <optional first="{#, REM}">
+       <group first="{REM}">
+        <sequence first="{REM}">
+         <token first="{REM}" name="REM"/>
+         <action first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+          <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Prefix"/>
+         </action>
+        </sequence>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Prefix">
+   <choice first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <sequence first="{AMP}">
+     <token first="{AMP}" name="AMP"/>
+     <action first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <nonterminal first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Postfix"/>
+     </action>
+    </sequence>
+    <action first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <nonterminal first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Postfix"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Postfix">
+   <action first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <group first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <sequence first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <action first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <nonterminal first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Primary"/>
+      </action>
+      <optional first="{#, QUEST, PLUS, STAR}">
+       <group first="{QUEST, PLUS, STAR}">
+        <choice first="{QUEST, PLUS, STAR}">
+         <choice first="{PLUS, STAR}">
+          <action first="{STAR}">
+           <token first="{STAR}" name="STAR"/>
+          </action>
+          <action first="{PLUS}">
+           <token first="{PLUS}" name="PLUS"/>
+          </action>
+         </choice>
+         <action first="{QUEST}">
+          <token first="{QUEST}" name="QUEST"/>
+         </action>
+        </choice>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Primary">
+   <action first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <group first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <sequence first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+      <sequence first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+       <group first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+        <choice first="{LPAREN, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+         <choice first="{EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="RuleCall"/>
+          </action>
+          <action first="{EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+           <nonterminal first="{EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Primitive"/>
+          </action>
+         </choice>
+         <action first="{LPAREN}">
+          <nonterminal first="{LPAREN}" ruleName="Grouping"/>
+         </action>
+        </choice>
+       </group>
+       <optional first="{#, EXCLAMATION}">
+        <group first="{EXCLAMATION}">
+         <action first="{EXCLAMATION}">
+          <token first="{EXCLAMATION}" name="EXCLAMATION"/>
+         </action>
+        </group>
+       </optional>
+      </sequence>
+      <optional first="{#, LBRACE}">
+       <group first="{LBRACE}">
+        <action first="{LBRACE}">
+         <group first="{LBRACE}">
+          <sequence first="{LBRACE}">
+           <nonterminal first="{LBRACE}" ruleName="CompoundStatement"/>
+           <optional first="{#, DIV}">
+            <group first="{DIV}">
+             <sequence first="{DIV}">
+              <token first="{DIV}" name="DIV"/>
+              <nonterminal first="{LBRACE}" ruleName="CompoundStatement"/>
+             </sequence>
+            </group>
+           </optional>
+          </sequence>
+         </group>
+        </action>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="RuleCall">
+   <group first="{ID}">
+    <sequence first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="Nonterminal"/>
+       </action>
+       <optional first="{#, LPAREN}">
+        <group first="{LPAREN}">
+         <sequence first="{LPAREN}">
+          <sequence first="{LPAREN}">
+           <action first="{LPAREN}">
+            <token first="{LPAREN}" name="LPAREN"/>
+           </action>
+           <nonterminal first="{#, DOT, LPAREN, LBRACKET, LANGLE, RANGLE, COMMA, ARROW, QUEST, AMP, EXCLAMATION, TILDE, CARET, PIPE, CHAR, CHAR8T, CHAR16T, CHAR32T, WCHART, BOOL, SHORT, INT, LONG, SIGNED, UNSIGNED, FLOAT, DOUBLE, VOID, CONST, VOLATILE, SIZEOF, OPERATOR, DYNAMIC_CAST, STATIC_CAST, REINTERPRET_CAST, CONST_CAST, TYPEID, THIS, NEW, DELETE, TRUE, FALSE, NULLPTR, ID, INTEGER_LITERAL, FLOATING_LITERAL, CHAR_LITERAL, STRING_LITERAL, DISJUNCTION, AMP_AMP, DOT_STAR, ARROW_STAR, EQ, NEQ, LEQ, GEQ, SHIFT_LEFT, SHIFT_RIGHT, PLUS, MINUS, STAR, DIV, REM, PLUS_PLUS, MINUS_MINUS, COLON_COLON, ASSIGN, MUL_ASSIGN, DIV_ASSIGN, REM_ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN, SHIFT_LEFT_ASSIGN, SHIFT_RIGHT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN}" ruleName="ExpressionList"/>
+          </sequence>
+          <token first="{RPAREN}" name="RPAREN"/>
+         </sequence>
+        </group>
+       </optional>
+      </sequence>
+      <token first="{COLON}" name="COLON"/>
+     </sequence>
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{ID}" name="Nonterminal">
+   <action first="{ID}">
+    <group first="{ID}">
+     <token first="{ID}" name="ID"/>
+    </group>
+   </action>
+  </rule>
+  <rule first="{EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" name="Primitive">
+   <group first="{EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+    <choice first="{EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}">
+     <choice first="{EMPTY, ANY, ID, CHAR_LITERAL}">
+      <choice first="{EMPTY, ANY, ID}">
+       <choice first="{EMPTY, ANY}">
+        <action first="{EMPTY}">
+         <token first="{EMPTY}" name="EMPTY"/>
+        </action>
+        <action first="{ANY}">
+         <token first="{ANY}" name="ANY"/>
+        </action>
+       </choice>
+       <action first="{ID}">
+        <token first="{ID}" name="ID"/>
+       </action>
+      </choice>
+      <action first="{CHAR_LITERAL}">
+       <token first="{CHAR_LITERAL}" name="CHAR_LITERAL"/>
+      </action>
+     </choice>
+     <action first="{STRING_LITERAL}">
+      <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+     </action>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{LPAREN}" name="Grouping">
+   <action first="{LPAREN}">
+    <group first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <token first="{LPAREN}" name="LPAREN"/>
+       <nonterminal first="{LPAREN, AMP, EMPTY, ANY, ID, CHAR_LITERAL, STRING_LITERAL}" ruleName="Choice"/>
+      </sequence>
+      <token first="{RPAREN}" name="RPAREN"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

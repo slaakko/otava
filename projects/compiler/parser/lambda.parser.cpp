@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/lambda.parser' using soul parser generator ospg version 0.2.7
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/parser/lambda.parser' using soul parser generator ospg version 0.3.1
 
 module otava.parser.lambda;
 

@@ -11,10 +11,6 @@ import otava.intermediate.token;
 
 export namespace otava::intermediate::lexer {
 
-enum class Tag
-{
-    tag
-};
 
 std::mutex& MakeLexerMtx();
 
@@ -27,7 +23,7 @@ soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const Char* start, c
 template<typename Char>
 soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
 
-soul::ast::common::TokenCollection* GetTokens(otava::intermediate::lexer::Tag tag);
+soul::ast::common::TokenCollection* GetTokens();
 
 struct IntermediateLexer_Variables : public soul::lexer::Variables
 {
@@ -2170,42 +2166,42 @@ struct IntermediateLexer
 };
 
 template<typename Char>
-soul::lexer::ClassMap<Char>* GetClassMap(otava::intermediate::lexer::Tag tag)
+soul::lexer::ClassMap<Char>* GetClassMap()
 {
     static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("otava.intermediate.lexer.classmap"));
     return classmap.get();
 }
 
 template<typename Char>
-soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags, otava::intermediate::lexer::Tag tag)
+soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
     static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "otava.intermediate.lexer.classmap", resourceFlags));
     return classmap.get();
 }
 
 template<typename Char>
-soul::lexer::KeywordMap<Char>* GetKeywords(otava::intermediate::lexer::Tag tag);
+soul::lexer::KeywordMap<Char>* GetKeywords();
 
 template<>
-soul::lexer::KeywordMap<char>* GetKeywords<char>(otava::intermediate::lexer::Tag tag);
+soul::lexer::KeywordMap<char>* GetKeywords<char>();
 
 template<>
-soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>(otava::intermediate::lexer::Tag tag);
+soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>();
 
 template<>
-soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>(otava::intermediate::lexer::Tag tag);
+soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>();
 
 template<>
-soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>(otava::intermediate::lexer::Tag tag);
+soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>();
 
 template<typename Char>
 soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lexer = soul::lexer::Lexer<IntermediateLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(otava::intermediate::lexer::Tag()));
-    lexer.SetTokenCollection(GetTokens(otava::intermediate::lexer::Tag()));
-    lexer.SetKeywordMap(GetKeywords<Char>(otava::intermediate::lexer::Tag()));
+    lexer.SetClassMap(GetClassMap<Char>());
+    lexer.SetTokenCollection(GetTokens());
+    lexer.SetKeywordMap(GetKeywords<Char>());
     return lexer;
 }
 
@@ -2214,9 +2210,9 @@ soul::lexer::Lexer<IntermediateLexer<Char>, Char> MakeLexer(const std::string& m
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lexer = soul::lexer::Lexer<IntermediateLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags, otava::intermediate::lexer::Tag()));
-    lexer.SetTokenCollection(GetTokens(otava::intermediate::lexer::Tag()));
-    lexer.SetKeywordMap(GetKeywords<Char>(otava::intermediate::lexer::Tag()));
+    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
+    lexer.SetTokenCollection(GetTokens());
+    lexer.SetKeywordMap(GetKeywords<Char>());
     return lexer;
 }
 

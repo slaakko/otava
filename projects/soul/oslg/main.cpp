@@ -8,7 +8,7 @@ import soul.lexer.file_map;
 
 std::string Version()
 {
-    return "0.3.0";
+    return "0.3.1";
 }
 
 void PrintHelp()

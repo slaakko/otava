@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/otava/projects/soul/xml/xpath/xpath.token' using soul lexer generator version 0.2.4
+// this file has been automatically generated from 'D:/work/otava/projects/soul/xml/xpath/xpath.token' using soul lexer generator version 0.3.1
 
 export module soul.xml.xpath.token;
 

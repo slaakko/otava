@@ -28,7 +28,7 @@ void MakeCompressedClassMap(const std::string& rootDir, const std::string& class
     }
 }
 
-void MakeResourceFile(const std::string& rootDir, const std::string& classMapName, bool verbose)
+void MakeResourceFile(const std::string& rootDir, const std::string& resourceName, const std::string& classMapName, bool verbose)
 {
     std::string resourceFileName = util::Path::Combine(rootDir, classMapName + ".rc");
     std::string compressedClassMapFileName = "./" + classMapName + ".compressed";
@@ -38,7 +38,7 @@ void MakeResourceFile(const std::string& rootDir, const std::string& classMapNam
         throw std::runtime_error("could not create file '" + resourceFileName + "'");
     }
     util::CodeFormatter formatter(resourceFile);
-    formatter.WriteLine(classMapName + " RCDATA \"" + compressedClassMapFileName + "\"");
+    formatter.WriteLine(resourceName + " RCDATA \"" + compressedClassMapFileName + "\"");
     if (verbose)
     {
         std::cout << "==> " << resourceFileName << "\n";

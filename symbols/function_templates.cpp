@@ -107,8 +107,8 @@ FunctionSymbol* TryInstantiateFunctionTemplate(Context* context, Instantiator& i
         {
             functionDefinition->SetCompileUnitId(context->GetBoundCompileUnit()->Id());
         }
-        std::string irName = functionDefinition->IrName(context);
         functionDefinition->SetParent(functionTemplate->GetScope()->GetNamespaceScope(context)->GetSymbol());
+        std::string irName = functionDefinition->IrName(context);
         functionTemplateRepository->AddFunctionDefinition(key, functionDefinition, clonedNode.release());
         context->PushBoundFunction(new BoundFunctionNode(functionDefinition, fullSpan));
         BoundFunctionGuard boundFunctionGuard(context);

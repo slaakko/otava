@@ -11,10 +11,6 @@ import soul.xml.xpath.token;
 
 export namespace soul::xml::xpath::lexer {
 
-enum class Tag
-{
-    tag
-};
 
 std::mutex& MakeLexerMtx();
 
@@ -27,7 +23,7 @@ soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const Char* start, const Ch
 template<typename Char>
 soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
 
-soul::ast::common::TokenCollection* GetTokens(soul::xml::xpath::lexer::Tag tag);
+soul::ast::common::TokenCollection* GetTokens();
 
 struct XPathLexer_Variables : public soul::lexer::Variables
 {
@@ -1423,42 +1419,42 @@ struct XPathLexer
 };
 
 template<typename Char>
-soul::lexer::ClassMap<Char>* GetClassMap(soul::xml::xpath::lexer::Tag tag)
+soul::lexer::ClassMap<Char>* GetClassMap()
 {
     static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("soul.xml.xpath.lexer.classmap"));
     return classmap.get();
 }
 
 template<typename Char>
-soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags, soul::xml::xpath::lexer::Tag tag)
+soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
     static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "soul.xml.xpath.lexer.classmap", resourceFlags));
     return classmap.get();
 }
 
 template<typename Char>
-soul::lexer::KeywordMap<Char>* GetKeywords(soul::xml::xpath::lexer::Tag tag);
+soul::lexer::KeywordMap<Char>* GetKeywords();
 
 template<>
-soul::lexer::KeywordMap<char>* GetKeywords<char>(soul::xml::xpath::lexer::Tag tag);
+soul::lexer::KeywordMap<char>* GetKeywords<char>();
 
 template<>
-soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>(soul::xml::xpath::lexer::Tag tag);
+soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>();
 
 template<>
-soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>(soul::xml::xpath::lexer::Tag tag);
+soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>();
 
 template<>
-soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>(soul::xml::xpath::lexer::Tag tag);
+soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>();
 
 template<typename Char>
 soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName)
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lexer = soul::lexer::Lexer<XPathLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(soul::xml::xpath::lexer::Tag()));
-    lexer.SetTokenCollection(GetTokens(soul::xml::xpath::lexer::Tag()));
-    lexer.SetKeywordMap(GetKeywords<Char>(soul::xml::xpath::lexer::Tag()));
+    lexer.SetClassMap(GetClassMap<Char>());
+    lexer.SetTokenCollection(GetTokens());
+    lexer.SetKeywordMap(GetKeywords<Char>());
     return lexer;
 }
 
@@ -1467,9 +1463,9 @@ soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const std::string& moduleFi
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lexer = soul::lexer::Lexer<XPathLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags, soul::xml::xpath::lexer::Tag()));
-    lexer.SetTokenCollection(GetTokens(soul::xml::xpath::lexer::Tag()));
-    lexer.SetKeywordMap(GetKeywords<Char>(soul::xml::xpath::lexer::Tag()));
+    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
+    lexer.SetTokenCollection(GetTokens());
+    lexer.SetKeywordMap(GetKeywords<Char>());
     return lexer;
 }
 

@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/compiler/lexer/otava.token.line.lexer' using soul lexer generator oslg version 0.2.5
+// this file has been automatically generated from 'D:/work/otava/projects/compiler/lexer/otava.token.line.lexer' using soul lexer generator oslg version 0.3.1
 
 export module otava.token.line.lexer;
 
@@ -14,6 +14,8 @@ import soul.ast.common;
 import util.binary_resource_ptr;
 import util.system;
 import util.path;
+import util.text_util;
+import util.unicode;
 import otava.token;
 
 export namespace otava::token::line::lexer {
@@ -37,6 +39,11 @@ struct OtavaTokenLineLexer
     {
         soul::lexer::ClassMap<Char>* classmap = lexer.GetClassMap();
         std::int32_t cls = classmap->GetClass(chr);
+        #ifdef DEBUG_LEXER
+        std::cout << "CHAR=" << util::ToUtf8(util::CharStr(chr)) << "\n";
+        std::cout << "CLASS=" << cls << "\n";
+        std::cout << "STATE=" << state << "\n";
+        #endif
         switch (state)
         {
             case 0:
@@ -18384,14 +18391,14 @@ struct OtavaTokenLineLexer
 template<typename Char>
 soul::lexer::ClassMap<Char>* GetClassMap()
 {
-    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("otava.token.line.lexer.classmap"));
+    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("otava_token_line_lexer_classmap"));
     return classmap.get();
 }
 
 template<typename Char>
 soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
-    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "otava.token.line.lexer.classmap", resourceFlags));
+    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "otava_token_line_lexer_classmap", resourceFlags));
     return classmap.get();
 }
 

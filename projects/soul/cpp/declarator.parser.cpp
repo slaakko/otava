@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/soul-mod/tools/otava/projects/soul/cpp/declarator.parser' using soul parser generator ospg version 5.0.0
+// this file has been automatically generated from 'D:/work/otava/projects/soul/cpp/declarator.parser' using soul parser generator ospg version 0.3.1
 
 module soul.cpp.declarator.parser;
 
@@ -7,6 +7,7 @@ import util;
 import soul.ast.common;
 import soul.ast.spg;
 import soul.ast.source_pos;
+import soul.ast.span;
 import soul.cpp.token;
 import soul.cpp.op.token;
 import soul.tool.token;

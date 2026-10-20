@@ -14,6 +14,7 @@ import otava.solution_spg.rules;
 import soul.lexer;
 import util.path;
 import util.file_stream;
+import util.text_util;
 import util.unicode;
 import util.system;
 

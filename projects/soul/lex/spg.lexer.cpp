@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/src/otava-0.2.3/projects/soul/lex/spg.lexer' using soul lexer generator oslg version 0.2.5
+// this file has been automatically generated from 'D:/work/otava/projects/soul/lex/spg.lexer' using soul lexer generator oslg version 0.3.1
 
 module soul.lex.spg;
 
