@@ -178,14 +178,14 @@ std::string SymbolKindStr(SymbolKind kind)
 
 Symbol::Symbol(Module* module_, SymbolId id_) : 
     module(module_), id(id_), flags(SymbolFlags::readOnly), nameOffset(StringOffset(0)), name(""),
-    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1)
+    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1), index(-1)
 {
     module->AddSymbol(this);
 }
 
 Symbol::Symbol(Module* module_, SymbolId id_, const std::string& name_) : 
     module(module_), id(id_), flags(SymbolFlags::project), nameOffset(module->GetStringTable()->AddString(name_)), name(module->GetStringTable()->CharPtr(nameOffset)),
-    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1)
+    kind(GetSymbolKind(id)), parentId(zeroSymbolId), parent(nullptr), declarationFlags(DeclarationFlags::none), access(Access::none), astNodeId(-1), index(-1)
 {
     module->AddSymbol(this);
 }
@@ -697,6 +697,7 @@ void Symbol::Write(Writer& writer)
     binaryStreamWriter.Write(astNodeId);
     writer.Write(fullSpan);
     binaryStreamWriter.Write(ToUnderlying(declarationFlags));
+    binaryStreamWriter.Write(index);
 }
 
 void Symbol::Read(Reader& reader)
@@ -708,6 +709,7 @@ void Symbol::Read(Reader& reader)
     astNodeId = reader.CurrentReader().ReadLong();
     fullSpan = reader.ReadFullSpan();
     declarationFlags = DeclarationFlags(reader.CurrentReader().ReadInt());
+    index = reader.CurrentReader().ReadInt();
 }
 
 std::string Symbol::IrName(Context* context) const

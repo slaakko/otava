@@ -308,7 +308,10 @@ public:
     {
         size_type index = pos - begin();
         pos->T::~T();
-        constructive_move(pos, pos + 1, end() - pos);
+        if (pos + 1 != end())
+        {
+            constructive_move(pos, pos + 1, end() - (pos + 1));
+        }
         --sz;
         if (sz > 0)
         {
@@ -323,7 +326,10 @@ public:
     {
         size_type index = pos - begin();
         pos->T::~T();
-        constructive_move(pos, pos + 1, end() - pos);
+        if (pos + 1 != end())
+        {
+            constructive_move(pos, pos + 1, end() - (pos + 1));
+        }
         --sz;
         if (sz > 0)
         {

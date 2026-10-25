@@ -1024,6 +1024,14 @@ bool IsTokenSwitchDeclarator(otava::ast::Node* declarator)
 int BeginFunctionDefinition(otava::ast::Node* declSpecifierSequence, otava::ast::Node* declarator, otava::ast::Node* functionNode,
     otava::ast::Node* specifierNode, bool& get, Context* context)
 {
+#ifdef DEBUG_HEAP
+    std::cout << ">BeginFunctionDefinition:" << declarator->Str() << "\n";
+    if (declarator->Str() == "*TryParse(const std::string & expression, soul::ast::re::LexerContext * lexerContext, const std::string & fileName, int line)")
+    {
+        context->SetFlag(ContextFlags::debug);
+        ort_debug_break();
+    }
+#endif
     get = false;
     int scopes = 0;
     if (!context->GetFlag(ContextFlags::instantiateFunctionTemplate |
@@ -1159,6 +1167,9 @@ void EndFunctionDefinition(otava::ast::Node* node, int scopes, Context* context)
         if (symbol && symbol->IsFunctionDefinitionSymbol())
         {
             functionDefinitionSymbol = static_cast<FunctionDefinitionSymbol*>(symbol);
+#ifdef DEBUG_HEAP
+            std::cout << ">EndFunctionDefinition:" << functionDefinitionSymbol->FullName(context) << "\n";
+#endif 
             functionDefinitionSymbol->SetAstNodeId(node->Id());
             if (HasNoReturnAttribute(functionDefinitionNode->Attributes()))
             {

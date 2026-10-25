@@ -26,14 +26,11 @@ public:
     bool HasDestructorCalls(int statementIndex) const;
     std::vector<BoundExpressionNode*> GetDestructorCalls(int statementIndex);
     int AddSymbol(Symbol* symbol, const soul::ast::FullSpan& fullSpan, Context* context) override;
-    inline int GetIndex() const noexcept { return index; }
-    inline void SetIndex(int index_) noexcept { index = index_; }
     void RemoveLocalVariables(Context* context);
 private:
     int blockId;
     std::vector<VariableSymbol*> localVariables;
     std::map<int, std::vector<BoundExpressionNode*>> destructorCallMap;
-    int index;
 };
 
 class Context;

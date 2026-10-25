@@ -2879,7 +2879,7 @@ void Function::Write(util::CodeFormatter& formatter)
         formatter.WriteLine("// " + comment);
         formatter.WriteLine();
     }
-#ifdef DEBUG_FUNCTIONS
+#if (defined(DEBUG_FUNCTIONS) || defined(DEBUG_HEAP))
     std::cout << "fn>" << Name() << ":" << comment << "\n";
 #endif
     if (basicBlocks.IsEmpty())
@@ -2939,7 +2939,7 @@ void Function::Write(util::CodeFormatter& formatter)
     }
     formatter.DecIndent();
     formatter.WriteLine("}");
-#ifdef DEBUG_FUNCTIONS
+#if (defined(DEBUG_FUNCTIONS) || defined(DEBUG_HEAP))
     std::cout << "fn<" << Name() << "\n";
 #endif
 }

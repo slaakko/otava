@@ -7,7 +7,6 @@ import util.buffered_stream;
 import util.binary_stream_writer;
 import util.unicode;
 import util.binary_resource_ptr;
-import util.text_util;
 import soul.slg.classmap;
 import soul.slg.file_parsers;
 import soul.slg.token.generator;
@@ -117,6 +116,54 @@ void MakeCanonicalClasses(soul::ast::re::LexerContext& lexerContext)
     }
 }
 
+void Minimize(soul::ast::re::LexerContext& lexerContext, std::list<soul::ast::re::Class*>& classes)
+{
+    for (soul::ast::re::Class* cls : classes)
+    {
+        cls->MakeMinimal(lexerContext);
+        lexerContext.AddToPartition(cls);
+    }
+}
+
+void SetPartitionIndeces(soul::ast::re::LexerContext& lexerContext)
+{
+    int n = int(lexerContext.Partition().size());
+    for (int i = 0; i < n; ++i)
+    {
+        soul::ast::re::Class* cls = lexerContext.Partition()[i];
+        cls->SetIndex(i);
+    }
+}
+
+void PrintClasses(soul::ast::re::LexerContext& lexerContext, util::CodeFormatter& formatter)
+{
+    int n = int(lexerContext.Partition().size());
+    for (int i = 0; i < n; ++i)
+    {
+        soul::ast::re::Class* cls = lexerContext.Partition()[i];
+        cls->Print(formatter);
+    }
+}
+
+void MakeClassPartitionDebug(soul::ast::re::LexerContext& lexerContext)
+{
+    if (lexerContext.Debug())
+    {
+        std::string partitionFilePath = util::Path::Combine(lexerContext.Base(), "PARTITION.debug.txt");
+        std::ofstream partitionFile(partitionFilePath);
+        if (!partitionFile)
+        {
+            throw std::runtime_error("could not create file '" + partitionFilePath + "'");
+        }
+        util::CodeFormatter formatter(partitionFile);
+        PrintClasses(lexerContext, formatter);
+        if (lexerContext.Verbose())
+        {
+            std::cout << "==> " << partitionFilePath << "\n";
+        }
+    }
+}
+
 void MakeClassPartition(soul::ast::re::LexerContext& lexerContext)
 {
     std::list<soul::ast::re::Class*> classes;
@@ -212,35 +259,9 @@ void MakeClassPartition(soul::ast::re::LexerContext& lexerContext)
             ++classIt;
         }
     }
-    for (soul::ast::re::Class* cls : classes)
-    {
-        cls->MakeMinimal(lexerContext);
-        lexerContext.AddToPartition(cls);
-    }
-    for (int i = 0; i < lexerContext.Partition().size(); ++i)
-    {
-        soul::ast::re::Class* cls = lexerContext.Partition()[i];
-        cls->SetIndex(i);
-    }
-    if (lexerContext.Debug())
-    {
-        std::string partitionFilePath = util::Path::Combine(lexerContext.Base(), "PARTITION.debug.txt");
-        std::ofstream partitionFile(partitionFilePath);
-        if (!partitionFile)
-        {
-            throw std::runtime_error("could not create file '" + partitionFilePath + "'");
-        }
-        util::CodeFormatter formatter(partitionFile);
-        for (int i = 0; i < lexerContext.Partition().size(); ++i)
-        {
-            soul::ast::re::Class* cls = lexerContext.Partition()[i];
-            cls->Print(formatter);
-        }
-        if (lexerContext.Verbose())
-        {
-            std::cout << "==> " << partitionFilePath << "\n";
-        }
-    }
+    Minimize(lexerContext, classes);
+    SetPartitionIndeces(lexerContext);
+    MakeClassPartitionDebug(lexerContext);
 }
 
 void CreateClassMap(soul::ast::re::LexerContext& lexerContext, const std::string& rootDir, bool verbose)
@@ -301,16 +322,7 @@ void CreateClassMap(soul::ast::re::LexerContext& lexerContext, const std::string
         int32_t i = 0;
         for (std::int32_t x : classMapVec)
         {
-            std::string s;
-            if (i >= 32 && i <= 126)
-            {
-                s = util::ToUtf8(util::CharStr(static_cast<char32_t>(i)));
-            }
-            else
-            {
-                s = util::ToUtf8(util::HexEscape(static_cast<char32_t>(i)));
-            }
-            formatter.WriteLine(std::to_string(i) + " : " + s + " : " + std::to_string(x));
+            formatter.WriteLine(std::to_string(i) + " : " + std::to_string(x));
             ++i;
         }
         if (lexerContext.Verbose())
@@ -372,7 +384,7 @@ void MakeMasterNfa(soul::ast::re::LexerContext& lexerContext)
         start->AddEdge(soul::ast::re::NfaEdge(lexerContext.MakeEpsilon(), ruleNfa->Start()));
     }
 }
- 
+
 void MakeDfa(soul::ast::re::LexerContext& lexerContext)
 {
     soul::ast::re::Nfa* masterNfa = lexerContext.GetNfa(lexerContext.MasterNfaIndex());
@@ -394,6 +406,7 @@ void MakeDfa(soul::ast::re::LexerContext& lexerContext)
         }
     }
 }
+
 std::string GetTokenCppId(soul::ast::slg::LexerFile* lexerFile, soul::lexer::FileMap& fileMap, const soul::ast::SourcePos& sourcePos, const std::string& tokenName)
 {
     soul::ast::common::TokenMap* tokenMap = lexerFile->GetTokenMap();
@@ -433,6 +446,7 @@ std::string GetTokenCppId(soul::ast::slg::LexerFile* lexerFile, soul::lexer::Fil
     {
         throw std::runtime_error("token map not set");
     }
+    return std::string();
 }
 
 void WriteVariables(soul::ast::re::LexerContext& lexerContext, util::CodeFormatter& interfaceFormatter, util::CodeFormatter sourceFormatter)
@@ -530,8 +544,6 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("import util.binary_resource_ptr;");
     interfaceFormatter.WriteLine("import util.system;");
     interfaceFormatter.WriteLine("import util.path;");
-    interfaceFormatter.WriteLine("import util.text_util;");
-    interfaceFormatter.WriteLine("import util.unicode;");
     for (const auto& imprt : lexerFile->Imports())
     {
         soul::ast::common::Collection* collection = slgFile->GetCollection(imprt->ModuleName());
@@ -584,11 +596,6 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.IncIndent();
     interfaceFormatter.WriteLine("soul::lexer::ClassMap<Char>* classmap = lexer.GetClassMap();");
     interfaceFormatter.WriteLine("std::int32_t cls = classmap->GetClass(chr);");
-    interfaceFormatter.WriteLine("#ifdef DEBUG_LEXER");
-    interfaceFormatter.WriteLine("std::cout << \"CHAR=\" << util::ToUtf8(util::CharStr(chr)) << \"\\n\";");
-    interfaceFormatter.WriteLine("std::cout << \"CLASS=\" << cls << \"\\n\";");
-    interfaceFormatter.WriteLine("std::cout << \"STATE=\" << state << \"\\n\";");
-    interfaceFormatter.WriteLine("#endif");
     interfaceFormatter.WriteLine("switch (state)");
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
@@ -749,7 +756,8 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)");
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
-    interfaceFormatter.WriteLine("static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, \"" + resourceName + "\", resourceFlags));");
+    interfaceFormatter.WriteLine("static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, \"" +
+        resourceName + "\", resourceFlags));");
     interfaceFormatter.WriteLine("return classmap.get();");
     interfaceFormatter.DecIndent();
     interfaceFormatter.WriteLine("}");
@@ -977,34 +985,34 @@ void GenerateLexer(soul::ast::slg::SlgFile* slgFile, soul::ast::slg::LexerFile* 
         {
             switch (collection->Kind())
             {
-                case soul::ast::common::CollectionKind::tokenCollection:
+            case soul::ast::common::CollectionKind::tokenCollection:
+            {
+                soul::ast::common::TokenCollection* tokenCollection = static_cast<soul::ast::common::TokenCollection*>(collection);
+                for (const auto& token : tokenCollection->GetTokens())
                 {
-                    soul::ast::common::TokenCollection* tokenCollection = static_cast<soul::ast::common::TokenCollection*>(collection);
-                    for (const auto& token : tokenCollection->GetTokens())
-                    {
-                        tokens.AddToken(token.get());
-                        lexerFile->GetTokenMap()->AddToken(token.get());
-                    }
-                    break;
+                    tokens.AddToken(token.get());
+                    lexerFile->GetTokenMap()->AddToken(token.get());
                 }
-                case soul::ast::common::CollectionKind::keywordCollection:
+                break;
+            }
+            case soul::ast::common::CollectionKind::keywordCollection:
+            {
+                soul::ast::slg::KeywordCollection* keywordCollection = static_cast<soul::ast::slg::KeywordCollection*>(collection);
+                for (const auto& keyword : keywordCollection->GetKeywords())
                 {
-                    soul::ast::slg::KeywordCollection* keywordCollection = static_cast<soul::ast::slg::KeywordCollection*>(collection);
-                    for (const auto& keyword : keywordCollection->GetKeywords())
-                    {
-                        keywords.AddKeyword(keyword.get());
-                    }
-                    break;
+                    keywords.AddKeyword(keyword.get());
                 }
-                case soul::ast::common::CollectionKind::expressionCollection:
+                break;
+            }
+            case soul::ast::common::CollectionKind::expressionCollection:
+            {
+                soul::ast::slg::ExpressionCollection* expressionCollection = static_cast<soul::ast::slg::ExpressionCollection*>(collection);
+                for (const auto& expression : expressionCollection->GetExpressions())
                 {
-                    soul::ast::slg::ExpressionCollection* expressionCollection = static_cast<soul::ast::slg::ExpressionCollection*>(collection);
-                    for (const auto& expression : expressionCollection->GetExpressions())
-                    {
-                        expressions.AddExpression(expression.get());
-                    }
-                    break;
+                    expressions.AddExpression(expression.get());
                 }
+                break;
+            }
             }
         }
     }
@@ -1035,52 +1043,52 @@ void GenerateLexer(soul::ast::slg::SlgFile* slgFile, bool verbose, soul::lexer::
     {
         switch (declaration->Kind())
         {
-            case soul::ast::slg::SlgFileDeclarationKind::tokenFileDeclaration:
+        case soul::ast::slg::SlgFileDeclarationKind::tokenFileDeclaration:
+        {
+            soul::ast::slg::TokenFileDeclaration* tokenFileDeclaration = static_cast<soul::ast::slg::TokenFileDeclaration*>(declaration.get());
+            std::string tokenFilePath = util::GetFullPath(util::Path::Combine(dir, tokenFileDeclaration->FilePath()));
+            if (verbose)
             {
-                soul::ast::slg::TokenFileDeclaration* tokenFileDeclaration = static_cast<soul::ast::slg::TokenFileDeclaration*>(declaration.get());
-                std::string tokenFilePath = util::GetFullPath(util::Path::Combine(dir, tokenFileDeclaration->FilePath()));
-                if (verbose)
-                {
-                    std::cout << "> " << tokenFilePath << "\n";
-                }
-                std::unique_ptr<soul::ast::common::TokenFile> tokenFile = ParseTokenFile(tokenFilePath, tokenFileDeclaration->External(), fileMap);
-                GenerateTokenModule(tokenFile.get(), verbose);
-                slgFile->AddTokenFile(tokenFile.release());
-                break;
+                std::cout << "> " << tokenFilePath << "\n";
             }
-            case soul::ast::slg::SlgFileDeclarationKind::keywordFileDeclaration:
+            std::unique_ptr<soul::ast::common::TokenFile> tokenFile = ParseTokenFile(tokenFilePath, tokenFileDeclaration->External(), fileMap);
+            GenerateTokenModule(tokenFile.get(), verbose);
+            slgFile->AddTokenFile(tokenFile.release());
+            break;
+        }
+        case soul::ast::slg::SlgFileDeclarationKind::keywordFileDeclaration:
+        {
+            std::string keywordFilePath = util::GetFullPath(util::Path::Combine(dir, declaration->FilePath()));
+            if (verbose)
             {
-                std::string keywordFilePath = util::GetFullPath(util::Path::Combine(dir, declaration->FilePath()));
-                if (verbose)
-                {
-                    std::cout << "> " << keywordFilePath << "\n";
-                }
-                std::unique_ptr<soul::ast::slg::KeywordFile> keywordFile = ParseKeywordFile(keywordFilePath, fileMap);
-                slgFile->AddKeywordFile(keywordFile.release());
-                break;
+                std::cout << "> " << keywordFilePath << "\n";
             }
-            case soul::ast::slg::SlgFileDeclarationKind::expressionFileDeclaration:
+            std::unique_ptr<soul::ast::slg::KeywordFile> keywordFile = ParseKeywordFile(keywordFilePath, fileMap);
+            slgFile->AddKeywordFile(keywordFile.release());
+            break;
+        }
+        case soul::ast::slg::SlgFileDeclarationKind::expressionFileDeclaration:
+        {
+            std::string expressionFilePath = util::GetFullPath(util::Path::Combine(dir, declaration->FilePath()));
+            if (verbose)
             {
-                std::string expressionFilePath = util::GetFullPath(util::Path::Combine(dir, declaration->FilePath()));
-                if (verbose)
-                {
-                    std::cout << "> " << expressionFilePath << "\n";
-                }
-                std::unique_ptr<soul::ast::slg::ExpressionFile> expressionFile = ParseExpressionFile(expressionFilePath, fileMap);
-                slgFile->AddExpressionFile(expressionFile.release());
-                break;
+                std::cout << "> " << expressionFilePath << "\n";
             }
-            case soul::ast::slg::SlgFileDeclarationKind::lexerFileDeclararation:
+            std::unique_ptr<soul::ast::slg::ExpressionFile> expressionFile = ParseExpressionFile(expressionFilePath, fileMap);
+            slgFile->AddExpressionFile(expressionFile.release());
+            break;
+        }
+        case soul::ast::slg::SlgFileDeclarationKind::lexerFileDeclararation:
+        {
+            std::string lexerFilePath = util::GetFullPath(util::Path::Combine(dir, declaration->FilePath()));
+            if (verbose)
             {
-                std::string lexerFilePath = util::GetFullPath(util::Path::Combine(dir, declaration->FilePath()));
-                if (verbose)
-                {
-                    std::cout << "> " << lexerFilePath << "\n";
-                }
-                std::unique_ptr<soul::ast::slg::LexerFile> lexerFile = ParseLexerFile(lexerFilePath, fileMap);
-                slgFile->AddLexerFile(lexerFile.release());
-                break;
+                std::cout << "> " << lexerFilePath << "\n";
             }
+            std::unique_ptr<soul::ast::slg::LexerFile> lexerFile = ParseLexerFile(lexerFilePath, fileMap);
+            slgFile->AddLexerFile(lexerFile.release());
+            break;
+        }
         }
     }
     for (const auto& lexerFile : slgFile->LexerFiles())

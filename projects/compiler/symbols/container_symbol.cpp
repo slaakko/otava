@@ -196,6 +196,10 @@ std::unique_ptr<Symbol> ContainerSymbol::RemoveSymbol(int index)
     {
         std::unique_ptr<Symbol> symbol(members[index].release());
         members.erase(members.begin() + index);
+        for (int i = index + 1; i < int(members.size()); ++i)
+        {
+            members[i]->SetIndex(i - 1);
+        }
         return symbol;
     }
     return std::unique_ptr<Symbol>();

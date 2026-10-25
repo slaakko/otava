@@ -17,12 +17,12 @@ import otava.ast.visitor;
 namespace otava::symbols {
 
 AliasTypeSymbol::AliasTypeSymbol(Module* module_, SymbolId id_) : 
-    TypeSymbol(module_, id_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr), index(-1)
+    TypeSymbol(module_, id_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr)
 {
 }
 
 AliasTypeSymbol::AliasTypeSymbol(Module* module_, SymbolId id_, const std::string& name_) : 
-    TypeSymbol(module_, id_, name_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr), index(-1)
+    TypeSymbol(module_, id_, name_), referredTypeId(zeroSymbolId), referredType(nullptr), group(nullptr)
 {
 }
 

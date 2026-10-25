@@ -116,6 +116,54 @@ void MakeCanonicalClasses(soul::ast::re::LexerContext& lexerContext)
     }
 }
 
+void Minimize(soul::ast::re::LexerContext& lexerContext, std::list<soul::ast::re::Class*>& classes)
+{
+    for (soul::ast::re::Class* cls : classes)
+    {
+        cls->MakeMinimal(lexerContext);
+        lexerContext.AddToPartition(cls);
+    }
+}
+
+void SetPartitionIndeces(soul::ast::re::LexerContext& lexerContext)
+{
+    int n = int(lexerContext.Partition().size());
+    for (int i = 0; i < n; ++i)
+    {
+        soul::ast::re::Class* cls = lexerContext.Partition()[i];
+        cls->SetIndex(i);
+    }
+}
+
+void PrintClasses(soul::ast::re::LexerContext& lexerContext, util::CodeFormatter& formatter)
+{
+    int n = int(lexerContext.Partition().size());
+    for (int i = 0; i < n; ++i)
+    {
+        soul::ast::re::Class* cls = lexerContext.Partition()[i];
+        cls->Print(formatter);
+    }
+}
+
+void MakeClassPartitionDebug(soul::ast::re::LexerContext& lexerContext)
+{
+    if (lexerContext.Debug())
+    {
+        std::string partitionFilePath = util::Path::Combine(lexerContext.Base(), "PARTITION.debug.txt");
+        std::ofstream partitionFile(partitionFilePath);
+        if (!partitionFile)
+        {
+            throw std::runtime_error("could not create file '" + partitionFilePath + "'");
+        }
+        util::CodeFormatter formatter(partitionFile);
+        PrintClasses(lexerContext, formatter);
+        if (lexerContext.Verbose())
+        {
+            std::cout << "==> " << partitionFilePath << "\n";
+        }
+    }
+}
+
 void MakeClassPartition(soul::ast::re::LexerContext& lexerContext)
 {
     std::list<soul::ast::re::Class*> classes;
@@ -211,35 +259,9 @@ void MakeClassPartition(soul::ast::re::LexerContext& lexerContext)
             ++classIt;
         }
     }
-    for (soul::ast::re::Class* cls : classes)
-    {
-        cls->MakeMinimal(lexerContext);
-        lexerContext.AddToPartition(cls);
-    }
-    for (int i = 0; i < lexerContext.Partition().size(); ++i)
-    {
-        soul::ast::re::Class* cls = lexerContext.Partition()[i];
-        cls->SetIndex(i);
-    }
-    if (lexerContext.Debug())
-    {
-        std::string partitionFilePath = util::Path::Combine(lexerContext.Base(), "PARTITION.debug.txt");
-        std::ofstream partitionFile(partitionFilePath);
-        if (!partitionFile)
-        {
-            throw std::runtime_error("could not create file '" + partitionFilePath + "'");
-        }
-        util::CodeFormatter formatter(partitionFile);
-        for (int i = 0; i < lexerContext.Partition().size(); ++i)
-        {
-            soul::ast::re::Class* cls = lexerContext.Partition()[i];
-            cls->Print(formatter);
-        }
-        if (lexerContext.Verbose())
-        {
-            std::cout << "==> " << partitionFilePath << "\n";
-        }
-    }
+    Minimize(lexerContext, classes);
+    SetPartitionIndeces(lexerContext);
+    MakeClassPartitionDebug(lexerContext);
 }
 
 void CreateClassMap(soul::ast::re::LexerContext& lexerContext, const std::string& rootDir, bool verbose)
@@ -310,6 +332,23 @@ void CreateClassMap(soul::ast::re::LexerContext& lexerContext, const std::string
     }
 }
 
+std::string MakeResourceName(const std::string& classMapName)
+{
+    std::string resourceName;
+    for (char c : classMapName)
+    {
+        if (c == '.')
+        {
+            resourceName.append(1, '_');
+        }
+        else
+        {
+            resourceName.append(1, c);
+        }
+    }
+    return resourceName;
+}
+
 void CompressClassMap(soul::ast::re::LexerContext& lexerContext, const std::string& rootDir, bool verbose)
 {
     std::string moduleName;
@@ -327,7 +366,8 @@ void CompressClassMap(soul::ast::re::LexerContext& lexerContext, const std::stri
     }
     std::string classMapName = moduleName + ".classmap";
     MakeCompressedClassMap(rootDir, classMapName, verbose);
-    MakeResourceFile(rootDir, classMapName, verbose);
+    std::string resourceName = MakeResourceName(classMapName);
+    MakeResourceFile(rootDir, resourceName, classMapName, verbose);
 }
 
 void MakeMasterNfa(soul::ast::re::LexerContext& lexerContext)
@@ -366,6 +406,7 @@ void MakeDfa(soul::ast::re::LexerContext& lexerContext)
         }
     }
 }
+
 std::string GetTokenCppId(soul::ast::slg::LexerFile* lexerFile, soul::lexer::FileMap& fileMap, const soul::ast::SourcePos& sourcePos, const std::string& tokenName)
 {
     soul::ast::common::TokenMap* tokenMap = lexerFile->GetTokenMap();
@@ -405,6 +446,7 @@ std::string GetTokenCppId(soul::ast::slg::LexerFile* lexerFile, soul::lexer::Fil
     {
         throw std::runtime_error("token map not set");
     }
+    return std::string();
 }
 
 void WriteVariables(soul::ast::re::LexerContext& lexerContext, util::CodeFormatter& interfaceFormatter, util::CodeFormatter sourceFormatter)
@@ -704,7 +746,8 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("soul::lexer::ClassMap<Char>* GetClassMap()");
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
-    interfaceFormatter.WriteLine("static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(\"" + moduleName + ".classmap\"));");
+    std::string resourceName = MakeResourceName(moduleName + ".classmap");
+    interfaceFormatter.WriteLine("static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(\"" + resourceName + "\"));");
     interfaceFormatter.WriteLine("return classmap.get();");
     interfaceFormatter.DecIndent();
     interfaceFormatter.WriteLine("}");
@@ -713,8 +756,8 @@ void WriteLexer(soul::ast::re::LexerContext& lexerContext, soul::ast::slg::SlgFi
     interfaceFormatter.WriteLine("soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)");
     interfaceFormatter.WriteLine("{");
     interfaceFormatter.IncIndent();
-    interfaceFormatter.WriteLine("static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, \"" + moduleName +
-        ".classmap\", resourceFlags));");
+    interfaceFormatter.WriteLine("static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, \"" + 
+        resourceName + "\", resourceFlags));");
     interfaceFormatter.WriteLine("return classmap.get();");
     interfaceFormatter.DecIndent();
     interfaceFormatter.WriteLine("}");

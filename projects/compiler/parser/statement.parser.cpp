@@ -690,7 +690,7 @@ soul::parser::Match StatementParser<LexerT>::LabeledStatement(LexerT& lexer, ota
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::CompoundStatementUnguarded(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -1340,10 +1340,31 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatementSaved(LexerT& lexe
     return match;
 }
 
+struct DebugPrinter
+{
+    DebugPrinter(otava::symbols::Context* context_, const std::string& str_) : context(context_), str(str_)
+    {
+        if (context->GetFlag(otava::symbols::ContextFlags::debug))
+        {
+            std::cout << ">" << str << "\n";
+        }
+    }
+    ~DebugPrinter()
+    {
+        if (context->GetFlag(otava::symbols::ContextFlags::debug))
+        {
+            std::cout << "<" << str << "\n";
+        }
+    }
+    otava::symbols::Context* context;
+    std::string str;
+};
+
+
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::CompoundStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -1464,6 +1485,10 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatement(LexerT& lexer, ot
                     soul::parser::Match* parentMatch12 = &match;
                     {
                         std::int64_t pos = lexer.GetPos();
+#ifdef DEBUG_HEAP
+                        DebugPrinter printer(context, "compound");
+#endif
+
                         soul::parser::Match match = otava::parser::statement::StatementParser<LexerT>::CompoundStatementUnguarded(lexer, context);
                         unguardedCompoundStatement.reset(static_cast<otava::ast::Node*>(match.value));
                         if (match.hit)
@@ -1580,7 +1605,7 @@ soul::parser::Match StatementParser<LexerT>::SelectionStatement(LexerT& lexer, o
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::IfStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -1670,6 +1695,10 @@ soul::parser::Match StatementParser<LexerT>::IfStatement(LexerT& lexer, otava::s
                                                 {
                                                     ++lexer;
                                                     match.hit = true;
+                                                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                                    {
+                                                        std::cout << ">" << "if" << "\n";
+                                                    }
                                                 }
                                                 if (match.hit)
                                                 {
@@ -1830,6 +1859,10 @@ soul::parser::Match StatementParser<LexerT>::IfStatement(LexerT& lexer, otava::s
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "if" << "\n";
+                    }
                     otava::ast::IfStatementNode *node = new otava::ast::IfStatementNode(span, lexer.File(), cond.release(), thenStmt.release(), elseStmt.release(), attributes.release());
                     node->SetBlockId(blockId);
                     otava::symbols::MapNode(node, context);
@@ -1864,7 +1897,7 @@ soul::parser::Match StatementParser<LexerT>::IfStatement(LexerT& lexer, otava::s
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::SwitchStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -1948,6 +1981,10 @@ soul::parser::Match StatementParser<LexerT>::SwitchStatement(LexerT& lexer, otav
                                         {
                                             ++lexer;
                                             match.hit = true;
+                                            if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                            {
+                                                std::cout << ">" << "switch" << "\n";
+                                            }
                                         }
                                         if (match.hit)
                                         {
@@ -2022,6 +2059,10 @@ soul::parser::Match StatementParser<LexerT>::SwitchStatement(LexerT& lexer, otav
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "switch" << "\n";
+                    }
                     otava::ast::SwitchStatementNode *node = new otava::ast::SwitchStatementNode(span, lexer.File(), cond.release(), stmt.release(), attributes.release());
                     node->SetBlockId(blockId);
                     otava::symbols::MapNode(node, context);
@@ -2203,7 +2244,7 @@ soul::parser::Match StatementParser<LexerT>::IterationStatement(LexerT& lexer, o
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::WhileStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -2286,6 +2327,10 @@ soul::parser::Match StatementParser<LexerT>::WhileStatement(LexerT& lexer, otava
                                         {
                                             ++lexer;
                                             match.hit = true;
+                                            if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                            {
+                                                std::cout << ">" << "while" << "\n";
+                                            }
                                         }
                                         if (match.hit)
                                         {
@@ -2360,6 +2405,10 @@ soul::parser::Match StatementParser<LexerT>::WhileStatement(LexerT& lexer, otava
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "while" << "\n";
+                    }
                     otava::ast::WhileStatementNode *node = new otava::ast::WhileStatementNode(span, lexer.File(), cond.release(), stmt.release(), attributes.release());
                     node->SetBlockId(blockId);
                     otava::symbols::MapNode(node, context);
@@ -2394,7 +2443,7 @@ soul::parser::Match StatementParser<LexerT>::WhileStatement(LexerT& lexer, otava
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::DoStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -2483,6 +2532,10 @@ soul::parser::Match StatementParser<LexerT>::DoStatement(LexerT& lexer, otava::s
                                                 {
                                                     ++lexer;
                                                     match.hit = true;
+                                                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                                    {
+                                                        std::cout << ">" << "do" << "\n";
+                                                    }
                                                 }
                                                 if (match.hit)
                                                 {
@@ -2589,6 +2642,10 @@ soul::parser::Match StatementParser<LexerT>::DoStatement(LexerT& lexer, otava::s
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "DoStatement");
                         #endif
+                        if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                        {
+                            std::cout << "<" << "do" << "\n";
+                        }
                         return soul::parser::Match(true, new otava::ast::DoStatementNode(span, lexer.File(), stmt.release(), expr.release(), attributes.release(), semicolon.release()));
                     }
                 }
@@ -2615,7 +2672,7 @@ soul::parser::Match StatementParser<LexerT>::DoStatement(LexerT& lexer, otava::s
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -2813,6 +2870,10 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
                         }
                         if (match.hit)
                         {
+                            if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                            {
+                                std::cout << ">" << "range-for" << "\n";
+                            }
                             soul::parser::Match match(false);
                             soul::parser::Match* parentMatch21 = &match;
                             {
@@ -2843,6 +2904,10 @@ soul::parser::Match StatementParser<LexerT>::RangeForStatement(LexerT& lexer, ot
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "range-for" << "\n";
+                    }
                     otava::ast::RangeForStatementNode *node = new otava::ast::RangeForStatementNode(span, lexer.File(), initStmt.release(), declaration.release(), initializer.release(), stmt.release(), attributes.release());
                     node->SetBlockId(blockId);
                     otava::symbols::MapNode(node, context);
@@ -3174,7 +3239,7 @@ soul::parser::Match StatementParser<LexerT>::ForRangeInitializer(LexerT& lexer, 
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::ForStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -3269,6 +3334,10 @@ soul::parser::Match StatementParser<LexerT>::ForStatement(LexerT& lexer, otava::
                                                     {
                                                         ++lexer;
                                                         match.hit = true;
+                                                        if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                                        {
+                                                            std::cout << ">" << "for" << "\n";
+                                                        }
                                                     }
                                                     if (match.hit)
                                                     {
@@ -3408,6 +3477,10 @@ soul::parser::Match StatementParser<LexerT>::ForStatement(LexerT& lexer, otava::
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "for" << "\n";
+                    }
                     otava::ast::ForStatementNode *node = new otava::ast::ForStatementNode(span, lexer.File(), initStmt.release(), cond.release(), loopExpr.release(), stmt.release(), attributes.release(), semicolon.release());
                     node->SetBlockId(blockId);
                     otava::symbols::MapNode(node, context);
@@ -3623,7 +3696,7 @@ soul::parser::Match StatementParser<LexerT>::JumpStatement(LexerT& lexer, otava:
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::BreakStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -3695,6 +3768,10 @@ soul::parser::Match StatementParser<LexerT>::BreakStatement(LexerT& lexer, otava
                             {
                                 ++lexer;
                                 match.hit = true;
+                                if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                {
+                                    std::cout << ">" << "break" << "\n";
+                                }
                             }
                             if (match.hit)
                             {
@@ -3720,6 +3797,10 @@ soul::parser::Match StatementParser<LexerT>::BreakStatement(LexerT& lexer, otava
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "break" << "\n";
+                    }
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BreakStatement");
@@ -3750,7 +3831,7 @@ soul::parser::Match StatementParser<LexerT>::BreakStatement(LexerT& lexer, otava
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::ContinueStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -3822,6 +3903,10 @@ soul::parser::Match StatementParser<LexerT>::ContinueStatement(LexerT& lexer, ot
                             {
                                 ++lexer;
                                 match.hit = true;
+                                if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                {
+                                    std::cout << ">" << "continue" << "\n";
+                                }
                             }
                             if (match.hit)
                             {
@@ -3847,6 +3932,10 @@ soul::parser::Match StatementParser<LexerT>::ContinueStatement(LexerT& lexer, ot
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "continue" << "\n";
+                    }
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ContinueStatement");
@@ -3877,7 +3966,7 @@ soul::parser::Match StatementParser<LexerT>::ContinueStatement(LexerT& lexer, ot
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::ReturnStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -3953,6 +4042,10 @@ soul::parser::Match StatementParser<LexerT>::ReturnStatement(LexerT& lexer, otav
                                 {
                                     ++lexer;
                                     match.hit = true;
+                                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                    {
+                                        std::cout << ">" << "return" << "\n";
+                                    }
                                 }
                                 if (match.hit)
                                 {
@@ -4004,6 +4097,10 @@ soul::parser::Match StatementParser<LexerT>::ReturnStatement(LexerT& lexer, otav
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "return" << "\n";
+                    }
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ReturnStatement");
@@ -4191,7 +4288,7 @@ soul::parser::Match StatementParser<LexerT>::CoroutineReturnStatement(LexerT& le
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::GotoStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -4267,6 +4364,10 @@ soul::parser::Match StatementParser<LexerT>::GotoStatement(LexerT& lexer, otava:
                                 {
                                     ++lexer;
                                     match.hit = true;
+                                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                    {
+                                        std::cout << ">" << "goto" << "\n";
+                                    }
                                 }
                                 if (match.hit)
                                 {
@@ -4305,6 +4406,10 @@ soul::parser::Match StatementParser<LexerT>::GotoStatement(LexerT& lexer, otava:
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "goto" << "\n";
+                    }
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "GotoStatement");
@@ -4335,7 +4440,7 @@ soul::parser::Match StatementParser<LexerT>::GotoStatement(LexerT& lexer, otava:
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::ExpressionStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -4417,6 +4522,10 @@ soul::parser::Match StatementParser<LexerT>::ExpressionStatement(LexerT& lexer, 
                                     {
                                         expr.reset(expr1.release());
                                         if (!span.IsValid()) span = lexer.GetSpan(pos);
+                                        if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                        {
+                                            std::cout << ">" << "expr" << "\n";
+                                        }
                                     }
                                     *parentMatch10 = match;
                                 }
@@ -4462,6 +4571,10 @@ soul::parser::Match StatementParser<LexerT>::ExpressionStatement(LexerT& lexer, 
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "expr" << "\n";
+                    }
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ExpressionStatement");
@@ -4492,7 +4605,7 @@ soul::parser::Match StatementParser<LexerT>::ExpressionStatement(LexerT& lexer, 
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::DeclarationStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -4541,6 +4654,10 @@ soul::parser::Match StatementParser<LexerT>::DeclarationStatement(LexerT& lexer,
                         if (match.hit)
                         {
                             span = lexer.GetSpan(pos);
+                            if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                            {
+                                std::cout << ">" << "decl" << "\n";
+                            }
                         }
                         *parentMatch5 = match;
                     }
@@ -4552,6 +4669,10 @@ soul::parser::Match StatementParser<LexerT>::DeclarationStatement(LexerT& lexer,
         }
         if (match.hit)
         {
+            if (context->GetFlag(otava::symbols::ContextFlags::debug))
+            {
+                std::cout << "<" << "decl" << "\n";
+            }
             context->PopFlags();
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
@@ -4583,7 +4704,7 @@ soul::parser::Match StatementParser<LexerT>::DeclarationStatement(LexerT& lexer,
 template<typename LexerT>
 soul::parser::Match StatementParser<LexerT>::TryStatement(LexerT& lexer, otava::symbols::Context* context)
 {
-    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+#ifdef SOUL_PARSER_DEBUG_SUPPORT
     std::int64_t parser_debug_match_pos = 0;
     bool parser_debug_write_to_log = lexer.Log() != nullptr;
     if (parser_debug_write_to_log)
@@ -4659,6 +4780,10 @@ soul::parser::Match StatementParser<LexerT>::TryStatement(LexerT& lexer, otava::
                                 {
                                     ++lexer;
                                     match.hit = true;
+                                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                                    {
+                                        std::cout << ">" << "try" << "\n";
+                                    }
                                 }
                                 if (match.hit)
                                 {
@@ -4697,6 +4822,10 @@ soul::parser::Match StatementParser<LexerT>::TryStatement(LexerT& lexer, otava::
                 }
                 if (match.hit)
                 {
+                    if (context->GetFlag(otava::symbols::ContextFlags::debug))
+                    {
+                        std::cout << "<" << "try" << "\n";
+                    }
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "TryStatement");

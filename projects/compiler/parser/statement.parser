@@ -94,7 +94,7 @@ parser StatementParser
         var std::unique_ptr<otava::ast::Node> statementNode, var bool nextIsRBrace) : otava::ast::Node*
         ::= (AttributeSpecifierSeq(context):attributes{ span = lexer.GetSpan(pos); })?
         (
-            LBRACE
+			LBRACE
             { 
                 soul::ast::Span lbSpan = lexer.GetSpan(pos); if (!span.IsValid()) span = lbSpan;
                 compoundStatementNode.reset(new otava::ast::CompoundStatementNode(span, lexer.File())); 

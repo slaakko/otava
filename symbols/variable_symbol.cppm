@@ -41,8 +41,6 @@ public:
     bool IsStatic() const noexcept;
     inline VariableSymbol* Final() noexcept { if (global) return global; else return this; }
     inline void SetGlobal(VariableSymbol* global_) noexcept { global = global_; }
-    inline std::int32_t GetIndex() const noexcept { return index; }
-    inline void SetIndex(std::int32_t index_) noexcept { index = index_; }
     Value* GetValue(Context* context);
     inline void SetValue(Value* value_) noexcept { value = value_; }
     inline std::int32_t LayoutIndex() const noexcept { return layoutIndex; }
@@ -68,7 +66,6 @@ private:
     SymbolId initializerTypeId;
     Value* value;
     SymbolId valueId;
-    std::int32_t index;
     int level;
     bool foundFromParent;
     std::int64_t nodeId;

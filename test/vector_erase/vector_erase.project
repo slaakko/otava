@@ -1,0 +1,3 @@
+project vector_erase;
+target=program;
+source <main.cpp>;

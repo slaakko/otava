@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/xml/xpath/xpath.lexer' using soul lexer generator oslg version 0.3.0
+// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/xml/xpath/xpath.lexer' using soul lexer generator oslg version 0.3.1
 
 module soul.xml.xpath.lexer;
 

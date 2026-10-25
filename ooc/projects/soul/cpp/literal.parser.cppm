@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/cpp/literal.parser' using soul parser generator ospg version 0.2.9
+// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/cpp/literal.parser' using soul parser generator ospg version 0.3.1
 
 export module soul.cpp.literal.parser;
 

@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/lex/spg.lexer' using soul lexer generator oslg version 0.2.9
+// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/lex/spg.lexer' using soul lexer generator oslg version 0.3.1
 
 export module soul.lex.spg;
 
@@ -14,6 +14,8 @@ import soul.ast.common;
 import util.binary_resource_ptr;
 import util.system;
 import util.path;
+import util.text_util;
+import util.unicode;
 import soul.cpp.token;
 import soul.cpp.op.token;
 import soul.punctuation.token;
@@ -41,6 +43,11 @@ struct SpgLexer
     {
         soul::lexer::ClassMap<Char>* classmap = lexer.GetClassMap();
         std::int32_t cls = classmap->GetClass(chr);
+        #ifdef DEBUG_LEXER
+        std::cout << "CHAR=" << util::ToUtf8(util::CharStr(chr)) << "\n";
+        std::cout << "CLASS=" << cls << "\n";
+        std::cout << "STATE=" << state << "\n";
+        #endif
         switch (state)
         {
             case 0:
@@ -17280,14 +17287,14 @@ struct SpgLexer
 template<typename Char>
 soul::lexer::ClassMap<Char>* GetClassMap()
 {
-    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("soul.lex.spg.classmap"));
+    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("soul_lex_spg_classmap"));
     return classmap.get();
 }
 
 template<typename Char>
 soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
-    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "soul.lex.spg.classmap", resourceFlags));
+    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "soul_lex_spg_classmap", resourceFlags));
     return classmap.get();
 }
 

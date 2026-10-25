@@ -2520,6 +2520,12 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
 #ifdef DEBUG_FUNCTIONS
     std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
 #endif
+#ifdef DEBUG_HEAP
+    if (functionDefinitionSymbol->GroupName() == "TryParse")
+    {
+        ort_debug_break();
+    }
+#endif
     functionDefinitionSymbol->SetBound();
     if (context->GetFlag(ContextFlags::debugMemory))
     {

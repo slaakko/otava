@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/xml/xpath/xpath.lexer' using soul lexer generator oslg version 0.3.0
+// this file has been automatically generated from 'D:/work/otava/ooc/projects/soul/xml/xpath/xpath.lexer' using soul lexer generator oslg version 0.3.1
 
 export module soul.xml.xpath.lexer;
 
@@ -14,6 +14,8 @@ import soul.ast.common;
 import util.binary_resource_ptr;
 import util.system;
 import util.path;
+import util.text_util;
+import util.unicode;
 import soul.xml.xpath.token;
 
 export namespace soul::xml::xpath::lexer {
@@ -36,6 +38,11 @@ struct XPathLexer
     {
         soul::lexer::ClassMap<Char>* classmap = lexer.GetClassMap();
         std::int32_t cls = classmap->GetClass(chr);
+        #ifdef DEBUG_LEXER
+        std::cout << "CHAR=" << util::ToUtf8(util::CharStr(chr)) << "\n";
+        std::cout << "CLASS=" << cls << "\n";
+        std::cout << "STATE=" << state << "\n";
+        #endif
         switch (state)
         {
             case 0:
@@ -1418,14 +1425,14 @@ struct XPathLexer
 template<typename Char>
 soul::lexer::ClassMap<Char>* GetClassMap()
 {
-    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("soul.xml.xpath.lexer.classmap"));
+    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>("soul_xml_xpath_lexer_classmap"));
     return classmap.get();
 }
 
 template<typename Char>
 soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
-    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "soul.xml.xpath.lexer.classmap", resourceFlags));
+    static std::unique_ptr<soul::lexer::ClassMap<Char>> classmap(soul::lexer::MakeClassMap<Char>(moduleFileName, "soul_xml_xpath_lexer_classmap", resourceFlags));
     return classmap.get();
 }
 

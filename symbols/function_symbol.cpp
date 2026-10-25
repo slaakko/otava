@@ -1301,6 +1301,10 @@ void FunctionSymbol::RemoveLocalVariable(int functionIndex)
     if (functionIndex != -1)
     {
         localVariables.erase(localVariables.begin() + functionIndex);
+        for (int i = functionIndex + 1; i < int(localVariables.size()); ++i)
+        {
+            localVariables[i]->SetFunctionIndex(i - 1);
+        }
     }
 }
 

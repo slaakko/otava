@@ -14,12 +14,12 @@ import otava.symbols.scope;
 
 namespace otava::symbols {
 
-BlockSymbol::BlockSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), blockId(-1), index(-1)
+BlockSymbol::BlockSymbol(Module* module_, SymbolId id_) : ContainerSymbol(module_, id_), blockId(-1)
 {
     GetScope()->SetKind(ScopeKind::blockScope);
 }
 
-BlockSymbol::BlockSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_), blockId(-1), index(-1)
+BlockSymbol::BlockSymbol(Module* module_, SymbolId id_, const std::string& name_) : ContainerSymbol(module_, id_, name_), blockId(-1)
 {
     GetScope()->SetKind(ScopeKind::blockScope);
 }

@@ -1,0 +1,3 @@
+project vector;
+target=program;
+source <main.cpp>;

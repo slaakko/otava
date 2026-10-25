@@ -328,6 +328,8 @@ public:
     inline const std::vector<ModuleSymbolId>& ModuleSymbolIds() const noexcept { return moduleSymbolIds; }
     inline std::int64_t AstNodeId() const noexcept { return astNodeId; }
     inline void SetAstNodeId(std::int64_t astNodeId_) { astNodeId = astNodeId_; }
+    inline int GetIndex() const noexcept { return index; }
+    inline void SetIndex(int index_) noexcept { index = index_; }
 private:
     Module* module;
     SymbolId id;
@@ -342,6 +344,7 @@ private:
     soul::ast::FullSpan fullSpan;
     std::vector<ModuleSymbolId> moduleSymbolIds;
     std::int64_t astNodeId;
+    int index;
 };
 
 } // namespace otava::symbols
