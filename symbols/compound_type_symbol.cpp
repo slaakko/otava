@@ -103,6 +103,11 @@ void CompoundTypeSymbol::SetIrId(SymbolId irId_, Context* context) noexcept
     {
         context->CurrentProject()->SetIrId(FullName(context), Cardinality(0), irId);
     }
+    TypeSymbol* baseType = GetBaseType(context);
+    if (!baseType->HasForwardClassDeclarationSymbol(context))
+    {
+        context->CurrentProject()->SetIrId(baseType->FullName(context), Cardinality(0), baseType->IrId(context));
+    }
 }
 
 SymbolId CompoundTypeSymbol::IrId(Context* context) noexcept

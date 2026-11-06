@@ -2981,8 +2981,9 @@ Function* Code::GetOrInsertFunction(const std::string& functionId, FunctionType*
     {
         if (function->GetType() != functionType)
         {
-            Error("type of function '" + function->Name() + "' (" + function->GetType()->Name() + ") conflicts with earlier declaration (" +
-                functionType->Name() + ")", soul::ast::Span(), context);
+            Error("type of function '" + function->Name() + "' (" + function->GetType()->Name() + ", id=" + std::to_string(function->GetType()->Id()) + 
+                ") conflicts with earlier declaration(" +
+                functionType->Name() + ", id=" + std::to_string(functionType->Id()) + ")", soul::ast::Span(), context);
             return nullptr;
         }
         else

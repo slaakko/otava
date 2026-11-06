@@ -3645,7 +3645,7 @@ std::unique_ptr<BoundExpressionNode> BindExpression(otava::ast::Node* node, Cont
             if (expr && context->GetBoundFunction()->HasTemporaryDestructorCalls())
             {
                 expr->SetDestructTemporariesNode(
-                    new BoundDestructTemporariesNode(fullSpan, context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                    new BoundDestructTemporariesNode(fullSpan, GetTemporaryDestructorCalls(context->GetBoundFunction())));
                 expr->SetTemporaryDestructorCallsObtained();
             }
         }

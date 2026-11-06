@@ -477,6 +477,11 @@ void Module::AddImportedModule(Module* module)
     importedModuleTable.push_back(entry);
 }
 
+void Module::SetModuleFilePath(const std::string& moduleFilePath_)
+{
+    moduleFilePath = moduleFilePath_;
+}
+
 void Module::SetModuleFilePath(const std::string& root, const std::string& config, int optLevel, Context* context, const std::set<std::string>& configurations)
 {
     moduleFilePath = MakeModuleFilePath(root, config, optLevel, Name(), configurations);
@@ -822,10 +827,44 @@ void Module::ReadImportedModuleTable(Reader& reader)
     }
 }
 
-bool Module::UpToDate() const noexcept
+void Module::SetAsmFilePath(const std::string& asmFilePath_)
 {
-    if (!util::FileExists(moduleFilePath) || util::LastWriteTime(filePath) > util::LastWriteTime(moduleFilePath)) return false;
-    return true;
+    asmFilePath = asmFilePath_;
+}
+
+bool Module::UpToDate(Context* context) noexcept
+{
+    if (IsInterfaceModule())
+    {
+        if (!util::FileExists(moduleFilePath) || util::LastWriteTime(filePath) > util::LastWriteTime(moduleFilePath)) return false;
+        std::vector<Module*> importedModules = ImportedModules(context);
+        for (Module* importedModule : importedModules)
+        {
+            if (util::LastWriteTime(importedModule->ModuleFilePath()) > util::LastWriteTime(moduleFilePath)) return false;
+        }
+        return true;
+    }
+    else
+    {
+        if (!util::FileExists(asmFilePath) || util::LastWriteTime(filePath) > util::LastWriteTime(asmFilePath)) return false;
+        FlagSetter dontThrowSetter(context, ContextFlags::dontThrow);
+        Module* interfaceModule = InterfaceModule(context);
+        if (interfaceModule)
+        {
+            if (!util::FileExists(interfaceModule->ModuleFilePath()) || 
+                util::LastWriteTime(interfaceModule->ModuleFilePath()) > util::LastWriteTime(asmFilePath)) return false;
+            std::vector<Module*> importedModules = ImportedModules(context);
+            for (Module* importedModule : importedModules)
+            {
+                if (util::LastWriteTime(importedModule->ModuleFilePath()) > util::LastWriteTime(asmFilePath)) return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+        return true;
+    }
 }
 
 ModuleInfo::ModuleInfo() : id(), name()
@@ -856,7 +895,10 @@ void ModuleMapper::ResetModules()
     reset = true;
     for (auto& module : modules)
     {
-        module->Reset();
+        if (module)
+        {
+            module->Reset();
+        }
     }
 }
 
@@ -886,12 +928,18 @@ Module* ModuleMapper::LoadModule(const std::string& moduleName, const std::strin
         if (util::FileExists(moduleFilePath))
         {
             Module* m = new Module(new util::FileMapping(moduleFilePath));
+            m->SetModuleFilePath(moduleFilePath);
             moduleNameMap[moduleName] = m;
             MapModule(m);
+            moduleNameIndexMap[m->Name()] = int(modules.size());
             modules.push_back(std::unique_ptr<Module>(m));
             AddModuleInfo(m);
             return m;
         }
+    }
+    if (context->GetFlag(ContextFlags::dontThrow))
+    {
+        return nullptr;
     }
     SetExceptionThrown();
     throw std::runtime_error("module '" + moduleName + "' not found");
@@ -916,6 +964,19 @@ void ModuleMapper::RemoveModule(Module* module)
 {
     moduleNameMap.erase(module->Name());
     moduleIdMap.erase(module->Id());
+}
+
+void ModuleMapper::ResetModule(const std::string& moduleName)
+{
+    auto it = moduleNameIndexMap.find(moduleName);
+    if (it != moduleNameIndexMap.end())
+    {
+        int index = it->second;
+        Module* m = modules[index].get();
+        RemoveModule(m);
+        modules[index].reset();
+        moduleNameIndexMap.erase(moduleName);
+    }
 }
 
 std::string ModuleMapper::GetProjectFilePath(const std::string& moduleName) const

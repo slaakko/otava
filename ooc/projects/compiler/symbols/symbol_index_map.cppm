@@ -1,0 +1,30 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.symbols.symbol_index_map;
+
+import std;
+import otava.symbols.id;
+import otava.symbols.symbol;
+
+export namespace otava::symbols {
+
+class SymbolIndexMap
+{
+public:
+    SymbolIndexMap();
+    Index GetNextIndex(SymbolKind symbolKind);
+    inline Index GetIndex(SymbolKind symbolKind) const noexcept
+    {
+        return indexMap[ToUnderlying(symbolKind)];
+    }
+#ifdef OTAVA
+    std::vector<Index> indexMap;
+#else
+    Index indexMap[ToUnderlying(SymbolKind::max)];
+#endif
+};
+
+} // namespace otava::symbols

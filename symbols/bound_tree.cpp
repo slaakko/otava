@@ -671,10 +671,10 @@ void BoundFunctionNode::SetBoundSetLineStatement(BoundStatementNode* boundSetLin
 
 void BoundFunctionNode::AddTemporaryDestructorCall(BoundFunctionCallNode* temporaryDestructorCall)
 {
-    temporaryDestructorCalls.push_back(std::unique_ptr<BoundFunctionCallNode>(temporaryDestructorCall));
+    temporaryDestructorCalls.push_back(std::unique_ptr<BoundNode>(temporaryDestructorCall));
 }
 
-std::vector<std::unique_ptr<BoundFunctionCallNode>> BoundFunctionNode::GetTemporaryDestructorCalls()
+std::vector<std::unique_ptr<BoundNode>> BoundFunctionNode::GetTemporaryDestructorCallNodes()
 {
     return std::move(temporaryDestructorCalls);
 }
@@ -2535,6 +2535,22 @@ void BoundFunctionCallNode::ModifyTypes(const soul::ast::FullSpan& fullSpan, Con
     {
         arg->ModifyTypes(fullSpan, context);
     }
+}
+
+std::vector<std::unique_ptr<BoundFunctionCallNode>> GetTemporaryDestructorCalls(BoundFunctionNode* boundFunction)
+{
+    std::vector<std::unique_ptr<BoundNode>> nodes = boundFunction->GetTemporaryDestructorCallNodes();
+    std::vector<std::unique_ptr<BoundFunctionCallNode>> temporaryDestructorCalls;
+    for (auto& boundNode : nodes)
+    {
+        if (boundNode->IsBoundFunctionCallNode())
+        {
+            BoundNode* n = boundNode.release();
+            std::unique_ptr<BoundFunctionCallNode> call(static_cast<BoundFunctionCallNode*>(n));
+            temporaryDestructorCalls.push_back(std::move(call));
+        }
+    }
+    return temporaryDestructorCalls;
 }
 
 BoundEmptyFunctionCallNode::BoundEmptyFunctionCallNode(const soul::ast::FullSpan& fullSpan_) noexcept :

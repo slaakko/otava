@@ -56,6 +56,8 @@ public:
     inline bool IsTrivialDestructor() const noexcept { return GetFlag(FunctionSymbolFlags::trivialDestructor); }
     inline bool ReturnsClass() const noexcept { return GetFlag(FunctionSymbolFlags::returnsClass); }
     inline void SetReturnsClass() noexcept { SetFlag(FunctionSymbolFlags::returnsClass); }
+    inline bool IsInvoke() const noexcept { return GetFlag(FunctionSymbolFlags::isInvoke); }
+    inline void SetInvoke() noexcept { SetFlag(FunctionSymbolFlags::isInvoke); }
     virtual bool IsInline() const noexcept { return GetFlag(FunctionSymbolFlags::inline_); }
     virtual void SetInline() noexcept { SetFlag(FunctionSymbolFlags::inline_); }
     virtual bool IsUnparsed() const noexcept { return GetFlag(FunctionSymbolFlags::unparsed); }
@@ -74,6 +76,8 @@ public:
     inline void SetContainsStatics() noexcept { SetFlag(FunctionSymbolFlags::containsStatics); }
     inline bool SkipInvokeChecking() const noexcept { return GetFlag(FunctionSymbolFlags::skipInvokeChecking); }
     inline void SetSkipInvokeChecking() noexcept { SetFlag(FunctionSymbolFlags::skipInvokeChecking); }
+    inline bool SkipProfiling() const noexcept { return GetFlag(FunctionSymbolFlags::skipProfiling); }
+    inline void SetSkipProfiling() noexcept { SetFlag(FunctionSymbolFlags::skipProfiling); }
     inline bool ContainsLocalVariableWithDestructor() const noexcept { return GetFlag(FunctionSymbolFlags::containsLocalVariableWithDestructor); }
     inline bool Skip() const noexcept { return GetFlag(FunctionSymbolFlags::skip); }
     inline void SetSkip() noexcept { SetFlag(FunctionSymbolFlags::skip); }

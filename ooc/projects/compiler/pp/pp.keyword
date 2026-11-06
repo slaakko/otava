@@ -1,0 +1,12 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+import otava.token;
+
+keywords otava.pp.keyword
+{
+    ("include", INCLUDE), ("if", IF), ("elif", ELIF), ("else", ELSE), ("ifdef", IFDEF), ("ifndef", IFNDEF), ("endif", ENDIF), ("undef", UNDEF), ("defined", DEFINED), 
+    ("pragma", PRAGMA)
+}

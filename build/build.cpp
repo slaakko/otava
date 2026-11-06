@@ -26,6 +26,7 @@ import otava.symbols.function_table;
 import otava.symbols.modules;
 import otava.symbols.scope;
 import otava.symbols.statement_binder;
+import otava.symbols.symbol_index_map;
 import otava.symbols.trace;
 import otava.parser.spg.rules;
 import otava.parser.module_dependency;
@@ -262,8 +263,261 @@ void WriteFilesFile(const std::string& projectFilesPath, const std::vector<std::
     }
 }
 
-void BuildSequentially(Project* project, const std::string& config, int optLevel, const std::string& optFn, BuildFlags flags, std::ostream* outFile)
+void WriteFnFilePathsFile(Project* project, const std::string& config, int optLevel, const std::set<std::string>& configurations, const std::string& fnFilePathsFilePath)
 {
+    std::ofstream fnFilePathsFile(fnFilePathsFilePath);
+    if (!fnFilePathsFile)
+    {
+        otava::symbols::SetExceptionThrown();
+        throw std::runtime_error("could not create file '" + fnFilePathsFilePath + "'");
+    }
+    for (const auto& ref : project->ReferencedProjects())
+    {
+        std::string moduleDirPath = otava::symbols::MakeModuleDirPath(ref->RootDir(), config, optLevel, configurations);
+        std::string fnsFilePath = util::GetFullPath(util::Path::Combine(moduleDirPath, "fns.txt"));
+        fnFilePathsFile << fnsFilePath << "\n";
+    }
+    std::string moduleDirPath = otava::symbols::MakeModuleDirPath(project->RootDir(), config, optLevel, configurations);
+    std::string fnsFilePath = util::GetFullPath(util::Path::Combine(moduleDirPath, "fns.txt"));
+    fnFilePathsFile << fnsFilePath << "\n";
+}
+
+std::unordered_set<std::string> SkipInvokeSettingSet()
+{
+    std::unordered_set<std::string> skipInvokeCheckingFNames;
+    skipInvokeCheckingFNames.insert("otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)");
+    skipInvokeCheckingFNames.insert("otava::parser::function::FunctionParser<soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>>::FunctionDefinition(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::codegen::CodeGenerator::GenerateGlobalInitializationFunction()");
+    skipInvokeCheckingFNames.insert("otava::build::BuildSequentially(otava::build::Project*, const std::string&, int, const std::string&, otava::build::BuildFlags, std::basic_ostream<char>*)");
+    skipInvokeCheckingFNames.insert("otava::build::Project::LoadModules(otava::symbols::ModuleMapper&, const std::string&, int, const std::set<std::basic_string<char>, std::less<std::basic_string<char>>>&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("util::CharacterInfoPage::CharacterInfoPage()");
+    skipInvokeCheckingFNames.insert("util::ExtendedCharacterInfoPage::ExtendedCharacterInfoPage()");
+    skipInvokeCheckingFNames.insert("::__main_wrapper__(int, const char**)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeIntegerLiteral(long long int, int)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeFloatLiteralSymbol(float)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeDoubleLiteralSymbol(double)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeSymbol(const std::string&)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeMacro(const std::string&)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeContent(otava::assembly::Value*)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeSizePrefix(long long int, otava::assembly::Value*)");
+    skipInvokeCheckingFNames.insert("otava::assembly::AssemblyContext::MakeBinaryExpr(otava::assembly::Value*, otava::assembly::Value*, otava::assembly::Operator)");
+    skipInvokeCheckingFNames.insert("otava::assembly::DeclarationSection::AddPublicDeclaration(otava::assembly::PublicDeclaration*)");
+    skipInvokeCheckingFNames.insert("otava::assembly::DeclarationSection::AddLinkOnceDeclaration(otava::assembly::LinkOnceDeclaration*)");
+    skipInvokeCheckingFNames.insert("otava::assembly::DataSection::AddData(otava::assembly::Data*)");
+    skipInvokeCheckingFNames.insert("otava::assembly::CodeSection::CreateFunction(const std::string&)");
+    skipInvokeCheckingFNames.insert("otava::assembly::Function::AddInstruction(otava::assembly::Instruction*)");
+    skipInvokeCheckingFNames.insert("otava::assembly::Registers::Registers()");
+    skipInvokeCheckingFNames.insert("otava::intermediate::Function::RemoveEntryAndExitBlocks()");
+    skipInvokeCheckingFNames.insert("otava::symbols::ArgumentConversionTable::GetAdjustDeletePtrConversionFn(otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::ArgumentConversionTable::GetDynamicPtrCastFn(otava::symbols::TypeSymbol*, otava::symbols::TypeSymbol*, const soul::ast::FullSpan&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::ArgumentConversionTable::GetArgumentConversion(otava::symbols::TypeSymbol*, otava::symbols::TypeSymbol*, otava::symbols::BoundExpressionNode*, const soul::ast::FullSpan&, otava::symbols::ArgumentMatch&, otava::symbols::FunctionMatch&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::ClassTypeSymbol::GetVTabVariable(otava::symbols::Emitter&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::Context::PushBoundFunction(otava::symbols::BoundFunctionNode*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::Context::AddBoundVTabFunction(otava::symbols::BoundFunctionNode*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::Context::AddBoundClass(otava::symbols::ClassTypeSymbol*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EndFunctionDefinition(otava::ast::Node*, int, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetIntegerValue(unsigned long long int, otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetFloatingValue(double, otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetCharValue(char32_t, otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetSymbolValue(otava::symbols::Symbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetInvokeValue(otava::symbols::Value*, const std::vector<otava::symbols::Value*>&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetArrayValue(otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetStructureValue(otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetFunctionGroupValue(otava::symbols::Module*, otava::symbols::SymbolId, otava::symbols::FunctionGroupSymbol*, otava::symbols::FunctionSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::GetTypeValue(otava::symbols::Module*, otava::symbols::SymbolId, otava::symbols::TypeSymbol*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluationContext::AddValue(otava::symbols::Value*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<unsigned char>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<signed char>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<unsigned short int>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<short int>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<unsigned int>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<int>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<long long int>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<unsigned long long int>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<float>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::FundamentalTypeValue<double>::IrValue(otava::symbols::Emitter&, const soul::ast::FullSpan&, otava::symbols::Context*) override");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, std::negate<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<signed char>*, std::negate<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<short int>*, std::negate<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, std::negate<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<int>*, std::negate<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, std::negate<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<long long int>*, std::negate<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::negate<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingUnaryOperator(otava::symbols::FundamentalTypeValue<float>*, std::negate<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingUnaryOperator(otava::symbols::FundamentalTypeValue<double>*, std::negate<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, std::bit_not<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<signed char>*, std::bit_not<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<short int>*, std::bit_not<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, std::bit_not<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<int>*, std::bit_not<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, std::bit_not<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<long long int>*, std::bit_not<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerUnaryOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::bit_not<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::plus<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::plus<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::plus<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::plus<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::plus<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::plus<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::plus<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::plus<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::plus<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::plus<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::minus<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::minus<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::minus<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::minus<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::minus<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::minus<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::minus<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::minus<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::minus<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::minus<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::multiplies<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::multiplies<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::multiplies<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::multiplies<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::multiplies<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::multiplies<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::multiplies<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::multiplies<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::multiplies<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::multiplies<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::divides<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::divides<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::divides<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::divides<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::divides<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::divides<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::divides<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::divides<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::divides<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateFloatingBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::divides<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::modulus<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::modulus<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::modulus<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::modulus<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::modulus<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::modulus<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::modulus<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::modulus<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::shift_left<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::shift_left<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::shift_left<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::shift_left<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::shift_left<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::shift_left<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::shift_left<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::shift_left<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateShiftLeft(otava::symbols::Value*, otava::symbols::Value*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateShiftRight(otava::symbols::Value*, otava::symbols::Value*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::shift_right<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::shift_right<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::shift_right<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::shift_right<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::shift_right<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::shift_right<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::shift_right<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::shift_right<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::bit_or<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::bit_or<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::bit_or<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::bit_or<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::bit_or<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::bit_or<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::bit_or<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::bit_or<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::bit_xor<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::bit_xor<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::bit_xor<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::bit_xor<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::bit_xor<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::bit_xor<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::bit_xor<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::bit_xor<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::bit_and<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::bit_and<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::bit_and<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::bit_and<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::bit_and<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::bit_and<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::bit_and<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateIntegerBinaryOperator(otava::symbols::ValueKind, otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::bit_and<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::equal_to<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::equal_to<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::equal_to<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::equal_to<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::equal_to<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::equal_to<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::equal_to<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::equal_to<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::equal_to<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::equal_to<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::not_equal_to<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::not_equal_to<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::not_equal_to<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::not_equal_to<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::not_equal_to<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::not_equal_to<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::not_equal_to<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::not_equal_to<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::not_equal_to<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::not_equal_to<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::less<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::less<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::less<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::less<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::less<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::less<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::less<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::less<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::less<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::less<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::greater<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::greater<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::greater<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::greater<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::greater<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::greater<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::greater<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::greater<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::greater<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::greater<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::less_equal<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::less_equal<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::less_equal<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::less_equal<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::less_equal<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::less_equal<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::less_equal<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::less_equal<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::less_equal<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::less_equal<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned char>*, otava::symbols::FundamentalTypeValue<unsigned char>*, std::greater_equal<unsigned char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<signed char>*, otava::symbols::FundamentalTypeValue<signed char>*, std::greater_equal<signed char>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<short int>*, otava::symbols::FundamentalTypeValue<short int>*, std::greater_equal<short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned short int>*, otava::symbols::FundamentalTypeValue<unsigned short int>*, std::greater_equal<unsigned short int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<int>*, otava::symbols::FundamentalTypeValue<int>*, std::greater_equal<int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned int>*, otava::symbols::FundamentalTypeValue<unsigned int>*, std::greater_equal<unsigned int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<long long int>*, otava::symbols::FundamentalTypeValue<long long int>*, std::greater_equal<long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<unsigned long long int>*, otava::symbols::FundamentalTypeValue<unsigned long long int>*, std::greater_equal<unsigned long long int>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<float>*, otava::symbols::FundamentalTypeValue<float>*, std::greater_equal<float>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::EvaluateComparisonOperator(otava::symbols::FundamentalTypeValue<double>*, otava::symbols::FundamentalTypeValue<double>*, std::greater_equal<double>, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::PrintWarning(const otava::symbols::Exception&, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::CleanupBlock::Add(otava::symbols::BoundExpressionNode*, otava::symbols::Context*)");
+    skipInvokeCheckingFNames.insert("otava::symbols::OperatorGroupNameMap::OperatorGroupNameMap()");
+    skipInvokeCheckingFNames.insert("otava::symbols::ExpressionBinder::Visit(otava::ast::BracedInitListNode&)");
+    skipInvokeCheckingFNames.insert("std::insertion_sort(std::pair<otava::symbols::FunctionSymbol*, int>*, std::pair<otava::symbols::FunctionSymbol*, int>*, otava::symbols::FunctionScoreGreater)");
+    skipInvokeCheckingFNames.insert("otava::symbols::StatementBinder::Visit(otava::ast::MemberInitializerNode&)");
+    skipInvokeCheckingFNames.insert("otava::symbols::SymbolTable::SymbolTable(otava::symbols::Module*, bool)");
+    skipInvokeCheckingFNames.insert("otava::build::Solution::AddProject(otava::build::Project*, bool)");
+    return skipInvokeCheckingFNames;
+}
+
+void BuildSequentially(Project* project, const std::string& config, int optLevelParam, const std::string& optFn, BuildFlags flags, std::ostream* outFile)
+{
+    std::unordered_set<std::string> skipInvokeSettingSet = SkipInvokeSettingSet();
     otava::symbols::ResetCompileEnded();
     otava::symbols::ModuleMapper moduleMapper;
     otava::ast::NodeIdFactory nodeIdFactory;
@@ -275,7 +529,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         project->AddDefine(symbol, 1);
     }
     bool releaseCfg = configurations.find("release") != configurations.end();
-    optLevel = otava::symbols::GetOptLevel(optLevel, releaseCfg);
+    int optLevel = otava::symbols::GetOptLevel(optLevelParam, releaseCfg);
     std::string moduleDirPath = otava::symbols::MakeModuleDirPath(project->RootDir(), config, optLevel, configurations);
     otava::symbols::FunctionTable functionTable;
     otava::symbols::SetFunctionTable(&functionTable);
@@ -408,6 +662,15 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     std::cout << "> building project '" << project->Name() << "'..." << "\n";
     otava::symbols::Context moduleContext;
     moduleContext.SetModuleMapper(&moduleMapper);
+    moduleContext.SetCurrentConfig(config);
+    moduleContext.SetCurrentConfigurations(configurations);
+    if (configurations.find("release") != configurations.end())
+    {
+        moduleContext.SetReleaseConfig();
+    }
+    moduleContext.SetOptLevel(optLevel);
+    moduleContext.SetOptFn(optFn);
+    moduleContext.SetCurrentProject(project);
     if (project->HasDefine("NOWARN"))
     {
         moduleContext.SetFlag(otava::symbols::ContextFlags::noWarnings);
@@ -444,7 +707,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     soul::lexer::FileMap* fileMap = project->GetFileMap();
     std::vector<std::pair<std::int32_t, std::string>> files;
     std::vector<std::int32_t> topologicalOrder = MakeTopologicalOrder(project->InterfaceFiles(), project);
-    if ((flags & BuildFlags::rebuild) != BuildFlags::none || !project->ReferencesUpToDate() || !project->InterfaceUnitsUpToDate())
+    if ((flags & BuildFlags::rebuild) != BuildFlags::none || !project->InterfaceUnitsUpToDate(&moduleContext))
     {
         for (std::int32_t file : topologicalOrder)
         {
@@ -491,7 +754,9 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             }
             context->SetFileMap(project->GetFileMap());
             context->SetDebugOutputStream(outFile);
+            context->SetSkipInvokeCheckingSet(&skipInvokeSettingSet);
             std::unique_ptr<otava::symbols::Module> module = project->ReleaseModule(file);
+            moduleMapper.ResetModule(module->Name());
             context->SetModule(module.get());
             context->SetCompileUnitModule(module.get());
             module->Init(context.get());
@@ -526,31 +791,80 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             project->GetIndex().import(module->GetSymbolTable()->ClassIndex());
             module->Write(project->RootDir(), config, optLevel, context.get(), configurations);
             context.reset();
+            std::string ftabFilePath = util::GetFullPath(util::Path::Combine(moduleDir, util::Path::GetFileName(filePath) + ".fns.txt"));
+            module->GetFunctionTable().Write(ftabFilePath);
             moduleMapper.RemoveModule(module.get());
             moduleMapper.AddModuleInfo(module.get());
             builtModules.push_back(std::move(module));
         }
+        std::string symbolIndexFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "symbol_index.bin"));
+        moduleMapper.GetSymbolIndexMap()->Save(symbolIndexFilePath);
+        std::string irIdFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "ir_id_map.bin"));
+        project->SaveIrIdMap(irIdFilePath);
     }
     else
     {
-        if ((flags & BuildFlags::verbose) != BuildFlags::none)
-        {
-            std::cout << "> loading module interface units..." << "\n";
-        }
-        for (int file :topologicalOrder)
+        for (int file : topologicalOrder)
         {
             std::unique_ptr<otava::symbols::Module> module = project->ReleaseModule(file);
-            std::string moduleName = module->Name();
             moduleMapper.RemoveModule(module.get());
-            otava::symbols::Module* m = moduleMapper.LoadModule(moduleName, config, optLevel, configurations, &moduleContext);
             std::string filePath = fileMap->GetFilePath(file);
             std::string asmFileName = util::Path::GetFileName(filePath) + ".asm";
             asmFileNames.push_back(asmFileName);
+            std::string ftabFilePath = util::GetFullPath(util::Path::Combine(moduleDir, util::Path::GetFileName(filePath) + ".fns.txt"));
+            if (util::FileExists(ftabFilePath))
+            {
+                otava::symbols::FunctionTable ftab;
+                ftab.Read(ftabFilePath);
+                otava::symbols::FunctionTable* globalFTab = otava::symbols::GetFunctionTable();
+                if (globalFTab)
+                {
+                    globalFTab->Add(ftab);
+                }
+            }
+        }
+        std::string symbolIndexFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "symbol_index.bin"));
+        if (util::FileExists(symbolIndexFilePath))
+        {
+            moduleMapper.GetSymbolIndexMap()->Load(symbolIndexFilePath);
+        }
+        std::string irIdFilePath = util::GetFullPath(util::Path::Combine(moduleDir, "ir_id_map.bin"));
+        if (util::FileExists(irIdFilePath))
+        {
+            project->LoadIrIdMap(irIdFilePath);
         }
     }
     for (std::int32_t file : project->SourceFiles())
     {
         std::string filePath = fileMap->GetFilePath(file);
+        std::unique_ptr<otava::symbols::Module> module = project->ReleaseModule(file);
+        std::string asmFilePath = util::Path::Combine(moduleDir, util::Path::GetFileName(module->FilePath()) + ".asm");
+        module->SetAsmFilePath(asmFilePath);
+        if (module->UpToDate(&moduleContext))
+        {
+            moduleMapper.RemoveModule(module.get());
+            std::string asmFileName = util::Path::GetFileName(filePath) + ".asm";
+            asmFileNames.push_back(asmFileName);
+            std::string scountFilePath = util::GetFullPath(util::Path::Combine(moduleDir, util::Path::GetFileName(filePath) + ".scount"));
+            if (util::FileExists(scountFilePath))
+            {
+                otava::symbols::SymbolCounts scounts;
+                scounts.Load(scountFilePath);
+                moduleMapper.GetSymbolIndexMap()->AddCounts(scounts);
+            }
+            std::string ftabFilePath = util::GetFullPath(util::Path::Combine(moduleDir, util::Path::GetFileName(filePath) + ".fns.txt"));
+            if (util::FileExists(ftabFilePath))
+            {
+                otava::symbols::FunctionTable ftab;
+                ftab.Read(ftabFilePath);
+                otava::symbols::FunctionTable* globalFTab = otava::symbols::GetFunctionTable();
+                if (globalFTab)
+                {
+                    globalFTab->Add(ftab);
+                }
+            }
+            continue;
+        }
         std::cout << "> " << filePath << "\n";
         files.push_back(std::make_pair(file, filePath));
         soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t> lexer = otava::lexer::MakeLexer(
@@ -572,6 +886,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         context->SetCurrentConfigurations(configurations);
         context->SetOptLevel(optLevel);
         context->SetOptFn(optFn);
+        context->SetSkipInvokeCheckingSet(&skipInvokeSettingSet);
         std::string compileUnitId = "compile_unit_" + util::GetSha1MessageDigest(filePath);
         context->GetBoundCompileUnit()->SetId(compileUnitId);
         context->SetCurrentProject(project);
@@ -593,7 +908,6 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         }
         context->SetFileMap(project->GetFileMap());
         context->SetDebugOutputStream(outFile);
-        std::unique_ptr<otava::symbols::Module> module = project->ReleaseModule(file);
         context->SetModule(module.get());
         context->SetCompileUnitModule(module.get());
         module->Init(context.get());
@@ -624,6 +938,10 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
             functionCallsInlined += context->FunctionCallsInlined();
         }
         context.reset();
+        std::string ftabFilePath = util::GetFullPath(util::Path::Combine(moduleDir, util::Path::GetFileName(filePath) + ".fns.txt"));
+        module->GetFunctionTable().Write(ftabFilePath);
+        std::string scountFilePath = util::GetFullPath(util::Path::Combine(moduleDir, util::Path::GetFileName(filePath) + ".scount"));
+        module->GetSymbolCounts().Save(scountFilePath);
         moduleMapper.RemoveModule(module.get());
         moduleMapper.AddModuleInfo(module.get());
         builtModules.push_back(std::move(module));
@@ -683,6 +1001,7 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
         if (project->HasDefine("NOWARN"))
         {
             mainUnitContext.SetFlag(otava::symbols::ContextFlags::noWarnings);
+            mainUnitContext.SetSkipInvokeCheckingSet(&skipInvokeSettingSet);
         }
         std::string mainAsmFileName = GenerateMainUnit(moduleMapper, util::Path::Combine(util::Path::GetDirectoryName(projectFilePath), cppFileName),
             mainFunctionIrName, mainFunctionParams, allCompileUnitInitFunctionNames, config, optLevel, project, configurations, &mainUnitContext);
@@ -737,7 +1056,17 @@ void BuildSequentially(Project* project, const std::string& config, int optLevel
     WriteFilesFile(projectFilesPath, files);
     std::string modulesFilePath = util::GetFullPath(util::Path::Combine(moduleDirPath, project->Name() + ".modules.txt"));
     std::ofstream modulesTextFile(modulesFilePath);
+    if (!modulesTextFile)
+    {
+        otava::symbols::SetExceptionThrown();
+        throw std::runtime_error("could not create file '" + modulesFilePath + "'");
+    }
     moduleMapper.PrintModules(modulesTextFile);
+    std::string fnFilesPath = util::GetFullPath(util::Path::Combine(moduleDirPath, "fn_file_paths.txt"));
+    if (project->GetTarget() == Target::program)
+    {
+        WriteFnFilePathsFile(project, config, optLevel, configurations, fnFilesPath);
+    }
     otava::symbols::SetCompileEnded();
     std::cout << "project '" << project->Name() << "' built successfully" << "\n";
 }

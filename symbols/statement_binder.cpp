@@ -28,10 +28,12 @@ import otava.symbols.instantiator;
 import otava.symbols.modules;
 import otava.symbols.operation_repository;
 import otava.symbols.overload_resolution;
+import otava.symbols.project;
 import otava.symbols.scope;
 import otava.symbols.scope_ptr;
 import otava.symbols.stmt_parser;
 import otava.symbols.symbol;
+import otava.symbols.symbol_table;
 import otava.symbols.trace;
 import otava.symbols.type_compare;
 import otava.symbols.type_resolver;
@@ -45,7 +47,6 @@ import otava.ast.identifier;
 import otava.ast.literal;
 import otava.ast.qualifier;
 import otava.ast.simple_type;
-import otava.ast.statement;
 import otava.ast.templates;
 import otava.ast.type;
 import util.sha1;
@@ -123,13 +124,15 @@ StatementBinder::StatementBinder(Context* context_, FunctionDefinitionSymbol* fu
     globalStaticVariableSymbol(nullptr),
     catchBlock(nullptr),
     lastElse(nullptr),
-    handlerBlock(nullptr)
+    handlerBlock(nullptr),
+    level(-1)
 {
 }
 
 void StatementBinder::Visit(otava::ast::FunctionDefinitionNode& node)
 {
-    Symbol* symbol = context->GetSymbolTable()->GetSymbolForNode(&node, context);
+    otava::ast::Node* n = &node;
+    Symbol* symbol = context->GetSymbolTable()->GetSymbolForNode(n, context);
     SpecialFunctionKind specialFunctionKind = functionDefinitionSymbol->GetSpecialFunctionKind(context);
     switch (specialFunctionKind)
     {
@@ -626,7 +629,7 @@ void StatementBinder::Visit(otava::ast::MemberInitializerNode& node)
         if (!context->GetFlag(ContextFlags::invoke))
         {
             fnCall->SetDestructTemporariesNode(
-                new BoundDestructTemporariesNode(fullSpan, context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                new BoundDestructTemporariesNode(fullSpan, GetTemporaryDestructorCalls(context->GetBoundFunction())));
             fnCall->SetTemporaryDestructorCallsObtained();
         }
     }
@@ -694,6 +697,8 @@ void StatementBinder::Visit(otava::ast::ExpressionListNode& node)
 
 void StatementBinder::Visit(otava::ast::FunctionBodyNode& node)
 {
+    level = 0;
+    context->SetCompoundLevel(level);
     node.Child()->Accept(*this);
     context->GetBoundFunction()->SetBody(static_cast<BoundCompoundStatementNode*>(boundStatement.release()));
 }
@@ -720,6 +725,44 @@ void StatementBinder::Visit(otava::ast::CompoundStatementNode& node)
         }
         setVPtrStatements.clear();
     }
+    level = context->GetCompoundLevel();
+    if (level == 0)
+    {
+        if (!functionDefinitionSymbol->SkipProfiling() && !context->GetFlag(ContextFlags::invoke | ContextFlags::tryCatch | ContextFlags::makeChildFn) &&
+            context->CurrentProject()->Name() != "std" && 
+            context->CurrentProject()->HasDefine("PROFILE"))
+        {
+            otava::ast::DeclSpecifierSequenceNode* dsn = new otava::ast::DeclSpecifierSequenceNode(fullSpan.span, fullSpan.fileIndex);
+            otava::ast::NestedNameSpecifierNode* nns = new otava::ast::NestedNameSpecifierNode(fullSpan.span, fullSpan.fileIndex);
+            nns->AddNode(new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "std"));
+            nns->AddNode(new otava::ast::ColonColonNode(fullSpan.span, fullSpan.fileIndex));
+            nns->AddNode(new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "profile"));
+            nns->AddNode(new otava::ast::ColonColonNode(fullSpan.span, fullSpan.fileIndex));
+            otava::ast::QualifiedIdNode* qid = new otava::ast::QualifiedIdNode(
+                fullSpan.span, fullSpan.fileIndex, nns, new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "fn_profiler"));
+            dsn->AddNode(qid);
+            otava::ast::ExpressionListNode* initializer = new otava::ast::ExpressionListNode(fullSpan.span, fullSpan.fileIndex);
+            std::uint64_t fnId = ToUnderlying(context->GetBoundFunction()->GetFunctionDefinitionSymbol()->Id());
+            initializer->AddNode(new otava::ast::IntegerLiteralNode(
+                fullSpan.span, fullSpan.fileIndex, fnId, otava::ast::Suffix::u | otava::ast::Suffix::ll, otava::ast::Base::decimal, std::to_string(fnId)));
+            otava::ast::InitDeclaratorNode* id = new otava::ast::InitDeclaratorNode(
+                fullSpan.span, fullSpan.fileIndex, new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "@profiler"), initializer);
+            otava::ast::InitDeclaratorListNode* dlist = new otava::ast::InitDeclaratorListNode(fullSpan.span, fullSpan.fileIndex);
+            dlist->AddNode(id);
+            std::unique_ptr<otava::ast::Node> node(new otava::ast::SimpleDeclarationNode(fullSpan.span, fullSpan.fileIndex, dsn, dlist, nullptr, nullptr));
+            FlagSetter saveSetter(context, ContextFlags::saveDeclarations);
+            otava::symbols::ProcessSimpleDeclaration(node.get(), nullptr, context);
+            saveSetter.Reset();
+            otava::ast::DeclarationStatementNode declarationStatement(fullSpan.span, fullSpan.fileIndex, node.release());
+            std::unique_ptr<BoundStatementNode> boundStatement = BindStatement(&declarationStatement, functionDefinitionSymbol, context);
+            if (boundStatement)
+            {
+                currentCompoundStatement->AddStatement(boundStatement.release());
+            }
+        }
+    }
+    ++level;
+    context->SetCompoundLevel(level);
     int n = node.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -743,6 +786,8 @@ void StatementBinder::Visit(otava::ast::CompoundStatementNode& node)
     context->GetSymbolTable()->EndScopeGeneric(context);
     context->PopBlockId();
     SetStatement(currentCompoundStatement.release());
+    --level;
+    context->SetCompoundLevel(level);
 }
 
 bool StatementBinder::HasThisInitializer() const noexcept
@@ -1393,7 +1438,7 @@ void StatementBinder::Visit(otava::ast::ReturnStatementNode& node)
                         if (!context->GetFlag(ContextFlags::invoke))
                         {
                             expressionStatement->SetDestructTemporariesNode(
-                                new BoundDestructTemporariesNode(fullSpan, context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                                new BoundDestructTemporariesNode(fullSpan, GetTemporaryDestructorCalls(context->GetBoundFunction())));
                             expressionStatement->SetTemporaryDestructorCallsObtained();
                         }
                     }
@@ -2080,7 +2125,7 @@ void StatementBinder::Visit(otava::ast::SimpleDeclarationNode& node)
                     if (context->GetBoundFunction()->HasTemporaryDestructorCalls())
                     {
                         boundStatement->SetDestructTemporariesNode(
-                            new BoundDestructTemporariesNode(fullSpan, context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                            new BoundDestructTemporariesNode(fullSpan, GetTemporaryDestructorCalls(context->GetBoundFunction())));
                         boundStatement->SetTemporaryDestructorCallsObtained();
                     }
                 }
@@ -2407,7 +2452,7 @@ void StatementBinder::BindStaticLocalVariable(VariableSymbol* variable, otava::a
             if (context->GetBoundFunction()->HasTemporaryDestructorCalls())
             {
                 constructFunctionStaticStatement->SetDestructTemporariesNode(
-                    new BoundDestructTemporariesNode(fullSpan, context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                    new BoundDestructTemporariesNode(fullSpan, GetTemporaryDestructorCalls(context->GetBoundFunction())));
                 constructFunctionStaticStatement->SetTemporaryDestructorCallsObtained();
             }
         }
@@ -2461,20 +2506,20 @@ std::unique_ptr<BoundStatementNode> BindStatement(otava::ast::Node* statementNod
                 if (sequenceStatement->Second()->IsReturnStatementNode())
                 {
                     sequenceStatement->First()->SetDestructTemporariesNode(
-                        new BoundDestructTemporariesNode(statementNode->GetFullSpan(), context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                        new BoundDestructTemporariesNode(statementNode->GetFullSpan(), GetTemporaryDestructorCalls(context->GetBoundFunction())));
                     sequenceStatement->First()->SetTemporaryDestructorCallsObtained();
                 }
                 else
                 {
                     boundStatement->SetDestructTemporariesNode(
-                        new BoundDestructTemporariesNode(statementNode->GetFullSpan(), context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                        new BoundDestructTemporariesNode(statementNode->GetFullSpan(), GetTemporaryDestructorCalls(context->GetBoundFunction())));
                     boundStatement->SetTemporaryDestructorCallsObtained();
                 }
             }
             else
             {
                 boundStatement->SetDestructTemporariesNode(
-                    new BoundDestructTemporariesNode(statementNode->GetFullSpan(), context->GetBoundFunction()->GetTemporaryDestructorCalls()));
+                    new BoundDestructTemporariesNode(statementNode->GetFullSpan(), GetTemporaryDestructorCalls(context->GetBoundFunction())));
                 boundStatement->SetTemporaryDestructorCallsObtained();
             }
         }
@@ -2517,23 +2562,28 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
     if (context->GetFlag(ContextFlags::parseMemberFunction)) return functionDefinitionSymbol;
     std::set<const Symbol*> visited;
     if (functionDefinitionSymbol->IsTemplateParameterInstantiation(context, visited)) return functionDefinitionSymbol;
+    std::string fname = functionDefinitionSymbol->FullName(context);
 #ifdef DEBUG_FUNCTIONS
-    std::cout << ">" << functionDefinitionSymbol->FullName(context) << "\n";
+    std::cout << ">" << fname << "\n";
 #endif
     functionDefinitionSymbol->SetBound();
     if (context->GetFlag(ContextFlags::debugMemory))
     {
-        context->SetFunction(functionDefinitionSymbol->FullName(context));
+        context->SetFunction(fname);
     }
     FunctionTable* functionTable = GetFunctionTable();
     if (functionTable)
     {
-        functionTable->AddFunction(ToUnderlying(functionDefinitionSymbol->Id()), functionDefinitionSymbol->FullName(context));
+        functionTable->AddFunction(ToUnderlying(functionDefinitionSymbol->Id()), fname);
     }
+    FunctionTable& ftab = context->GetCompileUnitModule()->GetFunctionTable();
+    ftab.AddFunction(ToUnderlying(functionDefinitionSymbol->Id()), fname);
     StatementBinder binder(context, functionDefinitionSymbol);
     context->PushStatementBinder(&binder);
     GenerateEnterFunctionCode(functionDefinitionNode, functionDefinitionSymbol, context);
+    BindingSetter bindingSetter(context);
     functionDefinitionNode->Accept(binder);
+    bindingSetter.Reset();
     functionDefinitionSymbol = binder.GetFunctionDefinitionSymbol();
     bool hasNoReturnAttribute = false;
     if (functionDefinitionNode->IsFunctionDefinitionNode())
@@ -2549,15 +2599,19 @@ FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode,
     {
         CheckFunctionReturnPaths(functionDefinitionNode, context);
     }
-    context->SetSkipInvokeChecking(functionDefinitionSymbol);
+    context->SetSkipInvokeChecking(functionDefinitionSymbol, fname);
     bool skipInvokeChecking = functionDefinitionSymbol->SkipInvokeChecking();
+    if (context->ReleaseConfig() && functionDefinitionSymbol->IsInline())
+    {
+        skipInvokeChecking = true;
+    }
     bool containsStatics = functionDefinitionSymbol->ContainsStatics();
     if (!functionDefinitionSymbol->IsNoExcept() && !skipInvokeChecking && !containsStatics && functionDefinitionSymbol->ContainsLocalVariableWithDestructor())
     {
         MakeInvokesAndCleanups(context->GetBoundFunction(), context);
     }
 #ifdef DEBUG_FUNCTIONS
-    std::cout << "<" << functionDefinitionSymbol->FullName(context) << "\n";
+    std::cout << "<" << fname << "\n";
 #endif
     context->PopStatementBinder();
     return functionDefinitionSymbol;

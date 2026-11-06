@@ -1,0 +1,89 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.token.line.lexer;
+
+import otava.token;
+import otava.keyword;
+import otava.expr;
+
+lexer OtavaTokenLineLexer
+{
+    rules
+    {
+        "{ws}+" { return WS; }
+        "{newline}" { return NEWLINE; }
+        "{pp_line}" { return PP_LINE; }
+        "{line_comment}" { return LINE_COMMENT; }
+        "{block_comment_start}" { return BLOCK_COMMENT_START; }
+        "{block_comment_end}" { return BLOCK_COMMENT_END; }
+        "{id}" { std::int64_t kw = lexer.GetKeywordToken(lexer.CurrentToken().match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return KEYWORD; }
+        "{integer_literal}" { return INTEGER_LITERAL; }
+        "{floating_literal}" { return FLOATING_LITERAL; }
+        "{character_literal}" { return CHARACTER_LITERAL; }
+        "{begin_raw_string_literal}" { return BEGIN_RAW_STRING_LITERAL; }
+        "{string_literal}" { return STRING_LITERAL; }
+        "::" { return OTHER; }
+        "," { return OTHER; }
+        "=" { return OTHER; }
+        "\*=" { return OTHER; }
+        "/=" { return OTHER; }
+        "%=" { return OTHER; }
+        "\+=" { return OTHER; }
+        "-=" { return OTHER; }
+        ">>=" { return OTHER; }
+        "<<=" { return OTHER; }
+        "&=" { return OTHER; }
+        "^=" { return OTHER; }
+        "\|=" { return OTHER; }
+        "\?" { return OTHER; }
+        ":" { return OTHER; }
+        "\|\|" { return OTHER; }
+        "&&" { return OTHER; }
+        "\|" { return OTHER; }
+        "^" { return OTHER; }
+        "&" { return OTHER; }
+        "==" { return OTHER; }
+        "!=" { return OTHER; }
+        "<=" { return OTHER; }
+        ">=" { return OTHER; }
+        "<=>" { return OTHER; }
+        "<" { return OTHER; }
+        ">" { return OTHER; }
+        "<<" { return OTHER; }
+        ">>" $(1) { return OTHER; }
+        "\+" { return OTHER; }
+        "-" { return OTHER; }
+        "\*" { return OTHER; }
+        "/" { return OTHER; }
+        "%" { return OTHER; }
+        "\.\*" { return OTHER; }
+        "->\*" { return OTHER; }
+        "\(" { return OTHER; }
+        "\)" { return OTHER; }
+        "\+\+" { return OTHER; }
+        "--" { return OTHER; }
+        "!" { return OTHER; }
+        "~" { return OTHER; }
+        "\[" { return OTHER; }
+        "\]" { return OTHER; }
+        "\." { return OTHER; }
+        "->" { return OTHER; }
+        ";" { return OTHER; }
+        "\.\.\." { return OTHER; }
+        "\{" { return OTHER; }
+        "\}" { return OTHER; }
+    }
+
+    variables
+    {
+        int langleCount;
+    }
+
+    actions
+    {
+        $(1) = { if (vars->langleCount > 0) return soul::lexer::INVALID_TOKEN; }
+    }
+}

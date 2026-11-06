@@ -1,0 +1,78 @@
+<parserFile>
+ <grammar name="SimpleTypeParser">
+  <rule first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, DOUBLE, FLOAT, INT, LONG, SHORT, SIGNED, UNSIGNED, VOID, WCHAR_T}" name="SimpleType">
+   <switch first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, DOUBLE, FLOAT, INT, LONG, SHORT, SIGNED, UNSIGNED, VOID, WCHAR_T}">
+    <case first="{CHAR}">
+     <action first="{CHAR}">
+      <token first="{CHAR}" name="CHAR"/>
+     </action>
+    </case>
+    <case first="{CHAR8_T}">
+     <action first="{CHAR8_T}">
+      <token first="{CHAR8_T}" name="CHAR8_T"/>
+     </action>
+    </case>
+    <case first="{CHAR16_T}">
+     <action first="{CHAR16_T}">
+      <token first="{CHAR16_T}" name="CHAR16_T"/>
+     </action>
+    </case>
+    <case first="{CHAR32_T}">
+     <action first="{CHAR32_T}">
+      <token first="{CHAR32_T}" name="CHAR32_T"/>
+     </action>
+    </case>
+    <case first="{WCHAR_T}">
+     <action first="{WCHAR_T}">
+      <token first="{WCHAR_T}" name="WCHAR_T"/>
+     </action>
+    </case>
+    <case first="{BOOL}">
+     <action first="{BOOL}">
+      <token first="{BOOL}" name="BOOL"/>
+     </action>
+    </case>
+    <case first="{SHORT}">
+     <action first="{SHORT}">
+      <token first="{SHORT}" name="SHORT"/>
+     </action>
+    </case>
+    <case first="{INT}">
+     <action first="{INT}">
+      <token first="{INT}" name="INT"/>
+     </action>
+    </case>
+    <case first="{LONG}">
+     <action first="{LONG}">
+      <token first="{LONG}" name="LONG"/>
+     </action>
+    </case>
+    <case first="{SIGNED}">
+     <action first="{SIGNED}">
+      <token first="{SIGNED}" name="SIGNED"/>
+     </action>
+    </case>
+    <case first="{UNSIGNED}">
+     <action first="{UNSIGNED}">
+      <token first="{UNSIGNED}" name="UNSIGNED"/>
+     </action>
+    </case>
+    <case first="{FLOAT}">
+     <action first="{FLOAT}">
+      <token first="{FLOAT}" name="FLOAT"/>
+     </action>
+    </case>
+    <case first="{DOUBLE}">
+     <action first="{DOUBLE}">
+      <token first="{DOUBLE}" name="DOUBLE"/>
+     </action>
+    </case>
+    <case first="{VOID}">
+     <action first="{VOID}">
+      <token first="{VOID}" name="VOID"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

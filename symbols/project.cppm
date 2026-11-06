@@ -14,6 +14,7 @@ class SymbolsProject
 {
 public:
     virtual ~SymbolsProject();
+    virtual const std::string& Name() const = 0;
     virtual bool HasDefine(const std::string& symbol) const noexcept = 0;
     virtual ProjectId GetProjectId() const noexcept = 0;
     virtual otava::symbols::SymbolId GetIrId(const std::string& groupFullName, otava::symbols::Cardinality arity) = 0;

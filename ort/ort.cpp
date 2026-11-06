@@ -26,6 +26,7 @@ module ort;
 
 import class_info_index;
 import ort.memory;
+import ort.profile;
 import util;
 
 bool initialized = false;
@@ -200,6 +201,11 @@ void ort_print_memory_leaks()
     if (!outFilePath.empty())
     {
         out.open(outFilePath);
+        if (!out)
+        {
+            std::cerr << "could not create file '" + outFilePath + "'" << "\n";
+            return;
+        }
         s = &out;
         std::cout << "memory leaks written to file '" + outFilePath + "'" << "\n";
     }
@@ -830,4 +836,14 @@ void ort_debug_break()
 bool ort_path_exists(const char* path)
 {
     return std::filesystem::exists(path);
+}
+
+void ort_add_to_profile(std::uint64_t fn, std::uint64_t time, std::uint64_t ctime)
+{
+    ort::profile::add_to_profile(fn, time, ctime);
+}
+
+void ort_write_profile(const char* dir)
+{
+    ort::profile::write_profile(dir);
 }

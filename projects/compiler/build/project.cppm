@@ -8,6 +8,7 @@ export module otava.build_project;
 import std;
 import otava.symbols.id;
 import otava.symbols.class_info;
+import otava.symbols.context;
 import otava.symbols.project;
 import otava.symbols.modules;
 import otava.symbols.trace;
@@ -42,7 +43,7 @@ public:
     Project(const std::string& filePath_, const std::string& name_);
     inline void SetFileMap(soul::lexer::FileMap* fileMap_) { fileMap = fileMap_; }
     inline const std::string& FilePath() const { return filePath; }
-    inline const std::string& Name() const { return name; }
+    const std::string& Name() const override { return name; }
     inline const std::string& OutputFilePath() const { return outputFilePath; }
     void SetOutputFilePath(const std::string& outputFilePath_) { outputFilePath = outputFilePath_; }
     std::int16_t Id() const noexcept;
@@ -93,9 +94,11 @@ public:
     void WriteClassIndex(const std::string& moduleDir);
     void ReadProjectId(const std::string& moduleDir);
     void WriteProjectId(const std::string& moduleDir);
-    bool InterfaceUnitsUpToDate() const noexcept;
+    bool InterfaceUnitsUpToDate(otava::symbols::Context* context) noexcept;
     otava::symbols::SymbolId GetIrId(const std::string& groupFullName, otava::symbols::Cardinality arity) override;
     void SetIrId(const std::string& groupFullName, otava::symbols::Cardinality arity, otava::symbols::SymbolId irId) override;
+    void SaveIrIdMap(const std::string& irIdMapFilePath);
+    void LoadIrIdMap(const std::string& irIdMapFilePath);
 private:
     soul::lexer::FileMap* fileMap;
     std::string filePath;

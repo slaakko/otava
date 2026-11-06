@@ -15,6 +15,7 @@ import soul.lexer;
 import util.path;
 import util.file_stream;
 import util.unicode;
+import util.system;
 
 namespace otava::build {
 

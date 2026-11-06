@@ -1,0 +1,522 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+module otava.symbols.fundamental_type_symbol;
+
+import otava.symbols.concrete_value;
+import otava.symbols.context;
+import otava.symbols.emitter;
+import otava.symbols.evaluation_context;
+import otava.symbols.exception;
+import otava.symbols.modules;
+import otava.symbols.reader;
+import otava.symbols.writer;
+import otava.ast.identifier;
+import otava.ast.simple_type;
+import otava.ast.type;
+import util.binary_stream_writer;
+
+namespace otava::symbols {
+
+ValueKind ToValueKind(FundamentalTypeKind fundamentalTypeKind)
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::boolType: return ValueKind::boolValue;
+    case FundamentalTypeKind::charType:
+    case FundamentalTypeKind::unsignedCharType:
+    case FundamentalTypeKind::char8Type:
+    {
+        return ValueKind::byteValue;
+    }
+    case FundamentalTypeKind::signedCharType:
+    {
+        return ValueKind::sbyteValue;
+    }
+    case FundamentalTypeKind::shortIntType:
+    {
+        return ValueKind::shortValue;
+    }
+    case FundamentalTypeKind::unsignedShortIntType:
+    case FundamentalTypeKind::char16Type:
+    case FundamentalTypeKind::wcharType:
+    {
+        return ValueKind::ushortValue;
+    }
+    case FundamentalTypeKind::intType:
+    case FundamentalTypeKind::longIntType:
+    {
+        return ValueKind::intValue;
+    }
+    case FundamentalTypeKind::unsignedIntType:
+    case FundamentalTypeKind::unsignedLongIntType:
+    case FundamentalTypeKind::char32Type:
+    {
+        return ValueKind::uintValue;
+    }
+    case FundamentalTypeKind::longLongIntType:
+    {
+        return ValueKind::longValue;
+    }
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        return ValueKind::ulongValue;
+    }
+    case FundamentalTypeKind::floatType:
+    {
+        return ValueKind::floatValue;
+    }
+    case FundamentalTypeKind::doubleType:
+    {
+        return ValueKind::doubleValue;
+    }
+    }
+    return ValueKind::none;
+}
+
+int Rank(FundamentalTypeKind fundamentalTypeKind) noexcept
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::boolType:
+    {
+        return 0;
+    }
+    case FundamentalTypeKind::charType:
+    case FundamentalTypeKind::signedCharType:
+    case FundamentalTypeKind::unsignedCharType:
+    case FundamentalTypeKind::char8Type:
+    {
+        return 1;
+    }
+    case FundamentalTypeKind::char16Type:
+    case FundamentalTypeKind::shortIntType:
+    case FundamentalTypeKind::unsignedShortIntType:
+    {
+        return 2;
+    }
+    case FundamentalTypeKind::char32Type:
+    case FundamentalTypeKind::wcharType:
+    case FundamentalTypeKind::intType:
+    case FundamentalTypeKind::unsignedIntType:
+    {
+        return 3;
+    }
+    case FundamentalTypeKind::longIntType:
+    case FundamentalTypeKind::unsignedLongIntType:
+    {
+        return 4;
+    }
+    case FundamentalTypeKind::longLongIntType:
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        return 5;
+    }
+    }
+    return -1;
+}
+
+bool IsSignedIntegerType(FundamentalTypeKind fundamentalTypeKind) noexcept
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::signedCharType:
+    case FundamentalTypeKind::shortIntType:
+    case FundamentalTypeKind::intType:
+    case FundamentalTypeKind::longIntType:
+    case FundamentalTypeKind::longLongIntType:
+    {
+        return true;
+    }
+    }
+    return false;
+}
+
+bool IsUnsignedIntegerType(FundamentalTypeKind fundamentalTypeKind) noexcept
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::unsignedCharType:
+    case FundamentalTypeKind::unsignedShortIntType:
+    case FundamentalTypeKind::unsignedIntType:
+    case FundamentalTypeKind::unsignedLongIntType:
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        return true;
+    }
+    }
+    return false;
+}
+
+class FundamentalTypeFlagMapper
+{
+public:
+    static FundamentalTypeFlagMapper& Instance();
+    FundamentalTypeKind GetFundamentalTypeKind(DeclarationFlags flags) const;
+private:
+    FundamentalTypeFlagMapper();
+    std::map<DeclarationFlags, FundamentalTypeKind> flagMap;
+};
+
+FundamentalTypeFlagMapper& FundamentalTypeFlagMapper::Instance()
+{
+    static FundamentalTypeFlagMapper instance;
+    return instance;
+}
+
+FundamentalTypeFlagMapper::FundamentalTypeFlagMapper()
+{
+    flagMap[DeclarationFlags::voidFlag] = FundamentalTypeKind::voidType;
+    flagMap[DeclarationFlags::charFlag] = FundamentalTypeKind::charType;
+    flagMap[DeclarationFlags::char8Flag] = FundamentalTypeKind::char8Type;
+    flagMap[DeclarationFlags::char16Flag] = FundamentalTypeKind::char16Type;
+    flagMap[DeclarationFlags::char32Flag] = FundamentalTypeKind::char32Type;
+    flagMap[DeclarationFlags::wcharFlag] = FundamentalTypeKind::wcharType;
+    flagMap[DeclarationFlags::boolFlag] = FundamentalTypeKind::boolType;
+    flagMap[DeclarationFlags::shortFlag] = FundamentalTypeKind::shortIntType;
+    flagMap[DeclarationFlags::shortFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::shortIntType;
+    flagMap[DeclarationFlags::intFlag] = FundamentalTypeKind::intType;
+    flagMap[DeclarationFlags::longFlag] = FundamentalTypeKind::longIntType;
+    flagMap[DeclarationFlags::longFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::longIntType;
+    flagMap[DeclarationFlags::longLongFlag] = FundamentalTypeKind::longLongIntType;
+    flagMap[DeclarationFlags::longLongFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::longLongIntType;
+    flagMap[DeclarationFlags::signedFlag] = FundamentalTypeKind::intType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::charFlag] = FundamentalTypeKind::signedCharType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::longFlag] = FundamentalTypeKind::longIntType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::shortFlag] = FundamentalTypeKind::shortIntType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::intType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::longLongFlag] = FundamentalTypeKind::longLongIntType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::longFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::longIntType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::longLongFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::longLongIntType;
+    flagMap[DeclarationFlags::signedFlag | DeclarationFlags::shortFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::shortIntType;
+    flagMap[DeclarationFlags::unsignedFlag] = FundamentalTypeKind::unsignedIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::charFlag] = FundamentalTypeKind::unsignedCharType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::longFlag] = FundamentalTypeKind::unsignedLongIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::shortFlag] = FundamentalTypeKind::unsignedShortIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::unsignedIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::shortFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::unsignedShortIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::longFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::unsignedLongIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::longLongFlag] = FundamentalTypeKind::unsignedLongLongIntType;
+    flagMap[DeclarationFlags::unsignedFlag | DeclarationFlags::longLongFlag | DeclarationFlags::intFlag] = FundamentalTypeKind::unsignedLongLongIntType;
+    flagMap[DeclarationFlags::floatFlag] = FundamentalTypeKind::floatType;
+    flagMap[DeclarationFlags::doubleFlag] = FundamentalTypeKind::doubleType;
+    flagMap[DeclarationFlags::longFlag | DeclarationFlags::doubleFlag] = FundamentalTypeKind::longDoubleType;
+    flagMap[DeclarationFlags::autoFlag] = FundamentalTypeKind::autoType;
+}
+
+FundamentalTypeKind FundamentalTypeFlagMapper::GetFundamentalTypeKind(DeclarationFlags flags) const
+{
+    auto it = flagMap.find(flags);
+    if (it != flagMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return FundamentalTypeKind::none;
+    }
+}
+
+std::string MakeFundamentalTypeName(FundamentalTypeKind fundamentalTypeKind)
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::none: return "none";
+    case FundamentalTypeKind::boolType: return "bool";
+    case FundamentalTypeKind::charType: return "char";
+    case FundamentalTypeKind::signedCharType: return "signed char";
+    case FundamentalTypeKind::unsignedCharType: return "unsigned char";
+    case FundamentalTypeKind::char8Type: return "char8_t";
+    case FundamentalTypeKind::char16Type: return "char16_t";
+    case FundamentalTypeKind::shortIntType: return "short int";
+    case FundamentalTypeKind::unsignedShortIntType: return "unsigned short int";
+    case FundamentalTypeKind::char32Type: return "char32_t";
+    case FundamentalTypeKind::wcharType: return "wchar_t";
+    case FundamentalTypeKind::intType: return "int";
+    case FundamentalTypeKind::unsignedIntType: return "unsigned int";
+    case FundamentalTypeKind::longIntType: return "long int";
+    case FundamentalTypeKind::unsignedLongIntType: return "unsigned long int";
+    case FundamentalTypeKind::longLongIntType: return "long long int";
+    case FundamentalTypeKind::unsignedLongLongIntType: return "unsigned long long int";
+    case FundamentalTypeKind::floatType: return "float";
+    case FundamentalTypeKind::doubleType: return "double";
+    case FundamentalTypeKind::longDoubleType: return "long double";
+    case FundamentalTypeKind::voidType: return "void";
+    case FundamentalTypeKind::autoType: return "auto";
+    case FundamentalTypeKind::nullPtrType: return "nullptr_t";
+    }
+    return "<fundamental_type>";
+}
+
+FundamentalTypeSymbol::FundamentalTypeSymbol(Module* module_, SymbolId symbolId_) : TypeSymbol(module_, symbolId_), fundamentalTypeKind(FundamentalTypeKind::none)
+{
+}
+
+FundamentalTypeSymbol::FundamentalTypeSymbol(Module* module_, SymbolId symbolId_, FundamentalTypeKind fundamentalTypeKind_) :
+    TypeSymbol(module_, symbolId_, MakeFundamentalTypeName(fundamentalTypeKind_)), fundamentalTypeKind(fundamentalTypeKind_)
+{
+}
+
+void FundamentalTypeSymbol::Write(Writer& writer) 
+{
+    TypeSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(ToUnderlying(fundamentalTypeKind));
+}
+
+void FundamentalTypeSymbol::Read(Reader& reader) 
+{
+    TypeSymbol::Read(reader);
+    fundamentalTypeKind = FundamentalTypeKind(reader.CurrentReader().ReadByte());
+}
+
+otava::intermediate::Type* FundamentalTypeSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context)
+{
+    switch (fundamentalTypeKind)
+    {
+    case FundamentalTypeKind::charType:
+    case FundamentalTypeKind::unsignedCharType:
+    case FundamentalTypeKind::char8Type:
+    {
+        return emitter.GetByteType();
+    }
+    case FundamentalTypeKind::signedCharType:
+    {
+        return emitter.GetSByteType();
+    }
+    case FundamentalTypeKind::shortIntType:
+    {
+        return emitter.GetShortType();
+    }
+    case FundamentalTypeKind::char16Type:
+    case FundamentalTypeKind::wcharType:
+    case FundamentalTypeKind::unsignedShortIntType:
+    {
+        return emitter.GetUShortType();
+    }
+    case FundamentalTypeKind::intType:
+    case FundamentalTypeKind::longIntType:
+    {
+        return emitter.GetIntType();
+    }
+    case FundamentalTypeKind::char32Type:
+    case FundamentalTypeKind::unsignedIntType:
+    case FundamentalTypeKind::unsignedLongIntType:
+    {
+        return emitter.GetUIntType();
+    }
+    case FundamentalTypeKind::boolType:
+    {
+        return emitter.GetBoolType();
+    }
+    case FundamentalTypeKind::longLongIntType:
+    {
+        return emitter.GetLongType();
+    }
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        return emitter.GetULongType();
+    }
+    case FundamentalTypeKind::floatType:
+    {
+        return emitter.GetFloatType();
+    }
+    case FundamentalTypeKind::doubleType:
+    {
+        return emitter.GetDoubleType();
+    }
+    case FundamentalTypeKind::voidType:
+    {
+        return emitter.GetVoidType();
+    }
+    case FundamentalTypeKind::nullPtrType:
+    {
+        return emitter.MakePtrType(emitter.GetVoidType());
+    }
+    default:
+    {
+        ThrowException("unsupported fundamental type", fullSpan, context);
+        break;
+    }
+    }
+    return nullptr;
+}
+
+Value* FundamentalTypeSymbol::DefaultValue(Context* context) 
+{
+    ValueKind valueKind = ToValueKind(fundamentalTypeKind);
+    switch (valueKind)
+    {
+    case ValueKind::boolValue: return context->GetEvaluationContext()->GetBoolValue(false);
+    case ValueKind::byteValue:
+    case ValueKind::sbyteValue:
+    case ValueKind::shortValue:
+    case ValueKind::ushortValue:
+    case ValueKind::intValue:
+    case ValueKind::uintValue:
+    case ValueKind::longValue:
+    case ValueKind::ulongValue:
+    {
+        return context->GetEvaluationContext()->GetIntegerValue(0, this, context);
+    }
+    case ValueKind::floatValue:
+    case ValueKind::doubleValue:
+    {
+        return context->GetEvaluationContext()->GetFloatingValue(0.0, this, context);
+    }
+    }
+    return nullptr;
+}
+
+TypeSymbol* GetFundamentalType(DeclarationFlags fundamentalTypeFlags, const soul::ast::FullSpan& fullSpan, Context* context)
+{
+    FundamentalTypeKind fundamentalTypeKind = FundamentalTypeFlagMapper::Instance().GetFundamentalTypeKind(fundamentalTypeFlags);
+    if (fundamentalTypeKind != FundamentalTypeKind::none)
+    {
+        return context->GetStdTypeFundamentalModule()->GetSymbolTable()->GetFundamentalTypeSymbol(fundamentalTypeKind, context);
+    }
+    else
+    {
+        ThrowException("invalid combination of fundamental type specifiers", fullSpan, context);
+        return nullptr;
+    }
+}
+
+void MakeFundamentaTypeSequence(FundamentalTypeSymbol* fundamentalType, const soul::ast::FullSpan& fullSpan, otava::ast::SequenceNode* sequence)
+{
+    switch (fundamentalType->GetFundamentalTypeKind())
+    {
+    case FundamentalTypeKind::boolType:
+    {
+        sequence->AddNode(new otava::ast::BoolNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::charType:
+    {
+        sequence->AddNode(new otava::ast::CharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::signedCharType:
+    {
+        sequence->AddNode(new otava::ast::SignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::CharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedCharType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::CharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::char8Type:
+    {
+        sequence->AddNode(new otava::ast::Char8Node(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::char16Type:
+    {
+        sequence->AddNode(new otava::ast::Char16Node(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::char32Type:
+    {
+        sequence->AddNode(new otava::ast::Char32Node(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::wcharType:
+    {
+        sequence->AddNode(new otava::ast::WCharNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::shortIntType:
+    {
+        sequence->AddNode(new otava::ast::ShortNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedShortIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::ShortNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::intType:
+    {
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::longIntType:
+    {
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedLongIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::longLongIntType:
+    {
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::unsignedLongLongIntType:
+    {
+        sequence->AddNode(new otava::ast::UnsignedNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::IntNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::floatType:
+    {
+        sequence->AddNode(new otava::ast::FloatNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::doubleType:
+    {
+        sequence->AddNode(new otava::ast::DoubleNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::longDoubleType:
+    {
+        sequence->AddNode(new otava::ast::LongNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::DoubleNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::voidType:
+    {
+        sequence->AddNode(new otava::ast::VoidNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::autoType:
+    {
+        sequence->AddNode(new otava::ast::PlaceholderTypeSpecifierNode(fullSpan.span, fullSpan.fileIndex));
+        break;
+    }
+    case FundamentalTypeKind::nullPtrType:
+    {
+        otava::ast::NestedNameSpecifierNode* nns = new otava::ast::NestedNameSpecifierNode(fullSpan.span, fullSpan.fileIndex);
+        nns->AddNode(new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "std"));
+        nns->AddNode(new otava::ast::ColonColonNode(fullSpan.span, fullSpan.fileIndex));
+        sequence->AddNode(new otava::ast::QualifiedIdNode(fullSpan.span, fullSpan.fileIndex, nns,
+            new otava::ast::IdentifierNode(fullSpan.span, fullSpan.fileIndex, "nullptr_t")));
+        break;
+    }
+    }
+}
+
+} // namespace otava::symbols

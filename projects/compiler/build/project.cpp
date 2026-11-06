@@ -376,12 +376,12 @@ bool Project::ReferencesUpToDate() const noexcept
     return true;
 }
 
-bool Project::InterfaceUnitsUpToDate() const noexcept
+bool Project::InterfaceUnitsUpToDate(otava::symbols::Context* context) noexcept
 {
     for (std::int32_t interfaceFileIndex : interfaceFiles)
     {
         otava::symbols::Module* module = GetModule(interfaceFileIndex);
-        if (!module->UpToDate())
+        if (!module->UpToDate(context))
         {
             return false;
         }
@@ -402,6 +402,36 @@ otava::symbols::SymbolId Project::GetIrId(const std::string& groupFullName, otav
 void Project::SetIrId(const std::string& groupFullName, otava::symbols::Cardinality arity, otava::symbols::SymbolId irId)
 {
     irIdMap[std::make_pair(groupFullName, arity)] = irId;
+}
+
+void Project::SaveIrIdMap(const std::string& irIdMapFilePath)
+{
+    util::FileStream fs(irIdMapFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::BufferedStream bufStream(fs);
+    util::BinaryStreamWriter writer(bufStream);
+    int count = int(irIdMap.size());
+    writer.Write(count);
+    for (const auto& p : irIdMap)
+    {
+        writer.Write(p.first.first);
+        writer.Write(otava::symbols::ToUnderlying(p.first.second));
+        writer.Write(otava::symbols::ToUnderlying(p.second));
+    }
+}
+
+void Project::LoadIrIdMap(const std::string& irIdMapFilePath)
+{
+    util::FileStream fs(irIdMapFilePath, util::OpenMode::read | util::OpenMode::binary);
+    util::BufferedStream bufStream(fs);
+    util::BinaryStreamReader reader(bufStream);
+    int count = reader.ReadInt();
+    for (int i = 0; i < count; ++i)
+    {
+        std::string groupFullName = reader.ReadUtf8String();
+        otava::symbols::Cardinality arity(otava::symbols::Cardinality(reader.ReadUInt()));
+        otava::symbols::SymbolId irId(otava::symbols::SymbolId(reader.ReadULong()));
+        SetIrId(groupFullName, arity, irId);
+    }
 }
 
 } // namespace otava::build

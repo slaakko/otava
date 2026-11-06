@@ -7,6 +7,7 @@ module otava.intermediate.compile_unit;
 
 import otava.intermediate.code;
 import otava.intermediate.context;
+import otava.intermediate.error;
 import util.code_formatter;
 
 namespace otava::intermediate {
@@ -44,6 +45,11 @@ MetadataRef* CompileUnit::GetMetadataRef() const noexcept
 void CompileUnit::Write()
 {
     std::ofstream file(filePath);
+    if (!file)
+    {
+        otava::intermediate::SetExceptionThrown();
+        throw std::runtime_error("could not create file '" + filePath + "'");
+    }
     util::CodeFormatter formatter(file);
     formatter.SetIndentSize(8);
     context->GetTypes().Write(formatter);

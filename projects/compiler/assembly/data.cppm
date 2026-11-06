@@ -5,8 +5,8 @@
 
 export module otava.assembly.data;
 
-import otava.assembly.instruction;
 import otava.assembly.declaration;
+import otava.assembly.instruction;
 import util.code_formatter;
 import std;
 

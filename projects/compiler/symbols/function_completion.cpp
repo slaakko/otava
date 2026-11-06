@@ -138,12 +138,18 @@ FunctionSymbol* CompleteIncompleteFunction(FunctionSymbol* fn, const soul::ast::
             return fn;
         }
         context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
-        if (!completedFn->RemoveForwardDeclarationTypes(context, true))
+        if (completedFn)
         {
-            otava::symbols::PrintWarning("not all forward references could not be removed for function '" +
-                completedFn->FullName(context) + "'", completedFn->GetFullSpan(), fullSpan, context);
+            if (!completedFn->RemoveForwardDeclarationTypes(context, true))
+            {
+                otava::symbols::PrintWarning("not all forward references could not be removed for function '" +
+                    completedFn->FullName(context) + "'", completedFn->GetFullSpan(), fullSpan, context);
+            }
         }
-        context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);
+        else
+        {
+            return fn;
+        }
         return completedFn;
     }
     context->GetModule()->GetNodeIdFactory()->SetInternallyMapped(prevInternallyMapped);

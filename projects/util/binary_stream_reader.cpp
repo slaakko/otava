@@ -3,7 +3,7 @@ module util.binary_stream_reader;
 import util.unicode;
 
 namespace util {
-
+     
 BinaryStreamReader::BinaryStreamReader(Stream& stream_) noexcept : stream(stream_)
 {
 }

@@ -30,6 +30,11 @@ std::string GetVCVars64Path()
         configurationElement->AppendChild(vcvars64Element);
         vcvars64Element->SetAttribute("path", "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat)");
         std::ofstream configFile(configFilePath);
+        if (!configFile)
+        {
+            otava::symbols::SetExceptionThrown();
+            throw std::runtime_error("could not create file '" + configFilePath + "'");
+        }
         util::CodeFormatter formatter(configFile);
         formatter.SetIndentSize(1);
         configDoc.Write(formatter);

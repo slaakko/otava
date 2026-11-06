@@ -103,3 +103,5 @@ export extern "C" void ort_exit(int exitCode);
 export extern "C" int ort_run_process(const char* commandLine);
 export extern "C" void ort_debug_break();
 export extern "C" bool ort_path_exists(const char* path);
+export extern "C" void ort_add_to_profile(std::uint64_t fn, std::uint64_t time, std::uint64_t ctime);
+export extern "C" void ort_write_profile(const char* dir);

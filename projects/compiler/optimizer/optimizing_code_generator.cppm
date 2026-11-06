@@ -26,10 +26,10 @@ import otava.assembly.declaration;
 import otava.assembly.data;
 import otava.assembly.macro;
 import otava.assembly.reg;
-import soul.lexer;
-import soul.ast.span;
 import util.component;
 import util.code_formatter;
+import soul.lexer;
+import soul.ast.span;
 import std;
 
 export namespace otava::optimizer {

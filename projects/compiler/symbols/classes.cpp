@@ -12,7 +12,7 @@ import otava.symbols.class_templates;
 import otava.symbols.context;
 import otava.symbols.emitter;
 import otava.symbols.exception;
-import otava.symbols.function_symbol;
+import otava.symbols.function_group_symbol;
 import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.lookup;

@@ -6,6 +6,7 @@
 module otava.symbols.function_table;
 
 import util.file_stream;
+import otava.symbols.exception;
 
 namespace otava::symbols {
 
@@ -31,6 +32,11 @@ std::string FunctionTable::GetFunction(std::uint64_t id) const
 void FunctionTable::Write(const std::string& filePath)
 {
     std::ofstream file(filePath);
+    if (!file)
+    {
+        otava::symbols::SetExceptionThrown();
+        throw std::runtime_error("could not create file '" + filePath + "'");
+    }
     for (const auto& entry : table)
     {
         file << entry.first << ";" << entry.second << "\n";
@@ -92,14 +98,22 @@ void FunctionTable::Read(const std::string& filePath)
     }
 }
 
+void FunctionTable::Add(const FunctionTable& that)
+{
+    for (const auto& p : that.table)
+    {
+        AddFunction(p.first, p.second);
+    }
+}
+
 FunctionTable* functionTable = nullptr;
 
-FunctionTable* GetFunctionTable()
+FunctionTable* GetFunctionTable() noexcept
 {
     return functionTable;
 }
 
-void SetFunctionTable(FunctionTable* functionTable_)
+void SetFunctionTable(FunctionTable* functionTable_) noexcept
 {
     functionTable = functionTable_;
 }

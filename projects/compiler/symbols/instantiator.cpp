@@ -7,7 +7,6 @@ module otava.symbols.instantiator;
 
 import otava.symbols.alias_type_symbol;
 import otava.symbols.block;
-import otava.symbols.classes;
 import otava.symbols.context;
 import otava.symbols.declaration;
 import otava.symbols.scope;
@@ -32,6 +31,16 @@ Instantiator::Instantiator(Context* context_, InstantiationScope* instantiationS
 void Instantiator::SetFunctionNode(otava::ast::Node* functionNode_)
 {
     functionNode = functionNode_;
+}
+
+FunctionSymbol* Instantiator::GetSpecialization() const noexcept
+{
+    return specialization;
+}
+
+std::vector<ClassTypeSymbol*> Instantiator::GetBaseClasses()
+{
+    return std::move(baseClasses);
 }
 
 void Instantiator::Visit(otava::ast::ClassSpecifierNode& node)

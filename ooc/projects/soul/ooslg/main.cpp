@@ -8,13 +8,13 @@ import soul.lexer.file_map;
 
 std::string Version()
 {
-    return "0.3.0";
+    return "0.3.3";
 }
 
 void PrintHelp()
 {
-    std::cout << "Soul Lexer Generator for Otava (oslg) version " << Version() << "\n";
-    std::cout << "Usage: oslg [options] { FILE.slg }" << "\n";
+    std::cout << "Soul Lexer Generator for Otava for Otava (ooslg) version " << Version() << "\n";
+    std::cout << "Usage: ooslg [options] { FILE.slg }" << "\n";
     std::cout << "\n";
     std::cout << "Options:" << "\n";
     std::cout << "\n";

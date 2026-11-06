@@ -161,6 +161,8 @@
     <ClCompile Include="memory.cppm" />
     <ClCompile Include="ort.cpp" />
     <ClCompile Include="ort.cppm" />
+    <ClCompile Include="profile.cpp" />
+    <ClCompile Include="profile.cppm" />
     <ClCompile Include="rand.cpp" />
     <ClCompile Include="rand.cppm" />
     <ClCompile Include="threading.cpp" />

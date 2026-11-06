@@ -17,11 +17,12 @@ public:
     std::string GetFunction(std::uint64_t id) const;
     void Write(const std::string& filePath);
     void Read(const std::string& filePath);
+    void Add(const FunctionTable& that);
 private:
     std::map<std::uint64_t, std::string> table;
 };
 
-FunctionTable* GetFunctionTable();
-void SetFunctionTable(FunctionTable* functionTable_);
+FunctionTable* GetFunctionTable() noexcept;
+void SetFunctionTable(FunctionTable* functionTable_) noexcept;
 
 } // namespace otava::symbols

@@ -431,6 +431,11 @@ std::int64_t Microseconds(std::int64_t nanosecs) noexcept
     return nanosecs / std::int64_t(1000ll);
 }
 
+std::int64_t Nanoseconds(std::int64_t nanosecs)
+{
+    return nanosecs;
+}
+
 std::string DurationStr(const std::chrono::nanoseconds& duration)
 {
     std::string s;
@@ -455,6 +460,11 @@ std::string DurationStr(const std::chrono::nanoseconds& duration)
     s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(us / 100 % 10)));
     s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(us / 10 % 10)));
     s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(us % 10)));
+    s.append(1, '.');
+    std::int64_t ns = Nanoseconds(duration.count()) % 1000;
+    s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(ns / 100 % 10)));
+    s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(ns / 10 % 10)));
+    s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(ns % 10)));
     return s;
 }
 

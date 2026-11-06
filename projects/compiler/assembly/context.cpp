@@ -8,7 +8,7 @@ module otava.assembly.context;
 import otava.assembly.data;
 import otava.assembly.error;
 import otava.assembly.instruction;
-
+ 
 namespace otava::assembly {
 
 void CheckSize(std::int64_t size, const std::string& message)

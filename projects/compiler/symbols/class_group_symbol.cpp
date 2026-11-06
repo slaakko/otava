@@ -18,6 +18,7 @@ import otava.symbols.scope_resolver;
 import otava.symbols.symbol_table;
 import otava.symbols.templates;
 import otava.symbols.type_compare;
+import otava.symbols.type_symbol;
 import otava.symbols.writer;
 import otava.symbols.reader;
 import soul.ast.span;

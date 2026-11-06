@@ -19,6 +19,10 @@ void WriteXml(Node* node, const std::string& filePath)
     soul::xml::Document doc;
     doc.AppendChild(element.release());
     std::ofstream file(filePath);
+    if (!file)
+    {
+        throw std::runtime_error("could not create file '" + filePath + "'");
+    }
     util::CodeFormatter formatter(file);
     formatter.SetIndentSize(1);
     doc.Write(formatter);

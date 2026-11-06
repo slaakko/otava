@@ -4,7 +4,7 @@ import std;
 import util.text_util;
 
 namespace util {
-
+     
 InvalidPathException::InvalidPathException(const std::string& message_) : std::runtime_error(message_)
 {
 }
@@ -105,7 +105,7 @@ std::string Path::MakeCanonical(const std::string& path)
 
 std::string Path::ChangeExtension(const std::string& path, const std::string& extension)
 {
-    std::string p = MakeCanonical(path);
+    std::string p = Path::MakeCanonical(path);
     std::string::size_type lastSlashPos = p.rfind('/');
     std::string::size_type lastDotPos = path.rfind('.');
     if (extension.empty())
@@ -242,7 +242,7 @@ std::string Path::GetFileName(const std::string& path)
 
 std::string Path::GetFileNameWithoutExtension(const std::string& path)
 {
-    std::string fileName = GetFileName(path);
+    std::string fileName = Path::GetFileName(path);
     std::string::size_type lastDotPos = fileName.rfind('.');
     if (lastDotPos != std::string::npos)
     {

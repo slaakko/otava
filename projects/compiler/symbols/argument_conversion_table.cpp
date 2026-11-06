@@ -14,7 +14,6 @@ import otava.symbols.emitter;
 import otava.symbols.enums;
 import otava.symbols.exception;
 import otava.symbols.function_group_symbol;
-import otava.symbols.function_symbol;
 import otava.symbols.function_templates;
 import otava.symbols.function_type_symbol;
 import otava.symbols.fundamental_type_kind;
@@ -30,6 +29,7 @@ import otava.symbols.variable_symbol;
 import otava.intermediate.code;
 import otava.intermediate.types;
 import otava.intermediate.value;
+import otava.intermediate.context;
 
 namespace otava::symbols {
 
@@ -344,7 +344,8 @@ void DynamicPtrCast::GenerateCode(Emitter& emitter, std::vector<BoundExpressionN
         ThrowException("classes have no inheritance relationship", fullSpan, context);
     }
     otava::intermediate::Value* deltaValue = emitter.EmitLong(delta);
-    otava::intermediate::Type* derivedClassIrType = derivedClassType->IrType(emitter, fullSpan, context)->AddPointer(emitter.GetIntermediateContext());
+    otava::intermediate::Type* irType = derivedClassType->IrType(emitter, fullSpan, context);
+    otava::intermediate::Type* derivedClassIrType = irType->AddPointer(emitter.GetIntermediateContext());
     otava::intermediate::Value* ptr = emitter.EmitClassPtrConversion(value, deltaValue, derivedClassIrType, false);
     otava::intermediate::Value* result = emitter.EmitLocal(derivedClassIrType);
     emitter.EmitStore(ptr, result);

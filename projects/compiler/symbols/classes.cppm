@@ -12,6 +12,7 @@ import otava.symbols.type_symbol;
 import otava.symbols.function_kind;
 import otava.symbols.function_symbol;
 import otava.intermediate.types;
+import otava.intermediate.value;
 import otava.ast.node;
 import otava.ast.statement;
 import otava.ast.classes;

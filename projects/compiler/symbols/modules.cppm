@@ -14,6 +14,7 @@ import otava.symbols.section;
 import otava.symbols.symbol_index_map;
 import otava.symbols.value;
 import otava.symbols.evaluation_context;
+import otava.symbols.function_table;
 import otava.ast.file;
 import otava.ast.node;
 import otava.ast.node_map;
@@ -105,6 +106,7 @@ public:
     void Init(Context* context);
     inline void SetKind(ModuleKind kind_) noexcept { kind = kind_; }
     inline ModuleKind Kind() const noexcept { return kind; }
+    inline bool IsInterfaceModule() const noexcept { return kind == ModuleKind::interfaceModule; }
     void SetInterfaceUnitName(const std::string& interfaceUnitName);
     std::string InterfaceUnitName();
     Module* InterfaceModule(Context* context);
@@ -166,6 +168,7 @@ public:
     inline const std::vector<Module*>& DependsOnModules() const noexcept { return dependsOnModules; }
     Module* GetImportedModuleById(ModuleId moduleId, Context* context);
     void AddImportedModule(Module* module);
+    void SetModuleFilePath(const std::string& moduleFilePath_);
     void SetModuleFilePath(const std::string& root, const std::string& config, int optLevel, Context* context, const std::set<std::string>& configurations);
     const std::string& ModuleFilePath() const { return moduleFilePath; }
     void Write(const std::string& root, const std::string& config, int optLevel, Context* context, const std::set<std::string>& configurations);
@@ -197,7 +200,10 @@ public:
     void WriteImportedModuleTable(Writer& writer);
     void ReadImportedModuleTable();
     void ReadImportedModuleTable(Reader& reader);
-    bool UpToDate() const noexcept;
+    void SetAsmFilePath(const std::string& asmFilePath_);
+    bool UpToDate(Context* context) noexcept;
+    inline SymbolCounts& GetSymbolCounts() noexcept { return scounts; }
+    inline FunctionTable& GetFunctionTable() noexcept { return ftab; }
 private:
     ModuleKind kind;
     ModuleId id;
@@ -238,6 +244,9 @@ private:
     std::vector<ImportedModuleTableEntry> importedModuleTable;
     bool importedModuleTableRead;
     bool reset;
+    std::string asmFilePath;
+    SymbolCounts scounts;
+    FunctionTable ftab;
     void Read();
     void GetAllExportedModules(std::vector<Module*>& targetExportedModules, Context* context);
     void GetAllImportedModules(std::vector<Module*>& targetImportedModules, Context* context);
@@ -267,6 +276,7 @@ public:
     void MapModule(Module* module);
     Module* GetModule(ModuleId moduleId) const noexcept;
     void RemoveModule(Module* module);
+    void ResetModule(const std::string& moduleName);
     inline SymbolIndexMap* GetSymbolIndexMap() const noexcept { return const_cast<SymbolIndexMap*>(&symbolIndexMap); }
     std::string GetProjectFilePath(const std::string& moduleName) const;
     ModuleId MakeModuleId(const std::string& moduleName) noexcept;
@@ -280,6 +290,7 @@ private:
     std::vector<std::unique_ptr<Module>> modules;
     std::map<std::string, Module*> moduleNameMap;
     std::map<ModuleId, Module*> moduleIdMap;
+    std::map<std::string, int> moduleNameIndexMap;
     SymbolIndexMap symbolIndexMap;
     std::set<ProjectId> projectIds;
     bool reset;

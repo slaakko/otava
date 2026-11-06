@@ -310,6 +310,7 @@ FunctionDefinitionSymbol* MakeInvokeFn(BoundFunctionCallNode* fnCall, Scope* par
     invokeFnNode->Accept(invokeInstantiator);
     int invokeFnScopeCount = invokeInstantiator.ScopeCount();
     FunctionDefinitionSymbol* invokeFnSymbol = static_cast<FunctionDefinitionSymbol*>(invokeInstantiator.GetSpecialization());
+    invokeFnSymbol->SetInvoke();
     invokeFnSymbol->SetSkipInvokeChecking();
     invokeFnSymbol->SetParentFn(parentFn);
     invokeFnSymbol->SetParentFnScope(parentFnScope);
@@ -325,7 +326,7 @@ FunctionDefinitionSymbol* MakeInvokeFn(BoundFunctionCallNode* fnCall, Scope* par
     invokeFnSymbol->SetFnDefNode(invokeFnNode.release());
     if (boundFunction->HasTemporaryDestructorCalls())
     {
-        generator->SetDestructTemporariesNode(new BoundDestructTemporariesNode(fullSpan, boundFunction->GetTemporaryDestructorCalls()));
+        generator->SetDestructTemporariesNode(new BoundDestructTemporariesNode(fullSpan, GetTemporaryDestructorCalls(boundFunction)));
     }
     return invokeFnSymbol;
 }

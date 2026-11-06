@@ -124,6 +124,7 @@ private:
     otava::ast::Node* catchBlock;
     otava::ast::CompoundStatementNode* handlerBlock;
     otava::ast::Node* lastElse;
+    int level;
 };
 
 FunctionDefinitionSymbol* BindFunction(otava::ast::Node* functionDefinitionNode, FunctionDefinitionSymbol* functionDefinitionSymbol, Context* context);

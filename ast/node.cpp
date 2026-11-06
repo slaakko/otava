@@ -595,6 +595,7 @@ struct AbstractNodeFactory
     virtual Node* CreateNode(const soul::ast::Span& span, int fileIndex) = 0;
 };
 
+#ifndef OTAVA
 template<typename T>
 concept NodeClass = std::derived_from<T, Node>;
 
@@ -606,6 +607,16 @@ struct NodeFactory : AbstractNodeFactory
         return new C(span, fileIndex);
     }
 };
+#else
+template<typename C>
+struct NodeFactory : AbstractNodeFactory
+{
+    Node* CreateNode(const soul::ast::Span& span, int fileIndex) override
+    {
+        return new C(span, fileIndex);
+    }
+};
+#endif
 
 class NodeFactoryCollection
 {

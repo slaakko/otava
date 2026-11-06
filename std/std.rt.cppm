@@ -142,6 +142,7 @@ extern "C" void* ort_get_bad_alloc();
 extern "C" bool ort_path_exists(const char* path);
 extern "C" bool ort_create_file_mapping(const char* filePath, void*& fileHandle, void*& fileMappingHandle, std::uint8_t*& start, std::uint32_t& length);
 extern "C" void ort_destruct_file_mapping(void* fileHandle, void* fileMappingHandle, std::uint8_t* start);
+extern "C" void ort_add_to_profile(std::uint64_t fn, std::uint64_t time, std::uint64_t ctime);
 int stdin_ = 0;
 int stdout_ = 1;
 int stderr_ = 2;

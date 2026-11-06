@@ -17,7 +17,7 @@ void SetEx()
 
 std::string OtavaVersionStr()
 {
-    return "0.3.2";
+    return "0.3.3";
 }
 
 std::string OtavaRoot()
@@ -1466,7 +1466,8 @@ CharacterInfo& CharacterInfoPage::GetCharacterInfo(int index)
     {
         throw UnicodeException("invalid character info index");
     }
-    return characterInfos[index];
+    CharacterInfo& info = characterInfos[index];
+    return info;
 }
 
 const CharacterInfo& CharacterInfoPage::GetCharacterInfo(int index) const
@@ -1475,7 +1476,8 @@ const CharacterInfo& CharacterInfoPage::GetCharacterInfo(int index) const
     {
         throw UnicodeException("invalid character info index");
     }
-    return characterInfos[index];
+    const CharacterInfo& info = characterInfos[index];
+    return info;
 }
 
 void CharacterInfoPage::Write(BinaryStreamWriter& writer)
@@ -1772,7 +1774,8 @@ const CharacterInfo& CharacterTable::GetCharacterInfo(char32_t codePoint)
         }
     }
     int infoIndex = codePoint % numInfosInPage;
-    return page->GetCharacterInfo(infoIndex);
+    const CharacterInfo& info = page->GetCharacterInfo(infoIndex);
+    return info;
 }
 
 CharacterInfo& CharacterTable::CreateCharacterInfo(char32_t codePoint)
@@ -1790,7 +1793,8 @@ CharacterInfo& CharacterTable::CreateCharacterInfo(char32_t codePoint)
     }
     int infoIndex = codePoint % numInfosInPage;
     CharacterInfoPage* page = pages[pageIndex].get();
-    return page->GetCharacterInfo(infoIndex);
+    CharacterInfo& info = page->GetCharacterInfo(infoIndex);
+    return info;
 }
 
 const ExtendedCharacterInfo& CharacterTable::GetExtendedCharacterInfo(char32_t codePoint)
@@ -1835,7 +1839,8 @@ const ExtendedCharacterInfo& CharacterTable::GetExtendedCharacterInfo(char32_t c
         }
     }
     int infoIndex = codePoint % numInfosInPage;
-    return extendedPage->GetExtendedCharacterInfo(infoIndex);
+    const ExtendedCharacterInfo& info = extendedPage->GetExtendedCharacterInfo(infoIndex);
+    return info;
 }
 
 ExtendedCharacterInfo& CharacterTable::CreateExtendedCharacterInfo(char32_t codePoint)
@@ -1853,7 +1858,8 @@ ExtendedCharacterInfo& CharacterTable::CreateExtendedCharacterInfo(char32_t code
     }
     int infoIndex = codePoint % numInfosInPage;
     ExtendedCharacterInfoPage* extendedPage = extendedPages[pageIndex].get();
-    return extendedPage->GetExtendedCharacterInfo(infoIndex);
+    ExtendedCharacterInfo& info = extendedPage->GetExtendedCharacterInfo(infoIndex);
+    return info;
 }
 
 bool IsAsciiDigit(char32_t c)

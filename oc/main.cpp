@@ -27,7 +27,7 @@ import util.time;
 
 std::string Version()
 {
-    return "0.3.2";
+    return "0.3.3";
 }
 
 void PrintHelp()
@@ -119,6 +119,11 @@ int main(int argc, const char** argv)
                         else if (components[0] == "--out")
                         {
                             outFileStream.open(components[1]);
+                            if (!outFileStream)
+                            {
+                                otava::symbols::SetExceptionThrown();
+                                throw std::runtime_error("could not create file '" + components[1] + "'");
+                            }
                             outFile = &outFileStream;
                         }
                         else
@@ -213,6 +218,11 @@ int main(int argc, const char** argv)
                         else if (components[0] == "-o")
                         {
                             outFileStream.open(components[1]);
+                            if (!outFileStream)
+                            {
+                                otava::symbols::SetExceptionThrown();
+                                throw std::runtime_error("could not create file '" + components[1] + "'");
+                            }
                             outFile = &outFileStream;
                         }
                         else

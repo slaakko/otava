@@ -419,6 +419,11 @@ void MakeProjectFile(Project* project, const std::string& projectFilePath, const
     rootElement->AppendChild(extensionTargets);
 
     std::ofstream projectFile(projectFilePath);
+    if (!projectFile)
+    {
+        otava::symbols::SetExceptionThrown();
+        throw std::runtime_error("could not create file '" + projectFilePath + "'");
+    }
     util::CodeFormatter formatter(projectFile);
     formatter.SetIndentSize(1);
     projectDoc.Write(formatter);

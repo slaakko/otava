@@ -1053,47 +1053,8 @@ void FunctionSymbol::SetCompileUnitId(const std::string& compileUnitId_)
 otava::intermediate::Type* FunctionSymbol::IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, otava::symbols::Context* context) 
 {
     FunctionTypeSymbol* functionType = GetFunctionType(context);
-    return functionType->IrType(emitter, fullSpan, context);
-
-/*
-    SymbolId irId = const_cast<FunctionSymbol*>(this)->IrId(context);
-    std::string fname = FullName(context);
-    otava::intermediate::Type* type = emitter.GetType(irId);
-    if (!type)
-    {
-        otava::intermediate::Type* returnIrType = nullptr;
-        if (returnType && !ReturnsClass())
-        {
-            returnIrType = returnType->DirectType(context)->FinalType(fullSpan, context)->IrType(emitter, fullSpan, context);
-        }
-        else
-        {
-            returnIrType = emitter.GetVoidType();
-        }
-        std::vector<otava::intermediate::Type*> paramIrTypes;
-        for (ParameterSymbol* param : MemFnParameters(context))
-        {
-            otava::intermediate::Type* paramIrType = nullptr;
-            TypeSymbol* paramType = param->GetReferredType(context);
-            if (paramType->IsClassTypeSymbol())
-            {
-                paramIrType = paramType->AddConst(context)->AddLValueRef(context)->IrType(emitter, fullSpan, context);
-            }
-            else
-            {
-                paramIrType = paramType->IrType(emitter, fullSpan, context);
-            }
-            paramIrTypes.push_back(paramIrType);
-        }
-        if (ReturnsClass())
-        {
-            paramIrTypes.push_back(ReturnValueParam(context)->GetReferredType(context)->IrType(emitter, fullSpan, context));
-        }
-        type = emitter.MakeFunctionType(returnIrType, paramIrTypes);
-        emitter.SetType(irId, type);
-    }
-    return type;
-*/
+    otava::intermediate::Type* irType = functionType->IrType(emitter, fullSpan, context);
+    return irType;
 }
 
 FunctionTypeSymbol* FunctionSymbol::GetFunctionType(otava::symbols::Context* context)

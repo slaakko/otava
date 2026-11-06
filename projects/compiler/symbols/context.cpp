@@ -35,24 +35,19 @@ RangeForBlockIds::RangeForBlockIds() : compoundBlockId(-1), forActionStatementId
 {
 }
 
-Context::Context() : 
+Context::Context() :
     flags(ContextFlags::none), optLevel(-1), node(nullptr), boundCompileUnit(MakeBoundCompileUnit()), templateParameterMap(nullptr),
     moduleMapper(nullptr), emitter(nullptr), traceInfo(nullptr),
-    lexer(nullptr), module(nullptr), compileUnitModule(nullptr), stdTypeFundamentalModule(nullptr), rejectTemplateId(false), nextBlockId(0), 
-    currentBlockId(-1), currentProject(nullptr), parentFn(nullptr), parentBlockId(-1), memFunDefSymbolIndex(-1), fileMap(nullptr), 
-    aliasType(nullptr), debugOutputStream(nullptr), ptr(nullptr), argType(nullptr), paramType(nullptr), nodeId(-1), statementBinder(nullptr), 
+    lexer(nullptr), module(nullptr), compileUnitModule(nullptr), stdTypeFundamentalModule(nullptr), rejectTemplateId(false), nextBlockId(0),
+    currentBlockId(-1), currentProject(nullptr), parentFn(nullptr), parentBlockId(-1), callerFn(nullptr), memFunDefSymbolIndex(-1), fileMap(nullptr),
+    aliasType(nullptr), debugOutputStream(nullptr), ptr(nullptr), argType(nullptr), paramType(nullptr), nodeId(-1), statementBinder(nullptr),
     totalFunctionsCompiled(0), functionCallsInlined(0), functionsInlined(0), invokes(0), unresolvedInvokes(0), argIndex(0),
     boundFunctionSerial(0), trySerial(0), invokeSerial(0), cleanupSerial(0), resultSerial(0), labelSerial(0), ehReturnFromSerial(0), childControlResultSerial(0),
     conditionVariableSerial(0), streamInitVarSerial(0), instantiationQueue(nullptr), switchCondType(nullptr), declaredInitializerType(nullptr),
     parentStatementIndex(-1), scope(nullptr), templateModule(nullptr), templateScope(nullptr), inlineModule(nullptr), inlineScope(nullptr),
     hasException(false), initializer(nullptr), incompleteClassesCompleted(false), hasUnresolvedForwardDeclaration(false), temporaryAction(TemporaryAction::none),
-    evaluating(false)
+    evaluating(false), binding(false), compoundLevel(-1), skipInvokeCheckingSet(nullptr)
 {
-    skipInvokeCheckingFNames.push_back("otava::lexer::MakeLexer(const char32_t*, const char32_t*, const std::string&)");
-    skipInvokeCheckingFNames.push_back("otava::parser::function::FunctionParser<soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>>::FunctionDefinition(soul::lexer::Lexer<otava::lexer::OtavaLexer<char32_t>, char32_t>&, otava::symbols::Context*)");
-    skipInvokeCheckingFNames.push_back("otava::codegen::CodeGenerator::GenerateGlobalInitializationFunction()");
-    skipInvokeCheckingFNames.push_back("otava::build::BuildSequentially(otava::build::Project*, const std::string&, int, const std::string&, otava::build::BuildFlags, std::basic_ostream<char>*)");
-    skipInvokeCheckingFNames.push_back("otava::build::Project::LoadModules(otava::symbols::ModuleMapper&, const std::string&, int, const std::set<std::basic_string<char>, std::less<std::basic_string<char>>>&, otava::symbols::Context*)");
 }
 
 void Context::PushFlags()
@@ -258,8 +253,8 @@ void Context::SetCurrentConfigurations(const std::set<std::string>& configuratio
 Module* Context::GetModule(const std::string& moduleName) const
 {
     Module* currentModule = GetModule();
-    if (currentModule->Name() == moduleName) return currentModule;
-    return moduleMapper->GetModule(moduleName, currentConfig, OptLevel(), currentConfigurations, const_cast<Context*>(this));
+    if (currentModule && currentModule->Name() == moduleName) return currentModule;
+    return moduleMapper->GetModule(moduleName, currentConfig, optLevel, currentConfigurations, const_cast<Context*>(this));
 }
 
 Module* Context::GetStdTypeFundamentalModule() const
@@ -396,6 +391,18 @@ void Context::PopParentBlockId()
 {
     parentBlockId = parentBlockIdStack.top();
     parentBlockIdStack.pop();
+}
+
+void Context::PushCallerFn(FunctionDefinitionSymbol* callerFn_)
+{
+    callerFnStack.push(callerFn);
+    callerFn = callerFn_;
+}
+
+void Context::PopCallerFn()
+{
+    callerFn = callerFnStack.top();
+    callerFnStack.pop();
 }
 
 void Context::PushParentStatementIndex(int parentStatementIndex_)
@@ -646,17 +653,12 @@ void Context::AddModule(Module* module)
 #endif
 }
 
-void Context::SetSkipInvokeChecking(FunctionDefinitionSymbol* fn)
+void Context::SetSkipInvokeChecking(FunctionDefinitionSymbol* fn, const std::string& fname)
 {
     if (fn->SkipInvokeChecking()) return;
-    std::string fname = fn->FullName(this);
-    for (const std::string& skipFnName : skipInvokeCheckingFNames)
+    if (skipInvokeCheckingSet->find(fname) != skipInvokeCheckingSet->end())
     {
-        if (fname == skipFnName)
-        {
-            fn->SetSkipInvokeChecking();
-            return;
-        }
+        fn->SetSkipInvokeChecking();
     }
 }
 

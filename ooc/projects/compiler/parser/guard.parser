@@ -1,0 +1,46 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.parser.guard;
+
+[interface]import otava.symbols.context;
+[implementation]import otava.lexer;
+
+parser GuardParser
+{
+    lexer otava::lexer::OtavaLexer<char32_t>;
+
+    ConceptGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->GetFlag(otava::symbols::ContextFlags::parsingConceptDefinition); }
+        ;
+
+    NotDefiningTypeSpecifierGuard(otava::symbols::Context* context)
+        ::= empty{ pass = !context->GetFlag(otava::symbols::ContextFlags::hasDefiningTypeSpecifier); }
+        ;
+
+    AssumeTypeGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->GetFlag(otava::symbols::ContextFlags::assumeType); }
+        ;
+
+    MemberFunctionGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->GetFlag(otava::symbols::ContextFlags::parseMemberFunction); }
+        ;
+
+    SavedMemberFunctionBodyGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->GetFlag(otava::symbols::ContextFlags::parseSavedMemberFunctionBody); }
+        ;
+
+    SavedCtorInitializerGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->GetFlag(otava::symbols::ContextFlags::parseSavedCtorInitializer); }
+        ;
+
+    NoDeclSpecFunctionDeclarationGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->EnableNoDeclSpecFunctionDeclaration(); }
+        ;
+
+    NoDeclSpecFunctionDefinitionGuard(otava::symbols::Context* context)
+        ::= empty{ pass = context->EnableNoDeclSpecFunctionDefinition(); }
+        ;
+}

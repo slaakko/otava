@@ -1,0 +1,54 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module otava.symbols.alias_type_symbol;
+
+import std;
+import otava.symbols.id;
+import otava.symbols.type_symbol;
+import otava.intermediate.types;
+import otava.ast.node;
+import soul.ast.span;
+
+export namespace otava::symbols {
+
+class AliasGroupSymbol;
+class Context;
+class TemplateDeclarationSymbol;
+
+class AliasTypeSymbol : public TypeSymbol
+{
+public:
+    AliasTypeSymbol(Module* module_, SymbolId id_);
+    AliasTypeSymbol(Module* module_, SymbolId id_, const std::string& name_);
+    TypeSymbol* ReferredType(Context* context);
+    void SetReferredType(TypeSymbol* referredType_) noexcept;
+    TypeSymbol* DirectType(Context* context) override;
+    inline AliasGroupSymbol* Group() const noexcept { return group; }
+    inline void SetGroup(AliasGroupSymbol* group_) noexcept { group = group_; }
+    Cardinality Arity(Context* context) noexcept;
+    TemplateDeclarationSymbol* ParentTemplateDeclaration(Context* context) const noexcept;
+    otava::intermediate::Type* IrType(Emitter& emitter, const soul::ast::FullSpan& fullSpan, Context* context) override;
+    bool IsTemplateParameterInstantiation(Context* context, std::set<const Symbol*>& visited) const override;
+    void Write(Writer& writer) override;
+    void Read(Reader& reader) override;
+private:
+    SymbolId referredTypeId;
+    TypeSymbol* referredType;
+    AliasGroupSymbol* group;
+};
+
+struct AliasTypeLess
+{
+    bool operator()(AliasTypeSymbol* left, AliasTypeSymbol* right) const noexcept;
+};
+
+void ProcessAliasDeclaration(otava::ast::Node* aliasDeclarationNode, Context* context);
+
+void AddTemporaryTypeAlias(otava::ast::Node* aliasDeclarationNode, Context* context);
+
+void RemoveTemporaryAliasTypeSymbols(Context* context);
+
+} // namespace otava::symbols

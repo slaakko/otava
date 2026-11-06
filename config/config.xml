@@ -23,4 +23,10 @@
 	<configuration name='heap' base='debug'>
 		<define symbol='DEBUG_HEAP'/>
 	</configuration>
+	<configuration name='pdebug' base='debug'>
+		<define symbol='PROFILE'/>
+	</configuration>
+	<configuration name='prelease' base='release'>
+		<define symbol='PROFILE'/>
+	</configuration>
 </configurations>

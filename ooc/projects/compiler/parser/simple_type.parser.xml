@@ -1,0 +1,74 @@
+<parserFile>
+ <grammar name="SimpleTypeParser">
+  <rule first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, DOUBLE, FLOAT, INT, LONG, SHORT, SIGNED, UNSIGNED, VOID, WCHAR_T}" name="SimpleType">
+   <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, DOUBLE, FLOAT, INT, LONG, SHORT, SIGNED, UNSIGNED, VOID, WCHAR_T}">
+    <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, DOUBLE, FLOAT, INT, LONG, SHORT, SIGNED, UNSIGNED, WCHAR_T}">
+     <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, FLOAT, INT, LONG, SHORT, SIGNED, UNSIGNED, WCHAR_T}">
+      <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, INT, LONG, SHORT, SIGNED, UNSIGNED, WCHAR_T}">
+       <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, INT, LONG, SHORT, SIGNED, WCHAR_T}">
+        <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, INT, LONG, SHORT, WCHAR_T}">
+         <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, INT, SHORT, WCHAR_T}">
+          <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, SHORT, WCHAR_T}">
+           <choice first="{BOOL, CHAR, CHAR8_T, CHAR16_T, CHAR32_T, WCHAR_T}">
+            <choice first="{CHAR, CHAR8_T, CHAR16_T, CHAR32_T, WCHAR_T}">
+             <choice first="{CHAR, CHAR8_T, CHAR16_T, CHAR32_T}">
+              <choice first="{CHAR, CHAR8_T, CHAR16_T}">
+               <choice first="{CHAR, CHAR8_T}">
+                <action first="{CHAR}">
+                 <token first="{CHAR}" name="CHAR"/>
+                </action>
+                <action first="{CHAR8_T}">
+                 <token first="{CHAR8_T}" name="CHAR8_T"/>
+                </action>
+               </choice>
+               <action first="{CHAR16_T}">
+                <token first="{CHAR16_T}" name="CHAR16_T"/>
+               </action>
+              </choice>
+              <action first="{CHAR32_T}">
+               <token first="{CHAR32_T}" name="CHAR32_T"/>
+              </action>
+             </choice>
+             <action first="{WCHAR_T}">
+              <token first="{WCHAR_T}" name="WCHAR_T"/>
+             </action>
+            </choice>
+            <action first="{BOOL}">
+             <token first="{BOOL}" name="BOOL"/>
+            </action>
+           </choice>
+           <action first="{SHORT}">
+            <token first="{SHORT}" name="SHORT"/>
+           </action>
+          </choice>
+          <action first="{INT}">
+           <token first="{INT}" name="INT"/>
+          </action>
+         </choice>
+         <action first="{LONG}">
+          <token first="{LONG}" name="LONG"/>
+         </action>
+        </choice>
+        <action first="{SIGNED}">
+         <token first="{SIGNED}" name="SIGNED"/>
+        </action>
+       </choice>
+       <action first="{UNSIGNED}">
+        <token first="{UNSIGNED}" name="UNSIGNED"/>
+       </action>
+      </choice>
+      <action first="{FLOAT}">
+       <token first="{FLOAT}" name="FLOAT"/>
+      </action>
+     </choice>
+     <action first="{DOUBLE}">
+      <token first="{DOUBLE}" name="DOUBLE"/>
+     </action>
+    </choice>
+    <action first="{VOID}">
+     <token first="{VOID}" name="VOID"/>
+    </action>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

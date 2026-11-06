@@ -10,7 +10,7 @@ import std.container.vector;
 import std.hash;
 
 export namespace std::detail {
-
+     
 template<typename T>
 class bucket
 {

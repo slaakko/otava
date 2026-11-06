@@ -5,10 +5,11 @@ import std.functional;
 import std.utilities.pair;
 import std.container.hash_table;
 import std.container.vector;
+import std.hash;
 
 export namespace std {
 
-template<typename  Key, typename Hash, typename Compare>
+template<typename  Key, typename Hash = hash<Key>, typename Compare = equal_to<Key>>
 class unordered_set
 {
 public:
@@ -27,7 +28,7 @@ public:
     using const_iterator = typename table_type::const_iterator;
     using local_iterator = iterator;
     using const_local_iterator = const_iterator;
-    using self = std::unordered_set<key_type, value_type, hash_fn, key_equal>;
+    using self = std::unordered_set<key_type, hash_fn, key_equal>;
 
     inline unordered_set() : tbl() {}
     inline unordered_set(const self& that) : tbl(that.tbl) {}

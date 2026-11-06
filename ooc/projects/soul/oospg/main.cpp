@@ -7,13 +7,13 @@ import util;
 
 std::string Version()
 {
-    return "0.3.0";
+    return "0.3.3";
 }
 
 void PrintHelp()
 {
-    std::cout << "Soul Parser Generator for Otava (ospg) version " << Version() << "\n";
-    std::cout << "Usage: ospg [options] { FILE.spg }" << "\n";
+    std::cout << "Soul Parser Generator for Otava for Otava (oospg) version " << Version() << "\n";
+    std::cout << "Usage: oospg [options] { FILE.spg }" << "\n";
     std::cout << "\n";
     std::cout << "Options:" << "\n";
     std::cout << "\n";

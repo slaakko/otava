@@ -2221,6 +2221,10 @@ void CheckGenerateTemporaryDestructorCall(BoundConstructTemporaryNode* construct
     {
         return;
     }
+    if (context->GetFlag(ContextFlags::invoke))
+    {
+        return;
+    }
     if (!arg)
     {
         std::cout << "NO TEMPORARY ARG!" << "\n";

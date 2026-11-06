@@ -52,14 +52,14 @@ Node* Reader::ReadNode()
     }
 }
 
-void Reader::SetNodeMap(NodeMap* nodeMap_) noexcept
-{
-    nodeMap = nodeMap_;
+void Reader::SetNodeMap(NodeMap* nodeMap_) noexcept 
+{ 
+    nodeMap = nodeMap_; 
 }
 
-NodeMap* Reader::GetNodeMap() const noexcept
-{
-    return nodeMap;
+NodeMap* Reader::GetNodeMap() const noexcept 
+{ 
+    return nodeMap; 
 }
 
 } // namespace otava::ast

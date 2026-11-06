@@ -3,7 +3,7 @@ module util.binary_stream_writer;
 import util.unicode;
 
 namespace util {
-
+     
 BinaryStreamWriter::BinaryStreamWriter(Stream& stream_) noexcept : stream(stream_)
 {
 }

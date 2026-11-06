@@ -16,6 +16,7 @@ import otava.symbols.function_kind;
 import otava.symbols.fundamental_type_kind;
 import otava.symbols.fundamental_type_symbol;
 import otava.symbols.instantiator;
+import otava.symbols.modules;
 import otava.symbols.scope;
 import otava.symbols.statement_binder;
 import otava.symbols.symbol;
@@ -33,6 +34,7 @@ import otava.ast.statement;
 import soul.ast.span;
 import util.code_formatter;
 import util.path;
+import util.text_util;
 
 namespace otava::build {
 
@@ -144,6 +146,7 @@ std::string GenerateMainUnit(otava::symbols::ModuleMapper& moduleMapper, const s
     main.AddImportedModuleName(std->Name());
     otava::symbols::Emitter emitter;
     otava::symbols::Context context;
+    context.SetSkipInvokeCheckingSet(parentContext->SkipInvokeCheckingSet());
     context.SetModuleMapper(&moduleMapper);
     context.SetEmitter(&emitter);
     context.SetCurrentProject(project);
@@ -208,6 +211,7 @@ std::string GenerateMainUnit(otava::symbols::ModuleMapper& moduleMapper, const s
     formatter.WriteLine("extern \"C\" void ort_init();");
     formatter.WriteLine("extern \"C\" void ort_done();");
     formatter.WriteLine("extern \"C\" void ort_preprocess_args(int argc, const char** argv, int* pargc, const char*** pargv);");
+    formatter.WriteLine("extern \"C\" void ort_write_profile(const char* dir);");
     if (context.GetFlag(otava::symbols::ContextFlags::debugMemory))
     {
         formatter.WriteLine("extern \"C\" void ort_debug_memory();");
@@ -233,6 +237,10 @@ std::string GenerateMainUnit(otava::symbols::ModuleMapper& moduleMapper, const s
         if (context.GetFlag(otava::symbols::ContextFlags::debugMemory))
         {
             formatter.WriteLine("ort_print_memory_leaks();");
+        }
+        if (project->HasDefine("PROFILE"))
+        {
+            formatter.WriteLine("ort_write_profile(\"" + util::StringStr(otava::symbols::MakeModuleDirPath(project->RootDir(), config, optLevel, configurations)) + "\");");
         }
     }
     else

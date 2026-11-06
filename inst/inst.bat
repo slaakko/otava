@@ -9,3 +9,5 @@ otava_inst -v ..\x64\Release\*.lib ..\lib
 otava_inst -v ..\projects\soul\oslg\bin\release\2\oslg.exe ..\bin
 otava_inst -v ..\projects\soul\ospg\bin\release\2\ospg.exe ..\bin
 otava_inst -v ..\projects\compiler\ooc\bin\release\2\ooc.exe ..\bin
+otava_inst -v ..\ooc\projects\soul\ooslg\bin\release\2\ooslg.exe ..\bin
+otava_inst -v ..\ooc\projects\soul\oospg\bin\release\2\oospg.exe ..\bin

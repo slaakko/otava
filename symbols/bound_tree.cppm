@@ -390,7 +390,7 @@ public:
     inline BoundStatementNode* GetBoundSetLineStatement() const { return boundSetLineStatement.get(); }
     void AddTemporaryDestructorCall(BoundFunctionCallNode* temporaryDestructorCall);
     inline bool HasTemporaryDestructorCalls() const noexcept { return !temporaryDestructorCalls.empty(); }
-    std::vector<std::unique_ptr<BoundFunctionCallNode>> GetTemporaryDestructorCalls();
+    std::vector<std::unique_ptr<BoundNode>> GetTemporaryDestructorCallNodes();
 private:
     FunctionDefinitionSymbol* functionDefinitionSymbol;
     std::unique_ptr<BoundCtorInitializerNode> ctorInitializer;
@@ -400,7 +400,7 @@ private:
     int serial;
     std::unique_ptr<otava::ast::Node> setLineStatementNode;
     std::unique_ptr<BoundStatementNode> boundSetLineStatement;
-    std::vector<std::unique_ptr<BoundFunctionCallNode>> temporaryDestructorCalls;
+    std::vector<std::unique_ptr<BoundNode>> temporaryDestructorCalls;
 };
 
 BoundFunctionNode* GetCompileUnitInitFunction(BoundCompileUnitNode* compileUnit);
@@ -1001,6 +1001,8 @@ private:
     FunctionSymbol* functionSymbol;
     std::vector<std::unique_ptr<BoundExpressionNode>> args;
 };
+
+std::vector<std::unique_ptr<BoundFunctionCallNode>> GetTemporaryDestructorCalls(BoundFunctionNode* boundFunction);
 
 class BoundEmptyFunctionCallNode : public BoundExpressionNode
 {

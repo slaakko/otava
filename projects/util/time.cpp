@@ -420,6 +420,11 @@ std::int64_t Microseconds(std::int64_t nanosecs) noexcept
     return nanosecs / std::int64_t(1000ll);
 }
 
+std::int64_t Nanoseconds(std::int64_t nanosecs)
+{
+    return nanosecs;
+}
+
 std::string DurationStr(std::int64_t nanosecs)
 {
     std::string s;
@@ -444,6 +449,11 @@ std::string DurationStr(std::int64_t nanosecs)
     s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(us / 100 % 10)));
     s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(us / 10 % 10)));
     s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(us % 10)));
+    s.append(1, '.');
+    std::int64_t ns = Nanoseconds(nanosecs) % 1000;
+    s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(ns / 100 % 10)));
+    s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(ns / 10 % 10)));
+    s.append(1, static_cast<char>(static_cast<std::uint8_t>('0') + static_cast<std::uint8_t>(ns % 10)));
     return s;
 }
 
@@ -478,9 +488,9 @@ std::string TimeToString(std::time_t t)
     return std::string(p);
 
 }
-DateTime ToDateTime(time_t time)
+DateTime ToDateTime(time_t t)
 {
-    std::tm* localTime = std::localtime(&time);
+    std::tm* localTime = std::localtime(&t);
     return DateTime(Date(1900 + localTime->tm_year, static_cast<Month>(static_cast<std::int8_t>(1 + localTime->tm_mon)),
         static_cast<std::int8_t>(localTime->tm_mday)), localTime->tm_hour * 3600 + localTime->tm_min * 60 + localTime->tm_sec);
 }

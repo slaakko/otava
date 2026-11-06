@@ -13,8 +13,11 @@ import otava.symbols.function_group_symbol;
 import otava.symbols.modules;
 import otava.symbols.writer;
 import otava.symbols.reader;
+import otava.symbols.symbol;
 import otava.symbols.variable_symbol;
 import otava.intermediate.code;
+import otava.intermediate.context;
+import otava.intermediate.value;
 
 namespace otava::symbols {
 

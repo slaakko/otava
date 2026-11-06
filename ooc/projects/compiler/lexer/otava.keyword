@@ -1,0 +1,24 @@
+// =================================
+// Copyright (c) 2026 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+import otava.token;
+
+keywords otava.keyword
+{
+    ("alignas", ALIGNAS), ("alignof", ALIGNOF), ("asm", ASM), ("auto", AUTO), ("bool", BOOL), ("break", BREAK), ("case", CASE), ("catch", CATCH),
+    ("char", CHAR), ("char8_t", CHAR8_T), ("char16_t", CHAR16_T), ("char32_t", CHAR32_T), ("class", CLASS), ("concept", CONCEPT), ("const", CONST),
+    ("consteval", CONSTEVAL), ("constexpr", CONSTEXPR),
+    ("constinit", CONSTINIT), ("const_cast", CONST_CAST), ("continue", CONTINUE), ("co_await", CO_AWAIT), ("co_return", CO_RETURN), ("co_yield", CO_YIELD),
+    ("decltype", DECLTYPE), ("default", DEFAULT), ("delete", DELETE), ("do", DO), ("double", DOUBLE), ("dynamic_cast", DYNAMIC_CAST), ("else", ELSE),
+    ("enum", ENUM), ("explicit", EXPLICIT), ("extern", EXTERN),
+    ("false", FALSE), ("float", FLOAT), ("for", FOR), ("friend", FRIEND), ("goto", GOTO), ("if", IF), ("inline", INLINE), ("int", INT), ("long", LONG),
+    ("mutable", MUTABLE), ("namespace", NAMESPACE), ("new", NEW), ("noexcept", NOEXCEPT), ("nullptr", NULLPTR), ("operator", OPERATOR), ("private", PRIVATE),
+    ("protected", PROTECTED),
+    ("public", PUBLIC), ("register", REGISTER), ("reinterpret_cast", REINTERPRET_CAST), ("requires", REQUIRES), ("return", RETURN), ("short", SHORT), ("signed", SIGNED),
+    ("sizeof", SIZEOF), ("static", STATIC), ("static_assert", STATIC_ASSERT), ("static_cast", STATIC_CAST), ("struct", STRUCT), ("switch", SWITCH), ("template", TEMPLATE),
+    ("this", THIS), ("thread_local", THREAD_LOCAL), ("throw", THROW),
+    ("true", TRUE), ("try", TRY), ("typedef", TYPEDEF), ("typeid", TYPEID), ("typename", TYPENAME), ("union", UNION), ("unsigned", UNSIGNED), ("using", USING),
+    ("virtual", VIRTUAL), ("void", VOID), ("volatile", VOLATILE), ("wchar_t", WCHAR_T), ("while", WHILE)
+}

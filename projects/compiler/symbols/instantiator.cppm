@@ -5,6 +5,7 @@
 
 export module otava.symbols.instantiator;
 
+import otava.symbols.classes;
 import otava.ast.visitor;
 import otava.ast.attribute;
 import otava.ast.concepts;
@@ -32,7 +33,6 @@ import std;
 
 export namespace otava::symbols {
 
-class ClassTypeSymbol;
 class FunctionSymbol;
 class Context;
 class InstantiationScope;
@@ -42,8 +42,8 @@ class Instantiator : public otava::ast::DefaultVisitor
 public:
     Instantiator(Context* context_, InstantiationScope* instantiationScope_);
     void SetFunctionNode(otava::ast::Node* functionNode_);
-    FunctionSymbol* GetSpecialization() const noexcept { return specialization; }
-    inline std::vector<ClassTypeSymbol*> GetBaseClasses() { return std::move(baseClasses); }
+    FunctionSymbol* GetSpecialization() const noexcept;
+    std::vector<ClassTypeSymbol*> GetBaseClasses();
     void Visit(otava::ast::ClassSpecifierNode& node) override;
     void Visit(otava::ast::BeginAccessGroupNode& node) override;
     void Visit(otava::ast::AliasDeclarationNode& node) override;

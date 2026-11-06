@@ -181,6 +181,7 @@ public:
     SymbolIndexMap* GetSymbolIndexMap() const noexcept;
     inline SymbolId GetNextSymbolId(SymbolKind symbolKind) 
     { 
+        compileUnitModule->GetSymbolCounts().IncCount(symbolKind);
         return MakeSymbolId(currentProject->GetProjectId(), symbolKind, GetSymbolIndexMap()->GetNextIndex(symbolKind));
     }
     inline soul::lexer::FileMap* GetFileMap() const noexcept { return fileMap; }
@@ -224,6 +225,9 @@ public:
     inline int ParentBlockId() const noexcept { return parentBlockId; }
     void PushParentBlockId(int blockId);
     void PopParentBlockId();
+    inline FunctionDefinitionSymbol* CallerFn() const noexcept { return callerFn; }
+    void PushCallerFn(FunctionDefinitionSymbol* callerFn_);
+    void PopCallerFn();
     bool IsConstructorNameNode(otava::ast::Node* node) const;
     SymbolsProject* CurrentProject() const noexcept { return currentProject; }
     void SetCurrentProject(SymbolsProject* project) noexcept { currentProject = project; }
@@ -352,11 +356,17 @@ public:
     inline void SetHasUnresolvedForwardDeclaration() noexcept { hasUnresolvedForwardDeclaration = true; }
     inline void ResetHasUnresolvedForwardDeclaration() { hasUnresolvedForwardDeclaration = false; }
     inline bool HasUnresolvedForwardDeclaration() const noexcept { return hasUnresolvedForwardDeclaration; }
-    void SetSkipInvokeChecking(FunctionDefinitionSymbol* fn);
+    void SetSkipInvokeChecking(FunctionDefinitionSymbol* fn, const std::string& fname);
     inline void SetTemporaryAction(TemporaryAction action) noexcept { temporaryAction = action; }
     inline TemporaryAction GetTemporaryAction() const noexcept { return temporaryAction; }
     inline bool Evaluating() const noexcept { return evaluating; }
     inline void SetEvaluating(bool evaluating_) noexcept { evaluating = evaluating_; }
+    inline bool Binding() const noexcept { return binding; }
+    inline void SetBinding(bool binding_) noexcept { binding = binding_; }
+    inline int GetCompoundLevel() const noexcept { return compoundLevel; }
+    inline void SetCompoundLevel(int level) { compoundLevel = level; }
+    inline void SetSkipInvokeCheckingSet(std::unordered_set<std::string>* skipInvokeCheckingSet_) noexcept { skipInvokeCheckingSet = skipInvokeCheckingSet_; }
+    inline std::unordered_set<std::string>* SkipInvokeCheckingSet() const noexcept { return skipInvokeCheckingSet; }
 private:
     Module* module;
     Module* compileUnitModule;
@@ -387,6 +397,8 @@ private:
     std::stack<FunctionDefinitionSymbol*> parentFnStack;
     int parentBlockId;
     std::stack<int> parentBlockIdStack;
+    FunctionDefinitionSymbol* callerFn;
+    std::stack<FunctionDefinitionSymbol*> callerFnStack;
     int memFunDefSymbolIndex;
     soul::lexer::FileMap* fileMap;
     AliasTypeSymbol* aliasType;
@@ -452,9 +464,11 @@ private:
     bool incompleteClassesCompleted;
     std::vector<Module*> modules;
     bool hasUnresolvedForwardDeclaration;
-    std::vector<std::string> skipInvokeCheckingFNames;
     TemporaryAction temporaryAction;
+    std::unordered_set<std::string>* skipInvokeCheckingSet;
     bool evaluating;
+    bool binding;
+    int compoundLevel;
 };
 
 class FlagSetter
@@ -527,6 +541,48 @@ public:
 private:
     Context* context;
     bool prevEvaluating;
+};
+
+class BindingSetter
+{
+public:
+    BindingSetter(Context* context_) : context(context_), prevBinding(context->Binding())
+    {
+        context->SetBinding(true);
+    }
+    ~BindingSetter()
+    {
+        if (context)
+        {
+            context->SetBinding(prevBinding);
+        }
+    }
+    void Reset()
+    {
+        if (context)
+        {
+            context->SetBinding(prevBinding);
+            context = nullptr;
+        }
+    }
+private:
+    Context* context;
+    bool prevBinding;
+};
+
+class CallerFnSetter
+{
+public:
+    CallerFnSetter(Context* context_, FunctionDefinitionSymbol* callerFn) : context(context_)
+    {
+        context->PushCallerFn(callerFn);
+    }
+    ~CallerFnSetter()
+    {
+        context->PopCallerFn();
+    }
+private:
+    Context* context;
 };
 
 } // namespace otava::symbols
